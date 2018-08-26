@@ -29,7 +29,7 @@ Checkpoints will be saved in `/checkpoints` directory. Run `detect.py` to apply 
 
 # Testing
 
-Run `test.py` to test the latest checkpoint on the 5000 validation images. Joseph Redmon's official YOLOv3 weights produce a mAP of .581 using this method, compared to .579 in his paper.
+Run `test.py` to test the latest checkpoint on the 5000 validation images. Joseph Redmon's official YOLOv3 weights produce a mAP of .581 using this PyTorch implementation, compared to .579 in darknet (https://arxiv.org/abs/1804.02767).
 
 # Contact
 
