@@ -11,7 +11,6 @@ device = torch.device('cuda:0' if cuda else 'cpu')
 parser = argparse.ArgumentParser()
 # Get data configuration
 
-# cd yolo && python3 detect.py -secondary_classifier 1
 parser.add_argument('-image_folder', type=str, default='data/samples', help='path to images')
 parser.add_argument('-output_folder', type=str, default='output', help='path to outputs')
 parser.add_argument('-plot_flag', type=bool, default=True)

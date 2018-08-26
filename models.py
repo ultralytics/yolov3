@@ -82,7 +82,7 @@ class YOLOLayer(nn.Module):
 
         self.anchors = anchors
         self.nA = nA  # number of anchors (3)
-        self.nC = nC  # number of classes (60)
+        self.nC = nC  # number of classes (80)
         self.bbox_attrs = 5 + nC
         self.img_dim = img_dim  # from hyperparams in cfg file, NOT from parser
 
@@ -103,7 +103,6 @@ class YOLOLayer(nn.Module):
 
     def forward(self, p, targets=None, requestPrecision=False, epoch=None):
         FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
-        # device = torch.device('cuda:0' if p.is_cuda else 'cpu')
 
         bs = p.shape[0]
         nG = p.shape[2]
@@ -112,7 +111,6 @@ class YOLOLayer(nn.Module):
         if p.is_cuda and not self.grid_x.is_cuda:
             self.grid_x, self.grid_y = self.grid_x.cuda(), self.grid_y.cuda()
             self.anchor_w, self.anchor_h = self.anchor_w.cuda(), self.anchor_h.cuda()
-            # self.scaled_anchors = self.scaled_anchors.cuda()
 
         # x.view(4, 650, 19, 19) -- > (4, 10, 19, 19, 65)  # (bs, anchors, grid, grid, classes + xywh)
         p = p.view(bs, self.nA, self.bbox_attrs, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
@@ -132,11 +130,9 @@ class YOLOLayer(nn.Module):
 
         # Training
         if targets is not None:
-            BCEWithLogitsLoss1 = nn.BCEWithLogitsLoss(size_average=False)  # version 0.4.0
-            BCEWithLogitsLoss0 = nn.BCEWithLogitsLoss()
-            # BCEWithLogitsLoss2 = nn.BCEWithLogitsLoss(size_average=True)
-            MSELoss = nn.MSELoss(size_average=False)  # version 0.4.0
-            CrossEntropyLoss = nn.CrossEntropyLoss()
+            BCEWithLogitsLoss = nn.BCEWithLogitsLoss()
+            MSELoss = nn.MSELoss()  # version 0.4.0
+            # CrossEntropyLoss = nn.CrossEntropyLoss()
 
             if requestPrecision:
                 gx = self.grid_x[:, :, :nG, :nG]
@@ -154,21 +150,21 @@ class YOLOLayer(nn.Module):
                 tx, ty, tw, th, mask, tcls = tx.cuda(), ty.cuda(), tw.cuda(), th.cuda(), mask.cuda(), tcls.cuda()
 
             # Mask outputs to ignore non-existing objects (but keep confidence predictions)
-            nM = mask.sum().float()
+            nM = mask.sum()
             nGT = sum([len(x) for x in targets])
             if nM > 0:
                 lx = 5 * MSELoss(x[mask], tx[mask])
                 ly = 5 * MSELoss(y[mask], ty[mask])
                 lw = 5 * MSELoss(w[mask], tw[mask])
                 lh = 5 * MSELoss(h[mask], th[mask])
-                lconf = 1.5 * BCEWithLogitsLoss1(pred_conf[mask], mask[mask].float())
+                lconf = 1.5 * BCEWithLogitsLoss(pred_conf[mask], mask[mask].float())
 
-                lcls = nM * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
-                # lcls = BCEWithLogitsLoss1(pred_cls[mask], tcls.float())
+                # lcls = CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
+                lcls = BCEWithLogitsLoss(pred_cls[mask], tcls.float())
             else:
                 lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
 
-            lconf += nM * BCEWithLogitsLoss0(pred_conf[~mask], mask[~mask].float())
+            lconf += BCEWithLogitsLoss(pred_conf[~mask], mask[~mask].float())
 
             loss = lx + ly + lw + lh + lconf + lcls
             i = torch.sigmoid(pred_conf[~mask]) > 0.99
