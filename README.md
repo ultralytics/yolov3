@@ -7,7 +7,7 @@ http://www.ultralytics.com  
 
 # Description
 
-The https://github.com/ultralytics/yolov3 repo contains code to train YOLOv3 on the COCO dataset: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO** (https://pjreddie.com/darknet/yolo/) and to **Erik Lindernoren for the pytorch implementation** this work is based on (https://github.com/eriklindernoren/PyTorch-YOLOv3).
+The https://github.com/ultralytics/yolov3 repo contains code inference and training of YOLOv3 on the COCO dataset: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO** (https://pjreddie.com/darknet/yolo/) and to **Erik Lindernoren for the pytorch implementation** this work is based on (https://github.com/eriklindernoren/PyTorch-YOLOv3).
 
 # Requirements
 
