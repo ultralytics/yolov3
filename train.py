@@ -36,7 +36,7 @@ def main(opt):
     if platform == 'darwin':  # macos
         train_path = data_config['valid']
     else:  # linux (gcp cloud)
-        train_path = '../coco/trainvalno5k.txt'
+        train_path = '../coco/trainvalno5k.part'
 
     # Initialize model
     model = Darknet(opt.cfg, opt.img_size)
