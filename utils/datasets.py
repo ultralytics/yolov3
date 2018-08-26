@@ -111,7 +111,7 @@ class ListDataset():  # for training
             if img is None:
                 continue
 
-            augment_hsv = False
+            augment_hsv = True
             if augment_hsv:
                 # SV augmentation by 50%
                 fraction = 0.50
@@ -150,13 +150,15 @@ class ListDataset():  # for training
                 labels = np.array([])
 
             # Augment image and labels
-            # img, labels, M = random_affine(img, targets=labels, degrees=(-10, 10), translate=(0.2, 0.2), scale=(0.8, 1.2))  # RGB
+            img, labels, M = random_affine(img, targets=labels, degrees=(-5, 5), translate=(0.2, 0.2), scale=(0.8, 1.2))  # RGB
 
             plotFlag = False
             if plotFlag:
                 import matplotlib.pyplot as plt
+                plt.figure(figsize=(10, 10)) if index == 0 else None
                 plt.subplot(4, 4, index + 1).imshow(img[:, :, ::-1])
                 plt.plot(labels[:, [1, 3, 3, 1, 1]].T, labels[:, [2, 2, 4, 4, 2]].T, '.-')
+                plt.axis('off')
 
             nL = len(labels)
             if nL > 0:
@@ -164,7 +166,7 @@ class ListDataset():  # for training
                 labels[:, 1:5] = xyxy2xywh(labels[:, 1:5].copy()) / height
 
             # random left-right flip
-            lr_flip = False
+            lr_flip = True
             if lr_flip & (random.random() > 0.5):
                 img = np.fliplr(img)
                 if nL > 0:
@@ -206,7 +208,7 @@ def resize_square(img, height=416, color=(0, 0, 0)):  # resize a rectangular ima
 
 
 def random_affine(img, targets=None, degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-3, 3),
-                  borderValue=(0, 0, 0)):
+                  borderValue=(127.5, 127.5, 127.5)):
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
     # https://medium.com/uruvideo/dataset-augmentation-with-random-homographies-a8f4b44830d4
 

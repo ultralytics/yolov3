@@ -1,6 +1,5 @@
 import argparse
 import time
-from sys import platform
 
 from models import *
 from utils.datasets import *
@@ -26,6 +25,7 @@ if cuda:
     torch.cuda.manual_seed(0)
     torch.cuda.manual_seed_all(0)
     torch.backends.cudnn.benchmark = True
+
 
 def main(opt):
     os.makedirs('checkpoints', exist_ok=True)
@@ -93,7 +93,7 @@ def main(opt):
     for epoch in range(opt.epochs):
         epoch += start_epoch
 
-        # img_size = random.choice([19, 20, 21, 22, 23, 24, 25]) * 32
+        # img_size = random.choice(range(10, 20)) * 32
         # dataloader = ListDataset(train_path, batch_size=opt.batch_size, img_size=img_size, targets_path=targets_path)
         # print('Running image size %g' % img_size)
 
