@@ -157,9 +157,9 @@ def main(opt):
             # if i == 1:
             #    return
 
-            # Write epoch results
-            with open('results.txt', 'a') as file:
-                file.write(s + '\n')
+        # Write epoch results
+        with open('results.txt', 'a') as file:
+            file.write(s + '\n')
 
         # Update best loss
         loss_per_target = rloss['loss'] / rloss['nGT']
