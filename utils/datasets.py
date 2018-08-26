@@ -68,7 +68,7 @@ class ListDataset():  # for training
         if platform == 'darwin':  # macos
             self.img_files = [path.replace('\n', '').replace('/images', '/Users/glennjocher/Downloads/DATA/coco/images')
                               for path in self.img_files]
-        else:
+        else:  # linux (gcp cloud)
             self.img_files = [path.replace('\n', '').replace('/images', '../coco/images') for path in self.img_files]
 
         self.label_files = [path.replace('images', 'labels').replace('.png', '.txt').replace('.jpg', '.txt') for path in

@@ -32,7 +32,7 @@ num_classes = int(data_config['classes'])
 model = Darknet(opt.cfg, opt.img_size)
 
 # Load weights
-weights_path = 'checkpoints/yolov3.pt'
+weights_path = 'checkpoints/yolov3.weights'
 if weights_path.endswith('.weights'):  # darknet format
     load_weights(model, weights_path)
 elif weights_path.endswith('.pt'):  # pytorch format
