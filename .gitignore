@@ -10,10 +10,9 @@
 *.HEIC
 *.weights
 *.pt
-*.tif.txt
+*results.txt
 !zidane_result.jpg
 #!coco_training_loss.png
-!images/*
 
 checkpoints
 temp-plot.html
