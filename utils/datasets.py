@@ -150,7 +150,8 @@ class ListDataset():  # for training
                 labels = np.array([])
 
             # Augment image and labels
-            img, labels, M = random_affine(img, targets=labels, degrees=(-5, 5), translate=(0.2, 0.2), scale=(0.8, 1.2))  # RGB
+            img, labels, M = random_affine(img, targets=labels, degrees=(-5, 5), translate=(0.2, 0.2),
+                                           scale=(0.8, 1.2))  # RGB
 
             plotFlag = False
             if plotFlag:
