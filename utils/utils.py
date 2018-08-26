@@ -30,7 +30,6 @@ def modelinfo(model):
     print('\n%g layers, %g parameters, %g gradients' % (i + 1, nparams, ngradients))
 
 
-
 def xview_class_weights(indices):  # weights of each class in the training set, normalized to mu = 1
     weights = 1 / torch.FloatTensor(
         [74, 364, 713, 71, 2925, 209767, 6925, 1101, 3612, 12134, 5871, 3640, 860, 4062, 895, 149, 174, 17, 1624, 1846,
@@ -38,7 +37,6 @@ def xview_class_weights(indices):  # weights of each class in the training set, 
          628, 841, 287, 83, 702, 1177, 313865, 195, 1081, 882, 1059, 4175, 123, 1700, 2317, 1579, 368, 85])
     weights /= weights.sum()
     return weights[indices]
-
 
 
 def plot_one_box(x, im, color=None, label=None, line_thickness=None):
