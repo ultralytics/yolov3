@@ -10,11 +10,12 @@
 *.HEIC
 *.weights
 *.pt
+*.weights
 *results.txt
 !zidane_result.jpg
 #!coco_training_loss.png
 
-checkpoints
+
 temp-plot.html
 
 # MATLAB GitIgnore -----------------------------------------------------------------------------------------------------
