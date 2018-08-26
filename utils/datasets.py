@@ -105,7 +105,7 @@ class ListDataset():  # for training
             if img is None:
                 continue
 
-            augment_hsv = False
+            augment_hsv = True
             if augment_hsv:
                 # SV augmentation by 50%
                 fraction = 0.50
@@ -144,7 +144,7 @@ class ListDataset():  # for training
                 labels = np.array([])
 
             # Augment image and labels
-            # img, labels, M = random_affine(img, targets=labels, degrees=(-5, 5), translate=(0.1, 0.1), scale=(0.8, 1.2))  # RGB
+            img, labels, M = random_affine(img, targets=labels, degrees=(-10, 10), translate=(0.2, 0.2), scale=(0.8, 1.2))  # RGB
 
             plotFlag = False
             if plotFlag:
@@ -158,7 +158,7 @@ class ListDataset():  # for training
                 labels[:, 1:5] = xyxy2xywh(labels[:, 1:5].copy()) / height
 
             # random left-right flip
-            lr_flip = False
+            lr_flip = True
             if lr_flip & (random.random() > 0.5):
                 img = np.fliplr(img)
                 if nL > 0:
