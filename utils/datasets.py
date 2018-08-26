@@ -2,6 +2,7 @@ import glob
 import math
 import os
 import random
+from sys import platform
 
 import cv2
 import numpy as np
@@ -63,7 +64,11 @@ class ListDataset():  # for training
         #self.img_files = sorted(glob.glob('%s/*.*' % path))
         with open(path, 'r') as file:
             self.img_files = file.readlines()
-        self.img_files = [path.replace('\n', '').replace('/images','/Users/glennjocher/Downloads/DATA/coco/images') for path in self.img_files]
+
+        if platform == 'darwin':  # macos
+            self.img_files = [path.replace('\n', '').replace('/images','/Users/glennjocher/Downloads/DATA/coco/images') for path in self.img_files]
+        else:
+            self.img_files = [path.replace('\n', '').replace('/images','../coco/images') for path in self.img_files]
 
         self.label_files = [path.replace('images', 'labels').replace('.png', '.txt').replace('.jpg', '.txt') for path in
                             self.img_files]
