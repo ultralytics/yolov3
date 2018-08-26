@@ -10,7 +10,6 @@
 *.HEIC
 *.weights
 *.pt
-*.weights
 !zidane_result.jpg
 !coco_training_loss.png
 
