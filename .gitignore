@@ -12,7 +12,7 @@
 *.pt
 *.tif.txt
 !zidane_result.jpg
-!coco_training_loss.png
+#!coco_training_loss.png
 !images/*
 
 checkpoints

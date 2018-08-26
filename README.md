@@ -19,8 +19,8 @@ Python 3.6 or later with the following `pip3 install -U -r requirements.txt` pac
 
 # Running
 
-Run `train.py` to begin training. Each epoch trains on 120,000 images from the train and validate sets, and validates on 5000 images in the validation set. An Nvidia GTX 1080 Ti will run about 16 epochs per day. Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here.
-![Alt](https://github.com/ultralytics/yolov3/blob/master/data/xview_training_loss.png "training loss")
+Run `train.py` to begin training. Each epoch trains on 120,000 images from the train and validate sets, and validates on 5000 images in the validation set. An Nvidia GTX 1080 Ti will run about 16 epochs per day. Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here (coming soon)
+![Alt](https://github.com/ultralytics/yolov3/blob/master/data/coco_training_loss.png "training loss")
 
 Checkpoints will be saved in `/checkpoints` directory. Run `detect.py` to apply trained weights to an image, such as `zidane.jpg` from the `data/samples` folder, shown here.
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/zidane_result.jpg "example")
