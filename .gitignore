@@ -11,11 +11,10 @@
 *.weights
 *.pt
 *.weights
-*results.txt
 !zidane_result.jpg
-#!coco_training_loss.png
+!coco_training_loss.png
 
-
+results.txt
 temp-plot.html
 
 # MATLAB GitIgnore -----------------------------------------------------------------------------------------------------

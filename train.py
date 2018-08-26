@@ -178,7 +178,7 @@ def main(opt):
             os.system('cp checkpoints/latest.pt checkpoints/best.pt')
 
         # Save backup checkpoint
-        if (epoch > 0) & (epoch % 100 == 0):
+        if (epoch > 0) & (epoch % 10 == 0):
             os.system('cp checkpoints/latest.pt checkpoints/backup' + str(epoch) + '.pt')
 
     # Save final model
