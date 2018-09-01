@@ -29,7 +29,7 @@ Each epoch trains on 120,000 images from the train and validate COCO sets, and t
 
 ## Image Augmentation
 
-`datasets.py` applies random augmentation to the input images in accordance with the following specifications. Augmentation is applied **only** during training, not during inference. Bounding boxes are automatically tracked and updated with the images. 416 x 416 examples pictured below.
+`datasets.py` applies random OpenCV-powered (https://opencv.org/) augmentation to the input images in accordance with the following specifications. Augmentation is applied **only** during training, not during inference. Bounding boxes are automatically tracked and updated with the images. 416 x 416 examples pictured below.
 
 Augmentation | Description
 --- | ---
