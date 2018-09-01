@@ -24,15 +24,17 @@ Run `train.py` to begin training after downloading COCO data with `data/get_coco
 
 ## Augmentation
 
-`datasets.py` applies random augmentation to the input images in accordance with the following specifications. Augmentation is applied *only* during training, not during inference. Bounding boxes are automatically tracked and updated with the images. Examples pictured below.
+`datasets.py` applies random augmentation to the input images in accordance with the following specifications. Augmentation is applied *only* during training, not during inference. Bounding boxes are automatically tracked and updated with the images. 416 x 416 examples pictured below.
 
-- Translation:  +/- 20% X and Y
-- Rotation:     +/- 5 degrees
-- Skew:         +/- 3 degrees
-- Scale:        +/- 20%
-- Reflection:   50% probability left-right
-- Saturation:   +/- 50%
-- Intensity:    +/- 50%
+Augmentation | Description
+--- | ---
+Translation |  +/- 20% vertical and horizontal
+Rotation |     +/- 5 degrees
+Skew |         +/- 3 degrees
+Scale |        +/- 20%
+Reflection |   50% probability left-right
+Saturation |   +/- 50%
+Intensity |    +/- 50%
 
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/coco_augmentation_examples.jpg "coco image augmentation")
 
