@@ -34,8 +34,7 @@ Run `train.py` to begin training after downloading COCO data with `data/get_coco
 - Saturation:   +/- 50%
 - Intensity:    +/- 50%
 
-![Alt](https://github.com/ultralytics/yolov3/blob/master/data/coco_augmentation_examples.png "coco image augmentation")
-
+![Alt](https://github.com/ultralytics/yolov3/blob/master/data/coco_augmentation_examples.jpg "coco image augmentation")
 
 # Inference
 
