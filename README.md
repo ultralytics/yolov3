@@ -2,7 +2,7 @@
 
 # Introduction
 
-This directory contains software developed by Ultralytics LLC. For more information on Ultralytics projects please visit:
+This directory contains software developed by Ultralytics LLC, and **is freely available for redistribution under the GPL-3.0 license**.. For more information on Ultralytics projects please visit:
 http://www.ultralytics.com  
 
 # Description
@@ -28,11 +28,11 @@ Run `train.py` to begin training after downloading COCO data with `data/get_coco
 
 Augmentation | Description
 --- | ---
-Translation | +/- 20% vertical and horizontal
+Translation | +/- 20% (vertical and horizontal)
 Rotation | +/- 5 degrees
-Shear | +/- 3 degrees vertical and horizontal
+Shear | +/- 3 degrees (vertical and horizontal)
 Scale | +/- 20%
-Horizontal Reflection | 50% probability
+Reflection | 50% probability (horizontal-only)
 H**S**V Saturation | +/- 50%
 HS**V** Intensity | +/- 50%
 
