@@ -41,11 +41,13 @@ Reflection | 50% probability (horizontal-only)
 H**S**V Saturation | +/- 50%
 HS**V** Intensity | +/- 50%
 
+
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/coco_augmentation_examples.jpg "coco image augmentation")
 
 # Inference
 
 Checkpoints are saved in `/checkpoints` directory. Run `detect.py` to apply trained weights to an image, such as `zidane.jpg` from the `data/samples` folder, shown here.
+
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/zidane_result.jpg "inference example")
 
 # Testing
