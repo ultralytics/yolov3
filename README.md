@@ -19,7 +19,7 @@ Python 3.6 or later with the following `pip3 install -U -r requirements.txt` pac
 
 # Training
 
-Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`. Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process ~10 epochs/day with full augmentation, or ~15 epochs/day without input image augmentation. Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here (coming soon)
+Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`. Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process ~10 epochs/day with full image augmentation, or ~15 epochs/day with no augmentation. Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here (coming soon)
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/coco_training_loss.png "training loss")
 
 # Inference
