@@ -93,10 +93,10 @@ def main(opt):
     for epoch in range(opt.epochs):
         epoch += start_epoch
 
-        # Random input
+        # Multi-Scale Training
         # img_size = random.choice(range(10, 20)) * 32
         # dataloader = ListDataset(train_path, batch_size=opt.batch_size, img_size=img_size)
-        # print('Running image size %g' % img_size)
+        # print('Running this epoch with image size %g' % img_size)
 
         # Update scheduler
         # if epoch % 25 == 0:
