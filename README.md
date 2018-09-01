@@ -19,7 +19,7 @@ Python 3.6 or later with the following `pip3 install -U -r requirements.txt` pac
 
 # Training
 
-Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`.
+Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh` and specifying COCO path on line 37 (local) or line 39 (cloud).
 
 Run `train.py -resume 1` to resume training from the most recently saved checkpoint `checkpoints/latest.pt`.
 

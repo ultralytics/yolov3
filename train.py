@@ -33,9 +33,9 @@ def main(opt):
     # Configure run
     data_config = parse_data_config(opt.data_config_path)
     num_classes = int(data_config['classes'])
-    if platform == 'darwin':  # macos
+    if platform == 'darwin':  # MacOS (local)
         train_path = data_config['valid']
-    else:  # linux (gcp cloud)
+    else:  # linux (cloud, i.e. gcp)
         train_path = '../coco/trainvalno5k.part'
 
     # Initialize model
