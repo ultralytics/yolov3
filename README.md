@@ -21,7 +21,7 @@ Python 3.6 or later with the following `pip3 install -U -r requirements.txt` pac
 
 **Start Training:** Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh` and specifying COCO path on line 37 (local) or line 39 (cloud).
 
-**Resume Training:** Run `train.py -resume 1` to resume training from the most recently saved checkpoint `checkpoints/latest.pt`.
+**Resume Training:** Run `train.py -resume 1` to resume training from the most recently saved checkpoint `latest.pt`.
 
 Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process ~10 epochs/day with full augmentation, or ~15 epochs/day without input image augmentation. Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here (results in progress to 160 epochs, will update).
 
