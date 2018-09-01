@@ -359,10 +359,10 @@ def plotResults():
     # Plot YOLO training results file "results.txt"
     import numpy as np
     import matplotlib.pyplot as plt
-    plt.figure(figsize=(18, 9))
-    s = ['x', 'y', 'w', 'h', 'conf', 'cls', 'loss', 'prec', 'recall']
-    for f in ('/Users/glennjocher/Downloads/results (2).txt',
-              'results22.txt'):
+    plt.figure(figsize=(16, 8))
+    s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall']
+    for f in ('/Users/glennjocher/Downloads/results.txt',
+              ''):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10]).T
         for i in range(9):
             plt.subplot(2, 5, i + 1)
