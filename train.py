@@ -42,7 +42,7 @@ def main(opt):
     model = Darknet(opt.cfg, opt.img_size)
 
     # Get dataloader
-    dataloader = ListDataset(train_path, batch_size=opt.batch_size, img_size=opt.img_size)
+    dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=opt.img_size, augment=True)
 
     # reload saved optimizer state
     start_epoch = 0

@@ -42,10 +42,10 @@ elif weights_path.endswith('.pt'):  # pytorch format
 
 model.to(device).eval()
 
-# Get dataloader
-# dataset = ListDataset(test_path)
+# Get PyTorch dataloader
+# dataset = load_images_with_labels(test_path)
 # dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=False, num_workers=opt.n_cpu)
-dataloader = ListDataset(test_path, batch_size=opt.batch_size, img_size=opt.img_size)
+dataloader = load_images_and_labels(test_path, batch_size=opt.batch_size, img_size=opt.img_size)
 
 Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 

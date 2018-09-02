@@ -12,7 +12,7 @@ import torch
 from utils.utils import xyxy2xywh
 
 
-class ImageFolder():  # for eval-only
+class load_images():  # for inference
     def __init__(self, path, batch_size=1, img_size=416):
         if os.path.isdir(path):
             self.files = sorted(glob.glob('%s/*.*' % path))
@@ -59,8 +59,8 @@ class ImageFolder():  # for eval-only
         return self.nB  # number of batches
 
 
-class ListDataset():  # for training
-    def __init__(self, path, batch_size=1, img_size=608):
+class load_images_and_labels():  # for training
+    def __init__(self, path, batch_size=1, img_size=608, augment=False):
         self.path = path
         # self.img_files = sorted(glob.glob('%s/*.*' % path))
         with open(path, 'r') as file:
@@ -79,6 +79,7 @@ class ListDataset():  # for training
         self.nB = math.ceil(self.nF / batch_size)  # number of batches
         self.batch_size = batch_size
         self.height = img_size
+        self.augment = augment
 
         assert self.nB > 0, 'No images found in path %s' % path
 
@@ -113,7 +114,7 @@ class ListDataset():  # for training
                 continue
 
             augment_hsv = True
-            if augment_hsv:
+            if self.augment and augment_hsv:
                 # SV augmentation by 50%
                 fraction = 0.50
                 img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -151,8 +152,8 @@ class ListDataset():  # for training
                 labels = np.array([])
 
             # Augment image and labels
-            img, labels, M = random_affine(img, targets=labels, degrees=(-5, 5), translate=(0.2, 0.2),
-                                           scale=(0.8, 1.2))  # RGB
+            if self.augment:
+                img, labels, M = random_affine(img, labels, degrees=(-5, 5), translate=(0.2, 0.2), scale=(0.8, 1.2))
 
             plotFlag = False
             if plotFlag:
@@ -167,19 +168,20 @@ class ListDataset():  # for training
                 # convert xyxy to xywh
                 labels[:, 1:5] = xyxy2xywh(labels[:, 1:5].copy()) / height
 
-            # random left-right flip
-            lr_flip = True
-            if lr_flip & (random.random() > 0.5):
-                img = np.fliplr(img)
-                if nL > 0:
-                    labels[:, 1] = 1 - labels[:, 1]
+            if self.augment:
+                # random left-right flip
+                lr_flip = True
+                if lr_flip & (random.random() > 0.5):
+                    img = np.fliplr(img)
+                    if nL > 0:
+                        labels[:, 1] = 1 - labels[:, 1]
 
-            # random up-down flip
-            ud_flip = False
-            if ud_flip & (random.random() > 0.5):
-                img = np.flipud(img)
-                if nL > 0:
-                    labels[:, 2] = 1 - labels[:, 2]
+                # random up-down flip
+                ud_flip = False
+                if ud_flip & (random.random() > 0.5):
+                    img = np.flipud(img)
+                    if nL > 0:
+                        labels[:, 2] = 1 - labels[:, 2]
 
             img_all.append(img)
             labels_all.append(torch.from_numpy(labels))
@@ -199,13 +201,13 @@ class ListDataset():  # for training
 
 def resize_square(img, height=416, color=(0, 0, 0)):  # resize a rectangular image to a padded square
     shape = img.shape[:2]  # shape = [height, width]
-    ratio = float(height) / max(shape)
+    ratio = float(height) / max(shape)  # ratio  = old / new
     new_shape = [round(shape[0] * ratio), round(shape[1] * ratio)]
     dw = height - new_shape[1]  # width padding
     dh = height - new_shape[0]  # height padding
     top, bottom = dh // 2, dh - (dh // 2)
     left, right = dw // 2, dw - (dw // 2)
-    img = cv2.resize(img, (new_shape[1], new_shape[0]), interpolation=cv2.INTER_AREA)
+    img = cv2.resize(img, (new_shape[1], new_shape[0]), interpolation=cv2.INTER_AREA)  # resized, no border
     return cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color), ratio, dw // 2, dh // 2
 
 
@@ -220,8 +222,7 @@ def random_affine(img, targets=None, degrees=(-10, 10), translate=(.1, .1), scal
     # Rotation and Scale
     R = np.eye(3)
     a = random.random() * (degrees[1] - degrees[0]) + degrees[0]
-    # a += random.choice([-180, -90, 0, 90])  # random 90deg rotations added to small rotations
-
+    # a += random.choice([-180, -90, 0, 90])  # 90deg rotations added to small rotations
     s = random.random() * (scale[1] - scale[0]) + scale[0]
     R[:2] = cv2.getRotationMatrix2D(angle=a, center=(img.shape[1] / 2, img.shape[0] / 2), scale=s)
 
@@ -235,9 +236,9 @@ def random_affine(img, targets=None, degrees=(-10, 10), translate=(.1, .1), scal
     S[0, 1] = math.tan((random.random() * (shear[1] - shear[0]) + shear[0]) * math.pi / 180)  # x shear (deg)
     S[1, 0] = math.tan((random.random() * (shear[1] - shear[0]) + shear[0]) * math.pi / 180)  # y shear (deg)
 
-    M = S @ T @ R  # ORDER IS IMPORTANT HERE!!
+    M = S @ T @ R  # Combined rotation matrix. ORDER IS IMPORTANT HERE!!
     imw = cv2.warpPerspective(img, M, dsize=(height, height), flags=cv2.INTER_LINEAR,
-                              borderValue=borderValue)  # BGR order (YUV-equalized BGR means)
+                              borderValue=borderValue)  # BGR order borderValue
 
     # Return warped points also
     if targets is not None:

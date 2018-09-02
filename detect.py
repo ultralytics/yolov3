@@ -56,7 +56,7 @@ def detect(opt):
 
     # Set Dataloader
     classes = load_classes(opt.class_path)  # Extracts class labels from file
-    dataloader = ImageFolder(opt.image_folder, batch_size=opt.batch_size, img_size=opt.img_size)
+    dataloader = load_images(opt.image_folder, batch_size=opt.batch_size, img_size=opt.img_size)
 
     imgs = []  # Stores image paths
     img_detections = []  # Stores detections for each image index
