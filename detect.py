@@ -61,25 +61,19 @@ def detect(opt):
     imgs = []  # Stores image paths
     img_detections = []  # Stores detections for each image index
     prev_time = time.time()
-    detections = None
     for batch_i, (img_paths, img) in enumerate(dataloader):
         print(batch_i, img.shape, end=' ')
-        preds = []
 
         # Get detections
         with torch.no_grad():
-            # Normal orientation
             chip = torch.from_numpy(img).unsqueeze(0).to(device)
             pred = model(chip)
             pred = pred[pred[:, :, 4] > opt.conf_thres]
 
             if len(pred) > 0:
-                preds.append(pred.unsqueeze(0))
-
-        if len(preds) > 0:
-            detections = non_max_suppression(torch.cat(preds, 1), opt.conf_thres, opt.nms_thres)
-            img_detections.extend(detections)
-            imgs.extend(img_paths)
+                detections = non_max_suppression(pred.unsqueeze(0), opt.conf_thres, opt.nms_thres)
+                img_detections.extend(detections)
+                imgs.extend(img_paths)
 
         print('Batch %d... (Done %.3fs)' % (batch_i, time.time() - prev_time))
         prev_time = time.time()
