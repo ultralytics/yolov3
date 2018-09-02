@@ -51,7 +51,9 @@ Checkpoints are saved in `/checkpoints` directory. Run `detect.py` to apply trai
 
 # Testing
 
-Run `test.py` to test the latest checkpoint on the 5000 validation images. Joseph Redmon's official YOLOv3 weights produce a mAP of .581 using this PyTorch implementation, compared to .579 in darknet (https://arxiv.org/abs/1804.02767).
+Run `test.py` to validate the official YOLOv3 weights `checkpoints/yolov3.weights` against thh 5000 validation images. You should obtain a mAP of .581 using this repo (https://github.com/ultralytics/yolov3), compared to .579 as reported in darknet (https://arxiv.org/abs/1804.02767).
+
+Run `test.py -weights_path checkpoints/latest.pt` to validate against the latest training checkpoint.
 
 # Contact
 
