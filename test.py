@@ -22,10 +22,14 @@ print(opt)
 cuda = torch.cuda.is_available() and opt.use_cuda
 device = torch.device('cuda:0' if cuda else 'cpu')
 
-# Get data configuration
+# Configure run
 data_config = parse_data_config(opt.data_config_path)
-test_path = data_config['valid']
 num_classes = int(data_config['classes'])
+if platform == 'darwin':  # MacOS (local)
+    test_path = data_config['valid']
+else:  # linux (cloud, i.e. gcp)
+    test_path = '../coco/trainvalno5k.part'
+
 
 # Initiate model
 model = Darknet(opt.cfg, opt.img_size)
