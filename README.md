@@ -7,7 +7,7 @@ http://www.ultralytics.com
 
 # Description
 
-The https://github.com/ultralytics/yolov3 repo contains inference and training code for YOLOv3 in PyTorch. Training is done on the COCO dataset by default: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO** (https://pjreddie.com/darknet/yolo/) and to **Erik Lindernoren for the pytorch implementation** this work is based on (https://github.com/eriklindernoren/PyTorch-YOLOv3).
+The https://github.com/ultralytics/yolov3 repo contains inference and training code for YOLOv3 in PyTorch. Training is done on the COCO dataset by default: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO** (https://pjreddie.com/darknet/yolo/) and to **Erik Lindernoren for the PyTorch implementation** this work is based on (https://github.com/eriklindernoren/PyTorch-YOLOv3).
 
 # Requirements
 
@@ -23,7 +23,7 @@ Python 3.6 or later with the following `pip3 install -U -r requirements.txt` pac
 
 **Resume Training:** Run `train.py -resume 1` to resume training from the most recently saved checkpoint `latest.pt`.
 
-Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process ~10 epochs/day with full augmentation, or ~15 epochs/day without input image augmentation. Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here (results in progress to 160 epochs, will update).
+Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process about 10-15 epochs/day depending on image size and augmentation (13 epochs/day at 416 pixels with default augmentation). Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here (results in progress to 160 epochs, will update).
 
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/coco_training_loss.png "coco training loss")
 
@@ -51,7 +51,7 @@ Checkpoints are saved in `/checkpoints` directory. Run `detect.py` to apply trai
 
 # Testing
 
-Run `test.py` to validate the official YOLOv3 weights `checkpoints/yolov3.weights` against thh 5000 validation images. You should obtain a mAP of .581 using this repo (https://github.com/ultralytics/yolov3), compared to .579 as reported in darknet (https://arxiv.org/abs/1804.02767).
+Run `test.py` to validate the official YOLOv3 weights `checkpoints/yolov3.weights` against the 5000 validation images. You should obtain a mAP of .581 using this repo (https://github.com/ultralytics/yolov3), compared to .579 as reported in darknet (https://arxiv.org/abs/1804.02767).
 
 Run `test.py -weights_path checkpoints/latest.pt` to validate against the latest training checkpoint.
 
