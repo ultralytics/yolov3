@@ -28,7 +28,7 @@ num_classes = int(data_config['classes'])
 if platform == 'darwin':  # MacOS (local)
     test_path = data_config['valid']
 else:  # linux (cloud, i.e. gcp)
-    test_path = '../coco/trainvalno5k.part'
+    test_path = '../coco/5k.part'
 
 # Initiate model
 model = Darknet(opt.cfg, opt.img_size)
