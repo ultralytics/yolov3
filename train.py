@@ -95,7 +95,7 @@ def main(opt):
 
         # Multi-Scale Training
         # img_size = random.choice(range(10, 20)) * 32
-        # dataloader = ListDataset(train_path, batch_size=opt.batch_size, img_size=img_size)
+        # dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=img_size, augment=True)
         # print('Running this epoch with image size %g' % img_size)
 
         # Update scheduler
