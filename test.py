@@ -30,7 +30,6 @@ if platform == 'darwin':  # MacOS (local)
 else:  # linux (cloud, i.e. gcp)
     test_path = '../coco/trainvalno5k.part'
 
-
 # Initiate model
 model = Darknet(opt.cfg, opt.img_size)
 
@@ -87,7 +86,7 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
             correct.extend([0 for _ in range(len(detections))])
         else:
             # Extract target boxes as (x1, y1, x2, y2)
-            target_boxes = xywh2xyxy(annotations[:,1:5])
+            target_boxes = xywh2xyxy(annotations[:, 1:5])
             target_boxes *= opt.img_size
 
             detected = []
