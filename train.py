@@ -65,7 +65,7 @@ def main(opt):
         #         p.requires_grad = False
 
         # Set optimizer
-        # optimizer = torch.optim.SGD(model.parameters(), lr=.001, momentum=.9, weight_decay=0.0005 * 0, nesterov=True)
+        # optimizer = torch.optim.SGD(model.parameters(), lr=.001, momentum=.9, weight_decay=5e-4, nesterov=True)
         # optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
         optimizer = torch.optim.Adam(model.parameters())
         optimizer.load_state_dict(checkpoint['optimizer'])
