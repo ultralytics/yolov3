@@ -368,10 +368,10 @@ def plotResults():
     plt.figure(figsize=(16, 8))
     s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall']
     for f in ('/Users/glennjocher/Downloads/results.txt',
-              ''):
+              '/Users/glennjocher/Downloads/resultsBCE2.txt'):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10]).T
         for i in range(9):
             plt.subplot(2, 5, i + 1)
             plt.plot(results[i, :], marker='.', label=f)
             plt.title(s[i])
-        plt.legend()
+        plt.legend(cocococosadfc)
