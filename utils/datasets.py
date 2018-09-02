@@ -23,6 +23,7 @@ class ImageFolder():  # for eval-only
         self.nB = math.ceil(self.nF / batch_size)  # number of batches
         self.batch_size = batch_size
         self.height = img_size
+
         assert self.nF > 0, 'No images found in path %s' % path
 
         # RGB normalization values
@@ -65,7 +66,7 @@ class ListDataset():  # for training
         with open(path, 'r') as file:
             self.img_files = file.readlines()
 
-        if platform == 'darwin':  # macos
+        if platform == 'darwin':  # MacOS (local)
             self.img_files = [path.replace('\n', '').replace('/images', '/Users/glennjocher/Downloads/DATA/coco/images')
                               for path in self.img_files]
         else:  # linux (gcp cloud)
@@ -77,9 +78,9 @@ class ListDataset():  # for training
         self.nF = len(self.img_files)  # number of image files
         self.nB = math.ceil(self.nF / batch_size)  # number of batches
         self.batch_size = batch_size
-
-        # assert self.nB > 0, 'No images found in path %s' % path
         self.height = img_size
+
+        assert self.nB > 0, 'No images found in path %s' % path
 
         # RGB normalization values
         # self.rgb_mean = np.array([60.134, 49.697, 40.746], dtype=np.float32).reshape((1, 3, 1, 1))

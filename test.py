@@ -87,11 +87,12 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
             correct.extend([0 for _ in range(len(detections))])
         else:
             # Extract target boxes as (x1, y1, x2, y2)
-            target_boxes = torch.FloatTensor(annotations[:, 1:].shape)
-            target_boxes[:, 0] = (annotations[:, 1] - annotations[:, 3] / 2)
-            target_boxes[:, 1] = (annotations[:, 2] - annotations[:, 4] / 2)
-            target_boxes[:, 2] = (annotations[:, 1] + annotations[:, 3] / 2)
-            target_boxes[:, 3] = (annotations[:, 2] + annotations[:, 4] / 2)
+            # target_boxes = torch.FloatTensor(annotations[:, 1:].shape)
+            # target_boxes[:, 0] = (annotations[:, 1] - annotations[:, 3] / 2)
+            # target_boxes[:, 1] = (annotations[:, 2] - annotations[:, 4] / 2)
+            # target_boxes[:, 2] = (annotations[:, 1] + annotations[:, 3] / 2)
+            # target_boxes[:, 3] = (annotations[:, 2] + annotations[:, 4] / 2)
+            target_boxes = xywh2xyxy(annotations[:,1:5])
             target_boxes *= opt.img_size
 
             detected = []
