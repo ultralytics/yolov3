@@ -374,4 +374,4 @@ def plotResults():
             plt.subplot(2, 5, i + 1)
             plt.plot(results[i, :], marker='.', label=f)
             plt.title(s[i])
-        plt.legend
+        plt.legend()
