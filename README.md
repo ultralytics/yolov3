@@ -47,8 +47,8 @@ HS**V** Intensity | +/- 50%
 
 Checkpoints are saved in `/checkpoints` directory. Run `detect.py` to apply trained weights to an image, such as `zidane.jpg` from the `data/samples` folder, shown here. Alternatively you can use the official YOLOv3 weights:
 
--PyTorch format: https://storage.googleapis.com/ultralytics/yolov3.pt
--darknet format: https://pjreddie.com/media/files/yolov3.weights
+- PyTorch format: https://storage.googleapis.com/ultralytics/yolov3.pt
+- darknet format: https://pjreddie.com/media/files/yolov3.weights
 
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/zidane_result.jpg "inference example")
 
