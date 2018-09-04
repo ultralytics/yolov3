@@ -68,7 +68,7 @@ def main(opt):
         # optimizer = torch.optim.SGD(model.parameters(), lr=.001, momentum=.9, weight_decay=5e-4, nesterov=True)
         # optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
         optimizer = torch.optim.Adam(model.parameters())
-        optimizer.load_state_dict(checkpoint['optimizer'])
+        #optimizer.load_state_dict(checkpoint['optimizer'])
 
         start_epoch = checkpoint['epoch'] + 1
         best_loss = checkpoint['best_loss']
@@ -79,6 +79,7 @@ def main(opt):
             print('Using ', torch.cuda.device_count(), ' GPUs')
             model = nn.DataParallel(model)
         model.to(device).train()
+        # optimizer = torch.optim.SGD(model.parameters(), lr=1e-4, momentum=.9, weight_decay=5e-4)
         optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, weight_decay=5e-4)
 
     # Set scheduler
