@@ -133,7 +133,7 @@ def detect(opt):
                     # Add the bbox to the plot
                     label = '%s %.2f' % (classes[int(cls_pred)], conf)
                     color = bbox_colors[int(np.where(unique_classes == int(cls_pred))[0])]
-                    plot_one_box([x1, y1, x2, y2], img, label=label, color=color, line_thickness=3)
+                    plot_one_box([x1, y1, x2, y2], img, label=label, color=color)
 
         if opt.plot_flag:
             # Save generated image with detections

@@ -89,8 +89,7 @@ class load_images_and_labels():  # for training
 
     def __iter__(self):
         self.count = -1
-        self.shuffled_vector = np.random.permutation(self.nF)  # shuffled vector
-        # self.shuffled_vector = np.arange(self.nF)  # not shuffled
+        self.shuffled_vector = np.random.permutation(self.nF) if self.augment else np.arange(self.nF)
         return self
 
     def __next__(self):
