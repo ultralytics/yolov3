@@ -175,14 +175,21 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
         # Select best iou_pred and anchor
         iou_anch_best, a = iou_anch.max(0)  # best anchor [0-2] for each target
 
-        # Two targets can not claim the same anchor
+        # Select best IOU target-anchor combo in case multiple targets want same anchor
         if nTb > 1:
             iou_order = np.argsort(-iou_anch_best)  # best to worst
-            # u = torch.cat((gi, gj, a), 0).view(3, -1).numpy()
-            # _, first_unique = np.unique(u[:, iou_order], axis=1, return_index=True)  # first unique indices
-            u = gi.float() * 0.4361538773074043 + gj.float() * 0.28012496588736746 + a.float() * 0.6627147212460307
-            _, first_unique = np.unique(u[iou_order], return_index=True)  # first unique indices
-            # print(((np.sort(first_unique) - np.sort(first_unique2)) ** 2).sum())
+
+            # Unique anchor selection (slow but retains original order)
+            u = torch.cat((gi, gj, a), 0).view(3, -1).numpy()
+            _, first_unique = np.unique(u[:, iou_order], axis=1, return_index=True)  # first unique indices
+
+            # Unique anchor selection (fast but does not retain order) TODO: update to retain original order
+            # u = gi.float() * 0.4361538773074043 + gj.float() * 0.28012496588736746 + a.float() * 0.6627147212460307
+            # _, first_unique_sorted = np.unique(u[iou_order], return_index=True)  # first unique indices
+
+            # Slow - fast difference comparison
+            # print(((first_unique - first_unique_sorted) ** 2).sum())
+
             i = iou_order[first_unique]
             # best anchor must share significant commonality (iou) with target
             i = i[iou_anch_best[i] > 0.10]
