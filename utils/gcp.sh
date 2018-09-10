@@ -11,4 +11,4 @@ gsutil cp gs://ultralytics/fresh9_5_e201.pt yolov3/checkpoints
 python3 detect.py
 
 # Test
-python3 test.py -img_size 416 -weights_path checkpoints/latest.pt
+python3 test.py -img_size 416 -weights_path checkpoints/yolov3.weights

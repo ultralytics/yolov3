@@ -105,7 +105,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
     ap = []
     for c in unique_classes:
         i = pred_cls == c
-        nGT = sum(target_cls == c)  # Number of ground truth objects
+        n_gt = sum(target_cls == c)  # Number of ground truth objects
 
         if sum(i) == 0:
             ap.append(0)
@@ -115,7 +115,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
             tpa = np.cumsum(tp[i])
 
             # Recall
-            recall = tpa / (nGT + 1e-16)
+            recall = tpa / (n_gt + 1e-16)
 
             # Precision
             precision = tpa / (tpa + fpa)

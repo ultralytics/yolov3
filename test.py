@@ -48,27 +48,17 @@ model.to(device).eval()
 # dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=False, num_workers=opt.n_cpu)
 dataloader = load_images_and_labels(test_path, batch_size=opt.batch_size, img_size=opt.img_size)
 
-n_gt = 0
-correct = 0
-
 print('Compute mAP...')
 
-outputs = []
+correct = 0
 targets = None
-mAPs = []
-TP = []
-confidence = []
-pred_class = []
-target_class = []
+outputs, mAPs, TP, confidence, pred_class, target_class = [], [], [], [], [], []
 for batch_i, (imgs, targets) in enumerate(dataloader):
     imgs = imgs.to(device)
 
     with torch.no_grad():
         output = model(imgs)
         output = non_max_suppression(output, conf_thres=opt.conf_thres, nms_thres=opt.nms_thres)
-
-    # import matplotlib.pyplot as plt
-    # plt.imshow(imgs[1][0])
 
     # Compute average precision for each sample
     for sample_i in range(len(targets)):
@@ -112,7 +102,8 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
                     correct.append(0)
 
         # Compute Average Precision (AP) per class
-        AP = ap_per_class(tp=correct, conf=detections[:, 4], pred_cls=detections[:, 6], target_cls=annotations[:, 0])
+        target_cls = annotations[:, 0] if annotations.size(0) > 1 else annotations[0]
+        AP = ap_per_class(tp=correct, conf=detections[:, 4], pred_cls=detections[:, 6], target_cls=target_cls)
 
         # Compute mean AP for this image
         mAP = AP.mean()
@@ -122,6 +113,5 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
 
         # Print image mAP and running mean mAP
         print('+ Sample [%d/%d] AP: %.4f (%.4f)' % (len(mAPs), len(dataloader) * opt.batch_size, mAP, np.mean(mAPs)))
-
 
 print('Mean Average Precision: %.4f' % np.mean(mAPs))
