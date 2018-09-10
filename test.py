@@ -80,7 +80,9 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
         # If no annotations add number of detections as incorrect
         if annotations.size(0) == 0:
             target_cls = []
-            correct.extend([0 for _ in range(len(detections))])
+            #correct.extend([0 for _ in range(len(detections))])
+            mAPs.append(0)
+            continue
         else:
             target_cls = annotations[:, 0]
 
