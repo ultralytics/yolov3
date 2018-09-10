@@ -79,8 +79,11 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
 
         # If no annotations add number of detections as incorrect
         if annotations.size(0) == 0:
+            target_cls = []
             correct.extend([0 for _ in range(len(detections))])
         else:
+            target_cls = annotations[:, 0]
+
             # Extract target boxes as (x1, y1, x2, y2)
             target_boxes = xywh2xyxy(annotations[:, 1:5])
             target_boxes *= opt.img_size
@@ -101,7 +104,7 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
                     correct.append(0)
 
         # Compute Average Precision (AP) per class
-        target_cls = annotations[:, 0] if annotations.size(0) > 1 else annotations[0]
+        # target_cls = annotations[:, 0] if annotations.size(0) > 1 else annotations[0]
         AP = ap_per_class(tp=correct, conf=detections[:, 4], pred_cls=detections[:, 6], target_cls=target_cls)
 
         # Compute mean AP for this image
