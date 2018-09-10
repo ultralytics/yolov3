@@ -79,6 +79,53 @@ def xywh2xyxy(x):  # Convert bounding box format from [x, y, w, h] to [x1, y1, x
     return y
 
 
+def ap_per_class(tp, conf, pred_cls, target_cls):
+    """ Compute the average precision, given the recall and precision curves.
+    Method originally from https://github.com/rafaelpadilla/Object-Detection-Metrics.
+    # Arguments
+        tp:    True positives (list).
+        conf:  Objectness value from 0-1 (list).
+        pred_cls: Predicted object classes (list).
+        target_cls: True object classes (list).
+    # Returns
+        The average precision as computed in py-faster-rcnn.
+    """
+
+    # lists/pytorch to numpy
+    tp, conf, pred_cls, target_cls = np.array(tp), np.array(conf), np.array(pred_cls), np.array(target_cls)
+
+    # Sort by objectness
+    i = np.argsort(-conf)
+    tp, conf, pred_cls = tp[i], conf[i], pred_cls[i]
+
+    # Find unique classes
+    unique_classes = np.unique(np.concatenate((pred_cls, target_cls), 0))
+
+    # Create Precision-Recall curve and compute AP for each class
+    ap = []
+    for c in unique_classes:
+        i = pred_cls == c
+        nGT = sum(target_cls == c)  # Number of ground truth objects
+
+        if sum(i) == 0:
+            ap.append(0)
+        else:
+            # Accumulate FPs and TPs
+            fpa = np.cumsum(1 - tp[i])
+            tpa = np.cumsum(tp[i])
+
+            # Recall
+            recall = tpa / (nGT + 1e-16)
+
+            # Precision
+            precision = tpa / (tpa + fpa)
+
+            # AP from recall-precision curve
+            ap.append(compute_ap(recall, precision))
+
+    return np.array(ap)
+
+
 def compute_ap(recall, precision):
     """ Compute the average precision, given the recall and precision curves.
     Code originally from https://github.com/rbgirshick/py-faster-rcnn.
@@ -90,6 +137,7 @@ def compute_ap(recall, precision):
     """
     # correct AP calculation
     # first append sentinel values at the end
+
     mrec = np.concatenate(([0.], recall, [1.]))
     mpre = np.concatenate(([0.], precision, [0.]))
 
@@ -175,15 +223,15 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
         # Select best iou_pred and anchor
         iou_anch_best, a = iou_anch.max(0)  # best anchor [0-2] for each target
 
-        # Select best IOU target-anchor combo in case multiple targets want same anchor
+        # Select best unique target-anchor combinations
         if nTb > 1:
             iou_order = np.argsort(-iou_anch_best)  # best to worst
 
-            # Unique anchor selection (slow but retains original order)
+            # Unique anchor selection (slower but retains original order)
             u = torch.cat((gi, gj, a), 0).view(3, -1).numpy()
             _, first_unique = np.unique(u[:, iou_order], axis=1, return_index=True)  # first unique indices
 
-            # Unique anchor selection (fast but does not retain order) TODO: update to retain original order
+            # Unique anchor selection (faster but does not retain order) TODO: update to retain original order
             # u = gi.float() * 0.4361538773074043 + gj.float() * 0.28012496588736746 + a.float() * 0.6627147212460307
             # _, first_unique_sorted = np.unique(u[iou_order], return_index=True)  # first unique indices
 

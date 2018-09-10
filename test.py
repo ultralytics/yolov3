@@ -55,7 +55,11 @@ print('Compute mAP...')
 
 outputs = []
 targets = None
-APs = []
+mAPs = []
+TP = []
+confidence = []
+pred_class = []
+target_class = []
 for batch_i, (imgs, targets) in enumerate(dataloader):
     imgs = imgs.to(device)
 
@@ -78,7 +82,7 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
         if detections is None:
             # If there are no detections but there are annotations mask as zero AP
             if annotations.size(0) != 0:
-                APs.append(0)
+                mAPs.append(0)
             continue
 
         # Get detections sorted by decreasing confidence scores
@@ -107,22 +111,17 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
                 else:
                     correct.append(0)
 
-        # Extract true and false positives
-        true_positives = np.array(correct)
-        false_positives = 1 - true_positives
+        # Compute Average Precision (AP) per class
+        AP = ap_per_class(tp=correct, conf=detections[:, 4], pred_cls=detections[:, 6], target_cls=annotations[:, 0])
 
-        # Compute cumulative false positives and true positives
-        false_positives = np.cumsum(false_positives)
-        true_positives = np.cumsum(true_positives)
+        # Compute mean AP for this image
+        mAP = AP.mean()
 
-        # Compute recall and precision at all ranks
-        recall = true_positives / annotations.size(0) if annotations.size(0) else true_positives
-        precision = true_positives / np.maximum(true_positives + false_positives, np.finfo(np.float64).eps)
+        # Append image mAP to list of validation mAPs
+        mAPs.append(mAP)
 
-        # Compute average precision
-        AP = compute_ap(recall, precision)
-        APs.append(AP)
+        # Print image mAP and running mean mAP
+        print('+ Sample [%d/%d] AP: %.4f (%.4f)' % (len(mAPs), len(dataloader) * opt.batch_size, AP, np.mean(mAPs)))
 
-        print("+ Sample [%d/%d] AP: %.4f (%.4f)" % (len(APs), len(dataloader) * opt.batch_size, AP, np.mean(APs)))
 
-print("Mean Average Precision: %.4f" % np.mean(APs))
+print('Mean Average Precision: %.4f' % np.mean(mAPs))
