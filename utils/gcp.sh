@@ -12,3 +12,11 @@ python3 detect.py
 
 # Test
 python3 test.py -img_size 416 -weights_path checkpoints/yolov3.weights
+
+
+sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
+cd yolov3
+cd checkpoints
+wget https://pjreddie.com/media/files/yolov3.weights
+cd ..
+python3 test.py -img_size 416 -weights_path checkpoints/yolov3.weights
