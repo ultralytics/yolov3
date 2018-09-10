@@ -118,6 +118,7 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
         mAP = AP.mean()
 
         # Append image mAP to list
+        mAPs.append(mAP)
 
         # Print image mAP and running mean mAP
         print('+ Sample [%d/%d] AP: %.4f (%.4f)' % (len(mAPs), len(dataloader) * opt.batch_size, mAP, np.mean(mAPs)))
