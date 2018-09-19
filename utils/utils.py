@@ -190,7 +190,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
 
 def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG, requestPrecision):
     """
-    returns nGT, nCorrect, tx, ty, tw, th, tconf, tcls
+    returns nT, nCorrect, tx, ty, tw, th, tconf, tcls
     """
     nB = len(target)  # target.shape[0]
     nT = [len(x) for x in target]  # torch.argmin(target[:, :, 4], 1)  # targets per image
