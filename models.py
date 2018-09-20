@@ -100,7 +100,7 @@ class YOLOLayer(nn.Module):
         self.anchor_w = self.scaled_anchors[:, 0:1].view((1, nA, 1, 1))
         self.anchor_h = self.scaled_anchors[:, 1:2].view((1, nA, 1, 1))
 
-    def forward(self, p, targets=None, requestPrecision=False, epoch=None):
+    def forward(self, p, targets=None, requestPrecision=False):
         FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
 
         bs = p.shape[0]  # batch size
@@ -117,10 +117,18 @@ class YOLOLayer(nn.Module):
         # Get outputs
         x = torch.sigmoid(p[..., 0])  # Center x
         y = torch.sigmoid(p[..., 1])  # Center y
-        w = p[..., 2]  # Width
-        h = p[..., 3]  # Height
-        width = torch.exp(w.data) * self.anchor_w
-        height = torch.exp(h.data) * self.anchor_h
+
+        # Width and height (yolo method)
+        # w = p[..., 2]  # Width
+        # h = p[..., 3]  # Height
+        # width = torch.exp(w.data) * self.anchor_w
+        # height = torch.exp(h.data) * self.anchor_h
+
+        # Width and height (power method)
+        w = torch.sigmoid(p[..., 2])  # Width
+        h = torch.sigmoid(p[..., 3])  # Height
+        width = ((w.data * 2) ** 2) * self.anchor_w
+        height = ((h.data * 2) ** 2) * self.anchor_h
 
         # Add offset and scale with anchors (in grid space, i.e. 0-13)
         pred_boxes = FT(bs, self.nA, nG, nG, 4)
@@ -151,6 +159,7 @@ class YOLOLayer(nn.Module):
 
             # Mask outputs to ignore non-existing objects (but keep confidence predictions)
             nM = mask.sum().float()
+            batch_size = len(targets)
             nT = sum([len(x) for x in targets])
             if nM > 0:
                 lx = 5 * MSELoss(x[mask], tx[mask])
@@ -166,7 +175,7 @@ class YOLOLayer(nn.Module):
 
             lconf += 0.5 * nM * BCEWithLogitsLoss2(pred_conf[~mask], mask[~mask].float())
 
-            loss = lx + ly + lw + lh + lconf + lcls
+            loss = (lx + ly + lw + lh + lconf + lcls) / batch_size
 
             # Sum False Positives from unnasigned anchors
             i = torch.sigmoid(pred_conf[~mask]) > 0.99
@@ -202,7 +211,7 @@ class Darknet(nn.Module):
         self.img_size = img_size
         self.loss_names = ['loss', 'x', 'y', 'w', 'h', 'conf', 'cls', 'nT', 'TP', 'FP', 'FPe', 'FN', 'TC']
 
-    def forward(self, x, targets=None, requestPrecision=False, epoch=None):
+    def forward(self, x, targets=None, requestPrecision=False):
         is_training = targets is not None
         output = []
         self.losses = defaultdict(float)
@@ -220,7 +229,7 @@ class Darknet(nn.Module):
             elif module_def['type'] == 'yolo':
                 # Train phase: get loss
                 if is_training:
-                    x, *losses = module[0](x, targets, requestPrecision, epoch)
+                    x, *losses = module[0](x, targets, requestPrecision)
                     for name, loss in zip(self.loss_names, losses):
                         self.losses[name] += loss
                 # Test phase: Get detections

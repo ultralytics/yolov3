@@ -18,7 +18,7 @@ parser.add_argument('-txt_out', type=bool, default=False)
 
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
 parser.add_argument('-class_path', type=str, default='data/coco.names', help='path to class label file')
-parser.add_argument('-conf_thres', type=float, default=0.98, help='object confidence threshold')
+parser.add_argument('-conf_thres', type=float, default=0.80, help='object confidence threshold')
 parser.add_argument('-nms_thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
 parser.add_argument('-batch_size', type=int, default=1, help='size of the batches')
 parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
@@ -33,7 +33,6 @@ def detect(opt):
     # Load model
     model = Darknet(opt.cfg, opt.img_size)
 
-    #weights_path = 'checkpoints/yolov3.weights'
     weights_path = 'checkpoints/yolov3.pt'
     if weights_path.endswith('.weights'):  # saved in darknet format
         load_weights(model, weights_path)

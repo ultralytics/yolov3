@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-batch_size', type=int, default=32, help='size of each image batch')
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='path to model config file')
 parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help='path to data config file')
-parser.add_argument('-weights_path', type=str, default='checkpoints/yolov3.weights', help='path to weights file')
+parser.add_argument('-weights_path', type=str, default='checkpoints/yolov3.pt', help='path to weights file')
 parser.add_argument('-class_path', type=str, default='data/coco.names', help='path to class label file')
 parser.add_argument('-iou_thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
 parser.add_argument('-conf_thres', type=float, default=0.5, help='object confidence threshold')
@@ -106,7 +106,6 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
                     correct.append(0)
 
         # Compute Average Precision (AP) per class
-        # target_cls = annotations[:, 0] if annotations.size(0) > 1 else annotations[0]
         AP = ap_per_class(tp=correct, conf=detections[:, 4], pred_cls=detections[:, 6], target_cls=target_cls)
 
         # Compute mean AP for this image

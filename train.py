@@ -65,9 +65,8 @@ def main(opt):
         #         p.requires_grad = False
 
         # Set optimizer
-        # optimizer = torch.optim.SGD(model.parameters(), lr=.001, momentum=.9, weight_decay=5e-4, nesterov=True)
         # optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
-        optimizer = torch.optim.Adam(model.parameters())
+        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()))
         optimizer.load_state_dict(checkpoint['optimizer'])
 
         start_epoch = checkpoint['epoch'] + 1
@@ -79,12 +78,12 @@ def main(opt):
             print('Using ', torch.cuda.device_count(), ' GPUs')
             model = nn.DataParallel(model)
         model.to(device).train()
-        # optimizer = torch.optim.SGD(model.parameters(), lr=1e-4, momentum=.9, weight_decay=5e-4)
-        optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, weight_decay=5e-4)
+
+        # Set optimizer
+        # optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
+        optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=.9, weight_decay=5e-4, nesterov=True)
 
     # Set scheduler
-    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 24, eta_min=0.00001, last_epoch=-1)
-    # y = 0.001 * exp(-0.00921 * x)  # 1e-4 @ 250, 1e-5 @ 500
     # scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99082, last_epoch=start_epoch - 1)
 
     modelinfo(model)
@@ -94,35 +93,40 @@ def main(opt):
     for epoch in range(opt.epochs):
         epoch += start_epoch
 
-        # Multi-Scale Training
-        # img_size = random.choice(range(10, 20)) * 32
+        # Multi-Scale YOLO Training
+        # img_size = random.choice(range(10, 20)) * 32  # 320 - 608 pixels
         # dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=img_size, augment=True)
         # print('Running this epoch with image size %g' % img_size)
 
-        # Update scheduler
-        # if epoch % 25 == 0:
-        #     scheduler.last_epoch = -1  # for cosine annealing, restart every 25 epochs
+        # Update scheduler (automatic)
         # scheduler.step()
-        # if epoch <= 100:
+
+        # Update scheduler (manual)
         # for g in optimizer.param_groups:
-        # g['lr'] = 0.0005 * (0.992 ** epoch)  # 1/10 th every 250 epochs
-        # g['lr'] = 0.001 * (0.9773 ** epoch)  # 1/10 th every 100 epochs
-        # g['lr'] = 0.0005 * (0.955 ** epoch)  # 1/10 th every 50 epochs
-        # g['lr'] = 0.0005 * (0.926 ** epoch)  # 1/10 th every 30 epochs
+        #     g['lr'] = 1e-3 * (g ** epoch)  # 1/10th every [30, 50, 100, 250] epochs using g = [.926, .955, .977, .992]
 
         ui = -1
         rloss = defaultdict(float)  # running loss
         metrics = torch.zeros(4, num_classes)
         for i, (imgs, targets) in enumerate(dataloader):
-
             if sum([len(x) for x in targets]) < 1:  # if no targets continue
                 continue
 
-            loss = model(imgs.to(device), targets, requestPrecision=True, epoch=epoch)
+            # SGD burn-in
+            if (epoch == 0) & (i <= 1000):
+                power = 4
+                lr = 1e-3 * (i / 1000) ** power
+                for g in optimizer.param_groups:
+                    g['lr'] = lr
+                # print('SGD Burn-In LR = %9.5g' % lr, end='')
+
+            # Compute loss, compute gradient, update parameters
+            loss = model(imgs.to(device), targets, requestPrecision=True)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
+            # Compute running epoch-means of tracked metrics
             ui += 1
             metrics += model.losses['metrics']
             for key, val in model.losses.items():
