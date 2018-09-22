@@ -157,25 +157,25 @@ class YOLOLayer(nn.Module):
             if x.is_cuda:
                 tx, ty, tw, th, mask, tcls = tx.cuda(), ty.cuda(), tw.cuda(), th.cuda(), mask.cuda(), tcls.cuda()
 
-            # Mask outputs to ignore non-existing objects (but keep confidence predictions)
-            nM = mask.sum().float()
-            batch_size = len(targets)
-            nT = sum([len(x) for x in targets])
-            if nM > 0:
-                lx = 5 * MSELoss(x[mask], tx[mask])
-                ly = 5 * MSELoss(y[mask], ty[mask])
-                lw = 5 * MSELoss(w[mask], tw[mask])
-                lh = 5 * MSELoss(h[mask], th[mask])
-                lconf = BCEWithLogitsLoss1(pred_conf[mask], mask[mask].float())
+                # Mask outputs to ignore non-existing objects (but keep confidence predictions)
+                nT = sum([len(x) for x in targets])  # number of targets
+                nM = mask.sum().float()  # number of anchors (assigned to targets)
+                nB = len(targets)  # batch size
+                if nM > 0:
+                    lx = (5 / nB) * MSELoss(x[mask], tx[mask])
+                    ly = (5 / nB) * MSELoss(y[mask], ty[mask])
+                    lw = (5 / nB) * MSELoss(w[mask], tw[mask])
+                    lh = (5 / nB) * MSELoss(h[mask], th[mask])
+                    lconf = (1 / nB) * BCEWithLogitsLoss1(pred_conf[mask], mask[mask].float())
 
-                lcls = nM * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
-                # lcls = nM * BCEWithLogitsLoss2(pred_cls[mask], tcls.float())
-            else:
-                lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
+                    lcls = (1 * nM / nB) * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
+                    # lcls = (1 * nM / nB) * BCEWithLogitsLoss2(pred_cls[mask], tcls.float())
+                else:
+                    lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
 
-            lconf += 0.5 * nM * BCEWithLogitsLoss2(pred_conf[~mask], mask[~mask].float())
+                lconf += (0.5 * nM / nB) * BCEWithLogitsLoss2(pred_conf[~mask], mask[~mask].float())
 
-            loss = (lx + ly + lw + lh + lconf + lcls) / batch_size
+                loss = lx + ly + lw + lh + lconf + lcls
 
             # Sum False Positives from unnasigned anchors
             i = torch.sigmoid(pred_conf[~mask]) > 0.99
