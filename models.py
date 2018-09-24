@@ -159,8 +159,8 @@ class YOLOLayer(nn.Module):
             # Mask outputs to ignore non-existing objects (but keep confidence predictions)
             nT = sum([len(x) for x in targets])  # number of targets
             nM = mask.sum().float()  # number of anchors (assigned to targets)
-            nB = len(targets)  # batch size
-            k = 1 / nB
+            # nB = len(targets)  # batch size
+            k = 1
             if nM > 0:
                 lx = k * MSELoss(x[mask], tx[mask])
                 ly = k * MSELoss(y[mask], ty[mask])
