@@ -44,7 +44,7 @@ def main(opt):
     # Get dataloader
     dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=opt.img_size, augment=True)
 
-    # reload saved optimizer state
+    # Reload saved optimizer state
     start_epoch = 0
     best_loss = float('inf')
     if opt.resume:
@@ -66,11 +66,13 @@ def main(opt):
 
         # Set optimizer
         # optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
-        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()))
-        optimizer.load_state_dict(checkpoint['optimizer'])
+        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3,
+                                    momentum=.9, weight_decay=5e-4, nesterov=True)
 
-        start_epoch = checkpoint['epoch'] + 1
-        best_loss = checkpoint['best_loss']
+        if checkpoint['optimizer'] is not None:
+            optimizer.load_state_dict(checkpoint['optimizer'])
+            start_epoch = checkpoint['epoch'] + 1
+            best_loss = checkpoint['best_loss']
 
         del checkpoint  # current, saved
     else:

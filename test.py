@@ -14,11 +14,10 @@ parser.add_argument('-conf_thres', type=float, default=0.5, help='object confide
 parser.add_argument('-nms_thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
 parser.add_argument('-n_cpu', type=int, default=0, help='number of cpu threads to use during batch generation')
 parser.add_argument('-img_size', type=int, default=416, help='size of each image dimension')
-parser.add_argument('-use_cuda', type=bool, default=True, help='whether to use cuda if available')
 opt = parser.parse_args()
 print(opt)
 
-cuda = torch.cuda.is_available() and opt.use_cuda
+cuda = torch.cuda.is_available()
 device = torch.device('cuda:0' if cuda else 'cpu')
 
 # Configure run
