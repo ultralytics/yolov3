@@ -6,12 +6,12 @@ from utils.datasets import *
 from utils.utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-epochs', type=int, default=160, help='number of epochs')
+parser.add_argument('-epochs', type=int, default=1, help='number of epochs')
 parser.add_argument('-batch_size', type=int, default=12, help='size of each image batch')
 parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help='data config file path')
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
 parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
-parser.add_argument('-resume', default=False, help='resume training flag')
+parser.add_argument('-resume', default=True, help='resume training flag')
 opt = parser.parse_args()
 print(opt)
 
@@ -48,7 +48,7 @@ def main(opt):
     start_epoch = 0
     best_loss = float('inf')
     if opt.resume:
-        checkpoint = torch.load('checkpoints/latest.pt', map_location='cpu')
+        checkpoint = torch.load('checkpoints/yolov3.pt', map_location='cpu')
 
         model.load_state_dict(checkpoint['model'])
         if torch.cuda.device_count() > 1:
@@ -115,12 +115,12 @@ def main(opt):
                 continue
 
             # SGD burn-in
-            if (epoch == 0) & (i <= 1000):
-                power = 4
-                lr = 1e-3 * (i / 1000) ** power
-                for g in optimizer.param_groups:
-                    g['lr'] = lr
-                # print('SGD Burn-In LR = %9.5g' % lr, end='')
+            # if (epoch == 0) & (i <= 1000):
+            #     power = 4
+            #     lr = 1e-3 * (i / 1000) ** power
+            #     for g in optimizer.param_groups:
+            #         g['lr'] = lr
+            #     # print('SGD Burn-In LR = %9.5g' % lr, end='')
 
             # Compute loss, compute gradient, update parameters
             loss = model(imgs.to(device), targets, requestPrecision=True)

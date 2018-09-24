@@ -137,8 +137,8 @@ class YOLOLayer(nn.Module):
 
         # Training
         if targets is not None:
-            MSELoss = nn.MSELoss(size_average=False)
-            BCEWithLogitsLoss = nn.BCEWithLogitsLoss(size_average=False)
+            MSELoss = nn.MSELoss(size_average=True)
+            BCEWithLogitsLoss = nn.BCEWithLogitsLoss(size_average=True)
             # CrossEntropyLoss = nn.CrossEntropyLoss()
 
             if requestPrecision:
