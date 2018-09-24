@@ -6,7 +6,7 @@ from utils.datasets import *
 from utils.utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-epochs', type=int, default=1, help='number of epochs')
+parser.add_argument('-epochs', type=int, default=160, help='number of epochs')
 parser.add_argument('-batch_size', type=int, default=12, help='size of each image batch')
 parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help='data config file path')
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
@@ -69,9 +69,9 @@ def main(opt):
         optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3,
                                     momentum=.9, weight_decay=5e-4, nesterov=True)
 
+        start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
             optimizer.load_state_dict(checkpoint['optimizer'])
-            start_epoch = checkpoint['epoch'] + 1
             best_loss = checkpoint['best_loss']
 
         del checkpoint  # current, saved
@@ -115,12 +115,10 @@ def main(opt):
                 continue
 
             # SGD burn-in
-            # if (epoch == 0) & (i <= 1000):
-            #     power = 4
-            #     lr = 1e-3 * (i / 1000) ** power
-            #     for g in optimizer.param_groups:
-            #         g['lr'] = lr
-            #     # print('SGD Burn-In LR = %9.5g' % lr, end='')
+            if (epoch == 0) & (i <= 1000):
+                lr = 1e-3 * (i / 1000) ** 4
+                for g in optimizer.param_groups:
+                    g['lr'] = lr
 
             # Compute loss, compute gradient, update parameters
             loss = model(imgs.to(device), targets, requestPrecision=True)
