@@ -11,7 +11,7 @@ parser.add_argument('-batch_size', type=int, default=12, help='size of each imag
 parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help='data config file path')
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
 parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
-parser.add_argument('-resume', default=True, help='resume training flag')
+parser.add_argument('-resume', default=False, help='resume training flag')
 opt = parser.parse_args()
 print(opt)
 
