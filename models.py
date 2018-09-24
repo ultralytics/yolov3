@@ -137,8 +137,8 @@ class YOLOLayer(nn.Module):
 
         # Training
         if targets is not None:
-            MSELoss = nn.MSELoss()
-            BCEWithLogitsLoss = nn.BCEWithLogitsLoss()
+            MSELoss = nn.MSELoss(size_average=False)
+            BCEWithLogitsLoss = nn.BCEWithLogitsLoss(size_average=False)
             # CrossEntropyLoss = nn.CrossEntropyLoss()
 
             if requestPrecision:
@@ -160,7 +160,7 @@ class YOLOLayer(nn.Module):
             nT = sum([len(x) for x in targets])  # number of targets
             nM = mask.sum().float()  # number of anchors (assigned to targets)
             nB = len(targets)  # batch size
-            k = nM / nB
+            k = 1 / nB
             if nM > 0:
                 lx = k * MSELoss(x[mask], tx[mask])
                 ly = k * MSELoss(y[mask], ty[mask])
