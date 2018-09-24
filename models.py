@@ -159,14 +159,16 @@ class YOLOLayer(nn.Module):
             # Mask outputs to ignore non-existing objects (but keep confidence predictions)
             nT = sum([len(x) for x in targets])  # number of targets
             nM = mask.sum().float()  # number of anchors (assigned to targets)
-            # nB = len(targets)  # batch size
-            k = 1
+            nB = len(targets)  # batch size
+            k = nM / nB
             if nM > 0:
                 lx = k * MSELoss(x[mask], tx[mask])
                 ly = k * MSELoss(y[mask], ty[mask])
                 lw = k * MSELoss(w[mask], tw[mask])
                 lh = k * MSELoss(h[mask], th[mask])
-                lconf = k * BCEWithLogitsLoss(pred_conf[mask], mask[mask].float())
+
+                # lconf = k * BCEWithLogitsLoss(pred_conf[mask], mask[mask].float())
+                lconf = k * BCEWithLogitsLoss(pred_conf, mask.float())
 
                 # lcls = k * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
                 lcls = k * BCEWithLogitsLoss(pred_cls[mask], tcls.float())
@@ -174,7 +176,7 @@ class YOLOLayer(nn.Module):
                 lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
 
             # Add confidence loss for background anchors (noobj)
-            lconf += k * BCEWithLogitsLoss(pred_conf[~mask], mask[~mask].float())
+            #lconf += k * BCEWithLogitsLoss(pred_conf[~mask], mask[~mask].float())
 
             # Sum loss components
             loss = lx + ly + lw + lh + lconf + lcls
