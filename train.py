@@ -48,7 +48,7 @@ def main(opt):
     start_epoch = 0
     best_loss = float('inf')
     if opt.resume:
-        checkpoint = torch.load('checkpoints/yolov3.pt', map_location='cpu')
+        checkpoint = torch.load('checkpoints/latest.pt', map_location='cpu')
 
         model.load_state_dict(checkpoint['model'])
         if torch.cuda.device_count() > 1:
@@ -56,11 +56,8 @@ def main(opt):
             model = nn.DataParallel(model)
         model.to(device).train()
 
-        # # Transfer learning
+        # # Transfer learning (train only YOLO layers)
         # for i, (name, p) in enumerate(model.named_parameters()):
-        #     #name = name.replace('module_list.', '')
-        #     #print('%4g %70s %9s %12g %20s %12g %12g' % (
-        #     #    i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std()))
         #     if p.shape[0] != 650:  # not YOLO layer
         #         p.requires_grad = False
 
