@@ -179,7 +179,7 @@ def main(opt):
         if best_loss == loss_per_target:
             os.system('cp checkpoints/latest.pt checkpoints/best.pt')
 
-        # Save backup checkpoint
+        # Save backup checkpoints every 5 epochs
         if (epoch > 0) & (epoch % 5 == 0):
             os.system('cp checkpoints/latest.pt checkpoints/backup' + str(epoch) + '.pt')
 
