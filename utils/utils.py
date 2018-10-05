@@ -282,9 +282,9 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
             pconf = torch.sigmoid(pred_conf[b, a, gj, gi]).cpu()
             iou_pred = bbox_iou(tb, pred_boxes[b, a, gj, gi].cpu())
 
-            TP[b, i] = (pconf > 0.9) & (iou_pred > 0.5) & (pcls == tc)
-            FP[b, i] = (pconf > 0.9) & (TP[b, i] == 0)  # coordinates or class are wrong
-            FN[b, i] = pconf <= 0.9  # confidence score is too low (set to zero)
+            TP[b, i] = (pconf > 0.5) & (iou_pred > 0.5) & (pcls == tc)
+            FP[b, i] = (pconf > 0.5) & (TP[b, i] == 0)  # coordinates or class are wrong
+            FN[b, i] = pconf <= 0.5  # confidence score is too low (set to zero)
 
     return tx, ty, tw, th, tconf, tcls, TP, FP, FN, TC
 

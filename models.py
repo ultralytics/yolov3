@@ -182,7 +182,7 @@ class YOLOLayer(nn.Module):
             loss = lx + ly + lw + lh + lconf + lcls
 
             # Sum False Positives from unassigned anchors
-            i = torch.sigmoid(pred_conf[~mask]) > 0.9
+            i = torch.sigmoid(pred_conf[~mask]) > 0.5
             if i.sum() > 0:
                 FP_classes = torch.argmax(pred_cls[~mask][i], 1)
                 FPe = torch.bincount(FP_classes, minlength=self.nC).float().cpu()  # extra FPs
