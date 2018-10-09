@@ -139,7 +139,7 @@ class YOLOLayer(nn.Module):
         if targets is not None:
             MSELoss = nn.MSELoss(size_average=True)
             BCEWithLogitsLoss = nn.BCEWithLogitsLoss(size_average=True)
-            CrossEntropyLoss = nn.CrossEntropyLoss()
+            # CrossEntropyLoss = nn.CrossEntropyLoss()
 
             if requestPrecision:
                 gx = self.grid_x[:, :, :nG, :nG]
@@ -176,7 +176,7 @@ class YOLOLayer(nn.Module):
                 lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
 
             # Add confidence loss for background anchors (noobj)
-            #lconf += k * BCEWithLogitsLoss(pred_conf[~mask], mask[~mask].float())
+            # lconf += k * BCEWithLogitsLoss(pred_conf[~mask], mask[~mask].float())
 
             # Sum loss components
             loss = lx + ly + lw + lh + lconf + lcls
@@ -244,8 +244,8 @@ class Darknet(nn.Module):
 
         if is_training:
             self.losses['nT'] /= 3
-            self.losses['TC'] /= 3
-            metrics = torch.zeros(4, len(self.losses['FPe']))  # TP, FP, FN, target_count
+            self.losses['TC'] /= 3  # target category
+            metrics = torch.zeros(3, len(self.losses['FPe']))  # TP, FP, FN
 
             ui = np.unique(self.losses['TC'])[1:]
             for i in ui:
@@ -253,7 +253,6 @@ class Darknet(nn.Module):
                 metrics[0, i] = (self.losses['TP'][j] > 0).sum().float()  # TP
                 metrics[1, i] = (self.losses['FP'][j] > 0).sum().float()  # FP
                 metrics[2, i] = (self.losses['FN'][j] == 3).sum().float()  # FN
-            metrics[3] = metrics.sum(0)
             metrics[1] += self.losses['FPe']
 
             self.losses['TP'] = metrics[0].sum()

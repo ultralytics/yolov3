@@ -87,6 +87,7 @@ def main(opt):
 
     modelinfo(model)
     t0, t1 = time.time(), time.time()
+    mean_recall, mean_precision = 0, 0
     print('%10s' * 16 % (
         'Epoch', 'Batch', 'x', 'y', 'w', 'h', 'conf', 'cls', 'total', 'P', 'R', 'nTargets', 'TP', 'FP', 'FN', 'time'))
     for epoch in range(opt.epochs):
@@ -112,7 +113,8 @@ def main(opt):
 
         ui = -1
         rloss = defaultdict(float)  # running loss
-        metrics = torch.zeros(4, num_classes)
+        metrics = torch.zeros(3, num_classes)
+        optimizer.zero_grad()
         for i, (imgs, targets) in enumerate(dataloader):
             if sum([len(x) for x in targets]) < 1:  # if no targets continue
                 continue
@@ -125,37 +127,37 @@ def main(opt):
 
             # Compute loss, compute gradient, update parameters
             loss = model(imgs.to(device), targets, requestPrecision=True)
-            optimizer.zero_grad()
             loss.backward()
+
+            # accumulated_batches = 4  # accumulate gradient for 4 batches before stepping optimizer
+            # if ((i+1) % accumulated_batches == 0) or (i == len(dataloader) - 1):
             optimizer.step()
+            optimizer.zero_grad()
 
             # Compute running epoch-means of tracked metrics
             ui += 1
             metrics += model.losses['metrics']
+            TP, FP, FN = metrics
             for key, val in model.losses.items():
                 rloss[key] = (rloss[key] * ui + val) / (ui + 1)
 
             # Precision
-            precision = metrics[0] / (metrics[0] + metrics[1] + 1e-16)
-            k = (metrics[0] + metrics[1]) > 0
+            precision = TP / (TP + FP)
+            k = (TP + FP) > 0
             if k.sum() > 0:
                 mean_precision = precision[k].mean()
-            else:
-                mean_precision = 0
 
             # Recall
-            recall = metrics[0] / (metrics[0] + metrics[2] + 1e-16)
-            k = (metrics[0] + metrics[2]) > 0
+            recall = TP / (TP + FN)
+            k = (TP + FN) > 0
             if k.sum() > 0:
                 mean_recall = recall[k].mean()
-            else:
-                mean_recall = 0
 
             s = ('%10s%10s' + '%10.3g' * 14) % (
                 '%g/%g' % (epoch, opt.epochs - 1), '%g/%g' % (i, len(dataloader) - 1), rloss['x'],
                 rloss['y'], rloss['w'], rloss['h'], rloss['conf'], rloss['cls'],
-                rloss['loss'], mean_precision, mean_recall, model.losses['nT'], model.losses['TP'],
-                model.losses['FP'], model.losses['FN'], time.time() - t1)
+                rloss['loss'], mean_precision, mean_recall, model.losses['nT'], TP.sum(),
+                FP.sum(), FN.sum(), time.time() - t1)
             t1 = time.time()
             print(s)
 
