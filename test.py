@@ -1,4 +1,5 @@
 import argparse
+
 from models import *
 from utils.datasets import *
 from utils.utils import *
@@ -48,9 +49,11 @@ dataloader = load_images_and_labels(test_path, batch_size=opt.batch_size, img_si
 
 print('Compute mAP...')
 
+nC = 80  # number of classes
 correct = 0
 targets = None
 outputs, mAPs, TP, confidence, pred_class, target_class = [], [], [], [], [], []
+AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
 for batch_i, (imgs, targets) in enumerate(dataloader):
     imgs = imgs.to(device)
 
@@ -79,7 +82,7 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
         # If no annotations add number of detections as incorrect
         if annotations.size(0) == 0:
             target_cls = []
-            #correct.extend([0 for _ in range(len(detections))])
+            # correct.extend([0 for _ in range(len(detections))])
             mAPs.append(0)
             continue
         else:
@@ -105,7 +108,11 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
                     correct.append(0)
 
         # Compute Average Precision (AP) per class
-        AP = ap_per_class(tp=correct, conf=detections[:, 4], pred_cls=detections[:, 6], target_cls=target_cls)
+        AP, AP_class = ap_per_class(tp=correct, conf=detections[:, 4], pred_cls=detections[:, 6], target_cls=target_cls)
+
+        # Accumulate AP per class
+        AP_accum_count += np.bincount(AP_class, minlength=nC)
+        AP_accum += np.bincount(AP_class, minlength=nC, weights=AP)
 
         # Compute mean AP for this image
         mAP = AP.mean()
@@ -116,4 +123,10 @@ for batch_i, (imgs, targets) in enumerate(dataloader):
         # Print image mAP and running mean mAP
         print('+ Sample [%d/%d] AP: %.4f (%.4f)' % (len(mAPs), len(dataloader) * opt.batch_size, mAP, np.mean(mAPs)))
 
+# Print mAP per class
+classes = load_classes(opt.class_path)  # Extracts class labels from file
+for i, c in enumerate(classes):
+    print('%15s: %-.4f' % (c, AP_accum[i] / AP_accum_count[i]))
+
+# Print mAP
 print('Mean Average Precision: %.4f' % np.mean(mAPs))

@@ -130,7 +130,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
             # AP from recall-precision curve
             ap.append(compute_ap(recall, precision))
 
-    return np.array(ap)
+    return np.array(ap), unique_classes.astype('int32')
 
 
 def compute_ap(recall, precision):
