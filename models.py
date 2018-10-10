@@ -93,7 +93,7 @@ class YOLOLayer(nn.Module):
             stride = 8
 
         # Build anchor grids
-        nG = int(self.img_dim / stride)
+        nG = int(self.img_dim / stride)  # number grid points
         self.grid_x = torch.arange(nG).repeat(nG, 1).view([1, 1, nG, nG]).float()
         self.grid_y = torch.arange(nG).repeat(nG, 1).t().view([1, 1, nG, nG]).float()
         self.scaled_anchors = torch.FloatTensor([(a_w / stride, a_h / stride) for a_w, a_h in anchors])
@@ -139,7 +139,7 @@ class YOLOLayer(nn.Module):
         if targets is not None:
             MSELoss = nn.MSELoss(size_average=True)
             BCEWithLogitsLoss = nn.BCEWithLogitsLoss(size_average=True)
-            # CrossEntropyLoss = nn.CrossEntropyLoss()
+            CrossEntropyLoss = nn.CrossEntropyLoss()
 
             if requestPrecision:
                 gx = self.grid_x[:, :, :nG, :nG]
@@ -156,7 +156,7 @@ class YOLOLayer(nn.Module):
             if x.is_cuda:
                 tx, ty, tw, th, mask, tcls = tx.cuda(), ty.cuda(), tw.cuda(), th.cuda(), mask.cuda(), tcls.cuda()
 
-            # Mask outputs to ignore non-existing objects (but keep confidence predictions)
+            # Compute losses
             nT = sum([len(x) for x in targets])  # number of targets
             nM = mask.sum().float()  # number of anchors (assigned to targets)
             nB = len(targets)  # batch size

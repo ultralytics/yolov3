@@ -85,7 +85,7 @@ def main(opt):
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
 
-    modelinfo(model)
+    model_info(model)
     t0, t1 = time.time(), time.time()
     mean_recall, mean_precision = 0, 0
     print('%10s' * 16 % (

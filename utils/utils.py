@@ -19,24 +19,26 @@ def load_classes(path):
     return names
 
 
-def modelinfo(model):  # Plots a line-by-line description of a PyTorch model
-    nparams = sum(x.numel() for x in model.parameters())
-    ngradients = sum(x.numel() for x in model.parameters() if x.requires_grad)
+def model_info(model):  # Plots a line-by-line description of a PyTorch model
+    nP = sum(x.numel() for x in model.parameters())  # number parameters
+    nG = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
     print('\n%4s %70s %9s %12s %20s %12s %12s' % ('', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
     for i, (name, p) in enumerate(model.named_parameters()):
         name = name.replace('module_list.', '')
         print('%4g %70s %9s %12g %20s %12g %12g' % (
             i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std()))
-    print('\n%g layers, %g parameters, %g gradients' % (i + 1, nparams, ngradients))
+    print('\n%g layers, %g parameters, %g gradients' % (i + 1, nP, nG))
 
 
-def xview_class_weights(indices):  # weights of each class in the training set, normalized to mu = 1
+def class_weights():  # frequency of each class in coco train2014
     weights = 1 / torch.FloatTensor(
-        [74, 364, 713, 71, 2925, 209767, 6925, 1101, 3612, 12134, 5871, 3640, 860, 4062, 895, 149, 174, 17, 1624, 1846,
-         125, 122, 124, 662, 1452, 697, 222, 190, 786, 200, 450, 295, 79, 205, 156, 181, 70, 64, 337, 1352, 336, 78,
-         628, 841, 287, 83, 702, 1177, 313865, 195, 1081, 882, 1059, 4175, 123, 1700, 2317, 1579, 368, 85])
+        [187437, 4955, 30920, 6033, 3838, 4332, 3160, 7051, 7677, 9167, 1316, 1372, 833, 6757, 7355, 3302, 3776, 4671,
+         6769, 5706, 3908, 903, 3686, 3596, 6200, 7920, 8779, 4505, 4272, 1862, 4698, 1962, 4403, 6659, 2402, 2689,
+         4012, 4175, 3411, 17048, 5637, 14553, 3923, 5539, 4289, 10084, 7018, 4314, 3099, 4638, 4939, 5543, 2038, 4004,
+         5053, 4578, 27292, 4113, 5931, 2905, 11174, 2873, 4036, 3415, 1517, 4122, 1980, 4464, 1190, 2302, 156, 3933,
+         1877, 17630, 4337, 4624, 1075, 3468, 135, 1380])
     weights /= weights.sum()
-    return weights[indices]
+    return weights
 
 
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):  # Plots one bounding box on image img
@@ -174,7 +176,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
         b2_x1, b2_x2 = box2[:, 0] - box2[:, 2] / 2, box2[:, 0] + box2[:, 2] / 2
         b2_y1, b2_y2 = box2[:, 1] - box2[:, 3] / 2, box2[:, 1] + box2[:, 3] / 2
 
-    # get the corrdinates of the intersection rectangle
+    # get the coordinates of the intersection rectangle
     inter_rect_x1 = torch.max(b1_x1, b2_x1)
     inter_rect_y1 = torch.max(b1_y1, b2_y1)
     inter_rect_x2 = torch.min(b1_x2, b2_x2)
@@ -192,7 +194,7 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
     """
     returns nT, nCorrect, tx, ty, tw, th, tconf, tcls
     """
-    nB = len(target)  # target.shape[0]
+    nB = len(target)  # number of images in batch
     nT = [len(x) for x in target]  # torch.argmin(target[:, :, 4], 1)  # targets per image
     tx = torch.zeros(nB, nA, nG, nG)  # batch size (4), number of anchors (3), number of grid points (13)
     ty = torch.zeros(nB, nA, nG, nG)
@@ -235,13 +237,6 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
             # Unique anchor selection (slower but retains original order)
             u = torch.cat((gi, gj, a), 0).view(3, -1).numpy()
             _, first_unique = np.unique(u[:, iou_order], axis=1, return_index=True)  # first unique indices
-
-            # Unique anchor selection (faster but does not retain order) TODO: update to retain original order
-            # u = gi.float() * 0.4361538773074043 + gj.float() * 0.28012496588736746 + a.float() * 0.6627147212460307
-            # _, first_unique_sorted = np.unique(u[iou_order], return_index=True)  # first unique indices
-
-            # Slow - fast difference comparison
-            # print(((first_unique - first_unique_sorted) ** 2).sum())
 
             i = iou_order[first_unique]
             # best anchor must share significant commonality (iou) with target
@@ -423,7 +418,19 @@ def strip_optimizer_from_checkpoint(filename='checkpoints/best.pt'):
     torch.save(a, filename.replace('.pt', '_lite.pt'))
 
 
-def plotResults():
+def coco_class_count(path='/Users/glennjocher/downloads/DATA/coco/labels/train2014/'):
+    import glob
+
+    nC = 80  # number classes
+    x = np.zeros(nC, dtype='int32')
+    files = sorted(glob.glob('%s/*.*' % path))
+    for i, file in enumerate(files):
+        labels = np.loadtxt(file, dtype=np.float32).reshape(-1, 5)
+        x += np.bincount(labels[:, 0].astype('int32'), minlength=nC)
+        print(i, len(files))
+
+
+def plot_results():
     # Plot YOLO training results file "results.txt"
     import numpy as np
     import matplotlib.pyplot as plt
