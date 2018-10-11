@@ -101,7 +101,6 @@ class YOLOLayer(nn.Module):
         self.anchor_h = self.scaled_anchors[:, 1:2].view((1, nA, 1, 1))
         self.weights = class_weights()
 
-
     def forward(self, p, targets=None, requestPrecision=False):
         FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
 
@@ -173,8 +172,8 @@ class YOLOLayer(nn.Module):
                 # lconf = k * BCEWithLogitsLoss(pred_conf[mask], mask[mask].float())
                 lconf = k * BCEWithLogitsLoss(pred_conf, mask.float())
 
-                # lcls = k * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
-                lcls = k * BCEWithLogitsLoss(pred_cls[mask], tcls.float())
+                lcls = k * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
+                # lcls = k * BCEWithLogitsLoss(pred_cls[mask], tcls.float())
             else:
                 lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
 

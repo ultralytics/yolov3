@@ -26,7 +26,6 @@ cd yolov3/checkpoints
 wget https://storage.googleapis.com/ultralytics/yolov3.pt
 cp yolov3.pt latest.pt
 cd ..
-python3 train.py -img_size 416 -batch_size 12 -epochs 1 -resume 1
+python3 train.py -img_size 416 -batch_size 16 -epochs 1 -resume 1
 python3 test.py -img_size 416 -weights_path checkpoints/latest.pt -conf_thres 0.5
-
 
