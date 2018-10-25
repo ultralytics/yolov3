@@ -75,7 +75,7 @@ def detect(opt):
                 img_detections.extend(detections)
                 imgs.extend(img_paths)
 
-        print('Batch %d... (Done %.3fs)' % (batch_i, time.time() - prev_time))
+        print('Batch %d... (Done %.3f s)' % (batch_i, time.time() - prev_time))
         prev_time = time.time()
 
     # Bounding-box colors
