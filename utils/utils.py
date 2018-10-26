@@ -410,7 +410,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     return output
 
 
-def strip_optimizer_from_checkpoint(filename='checkpoints/best.pt'):
+def strip_optimizer_from_checkpoint(filename='weights/best.pt'):
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
     import torch
     a = torch.load(filename, map_location='cpu')

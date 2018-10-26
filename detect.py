@@ -33,7 +33,7 @@ def detect(opt):
     # Load model
     model = Darknet(opt.cfg, opt.img_size)
 
-    weights_path = 'checkpoints/yolov3.pt'
+    weights_path = 'weights/yolov3.pt'
     if weights_path.endswith('.weights'):  # saved in darknet format
         load_weights(model, weights_path)
     else:  # endswith('.pt'), saved in pytorch format

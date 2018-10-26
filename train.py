@@ -28,7 +28,7 @@ if cuda:
 
 
 def main(opt):
-    os.makedirs('checkpoints', exist_ok=True)
+    os.makedirs('weights', exist_ok=True)
 
     # Configure run
     data_config = parse_data_config(opt.data_config_path)
@@ -48,7 +48,7 @@ def main(opt):
     start_epoch = 0
     best_loss = float('inf')
     if opt.resume:
-        checkpoint = torch.load('checkpoints/latest.pt', map_location='cpu')
+        checkpoint = torch.load('weights/latest.pt', map_location='cpu')
 
         model.load_state_dict(checkpoint['model'])
         if torch.cuda.device_count() > 1:
@@ -175,15 +175,15 @@ def main(opt):
                       'best_loss': best_loss,
                       'model': model.state_dict(),
                       'optimizer': optimizer.state_dict()}
-        torch.save(checkpoint, 'checkpoints/latest.pt')
+        torch.save(checkpoint, 'weights/latest.pt')
 
         # Save best checkpoint
         if best_loss == loss_per_target:
-            os.system('cp checkpoints/latest.pt checkpoints/best.pt')
+            os.system('cp weights/latest.pt weights/best.pt')
 
-        # Save backup checkpoints every 5 epochs
+        # Save backup weights every 5 epochs
         if (epoch > 0) & (epoch % 5 == 0):
-            os.system('cp checkpoints/latest.pt checkpoints/backup' + str(epoch) + '.pt')
+            os.system('cp weights/latest.pt weights/backup' + str(epoch) + '.pt')
 
     # Save final model
     dt = time.time() - t0

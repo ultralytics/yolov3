@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Start
-sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3 && python3 train.py -img_size 416 -epochs 160
+sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3 && python3 train.py -img_size 416
 
 # Resume
 python3 train.py -img_size 416 -resume 1
