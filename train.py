@@ -73,6 +73,8 @@ def main(opt):
 
         del checkpoint  # current, saved
     else:
+        load_weights(model, 'weights/darknet53.conv.74')  # load darknet53 weights (optional)
+
         if torch.cuda.device_count() > 1:
             print('Using ', torch.cuda.device_count(), ' GPUs')
             model = nn.DataParallel(model)
