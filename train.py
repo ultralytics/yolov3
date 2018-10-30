@@ -76,7 +76,7 @@ def main(opt):
     else:
         # Initialize model with darknet53 weights (optional)
         if not os.path.isfile('weights/darknet53.conv.74'):
-            os.system('wget https://pjreddie.com/media/files/darknet53.conv.74 -P /weights')
+            os.system('wget https://pjreddie.com/media/files/darknet53.conv.74 -P weights')
         load_weights(model, 'weights/darknet53.conv.74')
 
         if torch.cuda.device_count() > 1:
