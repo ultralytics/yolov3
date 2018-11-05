@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # CREDIT: https://github.com/pjreddie/darknet/tree/master/scripts/get_coco_dataset.sh
 
 # Clone COCO API
