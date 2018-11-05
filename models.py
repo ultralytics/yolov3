@@ -209,9 +209,9 @@ class YOLOLayer(nn.Module):
 class Darknet(nn.Module):
     """YOLOv3 object detection model"""
 
-    def __init__(self, config_path, img_size=416):
+    def __init__(self, cfg_path, img_size=416):
         super(Darknet, self).__init__()
-        self.module_defs = parse_model_config(config_path)
+        self.module_defs = parse_model_config(cfg_path)
         self.module_defs[0]['height'] = img_size
         self.hyperparams, self.module_list = create_modules(self.module_defs)
         self.img_size = img_size

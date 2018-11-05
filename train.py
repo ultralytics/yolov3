@@ -6,12 +6,13 @@ from utils.datasets import *
 from utils.utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-epochs', type=int, default=68, help='number of epochs')
+parser.add_argument('-epochs', type=int, default=100, help='number of epochs')
 parser.add_argument('-batch_size', type=int, default=16, help='size of each image batch')
 parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help='data config file path')
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
 parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
 parser.add_argument('-resume', default=False, help='resume training flag')
+parser.add_argument('-multi_scale', default=True, help='train at random img_size 320-608')
 opt = parser.parse_args()
 print(opt)
 
@@ -39,7 +40,7 @@ def main(opt):
         train_path = '../coco/trainvalno5k.part'
 
     # Initialize model
-    model = Darknet(opt.cfg, opt.img_size)
+    model = Darknet(opt.cfg, opt.img_size if opt.multi_scale is False else 608)
 
     # Get dataloader
     dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=opt.img_size, augment=True)
@@ -100,20 +101,19 @@ def main(opt):
         epoch += start_epoch
 
         # Multi-Scale YOLO Training
-        # img_size = random.choice(range(10, 20)) * 32  # 320 - 608 pixels
-        # dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=img_size, augment=True)
-        # print('Running this epoch with image size %g' % img_size)
+        if opt.multi_scale:
+            img_size = random.choice(range(10, 20)) * 32  # 320 - 608 pixels
+            dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=img_size, augment=True)
+            print('Running Epoch %g at multi_scale img_size %g' % (epoch, img_size))
 
         # Update scheduler (automatic)
         # scheduler.step()
 
-        # Update scheduler (manual)
-        if epoch < 54:
+        # Update scheduler (manual)  at 0, 54, 61 epochs to 1e-3, 1e-4, 1e-5
+        if epoch < 50:
             lr = 1e-3
-        elif epoch < 61:
-            lr = 1e-4
         else:
-            lr = 1e-5
+            lr = 1e-3
         for g in optimizer.param_groups:
             g['lr'] = lr
 
