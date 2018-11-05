@@ -106,7 +106,6 @@ class load_images_and_labels():  # for training
         else:
             # Fixed-Scale YOLO Training
             height = self.height
-        print(height)
 
         img_all = []
         labels_all = []
