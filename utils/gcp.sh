@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 # Start
-sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3 && python3 train.py -img_size 416
+sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3 && python3 train.py -batch_size 8
 
 # Resume
-python3 train.py -img_size 416 -resume 1
+python3 train.py -resume 1
 
 # Detect
-gsutil cp gs://ultralytics/fresh9_5_e201.pt yolov3/weights
+gsutil cp gs://ultralytics/yolov3.pt yolov3/weights
 python3 detect.py
 
 # Test
