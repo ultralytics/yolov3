@@ -12,7 +12,7 @@ parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
 parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
 parser.add_argument('-resume', default=False, help='resume training flag')
-parser.add_argument('-multi_scale', default=True, help='train at random img_size 320-608')
+parser.add_argument('-multi_scale', default=True, help='train at random img_size 320-608')  # ensure memory for 608 size
 opt = parser.parse_args()
 print(opt)
 
