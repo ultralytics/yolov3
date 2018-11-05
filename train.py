@@ -7,7 +7,7 @@ from utils.utils import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-epochs', type=int, default=100, help='number of epochs')
-parser.add_argument('-batch_size', type=int, default=16, help='size of each image batch')
+parser.add_argument('-batch_size', type=int, default=4, help='size of each image batch')
 parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help='data config file path')
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
 parser.add_argument('-img_size', type=int, default=32 * 19, help='size of each image dimension')
@@ -128,10 +128,10 @@ def main(opt):
             loss = model(imgs.to(device), targets, requestPrecision=True)
             loss.backward()
 
-            # accumulated_batches = 4  # accumulate gradient for 4 batches before stepping optimizer
-            # if ((i+1) % accumulated_batches == 0) or (i == len(dataloader) - 1):
-            optimizer.step()
-            optimizer.zero_grad()
+            accumulated_batches = 4  # accumulate gradient for 4 batches before stepping optimizer
+            if ((i+1) % accumulated_batches == 0) or (i == len(dataloader) - 1):
+                optimizer.step()
+                optimizer.zero_grad()
 
             # Compute running epoch-means of tracked metrics
             ui += 1
