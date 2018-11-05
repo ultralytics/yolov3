@@ -113,7 +113,7 @@ def main(opt):
         if epoch < 50:
             lr = 1e-3
         else:
-            lr = 1e-3
+            lr = 1e-4
         for g in optimizer.param_groups:
             g['lr'] = lr
 
