@@ -93,7 +93,7 @@ def main(opt):
     model_info(model)
     t0, t1 = time.time(), time.time()
     mean_recall, mean_precision = 0, 0
-    print('%10s' * 16 % (
+    print('%11s' * 16 % (
         'Epoch', 'Batch', 'x', 'y', 'w', 'h', 'conf', 'cls', 'total', 'P', 'R', 'nTargets', 'TP', 'FP', 'FN', 'time'))
     for epoch in range(opt.epochs):
         epoch += start_epoch
@@ -151,7 +151,7 @@ def main(opt):
             if k.sum() > 0:
                 mean_recall = recall[k].mean()
 
-            s = ('%10s%10s' + '%10.3g' * 14) % (
+            s = ('%11s%11s' + '%11.3g' * 14) % (
                 '%g/%g' % (epoch, opt.epochs - 1), '%g/%g' % (i, len(dataloader) - 1), rloss['x'],
                 rloss['y'], rloss['w'], rloss['h'], rloss['conf'], rloss['cls'],
                 rloss['loss'], mean_precision, mean_recall, model.losses['nT'], model.losses['TP'],
