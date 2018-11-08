@@ -100,7 +100,8 @@ class load_images_and_labels():  # for training
         ia = self.count * self.batch_size
         ib = min((self.count + 1) * self.batch_size, self.nF)
 
-        if self.augment is True:
+        multi_scale = False
+        if multi_scale and self.augment:
             # Multi-Scale YOLO Training
             height = random.choice(range(10, 20)) * 32  # 320 - 608 pixels
         else:

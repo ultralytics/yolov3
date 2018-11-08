@@ -7,7 +7,7 @@ from utils.utils import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-epochs', type=int, default=100, help='number of epochs')
-parser.add_argument('-batch_size', type=int, default=8, help='size of each image batch')
+parser.add_argument('-batch_size', type=int, default=16, help='size of each image batch')
 parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help='data config file path')
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
 parser.add_argument('-img_size', type=int, default=32 * 19, help='size of each image dimension')
@@ -24,7 +24,7 @@ torch.manual_seed(0)
 if cuda:
     torch.cuda.manual_seed(0)
     torch.cuda.manual_seed_all(0)
-    # torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.benchmark = False
 
 
 def main(opt):
@@ -62,9 +62,8 @@ def main(opt):
         #         p.requires_grad = False
 
         # Set optimizer
-        # optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
-        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3,
-                                    momentum=.9, weight_decay=5e-4, nesterov=True)
+        optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
+        # optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3, momentum=.9, weight_decay=5e-4, nesterov=True)
 
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
@@ -85,8 +84,8 @@ def main(opt):
         model.to(device).train()
 
         # Set optimizer
-        # optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
-        optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=.9, weight_decay=5e-4, nesterov=True)
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
+        # optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=.9, weight_decay=5e-4, nesterov=True)
 
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
@@ -104,9 +103,9 @@ def main(opt):
 
         # Update scheduler (manual)  at 0, 54, 61 epochs to 1e-3, 1e-4, 1e-5
         if epoch < 50:
-            lr = 1e-3
-        else:
             lr = 1e-4
+        else:
+            lr = 1e-5
         for g in optimizer.param_groups:
             g['lr'] = lr
 
@@ -128,10 +127,10 @@ def main(opt):
             loss = model(imgs.to(device), targets, requestPrecision=True)
             loss.backward()
 
-            accumulated_batches = 2  # accumulate gradient for 4 batches before stepping optimizer
-            if ((i+1) % accumulated_batches == 0) or (i == len(dataloader) - 1):
-                optimizer.step()
-                optimizer.zero_grad()
+            # accumulated_batches = 1  # accumulate gradient for 4 batches before stepping optimizer
+            # if ((i+1) % accumulated_batches == 0) or (i == len(dataloader) - 1):
+            optimizer.step()
+            optimizer.zero_grad()
 
             # Compute running epoch-means of tracked metrics
             ui += 1
