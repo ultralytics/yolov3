@@ -62,8 +62,9 @@ def main(opt):
         #         p.requires_grad = False
 
         # Set optimizer
-        optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
-        # optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3, momentum=.9, weight_decay=5e-4, nesterov=True)
+        # optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
+        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3, momentum=.9,
+                                    weight_decay=5e-4, nesterov=True)
 
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
@@ -84,8 +85,8 @@ def main(opt):
         model.to(device).train()
 
         # Set optimizer
-        optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
-        # optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=.9, weight_decay=5e-4, nesterov=True)
+        # optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
+        optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=.9, weight_decay=5e-4, nesterov=True)
 
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
