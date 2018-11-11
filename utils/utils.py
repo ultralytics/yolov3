@@ -436,11 +436,12 @@ def plot_results():
     import matplotlib.pyplot as plt
     plt.figure(figsize=(16, 8))
     s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall']
-    for f in ('results_orig.txt','results.txt',
-              ):
+    for f in ('results.txt',):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10]).T
         for i in range(9):
             plt.subplot(2, 5, i + 1)
             plt.plot(results[i, :250], marker='.', label=f)
             plt.title(s[i])
-        plt.legend()
+            if i == 0:
+                plt.legend()
+
