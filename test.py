@@ -119,10 +119,10 @@ def main(opt):
 
             # Append image mAP to list
             mAPs.append(mAP)
+            mean_mAP = np.mean(mAPs)
 
             # Print image mAP and running mean mAP
-            print(
-                '+ Sample [%d/%d] AP: %.4f (%.4f)' % (len(mAPs), len(dataloader) * opt.batch_size, mAP, np.mean(mAPs)))
+            print('Image %d/%d AP: %.4f (%.4f)' % (len(mAPs), len(dataloader) * opt.batch_size, mAP, mean_mAP))
 
     # Print mAP per class
     classes = load_classes(opt.class_path)  # Extracts class labels from file
@@ -130,8 +130,8 @@ def main(opt):
         print('%15s: %-.4f' % (c, AP_accum[i] / AP_accum_count[i]))
 
     # Print mAP
-    print('Mean Average Precision: %.4f' % np.mean(mAPs))
-    return mAP
+    print('Mean Average Precision: %.4f' % mean_mAP)
+    return mean_mAP
 
 
 if __name__ == '__main__':
