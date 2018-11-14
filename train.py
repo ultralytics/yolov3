@@ -105,9 +105,9 @@ def main(opt):
 
         # Update scheduler (manual)  at 0, 54, 61 epochs to 1e-3, 1e-4, 1e-5
         if epoch > 50:
-            lr = 1e-5
-        else:
             lr = 1e-4
+        else:
+            lr = 1e-3
         for g in optimizer.param_groups:
             g['lr'] = lr
 
