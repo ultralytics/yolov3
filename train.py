@@ -1,5 +1,6 @@
 import argparse
 import time
+import test
 
 from models import *
 from utils.datasets import *
@@ -103,10 +104,10 @@ def main(opt):
         # scheduler.step()
 
         # Update scheduler (manual)  at 0, 54, 61 epochs to 1e-3, 1e-4, 1e-5
-        if epoch < 50:
-            lr = 1e-4
-        else:
+        if epoch > 50:
             lr = 1e-5
+        else:
+            lr = 1e-4
         for g in optimizer.param_groups:
             g['lr'] = lr
 
@@ -160,10 +161,6 @@ def main(opt):
             t1 = time.time()
             print(s)
 
-        # Write epoch results
-        with open('results.txt', 'a') as file:
-            file.write(s + '\n')
-
         # Update best loss
         loss_per_target = rloss['loss'] / rloss['nT']
         if loss_per_target < best_loss:
@@ -183,6 +180,14 @@ def main(opt):
         # Save backup weights every 5 epochs
         if (epoch > 0) & (epoch % 5 == 0):
             os.system('cp weights/latest.pt weights/backup' + str(epoch) + '.pt')
+
+        # Calculate mAP
+        test.opt.weights_path = 'weights/latest.pt'
+        mAP = test.main(test.opt)
+
+        # Write epoch results
+        with open('results.txt', 'a') as file:
+            file.write(s + '%11.3g' % mAP + '\n')
 
     # Save final model
     dt = time.time() - t0

@@ -11,7 +11,7 @@ gsutil cp gs://ultralytics/yolov3.pt yolov3/weights
 python3 detect.py
 
 # Test
-python3 test.py -img_size 416 -weights_path weights/latest.pt -conf_thres 0.1
+python3 test.py -img_size 416 -weights_path weights/latest.pt -conf_thres 0.5
 
 # Download and Test
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3
