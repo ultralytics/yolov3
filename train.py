@@ -121,7 +121,7 @@ def main(opt):
 
             # SGD burn-in
             if (epoch == 0) & (i <= 1000):
-                lr = 1e-4 * (i / 1000) ** 4
+                lr = 1e-3 * (i / 1000) ** 4
                 for g in optimizer.param_groups:
                     g['lr'] = lr
 
