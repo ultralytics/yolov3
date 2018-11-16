@@ -141,7 +141,6 @@ class YOLOLayer(nn.Module):
 
         # Training
         if targets is not None:
-            self.batch_count += 1
             MSELoss = nn.MSELoss()
             BCEWithLogitsLoss = nn.BCEWithLogitsLoss()
             CrossEntropyLoss = nn.CrossEntropyLoss()
