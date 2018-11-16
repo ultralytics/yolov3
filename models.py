@@ -101,7 +101,6 @@ class YOLOLayer(nn.Module):
         self.anchor_h = self.scaled_anchors[:, 1:2].view((1, nA, 1, 1))
         self.weights = class_weights()
 
-        self.batch_count = 0
         self.loss_means = torch.zeros(6)
 
     def forward(self, p, targets=None, requestPrecision=False):
@@ -170,13 +169,13 @@ class YOLOLayer(nn.Module):
             if nM > 0:
                 lx = k * MSELoss(x[mask], tx[mask])
                 ly = k * MSELoss(y[mask], ty[mask])
-                lw = k * MSELoss(w[mask], tw[mask])
-                lh = k * MSELoss(h[mask], th[mask])
+                lw = (k * 0.7) * MSELoss(w[mask], tw[mask])
+                lh = (k * 0.7) * MSELoss(h[mask], th[mask])
 
                 # lconf = k * BCEWithLogitsLoss(pred_conf[mask], mask[mask].float())
-                lconf = (k * 10) * BCEWithLogitsLoss(pred_conf, mask.float())
+                lconf = (k * 5) * BCEWithLogitsLoss(pred_conf, mask.float())
 
-                lcls = (k / 10) * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
+                lcls = (k / 5) * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
                 # lcls = k * BCEWithLogitsLoss(pred_cls[mask], tcls.float())
             else:
                 lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
@@ -185,7 +184,7 @@ class YOLOLayer(nn.Module):
             # lconf += k * BCEWithLogitsLoss(pred_conf[~mask], mask[~mask].float())
 
             # Sum loss components
-            balance_losses_flag = True
+            balance_losses_flag = False
             if balance_losses_flag:
                 loss_vec = torch.FloatTensor([lx.data, ly.data, lw.data, lh.data, lconf.data, lcls.data])
                 self.loss_means = self.loss_means * 0.99 + loss_vec * 0.01
