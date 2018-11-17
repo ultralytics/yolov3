@@ -259,12 +259,12 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
         ty[b, a, gj, gi] = gy - gj.float()
 
         # Width and height (yolo method)
-        tw[b, a, gj, gi] = torch.log(gw / anchor_wh[a, 0])
-        th[b, a, gj, gi] = torch.log(gh / anchor_wh[a, 1])
+        # tw[b, a, gj, gi] = torch.log(gw / anchor_wh[a, 0])
+        # th[b, a, gj, gi] = torch.log(gh / anchor_wh[a, 1])
 
         # Width and height (power method)
-        # tw[b, a, gj, gi] = torch.sqrt(gw / anchor_wh[a, 0]) / 2
-        # th[b, a, gj, gi] = torch.sqrt(gh / anchor_wh[a, 1]) / 2
+        tw[b, a, gj, gi] = torch.sqrt(gw / anchor_wh[a, 0]) / 2
+        th[b, a, gj, gi] = torch.sqrt(gh / anchor_wh[a, 1]) / 2
 
         # One-hot encoding of label
         tcls[b, a, gj, gi, tc] = 1
@@ -436,8 +436,9 @@ def plot_results():
     import matplotlib.pyplot as plt
     plt.figure(figsize=(16, 8))
     s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
-    for f in ('results.txt',):
-        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10]).T
+    for f in ('results.txt',
+              ):
+        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10]).T  # column 16 is mAP
         for i in range(9):
             plt.subplot(2, 5, i + 1)
             plt.plot(results[i, :250], marker='.', label=f)
