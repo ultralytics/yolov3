@@ -168,14 +168,14 @@ class YOLOLayer(nn.Module):
             if nM > 0:
                 lx = k * MSELoss(x[mask], tx[mask])
                 ly = k * MSELoss(y[mask], ty[mask])
-                lw = (k * 1) * MSELoss(w[mask], tw[mask])
-                lh = (k * 1) * MSELoss(h[mask], th[mask])
+                lw = k * MSELoss(w[mask], tw[mask])
+                lh = k * MSELoss(h[mask], th[mask])
 
                 # lconf = k * BCEWithLogitsLoss(pred_conf[mask], mask[mask].float())
                 lconf = (k * 10) * BCEWithLogitsLoss(pred_conf, mask.float())
 
-                # lcls = (k / 10) * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
-                lcls = (k * 10) * BCEWithLogitsLoss(pred_cls[mask], tcls.float())
+                lcls = (k / 10) * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
+                # lcls = (k * 10) * BCEWithLogitsLoss(pred_cls[mask], tcls.float())
             else:
                 lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
 
