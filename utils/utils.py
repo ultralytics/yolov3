@@ -259,12 +259,12 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
         ty[b, a, gj, gi] = gy - gj.float()
 
         # Width and height (yolo method)
-        # tw[b, a, gj, gi] = torch.log(gw / anchor_wh[a, 0])
-        # th[b, a, gj, gi] = torch.log(gh / anchor_wh[a, 1])
+        tw[b, a, gj, gi] = torch.log(gw / anchor_wh[a, 0])
+        th[b, a, gj, gi] = torch.log(gh / anchor_wh[a, 1])
 
         # Width and height (power method)
-        tw[b, a, gj, gi] = torch.sqrt(gw / anchor_wh[a, 0]) / 2
-        th[b, a, gj, gi] = torch.sqrt(gh / anchor_wh[a, 1]) / 2
+        # tw[b, a, gj, gi] = torch.sqrt(gw / anchor_wh[a, 0]) / 2
+        # th[b, a, gj, gi] = torch.sqrt(gh / anchor_wh[a, 1]) / 2
 
         # One-hot encoding of label
         tcls[b, a, gj, gi, tc] = 1

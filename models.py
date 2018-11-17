@@ -123,16 +123,16 @@ class YOLOLayer(nn.Module):
         y = torch.sigmoid(p[..., 1])  # Center y
 
         # Width and height (yolo method)
-        # w = p[..., 2]  # Width
-        # h = p[..., 3]  # Height
-        # width = torch.exp(w.data) * self.anchor_w
-        # height = torch.exp(h.data) * self.anchor_h
+        w = p[..., 2]  # Width
+        h = p[..., 3]  # Height
+        width = torch.exp(w.data) * self.anchor_w
+        height = torch.exp(h.data) * self.anchor_h
 
         # Width and height (power method)
-        w = torch.sigmoid(p[..., 2])  # Width
-        h = torch.sigmoid(p[..., 3])  # Height
-        width = ((w.data * 2) ** 2) * self.anchor_w
-        height = ((h.data * 2) ** 2) * self.anchor_h
+        # w = torch.sigmoid(p[..., 2])  # Width
+        # h = torch.sigmoid(p[..., 3])  # Height
+        # width = ((w.data * 2) ** 2) * self.anchor_w
+        # height = ((h.data * 2) ** 2) * self.anchor_h
 
         # Add offset and scale with anchors (in grid space, i.e. 0-13)
         pred_boxes = FT(bs, self.nA, nG, nG, 4)
@@ -174,8 +174,8 @@ class YOLOLayer(nn.Module):
                 # lconf = k * BCEWithLogitsLoss(pred_conf[mask], mask[mask].float())
                 lconf = (k * 10) * BCEWithLogitsLoss(pred_conf, mask.float())
 
-                lcls = (k / 10) * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
-                # lcls = k * BCEWithLogitsLoss(pred_cls[mask], tcls.float())
+                # lcls = (k / 10) * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
+                lcls = (k * 10) * BCEWithLogitsLoss(pred_cls[mask], tcls.float())
             else:
                 lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
 
