@@ -36,6 +36,9 @@ def detect(opt):
     if weights_path.endswith('.weights'):  # saved in darknet format
         load_weights(model, weights_path)
     else:  # endswith('.pt'), saved in pytorch format
+        if weights_path == 'weights/yolov3.pt' and not os.path.isfile(weights_path):
+            os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -P weights')
+
         checkpoint = torch.load(weights_path, map_location='cpu')
         model.load_state_dict(checkpoint['model'])
         del checkpoint
