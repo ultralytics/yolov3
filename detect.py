@@ -25,7 +25,7 @@ parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each i
 opt = parser.parse_args()
 print(opt)
 
-def detect(opt):
+def main(opt):
     os.system('rm -rf ' + opt.output_folder)
     os.makedirs(opt.output_folder, exist_ok=True)
 
@@ -142,4 +142,4 @@ def detect(opt):
 
 if __name__ == '__main__':
     torch.cuda.empty_cache()
-    detect(opt)
+    main(opt)
