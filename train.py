@@ -1,6 +1,5 @@
 import argparse
 import time
-import test
 
 from models import *
 from utils.datasets import *
@@ -182,6 +181,7 @@ def main(opt):
             os.system('cp weights/latest.pt weights/backup' + str(epoch) + '.pt')
 
         # Calculate mAP
+        import test
         test.opt.weights_path = 'weights/latest.pt'
         mAP = test.main(test.opt)
 

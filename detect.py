@@ -25,7 +25,6 @@ parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each i
 opt = parser.parse_args()
 print(opt)
 
-
 def detect(opt):
     os.system('rm -rf ' + opt.output_folder)
     os.makedirs(opt.output_folder, exist_ok=True)
@@ -66,8 +65,7 @@ def detect(opt):
 
         # Get detections
         with torch.no_grad():
-            chip = torch.from_numpy(img).unsqueeze(0).to(device)
-            pred = model(chip)
+            pred = model(torch.from_numpy(img).unsqueeze(0).to(device))
             pred = pred[pred[:, :, 4] > opt.conf_thres]
 
             if len(pred) > 0:
