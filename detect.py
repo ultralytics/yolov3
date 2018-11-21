@@ -145,3 +145,5 @@ def main(opt):
 if __name__ == '__main__':
     torch.cuda.empty_cache()
     main(opt)
+    if platform == 'darwin':  # MacOS (local)
+        os.system('open ' + opt.output_folder)
