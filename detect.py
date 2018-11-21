@@ -141,9 +141,10 @@ def main(opt):
             # Save generated image with detections
             cv2.imwrite(results_img_path.replace('.bmp', '.jpg').replace('.tif', '.jpg'), img)
 
+    if platform == 'darwin':  # MacOS (local)
+        os.system('open ' + opt.output_folder)
+
 
 if __name__ == '__main__':
     torch.cuda.empty_cache()
     main(opt)
-    if platform == 'darwin':  # MacOS (local)
-        os.system('open ' + opt.output_folder)
