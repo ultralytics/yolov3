@@ -273,9 +273,9 @@ class Darknet(nn.Module):
             self.losses['TP'] = metrics[0].sum()
             self.losses['FP'] = metrics[1].sum()
             self.losses['FN'] = metrics[2].sum()
-            self.losses['TC'] = 0
             self.losses['metrics'] = metrics
 
+        self.losses['TC'] = 0
         return sum(output) if is_training else torch.cat(output, 1)
 
 
