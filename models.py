@@ -194,12 +194,12 @@ class YOLOLayer(nn.Module):
                 loss = lx + ly + lw + lh + lconf + lcls
 
             # Sum False Positives from unassigned anchors
-            i = torch.sigmoid(pred_conf[~mask]) > 0.5
-            if i.sum() > 0:
-                FP_classes = torch.argmax(pred_cls[~mask][i], 1)
-                FPe = torch.bincount(FP_classes, minlength=self.nC).float().cpu()  # extra FPs
-            else:
-                FPe = torch.zeros(self.nC)
+            FPe = torch.zeros(self.nC)
+            if requestPrecision:
+                i = torch.sigmoid(pred_conf[~mask]) > 0.5
+                if i.sum() > 0:
+                    FP_classes = torch.argmax(pred_cls[~mask][i], 1)
+                    FPe = torch.bincount(FP_classes, minlength=self.nC).float().cpu()  # extra FPs
 
             return loss, loss.item(), lx.item(), ly.item(), lw.item(), lh.item(), lconf.item(), lcls.item(), \
                    nT, TP, FP, FPe, FN, TC
@@ -254,7 +254,7 @@ class Darknet(nn.Module):
                 output.append(x)
             layer_outputs.append(x)
 
-        if is_training:
+        if is_training and requestPrecision:
             self.losses['nT'] /= 3
             self.losses['TC'] /= 3  # target category
             metrics = torch.zeros(3, len(self.losses['FPe']))  # TP, FP, FN

@@ -214,7 +214,8 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
         if nTb == 0:
             continue
         t = target[b]
-        FN[b, :nTb] = 1
+        if requestPrecision:
+            FN[b, :nTb] = 1
 
         # Convert to position relative to box
         TC[b, :nTb], gx, gy, gw, gh = t[:, 0].long(), t[:, 1] * nG, t[:, 2] * nG, t[:, 3] * nG, t[:, 4] * nG
