@@ -438,7 +438,7 @@ def plot_results():
     import matplotlib.pyplot as plt
     plt.figure(figsize=(16, 8))
     s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
-    for f in ('results5.txt', 'results_new.txt', 'results3.txt',
+    for f in ('results_d5.txt', 'results_d10.txt', 'results_new.txt',
               ):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10]).T  # column 16 is mAP
         for i in range(9):

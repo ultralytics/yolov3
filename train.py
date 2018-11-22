@@ -125,7 +125,8 @@ def main(opt):
                     g['lr'] = lr
 
             # Compute loss, compute gradient, update parameters
-            loss = model(imgs.to(device), targets, requestPrecision=False)
+            precision_per_batch = False
+            loss = model(imgs.to(device), targets, requestPrecision=precision_per_batch)
             loss.backward()
 
             # accumulated_batches = 1  # accumulate gradient for 4 batches before stepping optimizer
@@ -133,24 +134,26 @@ def main(opt):
             optimizer.step()
             optimizer.zero_grad()
 
-            # Compute running epoch-means of tracked metrics
+            # Running epoch-means of tracked metrics
             ui += 1
-            metrics += model.losses['metrics']
-            TP, FP, FN = metrics
             for key, val in model.losses.items():
                 rloss[key] = (rloss[key] * ui + val) / (ui + 1)
 
-            # Precision
-            precision = TP / (TP + FP)
-            k = (TP + FP) > 0
-            if k.sum() > 0:
-                mean_precision = precision[k].mean()
+            if precision_per_batch:
+                TP, FP, FN = metrics
+                metrics += model.losses['metrics']
 
-            # Recall
-            recall = TP / (TP + FN)
-            k = (TP + FN) > 0
-            if k.sum() > 0:
-                mean_recall = recall[k].mean()
+                # Precision
+                precision = TP / (TP + FP)
+                k = (TP + FP) > 0
+                if k.sum() > 0:
+                    mean_precision = precision[k].mean()
+
+                # Recall
+                recall = TP / (TP + FN)
+                k = (TP + FN) > 0
+                if k.sum() > 0:
+                    mean_recall = recall[k].mean()
 
             s = ('%11s%11s' + '%11.3g' * 14) % (
                 '%g/%g' % (epoch, opt.epochs - 1), '%g/%g' % (i, len(dataloader) - 1), rloss['x'],
