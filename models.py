@@ -103,7 +103,7 @@ class YOLOLayer(nn.Module):
 
         self.loss_means = torch.zeros(6)
 
-    def forward(self, p, targets=None, requestPrecision=False):
+    def forward(self, p, targets=None, batch_report=False):
         FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
 
         bs = p.shape[0]  # batch size
@@ -145,7 +145,7 @@ class YOLOLayer(nn.Module):
             BCEWithLogitsLoss = nn.BCEWithLogitsLoss()
             CrossEntropyLoss = nn.CrossEntropyLoss()
 
-            if requestPrecision:
+            if batch_report:
                 gx = self.grid_x[:, :, :nG, :nG]
                 gy = self.grid_y[:, :, :nG, :nG]
                 pred_boxes[..., 0] = x.data + gx - width / 2
@@ -155,7 +155,7 @@ class YOLOLayer(nn.Module):
 
             tx, ty, tw, th, mask, tcls, TP, FP, FN, TC = \
                 build_targets(pred_boxes, pred_conf, pred_cls, targets, self.scaled_anchors, self.nA, self.nC, nG,
-                              requestPrecision)
+                              batch_report)
             tcls = tcls[mask]
             if x.is_cuda:
                 tx, ty, tw, th, mask, tcls = tx.cuda(), ty.cuda(), tw.cuda(), th.cuda(), mask.cuda(), tcls.cuda()
@@ -195,7 +195,7 @@ class YOLOLayer(nn.Module):
 
             # Sum False Positives from unassigned anchors
             FPe = torch.zeros(self.nC)
-            if requestPrecision:
+            if batch_report:
                 i = torch.sigmoid(pred_conf[~mask]) > 0.5
                 if i.sum() > 0:
                     FP_classes = torch.argmax(pred_cls[~mask][i], 1)
@@ -227,7 +227,7 @@ class Darknet(nn.Module):
         self.img_size = img_size
         self.loss_names = ['loss', 'x', 'y', 'w', 'h', 'conf', 'cls', 'nT', 'TP', 'FP', 'FPe', 'FN', 'TC']
 
-    def forward(self, x, targets=None, requestPrecision=False):
+    def forward(self, x, targets=None, batch_report=False):
         is_training = targets is not None
         output = []
         self.losses = defaultdict(float)
@@ -245,7 +245,7 @@ class Darknet(nn.Module):
             elif module_def['type'] == 'yolo':
                 # Train phase: get loss
                 if is_training:
-                    x, *losses = module[0](x, targets, requestPrecision)
+                    x, *losses = module[0](x, targets, batch_report)
                     for name, loss in zip(self.loss_names, losses):
                         self.losses[name] += loss
                 # Test phase: Get detections
@@ -258,7 +258,7 @@ class Darknet(nn.Module):
         self.losses['TP'] = 0
         self.losses['FP'] = 0
         self.losses['FN'] = 0
-        if is_training and requestPrecision:
+        if is_training and batch_report:
             self.losses['TC'] /= 3  # target category
             metrics = torch.zeros(3, len(self.losses['FPe']))  # TP, FP, FN
 

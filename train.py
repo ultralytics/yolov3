@@ -12,6 +12,7 @@ parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
 parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
 parser.add_argument('-resume', default=False, help='resume training flag')
+parser.add_argument('-batch_report', default=False, help='report TP, FP, FN, P and R per batch (slower)')
 opt = parser.parse_args()
 print(opt)
 
@@ -125,8 +126,7 @@ def main(opt):
                     g['lr'] = lr
 
             # Compute loss, compute gradient, update parameters
-            precision_per_batch = False
-            loss = model(imgs.to(device), targets, requestPrecision=precision_per_batch)
+            loss = model(imgs.to(device), targets, batch_report=opt.batch_report)
             loss.backward()
 
             # accumulated_batches = 1  # accumulate gradient for 4 batches before stepping optimizer
@@ -139,7 +139,7 @@ def main(opt):
             for key, val in model.losses.items():
                 rloss[key] = (rloss[key] * ui + val) / (ui + 1)
 
-            if precision_per_batch:
+            if opt.batch_report:
                 TP, FP, FN = metrics
                 metrics += model.losses['metrics']
 

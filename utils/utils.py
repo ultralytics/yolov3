@@ -192,7 +192,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
     return inter_area / (b1_area + b2_area - inter_area + 1e-16)
 
 
-def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG, requestPrecision):
+def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG, batch_report):
     """
     returns nT, nCorrect, tx, ty, tw, th, tconf, tcls
     """
@@ -214,7 +214,7 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
         if nTb == 0:
             continue
         t = target[b]
-        if requestPrecision:
+        if batch_report:
             FN[b, :nTb] = 1
 
         # Convert to position relative to box
@@ -273,7 +273,7 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchor_wh, nA, nC, nG
         tcls[b, a, gj, gi, tc] = 1
         tconf[b, a, gj, gi] = 1
 
-        if requestPrecision:
+        if batch_report:
             # predicted classes and confidence
             tb = torch.cat((gx - gw / 2, gy - gh / 2, gx + gw / 2, gy + gh / 2)).view(4, -1).t()  # target boxes
             pcls = torch.argmax(pred_cls[b, a, gj, gi], 1).cpu()
