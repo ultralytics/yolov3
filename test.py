@@ -16,7 +16,7 @@ parser.add_argument('-nms_thres', type=float, default=0.45, help='iou threshold 
 parser.add_argument('-n_cpu', type=int, default=0, help='number of cpu threads to use during batch generation')
 parser.add_argument('-img_size', type=int, default=416, help='size of each image dimension')
 opt = parser.parse_args()
-print(opt)
+print(opt, end='\n\n')
 
 cuda = torch.cuda.is_available()
 device = torch.device('cuda:0' if cuda else 'cpu')
@@ -49,10 +49,8 @@ def main(opt):
     # dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=False, num_workers=opt.n_cpu)
     dataloader = load_images_and_labels(test_path, batch_size=opt.batch_size, img_size=opt.img_size)
 
-    print('Compute mAP...')
-
-    mAP = 0
-    outputs, mAPs, TP, confidence, pred_class, target_class = [], [], [], [], [], []
+    print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
+    outputs, mAPs, mR, mP, TP, confidence, pred_class, target_class = [], [], [], [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     for batch_i, (imgs, targets) in enumerate(dataloader):
         imgs = imgs.to(device)
@@ -107,22 +105,25 @@ def main(opt):
                         correct.append(0)
 
             # Compute Average Precision (AP) per class
-            AP, AP_class = ap_per_class(tp=correct, conf=detections[:, 4], pred_cls=detections[:, 6],
-                                        target_cls=target_cls)
+            AP, AP_class, R, P = ap_per_class(tp=correct, conf=detections[:, 4], pred_cls=detections[:, 6],
+                                              target_cls=target_cls)
 
             # Accumulate AP per class
             AP_accum_count += np.bincount(AP_class, minlength=nC)
             AP_accum += np.bincount(AP_class, minlength=nC, weights=AP)
 
-            # Compute mean AP for this image
-            mAP = AP.mean()
+            # Compute mean AP across all classes in this image, and append to image list
+            mAPs.append(AP.mean())
+            mR.append(R.mean())
+            mP.append(P.mean())
 
-            # Append image mAP to list
-            mAPs.append(mAP)
+            # Means of all images
             mean_mAP = np.mean(mAPs)
+            mean_R = np.mean(mR)
+            mean_P = np.mean(mP)
 
             # Print image mAP and running mean mAP
-            print('Image %d/%d AP: %.4f (%.4f)' % (len(mAPs), len(dataloader) * opt.batch_size, mAP, mean_mAP))
+            print(('%11s%11s' + '%11.3g' * 3) % (len(mAPs), len(dataloader) * opt.batch_size, mean_P, mean_R, mean_mAP))
 
     # Print mAP per class
     classes = load_classes(opt.class_path)  # Extracts class labels from file
@@ -130,8 +131,8 @@ def main(opt):
         print('%15s: %-.4f' % (c, AP_accum[i] / AP_accum_count[i]))
 
     # Print mAP
-    print('Mean Average Precision: %.4f' % mean_mAP)
-    return mean_mAP
+    print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
+    return mean_mAP, mean_R, mean_P
 
 
 if __name__ == '__main__':

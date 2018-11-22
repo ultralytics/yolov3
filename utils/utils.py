@@ -14,20 +14,20 @@ def load_classes(path):
     """
     Loads class labels at 'path'
     """
-    fp = open(path, "r")
-    names = fp.read().split("\n")[:-1]
+    fp = open(path, 'r')
+    names = fp.read().split('\n')[:-1]
     return names
 
 
 def model_info(model):  # Plots a line-by-line description of a PyTorch model
-    nP = sum(x.numel() for x in model.parameters())  # number parameters
-    nG = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
+    n_p = sum(x.numel() for x in model.parameters())  # number parameters
+    n_g = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
     print('\n%4s %70s %9s %12s %20s %12s %12s' % ('', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
     for i, (name, p) in enumerate(model.named_parameters()):
         name = name.replace('module_list.', '')
         print('%4g %70s %9s %12g %20s %12g %12g' % (
             i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std()))
-    print('\n%g layers, %g parameters, %g gradients' % (i + 1, nP, nG))
+    print('\nModel Summary: %g layers, %g parameters, %g gradients\n' % (i + 1, n_p, n_g))
 
 
 def class_weights():  # frequency of each class in coco train2014
@@ -104,7 +104,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
     unique_classes = np.unique(np.concatenate((pred_cls, target_cls), 0))
 
     # Create Precision-Recall curve and compute AP for each class
-    ap = []
+    ap, p, r = [], [], []
     for c in unique_classes:
         i = pred_cls == c
         n_gt = sum(target_cls == c)  # Number of ground truth objects
@@ -112,25 +112,27 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
 
         if (n_p == 0) and (n_gt == 0):
             continue
-        elif (np == 0) and (n_gt > 0):
+        elif (n_p == 0) or (n_gt == 0):
             ap.append(0)
-        elif (n_p > 0) and (n_gt == 0):
-            ap.append(0)
+            r.append(0)
+            p.append(0)
         else:
             # Accumulate FPs and TPs
-            fpa = np.cumsum(1 - tp[i])
-            tpa = np.cumsum(tp[i])
+            fpc = np.cumsum(1 - tp[i])
+            tpc = np.cumsum(tp[i])
 
             # Recall
-            recall = tpa / (n_gt + 1e-16)
+            recall_curve = tpc / (n_gt + 1e-16)
+            r.append(tpc[-1] / (n_gt + 1e-16))
 
             # Precision
-            precision = tpa / (tpa + fpa)
+            precision_curve = tpc / (tpc + fpc)
+            p.append(tpc[-1] / (tpc[-1] + fpc[-1]))
 
             # AP from recall-precision curve
-            ap.append(compute_ap(recall, precision))
+            ap.append(compute_ap(recall_curve, precision_curve))
 
-    return np.array(ap), unique_classes.astype('int32')
+    return np.array(ap), unique_classes.astype('int32'), np.array(r), np.array(p)
 
 
 def compute_ap(recall, precision):
@@ -431,12 +433,12 @@ def coco_class_count(path='/Users/glennjocher/downloads/DATA/coco/labels/train20
 
 
 def plot_results():
-    # Plot YOLO training results file "results.txt"
+    # Plot YOLO training results file 'results.txt'
     import numpy as np
     import matplotlib.pyplot as plt
     plt.figure(figsize=(16, 8))
     s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
-    for f in ('results5.txt','results_new.txt','results3.txt',
+    for f in ('results5.txt', 'results_new.txt', 'results3.txt',
               ):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10]).T  # column 16 is mAP
         for i in range(9):
@@ -445,4 +447,3 @@ def plot_results():
             plt.title(s[i])
             if i == 0:
                 plt.legend()
-

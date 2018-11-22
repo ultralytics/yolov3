@@ -125,7 +125,7 @@ def main(opt):
                     g['lr'] = lr
 
             # Compute loss, compute gradient, update parameters
-            loss = model(imgs.to(device), targets, requestPrecision=True)
+            loss = model(imgs.to(device), targets, requestPrecision=False)
             loss.backward()
 
             # accumulated_batches = 1  # accumulate gradient for 4 batches before stepping optimizer
@@ -183,11 +183,11 @@ def main(opt):
         # Calculate mAP
         import test
         test.opt.weights_path = 'weights/latest.pt'
-        mAP = test.main(test.opt)
+        mAP, R, P = test.main(test.opt)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
-            file.write(s + '%11.3g' % mAP + '\n')
+            file.write(s + '%11.3g' * 3 % (mAP, P, R) + '\n')
 
     # Save final model
     dt = time.time() - t0
