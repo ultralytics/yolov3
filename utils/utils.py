@@ -300,7 +300,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         # Filter out confidence scores below threshold
         # Get score and class with highest confidence
 
-        # cross-class NMS
+        # cross-class NMS (experimental)
         cross_class_nms = False
         if cross_class_nms:
             # thresh = 0.85

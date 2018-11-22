@@ -126,12 +126,13 @@ def main(opt):
             print(('%11s%11s' + '%11.3g' * 3) % (len(mAPs), len(dataloader) * opt.batch_size, mean_P, mean_R, mean_mAP))
 
     # Print mAP per class
+    print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP') + '\n\nmAP Per Class:')
+
     classes = load_classes(opt.class_path)  # Extracts class labels from file
     for i, c in enumerate(classes):
         print('%15s: %-.4f' % (c, AP_accum[i] / AP_accum_count[i]))
 
-    # Print mAP
-    print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
+    # Return mAP
     return mean_mAP, mean_R, mean_P
 
 
