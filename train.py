@@ -18,7 +18,7 @@ opt = parser.parse_args()
 print(opt)
 
 # Import test.py to get mAP after each epoch
-sys.argv[1:] = []  # delete any command line arguments that might get picked up by test.py
+sys.argv[1:] = []  # delete any train.py command-line arguments before they reach test.py
 import test  # must follow sys.argv[1:] = []
 
 cuda = torch.cuda.is_available()
