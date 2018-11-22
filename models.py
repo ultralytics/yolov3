@@ -254,8 +254,11 @@ class Darknet(nn.Module):
                 output.append(x)
             layer_outputs.append(x)
 
+        self.losses['nT'] /= 3
+        self.losses['TP'] = 0
+        self.losses['FP'] = 0
+        self.losses['FN'] = 0
         if is_training and requestPrecision:
-            self.losses['nT'] /= 3
             self.losses['TC'] /= 3  # target category
             metrics = torch.zeros(3, len(self.losses['FPe']))  # TP, FP, FN
 
