@@ -1,4 +1,5 @@
 import argparse
+import sys
 import time
 
 from models import *
@@ -15,6 +16,10 @@ parser.add_argument('-resume', default=False, help='resume training flag')
 parser.add_argument('-batch_report', default=False, help='report TP, FP, FN, P and R per batch (slower)')
 opt = parser.parse_args()
 print(opt)
+
+# Import test.py to get mAP after each epoch
+sys.argv[1:] = []  # delete any command line arguments that might get picked up by test.py
+import test  # must follow sys.argv[1:] = []
 
 cuda = torch.cuda.is_available()
 device = torch.device('cuda:0' if cuda else 'cpu')
@@ -184,7 +189,6 @@ def main(opt):
             os.system('cp weights/latest.pt weights/backup' + str(epoch) + '.pt')
 
         # Calculate mAP
-        import test
         test.opt.weights_path = 'weights/latest.pt'
         mAP, R, P = test.main(test.opt)
 
