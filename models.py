@@ -184,6 +184,7 @@ class YOLOLayer(nn.Module):
 
             # Sum loss components
             balance_losses_flag = True
+
             if balance_losses_flag:
                 k = 1 / self.loss_means.clone()
                 loss = (lx * k[0] + ly * k[1] + lw * k[2] + lh * k[3] + lconf * k[4] + lcls * k[5]) / k.mean()
