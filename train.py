@@ -14,6 +14,7 @@ parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file p
 parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
 parser.add_argument('-resume', default=False, help='resume training flag')
 parser.add_argument('-batch_report', default=False, help='report TP, FP, FN, P and R per batch (slower)')
+parser.add_argument('-optimizer', default='SGD', help='Optimizer')
 opt = parser.parse_args()
 print(opt)
 
@@ -68,9 +69,10 @@ def main(opt):
         #         p.requires_grad = False
 
         # Set optimizer
-        # optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()))
-        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()),
-                                    lr=1e-3, momentum=.9, weight_decay=5e-4)
+        if opt.optimizer is 'Adam':
+            optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, weight_decay=5e-4)
+        else:
+            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3, momentum=.9, weight_decay=5e-4)
 
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
@@ -91,8 +93,10 @@ def main(opt):
         model.to(device).train()
 
         # Set optimizer
-        # optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
-        optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=.9, weight_decay=5e-4)
+        if opt.optimizer is 'Adam':
+            optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, weight_decay=5e-4)
+        else:
+            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3, momentum=.9, weight_decay=5e-4)
 
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
