@@ -306,7 +306,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             # thresh = 0.85
             thresh = nms_thres
             a = pred.clone()
-            _, indices = torch.sort(-a[:, 4], 0) # sort best to worst
+            _, indices = torch.sort(-a[:, 4], 0)  # sort best to worst
             a = a[indices]
             radius = 30  # area to search for cross-class ious
             for i in range(len(a)):
