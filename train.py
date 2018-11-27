@@ -14,7 +14,9 @@ parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file p
 parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
 parser.add_argument('-resume', default=False, help='resume training flag')
 parser.add_argument('-batch_report', default=False, help='report TP, FP, FN, P and R per batch (slower)')
-parser.add_argument('-optimizer', default='SGD', help='Optimizer')
+parser.add_argument('-optimizer', default='SGD', help='optimizer')
+parser.add_argument('-freeze_darknet53', default=False, help='freeze darknet53.conv.74 layers for first epoch')
+parser.add_argument('-var', type=float, default=0, help='optional test variable')
 opt = parser.parse_args()
 print(opt)
 
@@ -51,9 +53,7 @@ def main(opt):
     # Get dataloader
     dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=opt.img_size, augment=True)
 
-    # Reload saved optimizer state
-    start_epoch = 0
-    best_loss = float('inf')
+    lr0 = 0.001
     if opt.resume:
         checkpoint = torch.load('weights/latest.pt', map_location='cpu')
 
@@ -69,10 +69,7 @@ def main(opt):
         #         p.requires_grad = False
 
         # Set optimizer
-        if opt.optimizer is 'Adam':
-            optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, weight_decay=5e-4)
-        else:
-            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3, momentum=.9, weight_decay=5e-4)
+        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr0, momentum=.9)
 
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
@@ -82,6 +79,9 @@ def main(opt):
         del checkpoint  # current, saved
 
     else:
+        start_epoch = 0
+        best_loss = float('inf')
+
         # Initialize model with darknet53 weights (optional)
         if not os.path.isfile('weights/darknet53.conv.74'):
             os.system('wget https://pjreddie.com/media/files/darknet53.conv.74 -P weights')
@@ -93,10 +93,7 @@ def main(opt):
         model.to(device).train()
 
         # Set optimizer
-        if opt.optimizer is 'Adam':
-            optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, weight_decay=5e-4)
-        else:
-            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3, momentum=.9, weight_decay=5e-4)
+        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr0, momentum=.9)
 
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
@@ -114,11 +111,22 @@ def main(opt):
 
         # Update scheduler (manual)  at 0, 54, 61 epochs to 1e-3, 1e-4, 1e-5
         if epoch > 50:
-            lr = 1e-4
+            lr = lr0 / 10
         else:
-            lr = 1e-3
+            lr = lr0
         for g in optimizer.param_groups:
             g['lr'] = lr
+
+        # Freeze darknet53.conv.74 layers for first epoch
+        if opt.freeze_darknet53:
+            if epoch == 0:
+                for i, (name, p) in enumerate(model.named_parameters()):
+                    if int(name.split('.')[1]) < 75:  # if layer < 75
+                        p.requires_grad = False
+            elif epoch == 1:
+                for i, (name, p) in enumerate(model.named_parameters()):
+                    if int(name.split('.')[1]) < 75:  # if layer < 75
+                        p.requires_grad = True
 
         ui = -1
         rloss = defaultdict(float)  # running loss
@@ -130,12 +138,12 @@ def main(opt):
 
             # SGD burn-in
             if (epoch == 0) & (i <= 1000):
-                lr = 1e-3 * (i / 1000) ** 4
+                lr = lr0 * (i / 1000) ** 4
                 for g in optimizer.param_groups:
                     g['lr'] = lr
 
             # Compute loss, compute gradient, update parameters
-            loss = model(imgs.to(device), targets, batch_report=opt.batch_report)
+            loss = model(imgs.to(device), targets, batch_report=opt.batch_report, var=opt.var)
             loss.backward()
 
             # accumulated_batches = 1  # accumulate gradient for 4 batches before stepping optimizer

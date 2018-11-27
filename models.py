@@ -102,8 +102,9 @@ class YOLOLayer(nn.Module):
         self.weights = class_weights()
 
         self.loss_means = torch.ones(6)
+        self.tx, self.ty, self.tw, self.th = [], [], [], []
 
-    def forward(self, p, targets=None, batch_report=False):
+    def forward(self, p, targets=None, batch_report=False, var=None):
         FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
 
         bs = p.shape[0]  # batch size
@@ -171,6 +172,17 @@ class YOLOLayer(nn.Module):
                 lw = k * MSELoss(w[mask], tw[mask])
                 lh = k * MSELoss(h[mask], th[mask])
 
+                # self.tx.extend(tx[mask].data.numpy())
+                # self.ty.extend(ty[mask].data.numpy())
+                # self.tw.extend(tw[mask].data.numpy())
+                # self.th.extend(th[mask].data.numpy())
+                # print([np.mean(self.tx), np.std(self.tx)],[np.mean(self.ty), np.std(self.ty)],[np.mean(self.tw), np.std(self.tw)],[np.mean(self.th), np.std(self.th)])
+                # [0.5040668, 0.2885492] [0.51384246, 0.28328574] [-0.4754091, 0.57951087] [-0.25998235, 0.44858757]
+                # [0.50184494, 0.2858976] [0.51747805, 0.2896323] [0.12962963, 0.6263085] [-0.2722081, 0.61574113]
+                # [0.5032071, 0.28825334] [0.5063132, 0.2808862] [0.21124361, 0.44760725] [0.35445485, 0.6427766]
+                # import matplotlib.pyplot as plt
+                # plt.hist(self.x)
+
                 # lconf = k * BCEWithLogitsLoss(pred_conf[mask], mask[mask].float())
                 lconf = (k * 10) * BCEWithLogitsLoss(pred_conf, mask.float())
 
@@ -227,7 +239,7 @@ class Darknet(nn.Module):
         self.img_size = img_size
         self.loss_names = ['loss', 'x', 'y', 'w', 'h', 'conf', 'cls', 'nT', 'TP', 'FP', 'FPe', 'FN', 'TC']
 
-    def forward(self, x, targets=None, batch_report=False):
+    def forward(self, x, targets=None, batch_report=False, var=0):
         is_training = targets is not None
         output = []
         self.losses = defaultdict(float)
@@ -245,7 +257,7 @@ class Darknet(nn.Module):
             elif module_def['type'] == 'yolo':
                 # Train phase: get loss
                 if is_training:
-                    x, *losses = module[0](x, targets, batch_report)
+                    x, *losses = module[0](x, targets, batch_report, var)
                     for name, loss in zip(self.loss_names, losses):
                         self.losses[name] += loss
                 # Test phase: Get detections
