@@ -30,3 +30,14 @@ gsutil cp yolov3/weights/latest.pt gs://ultralytics
 # Copy latest.pt from bucket
 gsutil cp gs://ultralytics/latest.pt yolov3/weights/latest.pt
 
+# Testing
+sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3
+python3 train.py -epochs 1 -var 1
+python3 train.py -epochs 1 -var 2
+python3 train.py -epochs 1 -var 4
+python3 train.py -epochs 1 -var 8
+python3 train.py -epochs 1 -var 16
+python3 train.py -epochs 1 -var 32
+python3 train.py -epochs 1 -var 64
+sudo shutdown
+
