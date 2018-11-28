@@ -14,7 +14,6 @@ parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file p
 parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
 parser.add_argument('-resume', default=False, help='resume training flag')
 parser.add_argument('-batch_report', default=False, help='report TP, FP, FN, P and R per batch (slower)')
-parser.add_argument('-optimizer', default='SGD', help='optimizer')
 parser.add_argument('-freeze_darknet53', default=False, help='freeze darknet53.conv.74 layers for first epoch')
 parser.add_argument('-var', type=float, default=0, help='optional test variable')
 opt = parser.parse_args()
