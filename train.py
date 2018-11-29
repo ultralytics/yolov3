@@ -58,8 +58,9 @@ def main(opt):
 
         model.load_state_dict(checkpoint['model'])
         if torch.cuda.device_count() > 1:
-            print('Using ', torch.cuda.device_count(), ' GPUs')
-            model = nn.DataParallel(model)
+            raise Exception('Multi-GPU not currently supported: https://github.com/ultralytics/yolov3/issues/21')
+            # print('Using ', torch.cuda.device_count(), ' GPUs')
+            # model = nn.DataParallel(model)
         model.to(device).train()
 
         # # Transfer learning (train only YOLO layers)
@@ -87,8 +88,9 @@ def main(opt):
         load_weights(model, 'weights/darknet53.conv.74')
 
         if torch.cuda.device_count() > 1:
-            print('Using ', torch.cuda.device_count(), ' GPUs')
-            model = nn.DataParallel(model)
+            raise Exception('Multi-GPU not currently supported: https://github.com/ultralytics/yolov3/issues/21')
+            # print('Using ', torch.cuda.device_count(), ' GPUs')
+            # model = nn.DataParallel(model)
         model.to(device).train()
 
         # Set optimizer
