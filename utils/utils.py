@@ -452,7 +452,7 @@ def plot_results():
             if i == 0:
                 plt.legend()
 
-# def plot_results():
+# def plot_results():  # (OLD FORMAT before October 2018)
 #     # Plot YOLO training results file 'results.txt'
 #     import numpy as np
 #     import matplotlib.pyplot as plt
