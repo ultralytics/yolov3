@@ -442,12 +442,28 @@ def plot_results():
     import matplotlib.pyplot as plt
     plt.figure(figsize=(16, 8))
     s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
-    for f in ('results_d5.txt', 'results_d10.txt', 'results_new.txt',
+    for f in ('results.txt',
               ):
-        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10]).T  # column 16 is mAP
-        for i in range(9):
+        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 17, 18, 16]).T  # column 16 is mAP
+        for i in range(10):
             plt.subplot(2, 5, i + 1)
             plt.plot(results[i, :250], marker='.', label=f)
             plt.title(s[i])
             if i == 0:
                 plt.legend()
+
+# def plot_results():
+#     # Plot YOLO training results file 'results.txt'
+#     import numpy as np
+#     import matplotlib.pyplot as plt
+#     plt.figure(figsize=(16, 8))
+#     s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
+#     for f in ('results_d5.txt', 'results_d10.txt', 'results_64.txt',
+#               ):
+#         results = np.loadtxt(f, usecols=[16]).T  # column 16 is mAP
+#         for i in range(1):
+#             plt.subplot(2, 5, i + 1)
+#             plt.plot(results, marker='.', label=f)
+#             plt.title(s[i])
+#             if i == 0:
+#                 plt.legend()
