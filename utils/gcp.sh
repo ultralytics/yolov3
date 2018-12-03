@@ -29,6 +29,7 @@ gsutil cp yolov3/weights/latest.pt gs://ultralytics
 
 # Copy latest.pt from bucket
 gsutil cp gs://ultralytics/latest.pt yolov3/weights/latest.pt
+wget https://storage.googleapis.com/ultralytics/latest.pt
 
 # Testing
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3

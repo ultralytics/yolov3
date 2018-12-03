@@ -438,33 +438,18 @@ def coco_class_count(path='/Users/glennjocher/downloads/DATA/coco/labels/train20
 
 def plot_results():
     # Plot YOLO training results file 'results.txt'
+    import glob
     import numpy as np
     import matplotlib.pyplot as plt
     plt.figure(figsize=(16, 8))
     s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
-    for f in ('results_64.txt','results_642.txt'
-              ):
+    files = sorted(glob.glob('results*.txt'))
+    for f in files:
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 17, 18, 16]).T  # column 16 is mAP
         n = results.shape[1]
         for i in range(10):
             plt.subplot(2, 5, i + 1)
-            plt.plot(range(1,n), results[i, 1:], marker='.', label=f)
+            plt.plot(range(1, n), results[i, 1:], marker='.', label=f)
             plt.title(s[i])
             if i == 0:
                 plt.legend()
-
-# def plot_results():  # (OLD FORMAT before October 2018)
-#     # Plot YOLO training results file 'results.txt'
-#     import numpy as np
-#     import matplotlib.pyplot as plt
-#     plt.figure(figsize=(16, 8))
-#     s = ['X', 'Y', 'Width', 'Height', 'Objectness', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
-#     for f in ('results_d5.txt', 'results_d10.txt', 'results_64.txt',
-#               ):
-#         results = np.loadtxt(f, usecols=[16]).T  # column 16 is mAP
-#         for i in range(1):
-#             plt.subplot(2, 5, i + 1)
-#             plt.plot(results, marker='.', label=f)
-#             plt.title(s[i])
-#             if i == 0:
-#                 plt.legend()
