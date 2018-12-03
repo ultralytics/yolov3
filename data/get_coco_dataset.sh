@@ -24,8 +24,8 @@ tar xzf labels.tgz
 unzip -q instances_train-val2014.zip
 
 # Set Up Image Lists
-#paste <(awk "{print \"$PWD\"}" <5k.part) 5k.part | tr -d '\t' > 5k.txt
-#paste <(awk "{print \"$PWD\"}" <trainvalno5k.part) trainvalno5k.part | tr -d '\t' > trainvalno5k.txt
+paste <(awk "{print \"$PWD\"}" <5k.part) 5k.part | tr -d '\t' > 5k.txt
+paste <(awk "{print \"$PWD\"}" <trainvalno5k.part) trainvalno5k.part | tr -d '\t' > trainvalno5k.txt
 
 sudo shutdown
 
@@ -34,3 +34,5 @@ sudo shutdown
 # tar -xvzf train_images.tgz
 # sudo rm -rf train_images/._*
 # lastly convert each .tif to a .bmp for faster loading in cv2
+
+# /home/glenn_jocher3/coco/images/train2014/COCO_train2014_000000167126.jpg  # bad image??
