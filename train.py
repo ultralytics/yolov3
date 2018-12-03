@@ -35,7 +35,8 @@ torch.manual_seed(0)
 if cuda:
     torch.cuda.manual_seed(0)
     torch.cuda.manual_seed_all(0)
-    torch.backends.cudnn.benchmark = True
+    if not opt.multi_scale:
+        torch.backends.cudnn.benchmark = True
 
 
 def main(opt):
