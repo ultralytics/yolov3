@@ -424,7 +424,7 @@ def strip_optimizer_from_checkpoint(filename='weights/best.pt'):
     torch.save(a, filename.replace('.pt', '_lite.pt'))
 
 
-def coco_class_count(path='/Users/glennjocher/downloads/DATA/coco/labels/train2014/'):
+def coco_class_count(path='../coco/labels/train2014/'):
     import glob
 
     nC = 80  # number classes

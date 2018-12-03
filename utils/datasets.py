@@ -66,12 +66,7 @@ class load_images_and_labels():  # for training
         with open(path, 'r') as file:
             self.img_files = file.readlines()
 
-        if platform == 'darwin':  # MacOS (local)
-            self.img_files = [path.replace('\n', '').replace('/images', '/Users/glennjocher/Downloads/data/coco/images')
-                              for path in self.img_files]
-        else:  # linux (gcp cloud)
-            self.img_files = [path.replace('\n', '').replace('/images', '../coco/images') for path in self.img_files]
-
+        self.img_files = [path.replace('\n', '') for path in self.img_files]
         self.label_files = [path.replace('images', 'labels').replace('.png', '.txt').replace('.jpg', '.txt') for path in
                             self.img_files]
 
@@ -287,7 +282,7 @@ def random_affine(img, targets=None, degrees=(-10, 10), translate=(.1, .1), scal
         return imw
 
 
-def convert_tif2bmp(p='/Users/glennjocher/Downloads/DATA/xview/val_images_bmp'):
+def convert_tif2bmp(p='../xview/val_images_bmp'):
     import glob
     import cv2
     files = sorted(glob.glob('%s/*.tif' % p))
