@@ -184,15 +184,14 @@ class YOLOLayer(nn.Module):
                 # plt.hist(self.x)
 
                 # lconf = k * BCEWithLogitsLoss(pred_conf[mask], mask[mask].float())
-                lconf = (k * 64) * BCEWithLogitsLoss(pred_conf, mask.float())
 
                 lcls = (k / 4) * CrossEntropyLoss(pred_cls[mask], torch.argmax(tcls, 1))
                 # lcls = (k * 10) * BCEWithLogitsLoss(pred_cls[mask], tcls.float())
             else:
                 lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
 
-            # Add confidence loss for background anchors (noobj)
             # lconf += k * BCEWithLogitsLoss(pred_conf[~mask], mask[~mask].float())
+            lconf = (k * 64) * BCEWithLogitsLoss(pred_conf, mask.float())
 
             # Sum loss components
             balance_losses_flag = False

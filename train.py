@@ -8,15 +8,18 @@ from utils.utils import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-epochs', type=int, default=100, help='number of epochs')
-parser.add_argument('-batch_size', type=int, default=16, help='size of each image batch')
+parser.add_argument('-batch_size', type=int, default=2, help='size of each image batch')
 parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help='data config file path')
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
+parser.add_argument('-multi_scale', default=True, help='random image sizes per batch 320 - 608')
+parser.add_argument('-img_size', type=int, default=32 * 13, help='pixels')
 parser.add_argument('-resume', default=False, help='resume training flag')
 parser.add_argument('-batch_report', default=False, help='report TP, FP, FN, P and R per batch (slower)')
 parser.add_argument('-freeze_darknet53', default=False, help='freeze darknet53.conv.74 layers for first epoch')
 parser.add_argument('-var', type=float, default=0, help='optional test variable')
 opt = parser.parse_args()
+if opt.multi_scale:  # pass maximum multi_scale size
+    opt.img_size = 608
 print(opt)
 
 # Import test.py to get mAP after each epoch
@@ -50,7 +53,8 @@ def main(opt):
     model = Darknet(opt.cfg, opt.img_size)
 
     # Get dataloader
-    dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=opt.img_size, augment=True)
+    dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=opt.img_size,
+                                        multi_scale=opt.multi_scale, augment=True)
 
     lr0 = 0.001
     if opt.resume:
@@ -217,4 +221,3 @@ def main(opt):
 if __name__ == '__main__':
     torch.cuda.empty_cache()
     main(opt)
-    torch.cuda.empty_cache()

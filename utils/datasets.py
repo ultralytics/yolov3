@@ -60,7 +60,7 @@ class load_images():  # for inference
 
 
 class load_images_and_labels():  # for training
-    def __init__(self, path, batch_size=1, img_size=608, augment=False):
+    def __init__(self, path, batch_size=1, img_size=608, multi_scale=False, augment=False):
         self.path = path
         # self.img_files = sorted(glob.glob('%s/*.*' % path))
         with open(path, 'r') as file:
@@ -79,6 +79,7 @@ class load_images_and_labels():  # for training
         self.nB = math.ceil(self.nF / batch_size)  # number of batches
         self.batch_size = batch_size
         self.height = img_size
+        self.multi_scale = multi_scale
         self.augment = augment
 
         assert self.nB > 0, 'No images found in path %s' % path
@@ -100,8 +101,7 @@ class load_images_and_labels():  # for training
         ia = self.count * self.batch_size
         ib = min((self.count + 1) * self.batch_size, self.nF)
 
-        multi_scale = False
-        if multi_scale and self.augment:
+        if self.multi_scale:
             # Multi-Scale YOLO Training
             height = random.choice(range(10, 20)) * 32  # 320 - 608 pixels
         else:
