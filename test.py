@@ -26,10 +26,7 @@ def main(opt):
     # Configure run
     data_config = parse_data_config(opt.data_config_path)
     nC = int(data_config['classes'])  # number of classes (80 for COCO)
-    if platform == 'darwin':  # MacOS (local)
-        test_path = data_config['valid']
-    else:  # linux (cloud, i.e. gcp)
-        test_path = '../coco/5k.part'
+    test_path = data_config['valid']
 
     # Initiate model
     model = Darknet(opt.cfg, opt.img_size)
