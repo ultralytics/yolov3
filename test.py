@@ -35,12 +35,12 @@ def main(opt):
     model = Darknet(opt.cfg, opt.img_size)
 
     # Load weights
-    if opt.weights_path.endswith('.weights'):  # darknet format
-        load_weights(model, opt.weights_path)
-    elif opt.weights_path.endswith('.pt'):  # pytorch format
+    if opt.weights_path.endswith('.pt'):  # pytorch format
         checkpoint = torch.load(opt.weights_path, map_location='cpu')
         model.load_state_dict(checkpoint['model'])
         del checkpoint
+    else:  # darknet format
+        load_weights(model, opt.weights_path)
 
     model.to(device).eval()
 

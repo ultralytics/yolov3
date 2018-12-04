@@ -13,6 +13,9 @@ python3 detect.py
 # Test
 python3 test.py -img_size 416 -weights_path weights/latest.pt
 
+# Test Darknet
+python3 test.py -img_size 416 -weights_path ../darknet/backup/yolov3.backup
+
 # Download and Test
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3
 wget https://pjreddie.com/media/files/yolov3.weights -P weights
