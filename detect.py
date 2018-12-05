@@ -10,6 +10,7 @@ from utils import torch_utils
 
 def detect(
         net_config_path,
+        data_config_path,
         images_path,
         weights_file_path='weights/yolov3.pt',
         output='output',
@@ -19,7 +20,6 @@ def detect(
         nms_thres=0.45,
         save_txt=False,
         save_images=False,
-        class_path='data/coco.names',
 ):
 
     device = torch_utils.select_device()
@@ -27,6 +27,8 @@ def detect(
 
     os.system('rm -rf ' + output)
     os.makedirs(output, exist_ok=True)
+
+    data_config = parse_data_config(data_config_path)
 
     # Load model
     model = Darknet(net_config_path, img_size)
@@ -55,7 +57,7 @@ def detect(
     model.to(device).eval()
 
     # Set Dataloader
-    classes = load_classes(class_path)  # Extracts class labels from file
+    classes = load_classes(data_config['names'])  # Extracts class labels from file
     dataloader = load_images(images_path, batch_size=batch_size, img_size=img_size)
 
     imgs = []  # Stores image paths
@@ -151,7 +153,7 @@ if __name__ == '__main__':
     parser.add_argument('--txt-out', type=bool, default=False)
 
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-    parser.add_argument('--class-path', type=str, default='data/coco.names', help='path to class label file')
+    parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
     parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
     parser.add_argument('--batch-size', type=int, default=1, help='size of the batches')
@@ -165,6 +167,7 @@ if __name__ == '__main__':
 
     detect(
         opt.cfg,
+        opt.data_config,
         opt.image_folder,
         output=opt.output_folder,
         batch_size=opt.batch_size,
@@ -173,5 +176,4 @@ if __name__ == '__main__':
         nms_thres=opt.nms_thres,
         save_txt=opt.txt_out,
         save_images=opt.plot_flag,
-        class_path=opt.class_path,
     )

@@ -220,7 +220,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
-    parser.add_argument('--data-config-path', type=str, default='cfg/coco.data', help='data config file path')
+    parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--multi-scale', default=False, help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
@@ -236,7 +236,7 @@ if __name__ == '__main__':
     torch.cuda.empty_cache()
     train(
         opt.cfg,
-        opt.data_config_path,
+        opt.data_config,
         img_size=opt.img_size,
         resume=opt.resume,
         epochs=opt.epochs,

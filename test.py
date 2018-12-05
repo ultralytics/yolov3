@@ -11,7 +11,6 @@ def test(
     net_config_path,
     data_config_path,
     weights_file_path,
-    class_path=None,
     batch_size=16,
     img_size=416,
     iou_thres=0.5,
@@ -118,10 +117,9 @@ def test(
     # Print mAP per class
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP') + '\n\nmAP Per Class:')
 
-    if class_path:
-        classes = load_classes(class_path)  # Extracts class labels from file
-        for i, c in enumerate(classes):
-            print('%15s: %-.4f' % (c, AP_accum[i] / AP_accum_count[i]))
+    classes = load_classes(data_config['names'])  # Extracts class labels from file
+    for i, c in enumerate(classes):
+        print('%15s: %-.4f' % (c, AP_accum[i] / AP_accum_count[i]))
 
     # Return mAP
     return mean_mAP, mean_R, mean_P
@@ -132,9 +130,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='path to model config file')
-    parser.add_argument('--data-config-path', type=str, default='cfg/coco.data', help='path to data config file')
+    parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
     parser.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
-    parser.add_argument('--class-path', type=str, default='data/coco.names', help='path to class label file')
     parser.add_argument('--iou-thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
@@ -147,9 +144,8 @@ if __name__ == '__main__':
 
     mAP = test(
         opt.cfg,
-        opt.data_config_path,
+        opt.data_config,
         opt.weights,
-        class_path=opt.class_path,
         batch_size=opt.batch_size,
         img_size=opt.img_size,
         iou_thres=opt.iou_thres,
