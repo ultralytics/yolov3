@@ -224,7 +224,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--multi-scale', default=False, help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
-    parser.add_argument('--resume', default=False, help='resume training flag')
+    parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--report', default=False, help='report TP, FP, FN, P and R per batch (slower)')
     parser.add_argument('--freeze-darknet53', default=False, help='freeze darknet53.conv.74 layers for first epoch')
     parser.add_argument('--var', type=float, default=0, help='optional test variable')

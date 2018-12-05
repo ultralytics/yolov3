@@ -4,7 +4,7 @@
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3 && python3 train.py
 
 # Resume
-python3 train.py --resume 1
+python3 train.py --resume
 
 # Detect
 gsutil cp gs://ultralytics/yolov3.pt yolov3/weights
@@ -24,7 +24,7 @@ python3 test.py --img_size 416 --weights weights/backup5.pt --nms_thres 0.45
 # Download and Resume
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3
 wget https://storage.googleapis.com/ultralytics/yolov3.pt -O weights/latest.pt
-python3 train.py --img_size 416 --batch_size 16 --epochs 1 --resume 1
+python3 train.py --img_size 416 --batch_size 16 --epochs 1 --resume
 python3 test.py --img_size 416 --weights weights/latest.pt --conf_thres 0.5
 
 # Copy latest.pt to bucket
