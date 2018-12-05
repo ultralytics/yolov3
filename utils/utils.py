@@ -5,9 +5,17 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from utils import torch_utils
+
 # Set printoptions
 torch.set_printoptions(linewidth=1320, precision=5, profile='long')
 np.set_printoptions(linewidth=320, formatter={'float_kind': '{:11.5g}'.format})  # format short g, %precision=5
+
+
+def init_seeds(seed=0):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch_utils.init_seeds(seed=seed)
 
 
 def load_classes(path):

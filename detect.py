@@ -5,8 +5,6 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-cuda = torch.cuda.is_available()
-device = torch.device('cuda:0' if cuda else 'cpu')
 f_path = os.path.dirname(os.path.realpath(__file__)) + '/'
 
 parser = argparse.ArgumentParser()
@@ -28,6 +26,10 @@ print(opt)
 
 
 def main(opt):
+
+    device = torch_utils.select_device()
+    print("Using device: \"{}\"".format(device))
+
     os.system('rm -rf ' + opt.output_folder)
     os.makedirs(opt.output_folder, exist_ok=True)
 

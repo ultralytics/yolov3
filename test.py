@@ -4,6 +4,8 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
+from utils import torch_utils
+
 parser = argparse.ArgumentParser(prog='test.py')
 parser.add_argument('-batch_size', type=int, default=32, help='size of each image batch')
 parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='path to model config file')
@@ -18,11 +20,11 @@ parser.add_argument('-img_size', type=int, default=416, help='size of each image
 opt = parser.parse_args()
 print(opt, end='\n\n')
 
-cuda = torch.cuda.is_available()
-device = torch.device('cuda:0' if cuda else 'cpu')
-
 
 def main(opt):
+    device = torch_utils.select_device()
+    print("Using device: \"{}\"".format(device))
+
     # Configure run
     data_config = parse_data_config(opt.data_config_path)
     nC = int(data_config['classes'])  # number of classes (80 for COCO)
@@ -128,4 +130,7 @@ def main(opt):
 
 
 if __name__ == '__main__':
+
+    init_seeds()
+
     mAP = main(opt)

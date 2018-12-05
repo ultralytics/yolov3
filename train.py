@@ -6,6 +6,8 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
+from utils import torch_utils
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-epochs', type=int, default=100, help='number of epochs')
 parser.add_argument('-batch_size', type=int, default=16, help='size of each image batch')
@@ -26,20 +28,15 @@ print(opt)
 sys.argv[1:] = []  # delete any train.py command-line arguments before they reach test.py
 import test  # must follow sys.argv[1:] = []
 
-cuda = torch.cuda.is_available()
-device = torch.device('cuda:0' if cuda else 'cpu')
 
-random.seed(0)
-np.random.seed(0)
-torch.manual_seed(0)
-if cuda:
-    torch.cuda.manual_seed(0)
-    torch.cuda.manual_seed_all(0)
+def main(opt):
+
+    device = torch_utils.select_device()
+    print("Using device: \"{}\"".format(device))
+
     if not opt.multi_scale:
         torch.backends.cudnn.benchmark = True
 
-
-def main(opt):
     os.makedirs('weights', exist_ok=True)
 
     # Configure run
@@ -217,5 +214,8 @@ def main(opt):
 
 
 if __name__ == '__main__':
+
+    init_seeds()
+
     torch.cuda.empty_cache()
     main(opt)
