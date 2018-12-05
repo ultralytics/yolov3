@@ -5,45 +5,39 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-f_path = os.path.dirname(os.path.realpath(__file__)) + '/'
-
-parser = argparse.ArgumentParser()
-# Get data configuration
-
-parser.add_argument('-image_folder', type=str, default='data/samples', help='path to images')
-parser.add_argument('-output_folder', type=str, default='output', help='path to outputs')
-parser.add_argument('-plot_flag', type=bool, default=True)
-parser.add_argument('-txt_out', type=bool, default=False)
-
-parser.add_argument('-cfg', type=str, default=f_path + 'cfg/yolov3.cfg', help='cfg file path')
-parser.add_argument('-class_path', type=str, default=f_path + 'data/coco.names', help='path to class label file')
-parser.add_argument('-conf_thres', type=float, default=0.50, help='object confidence threshold')
-parser.add_argument('-nms_thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
-parser.add_argument('-batch_size', type=int, default=1, help='size of the batches')
-parser.add_argument('-img_size', type=int, default=32 * 13, help='size of each image dimension')
-opt = parser.parse_args()
-print(opt)
+from utils import torch_utils
 
 
-def main(opt):
+def detect(
+        net_config_path,
+        images_path,
+        weights_file_path='weights/yolov3.pt',
+        output='output',
+        batch_size=16,
+        img_size=416,
+        conf_thres=0.3,
+        nms_thres=0.45,
+        save_txt=False,
+        save_images=False,
+        class_path='data/coco.names',
+):
 
     device = torch_utils.select_device()
     print("Using device: \"{}\"".format(device))
 
-    os.system('rm -rf ' + opt.output_folder)
-    os.makedirs(opt.output_folder, exist_ok=True)
+    os.system('rm -rf ' + output)
+    os.makedirs(output, exist_ok=True)
 
     # Load model
-    model = Darknet(opt.cfg, opt.img_size)
+    model = Darknet(net_config_path, img_size)
 
-    weights_path = f_path + 'weights/yolov3.pt'
-    if weights_path.endswith('.pt'):  # pytorch format
-        if weights_path.endswith('weights/yolov3.pt') and not os.path.isfile(weights_path):
-            os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights_path)
+    if weights_file_path.endswith('.pt'):  # pytorch format
+        if weights_file_path.endswith('weights/yolov3.pt') and not os.path.isfile(weights_file_path):
+            os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights_file_path)
     else:  # darknet format
-        load_weights(model, weights_path)
+        load_weights(model, weights_file_path)
 
-        checkpoint = torch.load(weights_path, map_location='cpu')
+        checkpoint = torch.load(weights_file_path, map_location='cpu')
         model.load_state_dict(checkpoint['model'])
         del checkpoint
 
@@ -61,8 +55,8 @@ def main(opt):
     model.to(device).eval()
 
     # Set Dataloader
-    classes = load_classes(opt.class_path)  # Extracts class labels from file
-    dataloader = load_images(opt.image_folder, batch_size=opt.batch_size, img_size=opt.img_size)
+    classes = load_classes(class_path)  # Extracts class labels from file
+    dataloader = load_images(images_path, batch_size=batch_size, img_size=img_size)
 
     imgs = []  # Stores image paths
     img_detections = []  # Stores detections for each image index
@@ -73,10 +67,10 @@ def main(opt):
         # Get detections
         with torch.no_grad():
             pred = model(torch.from_numpy(img).unsqueeze(0).to(device))
-            pred = pred[pred[:, :, 4] > opt.conf_thres]
+            pred = pred[pred[:, :, 4] > conf_thres]
 
             if len(pred) > 0:
-                detections = non_max_suppression(pred.unsqueeze(0), opt.conf_thres, opt.nms_thres)
+                detections = non_max_suppression(pred.unsqueeze(0), conf_thres, nms_thres)
                 img_detections.extend(detections)
                 imgs.extend(img_paths)
 
@@ -93,15 +87,15 @@ def main(opt):
     for img_i, (path, detections) in enumerate(zip(imgs, img_detections)):
         print("image %g: '%s'" % (img_i, path))
 
-        if opt.plot_flag:
+        if save_images:
             img = cv2.imread(path)
 
         # The amount of padding that was added
-        pad_x = max(img.shape[0] - img.shape[1], 0) * (opt.img_size / max(img.shape))
-        pad_y = max(img.shape[1] - img.shape[0], 0) * (opt.img_size / max(img.shape))
+        pad_x = max(img.shape[0] - img.shape[1], 0) * (img_size / max(img.shape))
+        pad_y = max(img.shape[1] - img.shape[0], 0) * (img_size / max(img.shape))
         # Image height and width after padding is removed
-        unpad_h = opt.img_size - pad_y
-        unpad_w = opt.img_size - pad_x
+        unpad_h = img_size - pad_y
+        unpad_w = img_size - pad_x
 
         # Draw bounding boxes and labels of detections
         if detections is not None:
@@ -109,7 +103,7 @@ def main(opt):
             bbox_colors = random.sample(color_list, len(unique_classes))
 
             # write results to .txt file
-            results_img_path = os.path.join(opt.output_folder, path.split('/')[-1])
+            results_img_path = os.path.join(output, path.split('/')[-1])
             results_txt_path = results_img_path + '.txt'
             if os.path.isfile(results_txt_path):
                 os.remove(results_txt_path)
@@ -129,24 +123,55 @@ def main(opt):
                 x1, y1, x2, y2 = max(x1, 0), max(y1, 0), max(x2, 0), max(y2, 0)
 
                 # write to file
-                if opt.txt_out:
+                if save_txt:
                     with open(results_txt_path, 'a') as file:
                         file.write(('%g %g %g %g %g %g \n') % (x1, y1, x2, y2, cls_pred, cls_conf * conf))
 
-                if opt.plot_flag:
+                if save_images:
                     # Add the bbox to the plot
                     label = '%s %.2f' % (classes[int(cls_pred)], conf)
                     color = bbox_colors[int(np.where(unique_classes == int(cls_pred))[0])]
                     plot_one_box([x1, y1, x2, y2], img, label=label, color=color)
 
-        if opt.plot_flag:
+        if save_images:
             # Save generated image with detections
             cv2.imwrite(results_img_path.replace('.bmp', '.jpg').replace('.tif', '.jpg'), img)
 
     if platform == 'darwin':  # MacOS (local)
-        os.system('open ' + opt.output_folder)
+        os.system('open ' + output)
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    # Get data configuration
+
+    parser.add_argument('--image-folder', type=str, default='data/samples', help='path to images')
+    parser.add_argument('--output-folder', type=str, default='output', help='path to outputs')
+    parser.add_argument('--plot-flag', type=bool, default=True)
+    parser.add_argument('--txt-out', type=bool, default=False)
+
+    parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
+    parser.add_argument('--class-path', type=str, default='data/coco.names', help='path to class label file')
+    parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')
+    parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
+    parser.add_argument('--batch-size', type=int, default=1, help='size of the batches')
+    parser.add_argument('--img-size', type=int, default=32 * 13, help='size of each image dimension')
+    opt = parser.parse_args()
+    print(opt)
+
     torch.cuda.empty_cache()
-    main(opt)
+
+    init_seeds()
+
+    detect(
+        opt.cfg,
+        opt.image_folder,
+        output=opt.output_folder,
+        batch_size=opt.batch_size,
+        img_size=opt.img_size,
+        conf_thres=opt.conf_thres,
+        nms_thres=opt.nms_thres,
+        save_txt=opt.txt_out,
+        save_images=opt.plot_flag,
+        class_path=opt.class_path,
+    )
