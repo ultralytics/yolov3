@@ -6,57 +6,59 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-epochs', type=int, default=100, help='number of epochs')
-parser.add_argument('-batch_size', type=int, default=16, help='size of each image batch')
-parser.add_argument('-data_config_path', type=str, default='cfg/coco.data', help='data config file path')
-parser.add_argument('-cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-parser.add_argument('-multi_scale', default=False, help='random image sizes per batch 320 - 608')
-parser.add_argument('-img_size', type=int, default=32 * 13, help='pixels')
-parser.add_argument('-resume', default=False, help='resume training flag')
-parser.add_argument('-batch_report', default=False, help='report TP, FP, FN, P and R per batch (slower)')
-parser.add_argument('-freeze_darknet53', default=False, help='freeze darknet53.conv.74 layers for first epoch')
-parser.add_argument('-var', type=float, default=0, help='optional test variable')
-opt = parser.parse_args()
-if opt.multi_scale:  # pass maximum multi_scale size
-    opt.img_size = 608
-print(opt)
+from utils import torch_utils
 
 # Import test.py to get mAP after each epoch
-sys.argv[1:] = []  # delete any train.py command-line arguments before they reach test.py
-import test  # must follow sys.argv[1:] = []
+import test
 
-cuda = torch.cuda.is_available()
-device = torch.device('cuda:0' if cuda else 'cpu')
+DARKNET_WEIGHTS_FILENAME = 'darknet53.conv.74'
+DARKNET_WEIGHTS_URL = 'https://pjreddie.com/media/files/{}'.format(
+    DARKNET_WEIGHTS_FILENAME
+)
 
-random.seed(0)
-np.random.seed(0)
-torch.manual_seed(0)
-if cuda:
-    torch.cuda.manual_seed(0)
-    torch.cuda.manual_seed_all(0)
-    if not opt.multi_scale:
+
+def train(
+    net_config_path,
+    data_config_path,
+    img_size=416,
+    resume=False,
+    epochs=100,
+    batch_size=16,
+    weights_path='weights',
+    report=False,
+    multi_scale=False,
+    freeze_backbone=True,
+    var=0,
+):
+
+    device = torch_utils.select_device()
+    print("Using device: \"{}\"".format(device))
+
+    if not multi_scale:
         torch.backends.cudnn.benchmark = True
 
-
-def main(opt):
-    os.makedirs('weights', exist_ok=True)
+    os.makedirs(weights_path, exist_ok=True)
+    latest_weights_file = os.path.join(weights_path, 'latest.pt')
+    best_weights_file = os.path.join(weights_path, 'best.pt')
 
     # Configure run
-    data_config = parse_data_config(opt.data_config_path)
+    data_config = parse_data_config(data_config_path)
     num_classes = int(data_config['classes'])
-    train_path = '../coco/trainvalno5k.txt'
+    train_path = data_config['train']
 
     # Initialize model
-    model = Darknet(opt.cfg, opt.img_size)
+    model = Darknet(net_config_path, img_size)
 
     # Get dataloader
-    dataloader = load_images_and_labels(train_path, batch_size=opt.batch_size, img_size=opt.img_size,
-                                        multi_scale=opt.multi_scale, augment=True)
+    if multi_scale:  # pass maximum multi_scale size
+        img_size = 608
+
+    dataloader = load_images_and_labels(train_path, batch_size=batch_size, img_size=img_size,
+                                        multi_scale=multi_scale, augment=True)
 
     lr0 = 0.001
-    if opt.resume:
-        checkpoint = torch.load('weights/latest.pt', map_location='cpu')
+    if resume:
+        checkpoint = torch.load(latest_weights_file, map_location='cpu')
 
         model.load_state_dict(checkpoint['model'])
         if torch.cuda.device_count() > 1:
@@ -85,9 +87,13 @@ def main(opt):
         best_loss = float('inf')
 
         # Initialize model with darknet53 weights (optional)
-        if not os.path.isfile('weights/darknet53.conv.74'):
-            os.system('wget https://pjreddie.com/media/files/darknet53.conv.74 -P weights')
-        load_weights(model, 'weights/darknet53.conv.74')
+        def_weight_file = os.path.join(weights_path, DARKNET_WEIGHTS_FILENAME)
+        if not os.path.isfile(def_weight_file):
+            os.system('wget {} -P {}'.format(
+                DARKNET_WEIGHTS_URL,
+                weights_path))
+        assert os.path.isfile(def_weight_file)
+        load_weights(model, def_weight_file)
 
         if torch.cuda.device_count() > 1:
             raise Exception('Multi-GPU not currently supported: https://github.com/ultralytics/yolov3/issues/21')
@@ -106,7 +112,7 @@ def main(opt):
     mean_recall, mean_precision = 0, 0
     print('%11s' * 16 % (
         'Epoch', 'Batch', 'x', 'y', 'w', 'h', 'conf', 'cls', 'total', 'P', 'R', 'nTargets', 'TP', 'FP', 'FN', 'time'))
-    for epoch in range(opt.epochs):
+    for epoch in range(epochs):
         epoch += start_epoch
 
         # Update scheduler (automatic)
@@ -121,7 +127,7 @@ def main(opt):
             g['lr'] = lr
 
         # Freeze darknet53.conv.74 layers for first epoch
-        if opt.freeze_darknet53:
+        if freeze_backbone is not False:
             if epoch == 0:
                 for i, (name, p) in enumerate(model.named_parameters()):
                     if int(name.split('.')[1]) < 75:  # if layer < 75
@@ -146,7 +152,7 @@ def main(opt):
                     g['lr'] = lr
 
             # Compute loss, compute gradient, update parameters
-            loss = model(imgs.to(device), targets, batch_report=opt.batch_report, var=opt.var)
+            loss = model(imgs.to(device), targets, batch_report=report, var=var)
             loss.backward()
 
             # accumulated_batches = 1  # accumulate gradient for 4 batches before stepping optimizer
@@ -159,7 +165,7 @@ def main(opt):
             for key, val in model.losses.items():
                 rloss[key] = (rloss[key] * ui + val) / (ui + 1)
 
-            if opt.batch_report:
+            if report:
                 TP, FP, FN = metrics
                 metrics += model.losses['metrics']
 
@@ -176,7 +182,7 @@ def main(opt):
                     mean_recall = recall[k].mean()
 
             s = ('%11s%11s' + '%11.3g' * 14) % (
-                '%g/%g' % (epoch, opt.epochs - 1), '%g/%g' % (i, len(dataloader) - 1), rloss['x'],
+                '%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, len(dataloader) - 1), rloss['x'],
                 rloss['y'], rloss['w'], rloss['h'], rloss['conf'], rloss['cls'],
                 rloss['loss'], mean_precision, mean_recall, model.losses['nT'], model.losses['TP'],
                 model.losses['FP'], model.losses['FN'], time.time() - t1)
@@ -193,19 +199,32 @@ def main(opt):
                       'best_loss': best_loss,
                       'model': model.state_dict(),
                       'optimizer': optimizer.state_dict()}
-        torch.save(checkpoint, 'weights/latest.pt')
+        torch.save(checkpoint, latest_weights_file)
 
         # Save best checkpoint
         if best_loss == loss_per_target:
-            os.system('cp weights/latest.pt weights/best.pt')
+            os.system('cp {} {}'.format(
+                latest_weights_file,
+                best_weights_file,
+            ))
 
         # Save backup weights every 5 epochs
         if (epoch > 0) & (epoch % 5 == 0):
-            os.system('cp weights/latest.pt weights/backup' + str(epoch) + '.pt')
+            backup_file_name = 'backup{}.pt'.format(epoch)
+            backup_file_path = os.path.join(weights_path, backup_file_name)
+            os.system('cp {} {}'.format(
+                latest_weights_file,
+                backup_file_path,
+            ))
 
         # Calculate mAP
-        test.opt.weights_path = 'weights/latest.pt'
-        mAP, R, P = test.main(test.opt)
+        mAP, R, P = test.test(
+            net_config_path,
+            data_config_path,
+            latest_weights_file,
+            batch_size=batch_size,
+            img_size=img_size,
+        )
 
         # Write epoch results
         with open('results.txt', 'a') as file:
@@ -217,5 +236,35 @@ def main(opt):
 
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
+    parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
+    parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
+    parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
+    parser.add_argument('--multi-scale', default=False, help='random image sizes per batch 320 - 608')
+    parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
+    parser.add_argument('--weights-path', type=str, default='weights', help='path to store weights')
+    parser.add_argument('--resume', action='store_true', help='resume training flag')
+    parser.add_argument('--report', action='store_true', help='report TP, FP, FN, P and R per batch (slower)')
+    parser.add_argument('--freeze', action='store_true', help='freeze darknet53.conv.74 layers for first epoche')
+    parser.add_argument('--var', type=float, default=0, help='optional test variable')
+    opt = parser.parse_args()
+    print(opt, end='\n\n')
+
+    init_seeds()
+
     torch.cuda.empty_cache()
-    main(opt)
+    train(
+        opt.cfg,
+        opt.data_config,
+        img_size=opt.img_size,
+        resume=opt.resume,
+        epochs=opt.epochs,
+        batch_size=opt.batch_size,
+        weights_path=opt.weights_path,
+        report=opt.report,
+        multi_scale=opt.multi_scale,
+        freeze_backbone=opt.freeze,
+        var=opt.var,
+    )

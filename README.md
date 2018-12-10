@@ -21,7 +21,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 **Start Training:** Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh` and specifying COCO path on line 37 (local) or line 39 (cloud). Training runs about 1 hour per COCO epoch on a 1080 Ti.
 
-**Resume Training:** Run `train.py -resume 1` to resume training from the most recently saved checkpoint `latest.pt`.
+**Resume Training:** Run `train.py --resume` to resume training from the most recently saved checkpoint `latest.pt`.
 
 Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process about 10-15 epochs/day depending on image size and augmentation (13 epochs/day at 416 pixels with default augmentation). Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here (results in progress to 160 epochs, will update).
 
@@ -56,7 +56,7 @@ Checkpoints are saved in `/checkpoints` directory. Run `detect.py` to apply trai
 
 Run `test.py` to validate the official YOLOv3 weights `checkpoints/yolov3.weights` against the 5000 validation images. You should obtain a mAP of .581 using this repo (https://github.com/ultralytics/yolov3), compared to .579 as reported in darknet (https://arxiv.org/abs/1804.02767).
 
-Run `test.py -weights_path checkpoints/latest.pt` to validate against the latest training checkpoint.
+Run `test.py --weights checkpoints/latest.pt` to validate against the latest training checkpoint.
 
 # Contact
 
