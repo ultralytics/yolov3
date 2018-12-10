@@ -12,25 +12,22 @@ from utils import torch_utils
 import test
 
 DARKNET_WEIGHTS_FILENAME = 'darknet53.conv.74'
-DARKNET_WEIGHTS_URL = 'https://pjreddie.com/media/files/{}'.format(
-    DARKNET_WEIGHTS_FILENAME
-)
+DARKNET_WEIGHTS_URL = 'https://pjreddie.com/media/files/{}'.format(DARKNET_WEIGHTS_FILENAME)
 
 
 def train(
-    net_config_path,
-    data_config_path,
-    img_size=416,
-    resume=False,
-    epochs=100,
-    batch_size=16,
-    weights_path='weights',
-    report=False,
-    multi_scale=False,
-    freeze_backbone=True,
-    var=0,
+        net_config_path,
+        data_config_path,
+        img_size=416,
+        resume=False,
+        epochs=100,
+        batch_size=16,
+        weights_path='weights',
+        report=False,
+        multi_scale=False,
+        freeze_backbone=True,
+        var=0,
 ):
-
     device = torch_utils.select_device()
     print("Using device: \"{}\"".format(device))
 
@@ -236,13 +233,12 @@ def train(
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-    parser.add_argument('--multi-scale', default=False, help='random image sizes per batch 320 - 608')
+    parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--weights-path', type=str, default='weights', help='path to store weights')
     parser.add_argument('--resume', action='store_true', help='resume training flag')

@@ -21,7 +21,6 @@ def detect(
         save_txt=False,
         save_images=False,
 ):
-
     device = torch_utils.select_device()
     print("Using device: \"{}\"".format(device))
 
@@ -150,7 +149,6 @@ if __name__ == '__main__':
     parser.add_argument('--output-folder', type=str, default='output', help='path to outputs')
     parser.add_argument('--plot-flag', type=bool, default=True)
     parser.add_argument('--txt-out', type=bool, default=False)
-
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
     parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')

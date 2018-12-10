@@ -8,15 +8,15 @@ from utils import torch_utils
 
 
 def test(
-    net_config_path,
-    data_config_path,
-    weights_file_path,
-    batch_size=16,
-    img_size=416,
-    iou_thres=0.5,
-    conf_thres=0.3,
-    nms_thres=0.45,
-    n_cpus=0,
+        net_config_path,
+        data_config_path,
+        weights_file_path,
+        batch_size=16,
+        img_size=416,
+        iou_thres=0.5,
+        conf_thres=0.3,
+        nms_thres=0.45,
+        n_cpus=0,
 ):
     device = torch_utils.select_device()
     print("Using device: \"{}\"".format(device))
@@ -126,7 +126,6 @@ def test(
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='path to model config file')
