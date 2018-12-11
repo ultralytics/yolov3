@@ -1,8 +1,5 @@
 # pip3 install -U -r requirements.txt
 numpy
-scipy
 opencv-python
 torch
 matplotlib
-tqdm
-h5py
