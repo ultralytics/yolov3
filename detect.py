@@ -11,8 +11,8 @@ from utils import torch_utils
 def detect(
         net_config_path,
         data_config_path,
+        weights_file_path,
         images_path,
-        weights_file_path='weights/yolov3.pt',
         output='output',
         batch_size=16,
         img_size=416,
@@ -151,6 +151,7 @@ if __name__ == '__main__':
     parser.add_argument('--txt-out', type=bool, default=False)
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
+    parser.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
     parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
     parser.add_argument('--batch-size', type=int, default=1, help='size of the batches')
@@ -165,6 +166,7 @@ if __name__ == '__main__':
     detect(
         opt.cfg,
         opt.data_config,
+        opt.weights,
         opt.image_folder,
         output=opt.output_folder,
         batch_size=opt.batch_size,

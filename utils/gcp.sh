@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Start
-sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3 && python3 train.py
+sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3 && python3 train.py --freeze
 
 # Resume
 python3 train.py --resume
