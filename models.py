@@ -239,7 +239,7 @@ class Darknet(nn.Module):
         self.img_size = img_size
         self.loss_names = ['loss', 'x', 'y', 'w', 'h', 'conf', 'cls', 'nT', 'TP', 'FP', 'FPe', 'FN', 'TC']
 
-    def forward(self, x, targets=None, batch_report=False, var=0):
+    def forward(self, x, targets=None, batch_report=False):
         is_training = targets is not None
         output = []
         self.losses = defaultdict(float)

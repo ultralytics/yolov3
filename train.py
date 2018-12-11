@@ -26,7 +26,6 @@ def train(
         report=False,
         multi_scale=False,
         freeze_backbone=True,
-        var=0,
 ):
     device = torch_utils.select_device()
     print("Using device: \"{}\"".format(device))
@@ -150,7 +149,7 @@ def train(
                     g['lr'] = lr
 
             # Compute loss, compute gradient, update parameters
-            loss = model(imgs.to(device), targets, batch_report=report, var=var)
+            loss = model(imgs.to(device), targets, batch_report=report)
             loss.backward()
 
             # accumulate gradient for x batches before optimizing
@@ -235,19 +234,39 @@ def train(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
-    parser.add_argument('--accumulated-batches', type=int, default=1, help='number of batches before optimizer step')
-    parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-    parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
-    parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
-    parser.add_argument('--weights-path', type=str, default='weights', help='path to store weights')
-    parser.add_argument('--resume', action='store_true', help='resume training flag')
-    parser.add_argument('--report', action='store_true', help='report TP, FP, FN, P and R per batch (slower)')
-    parser.add_argument('--freeze', action='store_true', help='freeze darknet53.conv.74 layers for first epoch')
-    parser.add_argument('--var', type=float, default=0, help='optional test variable')
+
+    # Get network configuration
+    network_group = parser.add_argument_group(
+        title='network arguments',
+        description='Configure network and data'
+    )
+    network_group.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
+    network_group.add_argument('--weights-path', type=str, default='weights', help='path to store weights')
+
+    # Get data configuration
+    data_group = parser.add_argument_group(
+        title='data arguments',
+        description='Configure data'
+    )
+    data_group.add_argument('--data', type=str, default='cfg/coco.data', help='path to data config file')
+    data_group.add_argument('--img-size', type=int, default=32 * 13, help='size of each image in pixels')
+    data_group.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
+
+    algorithm_group = parser.add_argument_group(
+        title='experiment arguments',
+        description='Configure the experiment'
+    )
+    algorithm_group.add_argument('--epochs', type=int, default=100, help='number of epochs')
+    algorithm_group.add_argument('--batch', type=int, default=1, help='size of the batches')
+    algorithm_group.add_argument('--accumulated-batches', type=int, default=1, help='number of batches before optimizer step')
+    algorithm_group.add_argument('--freeze', action='store_true', help='freeze darknet53.conv.74 layers for first epoche')
+    algorithm_group.add_argument('--thr', type=float, default=0.50, help='object confidence threshold')
+    algorithm_group.add_argument('--nms', type=float, default=0.45, help='iou threshold for non-maximum suppression')
+    algorithm_group.add_argument('--resume', action='store_true', help='resume training flag')
+    algorithm_group.add_argument('--report', action='store_true', help='report TP, FP, FN, P and R per batch (slower)')
+
     opt = parser.parse_args()
+
     print(opt, end='\n\n')
 
     init_seeds()
@@ -255,15 +274,14 @@ if __name__ == '__main__':
     torch.cuda.empty_cache()
     train(
         opt.cfg,
-        opt.data_config,
+        opt.data,
         img_size=opt.img_size,
         resume=opt.resume,
         epochs=opt.epochs,
-        batch_size=opt.batch_size,
+        batch_size=opt.batch,
         accumulated_batches=opt.accumulated_batches,
         weights_path=opt.weights_path,
         report=opt.report,
         multi_scale=opt.multi_scale,
         freeze_backbone=opt.freeze,
-        var=opt.var,
     )

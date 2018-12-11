@@ -16,7 +16,6 @@ def test(
         iou_thres=0.5,
         conf_thres=0.3,
         nms_thres=0.45,
-        n_cpus=0,
 ):
     device = torch_utils.select_device()
     print("Using device: \"{}\"".format(device))
@@ -126,29 +125,49 @@ def test(
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='test.py')
-    parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='path to model config file')
-    parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
-    parser.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
-    parser.add_argument('--iou-thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
-    parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
-    parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
-    parser.add_argument('--n-cpus', type=int, default=0, help='number of cpu threads to use during batch generation')
-    parser.add_argument('--img-size', type=int, default=416, help='size of each image dimension')
+    parser = argparse.ArgumentParser()
+
+    # Get network configuration
+    network_group = parser.add_argument_group(
+        title='network arguments',
+        description='Configure network and data'
+    )
+    network_group.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
+    network_group.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
+
+    # Get data configuration
+    data_group = parser.add_argument_group(
+        title='data arguments',
+        description='Configure data'
+    )
+    data_group.add_argument('--data', type=str, default='cfg/coco.data', help='path to data config file')
+    data_group.add_argument('--img-size', type=int, default=32 * 13, help='size of each image in pixels')
+    data_group.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
+
+    algorithm_group = parser.add_argument_group(
+        title='experiment arguments',
+        description='Configure the experiment'
+    )
+    algorithm_group.add_argument('--batch', type=int, default=32, help='size of the batches')
+    algorithm_group.add_argument('--thr', type=float, default=0.3, help='object confidence threshold')
+    algorithm_group.add_argument('--nms', type=float, default=0.45, help='iou threshold for non-maximum suppression')
+    algorithm_group.add_argument('--iou', type=float, default=0.5, help='iou threshold required to qualify as detected')
+    algorithm_group.add_argument('--resume', action='store_true', help='resume training flag')
+    algorithm_group.add_argument('--report', action='store_true', help='report TP, FP, FN, P and R per batch (slower)')
+
     opt = parser.parse_args()
+
     print(opt, end='\n\n')
 
     init_seeds()
 
     mAP = test(
         opt.cfg,
-        opt.data_config,
+        opt.data,
         opt.weights,
-        batch_size=opt.batch_size,
+        batch_size=opt.batch,
         img_size=opt.img_size,
-        iou_thres=opt.iou_thres,
-        conf_thres=opt.conf_thres,
-        nms_thres=opt.nms_thres,
-        n_cpus=opt.n_cpus,
+        iou_thres=opt.iou,
+        conf_thres=opt.thr,
+        nms_thres=opt.nms,
     )

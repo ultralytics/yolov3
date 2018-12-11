@@ -11,8 +11,8 @@ from utils import torch_utils
 def detect(
         net_config_path,
         data_config_path,
-        weights_file_path,
         images_path,
+        weights='weights/yolov3.pt',
         output='output',
         batch_size=16,
         img_size=416,
@@ -32,14 +32,14 @@ def detect(
     # Load model
     model = Darknet(net_config_path, img_size)
 
-    if weights_file_path.endswith('.pt'):  # pytorch format
-        if weights_file_path.endswith('weights/yolov3.pt') and not os.path.isfile(weights_file_path):
-            os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights_file_path)
-        checkpoint = torch.load(weights_file_path, map_location='cpu')
+    if weights.endswith('.pt'):  # pytorch format
+        if weights.endswith('weights/yolov3.pt') and not os.path.isfile(weights):
+            os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights)
+        checkpoint = torch.load(weights, map_location='cpu')
         model.load_state_dict(checkpoint['model'])
         del checkpoint
     else:  # darknet format
-        load_weights(model, weights_file_path)
+        load_weights(model, weights)
 
         # current = model.state_dict()
         # saved = checkpoint['model']
@@ -145,17 +145,35 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # Get data configuration
 
-    parser.add_argument('--image-folder', type=str, default='data/samples', help='path to images')
-    parser.add_argument('--output-folder', type=str, default='output', help='path to outputs')
-    parser.add_argument('--plot-flag', type=bool, default=True)
-    parser.add_argument('--txt-out', type=bool, default=False)
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-    parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
-    parser.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
-    parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')
-    parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
-    parser.add_argument('--batch-size', type=int, default=1, help='size of the batches')
-    parser.add_argument('--img-size', type=int, default=32 * 13, help='size of each image dimension')
+    parser.add_argument('images', type=str, help='path to images')
+
+    # Get network configuration
+    network_group = parser.add_argument_group(
+        title='network arguments',
+        description='Configure network and data'
+    )
+    network_group.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
+    network_group.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
+
+    # Get data configuration
+    data_group = parser.add_argument_group(
+        title='data arguments',
+        description='Configure data'
+    )
+    data_group.add_argument('--data', type=str, default='cfg/coco.data', help='path to data config file')
+    data_group.add_argument('--img-size', type=int, default=32 * 13, help='size of each image in pixels')
+
+    algorithm_group = parser.add_argument_group(
+        title='experiment arguments',
+        description='Configure the experiment'
+    )
+    algorithm_group.add_argument('--batch', type=int, default=32, help='size of the batches')
+    algorithm_group.add_argument('--thr', type=float, default=0.3, help='object confidence threshold')
+    algorithm_group.add_argument('--nms', type=float, default=0.45, help='iou threshold for non-maximum suppression')
+    algorithm_group.add_argument('--output', type=str, default='output', help='path to outputs')
+    algorithm_group.add_argument('--save-txt', action='store_true')
+    algorithm_group.add_argument('--save-images', action='store_true')
+
     opt = parser.parse_args()
     print(opt)
 
@@ -165,14 +183,14 @@ if __name__ == '__main__':
 
     detect(
         opt.cfg,
-        opt.data_config,
-        opt.weights,
-        opt.image_folder,
-        output=opt.output_folder,
-        batch_size=opt.batch_size,
+        opt.data,
+        opt.images,
+        weights=opt.weights,
+        output=opt.output,
+        batch_size=opt.batch,
         img_size=opt.img_size,
-        conf_thres=opt.conf_thres,
-        nms_thres=opt.nms_thres,
-        save_txt=opt.txt_out,
-        save_images=opt.plot_flag,
+        conf_thres=opt.thr,
+        nms_thres=opt.nms,
+        save_txt=opt.save_txt,
+        save_images=opt.save_images,
     )
