@@ -25,7 +25,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process about 10-15 epochs/day depending on image size and augmentation (13 epochs/day at 416 pixels with default augmentation). Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here (results in progress to 160 epochs, will update).
 
-![Alt](https://github.com/ultralytics/yolov3/blob/master/data/coco_training_loss.png "coco training loss")
+![Alt](https://user-images.githubusercontent.com/26833433/49822374-3b27bf00-fd7d-11e8-9180-f0ac9fe2fdb4.png "coco training loss")
 
 ## Image Augmentation
 
