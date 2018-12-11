@@ -19,11 +19,11 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 # Training
 
-**Start Training:** Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh` and specifying COCO path on line 37 (local) or line 39 (cloud). Training runs about 1 hour per COCO epoch on a 1080 Ti.
+**Start Training:** Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`. Training runs about 1 hour per COCO epoch on a 1080 Ti.
 
-**Resume Training:** Run `train.py --resume` to resume training from the most recently saved checkpoint `latest.pt`.
+**Resume Training:** Run `train.py --resume` to resume training from the most recently saved checkpoint `weights/latest.pt`.
 
-Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process about 10-15 epochs/day depending on image size and augmentation (13 epochs/day at 416 pixels with default augmentation). Loss plots for the bounding boxes, objectness and class confidence should appear similar to results shown here (results in progress to 160 epochs, will update).
+Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process about 10-20 epochs/day depending on image size and augmentation. Loss plots are shown here using default training settings.
 
 ![Alt](https://user-images.githubusercontent.com/26833433/49822374-3b27bf00-fd7d-11e8-9180-f0ac9fe2fdb4.png "coco training loss")
 
@@ -45,7 +45,7 @@ HS**V** Intensity | +/- 50%
 
 # Inference
 
-Checkpoints are saved in `/checkpoints` directory. Run `detect.py` to apply trained weights to an image, such as `zidane.jpg` from the `data/samples` folder, shown here. Alternatively you can use the official YOLOv3 weights:
+Run `detect.py --weights` to apply trained weights to an image, such as `zidane.jpg` from the `data/samples` folder, shown here. Download official YOLOv3 weights:
 
 - PyTorch format: https://storage.googleapis.com/ultralytics/yolov3.pt
 - Darknet format: https://pjreddie.com/media/files/yolov3.weights
@@ -56,7 +56,9 @@ Checkpoints are saved in `/checkpoints` directory. Run `detect.py` to apply trai
 
 Run `test.py` to validate the official YOLOv3 weights `checkpoints/yolov3.weights` against the 5000 validation images. You should obtain a mAP of .581 using this repo (https://github.com/ultralytics/yolov3), compared to .579 as reported in darknet (https://arxiv.org/abs/1804.02767).
 
-Run `test.py --weights checkpoints/latest.pt` to validate against the latest training checkpoint.
+Run `test.py --weights weights/latest.pt` to validate against the latest training 
+
+oint.
 
 # Contact
 
