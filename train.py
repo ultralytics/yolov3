@@ -125,7 +125,7 @@ def train(
             g['lr'] = lr
 
         # Freeze darknet53.conv.74 layers for first epoch
-        if freeze_backbone is not False:
+        if freeze_backbone:
             if epoch == 0:
                 for i, (name, p) in enumerate(model.named_parameters()):
                     if int(name.split('.')[1]) < 75:  # if layer < 75
