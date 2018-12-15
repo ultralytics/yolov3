@@ -116,7 +116,7 @@ class load_images_and_labels():  # for training
             augment_hsv = True
             if self.augment and augment_hsv:
                 # SV augmentation by 50%
-                fraction = 0.25
+                fraction = 0.50
                 img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
                 S = img_hsv[:, :, 1].astype(np.float32)
                 V = img_hsv[:, :, 2].astype(np.float32)
@@ -153,7 +153,7 @@ class load_images_and_labels():  # for training
 
             # Augment image and labels
             if self.augment:
-                img, labels, M = random_affine(img, labels, degrees=(-5, 5), translate=(0.05, 0.05), scale=(0.95, 1.05))
+                img, labels, M = random_affine(img, labels, degrees=(-5, 5), translate=(0.10, 0.10), scale=(0.90, 1.10))
 
             plotFlag = False
             if plotFlag:
