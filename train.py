@@ -1,5 +1,4 @@
 import argparse
-import sys
 import time
 
 from models import *
