@@ -14,6 +14,37 @@ DARKNET_WEIGHTS_FILENAME = 'darknet53.conv.74'
 DARKNET_WEIGHTS_URL = 'https://pjreddie.com/media/files/{}'.format(DARKNET_WEIGHTS_FILENAME)
 
 
+def set_yolo_layers_required_grad_1(model, n_classes, value):
+    # Transfer learning (train only YOLO layers)
+    for i, (name, p) in enumerate(model.named_parameters()):
+        if p.shape[0] != (3*(n_classes + 5)):  # not YOLO layer
+            p.requires_grad = value
+
+
+def freeze_layers_1(model, num_classes):
+    # Transfer learning (train all layers)
+    set_yolo_layers_required_grad_1(model, num_classes, False)
+
+
+def unfreeze_layers_1(model, num_classes):
+    # Transfer learning (train only YOLO layers)
+    set_yolo_layers_required_grad_1(model, num_classes, True)
+
+
+def set_yolo_layers_required_grad_2(model, layer_num, value):
+    for i, (name, p) in enumerate(model.named_parameters()):
+        if int(name.split('.')[1]) < layer_num:  # if layer < 75
+            p.requires_grad = value
+
+
+def freeze_layers_2(model, layer_num=75):
+    set_yolo_layers_required_grad_2(model, layer_num, False)
+
+
+def unfreeze_layers_2(model, layer_num=75):
+    set_yolo_layers_required_grad_2(model, layer_num, True)
+
+
 def train(
         net_config_path,
         data_config_path,
@@ -62,11 +93,6 @@ def train(
             # print('Using ', torch.cuda.device_count(), ' GPUs')
             # model = nn.DataParallel(model)
         model.to(device).train()
-
-        # # Transfer learning (train only YOLO layers)
-        # for i, (name, p) in enumerate(model.named_parameters()):
-        #     if p.shape[0] != 650:  # not YOLO layer
-        #         p.requires_grad = False
 
         # Set optimizer
         optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr0, momentum=.9)
@@ -126,13 +152,9 @@ def train(
         # Freeze darknet53.conv.74 layers for first epoch
         if freeze_backbone:
             if epoch == 0:
-                for i, (name, p) in enumerate(model.named_parameters()):
-                    if int(name.split('.')[1]) < 75:  # if layer < 75
-                        p.requires_grad = False
+                freeze_layers_2(model, 75)
             elif epoch == 1:
-                for i, (name, p) in enumerate(model.named_parameters()):
-                    if int(name.split('.')[1]) < 75:  # if layer < 75
-                        p.requires_grad = True
+                unfreeze_layers_2(model, 75)
 
         ui = -1
         rloss = defaultdict(float)  # running loss
