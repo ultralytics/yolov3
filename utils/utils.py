@@ -365,12 +365,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             continue
 
         # From (center x, center y, width, height) to (x1, y1, x2, y2)
-        box_corner = pred.new(nP, 4)
-        xy = pred[:, 0:2]
-        wh = pred[:, 2:4] / 2
-        box_corner[:, 0:2] = xy - wh
-        box_corner[:, 2:4] = xy + wh
-        pred[:, :4] = box_corner
+        pred[:, :4] = xywh2xyxy(pred[:, :4])
 
         # Detections ordered as (x1, y1, x2, y2, obj_conf, class_prob, class_pred)
         detections = torch.cat((pred[:, :5], class_prob.float().unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
