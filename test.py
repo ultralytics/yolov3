@@ -44,6 +44,7 @@ def test(
     # dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=n_cpus)
     dataloader = load_images_and_labels(test_path, batch_size=batch_size, img_size=img_size)
 
+    mean_mAP, mean_R, mean_P = 0.0, 0.0, 0.0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
     outputs, mAPs, mR, mP, TP, confidence, pred_class, target_class = [], [], [], [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
