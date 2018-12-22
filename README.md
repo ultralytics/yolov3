@@ -69,7 +69,7 @@ Download official YOLOv3 weights:
 
 Run `test.py` to validate the official YOLOv3 weights `weights/yolov3.weights` against the 5000 validation images. You should obtain a .584 mAP at `--img-size 416`, or .586 at `--img-size 608` using this repo, compared to .579 at 608 x 608 reported in darknet (https://arxiv.org/abs/1804.02767).
 
-Run `test.py --weights weights/latest.pt` to validate against the latest training results. Default training settings produce a 0.522 mAP at epoch 62. We are currently exploring how to improve this.
+Run `test.py --weights weights/latest.pt` to validate against the latest training results. **Default training settings produce a 0.522 mAP at epoch 62.** Hyperparameter settings and loss equation changes affect these results significantly, and additional trade studies may be needed to further improve this.
 
 # Contact
 
