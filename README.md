@@ -49,6 +49,7 @@ Run `detect.py` to apply trained weights to an image and visualize results, such
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/zidane_result.jpg "inference example")
 
 # Pretrained Weights
+
 Download official YOLOv3 weights:
 
 **Darknet** format: 
@@ -58,7 +59,6 @@ Download official YOLOv3 weights:
 **PyTorch** format:
 - https://storage.googleapis.com/ultralytics/yolov3.pt 
 - https://storage.googleapis.com/ultralytics/yolov3-tiny.pt 
-
 
 # Validation mAP
 
