@@ -47,10 +47,10 @@ HS**V** Intensity | +/- 50%
 
 Run `detect.py` to apply trained weights to an image and visualize results, such as `zidane.jpg` from the `data/samples` folder, shown here. 
 
-`detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.pt`
+**YOLOv3:** `detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.pt`
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/zidane_result.jpg "yolov3 example")
 
-`detect.py --cfg cfg/yolov3-tiny.cfg --weights weights/yolov3-tiny.pt`
+**YOLOv3-tiny:** `detect.py --cfg cfg/yolov3-tiny.cfg --weights weights/yolov3-tiny.pt`
 ![Alt](https://user-images.githubusercontent.com/26833433/50374155-21427380-05ea-11e9-8d24-f1a4b2bac1ad.jpg "yolov3-tiny example")
 
 # Pretrained Weights
