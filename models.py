@@ -32,13 +32,21 @@ def create_modules(module_defs):
             if module_def['activation'] == 'leaky':
                 modules.add_module('leaky_%d' % i, nn.LeakyReLU(0.1))
 
+        elif module_def['type'] == 'maxpool':
+            kernel_size = int(module_def['size'])
+            stride = int(module_def['stride'])
+            if kernel_size == 2 and stride == 1:
+                modules.add_module('_debug_padding_%d' % i, nn.ZeroPad2d((0, 1, 0, 1)))
+            maxpool = nn.MaxPool2d(kernel_size=kernel_size, stride=stride, padding=int((kernel_size - 1) // 2))
+            modules.add_module('maxpool_%d' % i, maxpool)
+
         elif module_def['type'] == 'upsample':
             upsample = nn.Upsample(scale_factor=int(module_def['stride']), mode='nearest')
             modules.add_module('upsample_%d' % i, upsample)
 
         elif module_def['type'] == 'route':
             layers = [int(x) for x in module_def['layers'].split(',')]
-            filters = sum([output_filters[layer_i] for layer_i in layers])
+            filters = sum([output_filters[i + 1 if i > 0 else i] for i in layers])
             modules.add_module('route_%d' % i, EmptyLayer())
 
         elif module_def['type'] == 'shortcut':
@@ -54,7 +62,7 @@ def create_modules(module_defs):
             num_classes = int(module_def['classes'])
             img_height = int(hyperparams['height'])
             # Define detection layer
-            yolo_layer = YOLOLayer(anchors, num_classes, img_height, anchor_idxs)
+            yolo_layer = YOLOLayer(anchors, num_classes, img_height, anchor_idxs, cfg=hyperparams['cfg'])
             modules.add_module('yolo_%d' % i, yolo_layer)
 
         # Register module list and number of output filters
@@ -73,7 +81,7 @@ class EmptyLayer(nn.Module):
 
 class YOLOLayer(nn.Module):
 
-    def __init__(self, anchors, nC, img_dim, anchor_idxs):
+    def __init__(self, anchors, nC, img_dim, anchor_idxs, cfg):
         super(YOLOLayer, self).__init__()
 
         anchors = [(a_w, a_h) for a_w, a_h in anchors]  # (pixels)
@@ -91,6 +99,9 @@ class YOLOLayer(nn.Module):
             stride = 16
         else:
             stride = 8
+
+        if cfg.endswith('yolov3-tiny.cfg'):
+            stride *= 2
 
         # Build anchor grids
         nG = int(self.img_dim / stride)  # number grid points
@@ -234,6 +245,7 @@ class Darknet(nn.Module):
         super(Darknet, self).__init__()
 
         self.module_defs = parse_model_config(cfg_path)
+        self.module_defs[0]['cfg'] = cfg_path
         self.module_defs[0]['height'] = img_size
         self.hyperparams, self.module_list = create_modules(self.module_defs)
         self.img_size = img_size
@@ -246,7 +258,7 @@ class Darknet(nn.Module):
         layer_outputs = []
 
         for i, (module_def, module) in enumerate(zip(self.module_defs, self.module_list)):
-            if module_def['type'] in ['convolutional', 'upsample']:
+            if module_def['type'] in ['convolutional', 'upsample', 'maxpool']:
                 x = module(x)
             elif module_def['type'] == 'route':
                 layer_i = [int(x) for x in module_def['layers'].split(',')]
