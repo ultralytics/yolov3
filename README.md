@@ -46,7 +46,12 @@ HS**V** Intensity | +/- 50%
 # Inference
 
 Run `detect.py` to apply trained weights to an image and visualize results, such as `zidane.jpg` from the `data/samples` folder, shown here. 
-![Alt](https://github.com/ultralytics/yolov3/blob/master/data/zidane_result.jpg "inference example")
+
+`detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.pt`
+![Alt](https://github.com/ultralytics/yolov3/blob/master/data/zidane_result.jpg "yolov3 example")
+
+`detect.py --cfg cfg/yolov3-tiny.cfg --weights weights/yolov3-tiny.pt`
+![Alt](https://user-images.githubusercontent.com/26833433/50374155-21427380-05ea-11e9-8d24-f1a4b2bac1ad.jpg "yolov3-tiny example")
 
 # Pretrained Weights
 
