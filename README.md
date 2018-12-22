@@ -45,12 +45,20 @@ HS**V** Intensity | +/- 50%
 
 # Inference
 
-Run `detect.py` to apply trained weights to an image, such as `zidane.jpg` from the `data/samples` folder, shown here. Download official YOLOv3 weights:
-
-- PyTorch format: https://storage.googleapis.com/ultralytics/yolov3.pt
-- Darknet format: https://pjreddie.com/media/files/yolov3.weights
-
+Run `detect.py` to apply trained weights to an image and visualize results, such as `zidane.jpg` from the `data/samples` folder, shown here. 
 ![Alt](https://github.com/ultralytics/yolov3/blob/master/data/zidane_result.jpg "inference example")
+
+# Pretrained Weights
+Download official YOLOv3 weights:
+
+**Darknet** format: 
+- https://pjreddie.com/media/files/yolov3.weights
+- https://pjreddie.com/media/files/yolov3-tiny.weights
+
+**PyTorch** format:
+- https://storage.googleapis.com/ultralytics/yolov3.pt 
+- https://storage.googleapis.com/ultralytics/yolov3-tiny.pt 
+
 
 # Validation mAP
 
