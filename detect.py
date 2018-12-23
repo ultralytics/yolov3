@@ -66,7 +66,9 @@ def detect(
 
         # Get detections
         with torch.no_grad():
-            pred = model(torch.from_numpy(img).unsqueeze(0).to(device))
+            img = torch.from_numpy(img).unsqueeze(0).to(device)
+            # pred = torch.onnx._export(model, img, 'weights/model.onnx', verbose=True,); return  # ONNX export
+            pred = model(img)
             pred = pred[pred[:, :, 4] > conf_thres]
 
             if len(pred) > 0:
