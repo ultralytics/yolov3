@@ -89,7 +89,7 @@ class Upsample(torch.nn.Module):
         self.mode = mode
 
     def forward(self, x):
-        return torch.nn.functional.interpolate(x, scale_factor=self.scale_factor, mode=self.mode)
+        return nn.functional.interpolate(x, scale_factor=self.scale_factor, mode=self.mode)
 
 
 class YOLOLayer(nn.Module):
