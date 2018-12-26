@@ -246,6 +246,7 @@ class YOLOLayer(nn.Module):
             p[..., 4] = torch.sigmoid(p[..., 4])  # p_conf
             p[..., :4] *= stride
 
+            # reshape from [1, 3, 13, 13, 85] to [1, 507, 85]
             return p.view(bs, self.nA * nG * nG, 5 + self.nC)
 
 
@@ -263,10 +264,10 @@ class Darknet(nn.Module):
         self.loss_names = ['loss', 'x', 'y', 'w', 'h', 'conf', 'cls', 'nT', 'TP', 'FP', 'FPe', 'FN', 'TC']
 
     def forward(self, x, targets=None, batch_report=False, var=0):
-        is_training = targets is not None
-        output = []
         self.losses = defaultdict(float)
+        is_training = targets is not None
         layer_outputs = []
+        output = []
 
         for i, (module_def, module) in enumerate(zip(self.module_defs, self.module_list)):
             if module_def['type'] in ['convolutional', 'upsample', 'maxpool']:
@@ -313,6 +314,12 @@ class Darknet(nn.Module):
 
             self.losses['nT'] /= 3
             self.losses['TC'] = 0
+
+        ONNX_export = False
+        if ONNX_export:
+            output = output[0].squeeze().transpose(0, 1)
+            output[5:] = torch.nn.functional.softmax(torch.sigmoid(output[5:]) * output[4:5], dim=0)  # SSD-like conf
+            return output[5:], output[:4]  # ONNX scores, boxes
 
         return sum(output) if is_training else torch.cat(output, 1)
 
