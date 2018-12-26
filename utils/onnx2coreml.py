@@ -6,6 +6,8 @@ import glob
 
 # https://github.com/onnx/onnx-coreml
 # http://machinethink.net/blog/mobilenet-ssdlite-coreml/
+# https://github.com/hollance/YOLO-CoreML-MPSNNGraph
+
 
 def main():
     os.system('rm -rf saved_models && mkdir saved_models')
