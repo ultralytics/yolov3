@@ -317,7 +317,7 @@ class Darknet(nn.Module):
 
         ONNX_export = False
         if ONNX_export:
-            output = output[0].squeeze().transpose(0, 1)
+            output = output[0].squeeze().transpose(0, 1)  # first layer reshaped to 85 x 507
             output[5:] = torch.nn.functional.softmax(torch.sigmoid(output[5:]) * output[4:5], dim=0)  # SSD-like conf
             return output[5:], output[:4]  # ONNX scores, boxes
 
