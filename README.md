@@ -24,6 +24,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 **Resume Training:** Run `train.py --resume` to resume training from the most recently saved checkpoint `weights/latest.pt`.
 
 Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. Default training settings produce loss plots below, with **training speed of 0.6 s/batch on a 1080 Ti (15 epochs/day)** or 0.45 s/batch on a 2080 Ti.
+
 ![Alt](https://user-images.githubusercontent.com/26833433/49822374-3b27bf00-fd7d-11e8-9180-f0ac9fe2fdb4.png "coco training loss")
 
 ## Image Augmentation
@@ -32,10 +33,10 @@ Each epoch trains on 120,000 images from the train and validate COCO sets, and t
 
 Augmentation | Description
 --- | ---
-Translation | +/- 20% (vertical and horizontal)
+Translation | +/- 10% (vertical and horizontal)
 Rotation | +/- 5 degrees
-Shear | +/- 3 degrees (vertical and horizontal)
-Scale | +/- 20%
+Shear | +/- 2 degrees (vertical and horizontal)
+Scale | +/- 10%
 Reflection | 50% probability (horizontal-only)
 H**S**V Saturation | +/- 50%
 HS**V** Intensity | +/- 50%
@@ -47,7 +48,7 @@ HS**V** Intensity | +/- 50%
 Run `detect.py` to apply trained weights to an image and visualize results, such as `zidane.jpg` from the `data/samples` folder, shown here. 
 
 **YOLOv3:** `detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.pt`
-<img src="https://github.com/ultralytics/yolov3/blob/master/data/zidane_result.jpg" width="800">
+<img src="https://user-images.githubusercontent.com/26833433/50524393-b0adc200-0ad5-11e9-9335-4774a1e52374.jpg" width="800">
 
 **YOLOv3-tiny:** `detect.py --cfg cfg/yolov3-tiny.cfg --weights weights/yolov3-tiny.pt`
 <img src="https://user-images.githubusercontent.com/26833433/50374155-21427380-05ea-11e9-8d24-f1a4b2bac1ad.jpg" width="800">
