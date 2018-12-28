@@ -62,8 +62,7 @@ Download official YOLOv3 weights:
 - https://pjreddie.com/media/files/yolov3-tiny.weights
 
 **PyTorch** format:
-- https://storage.googleapis.com/ultralytics/yolov3.pt 
-- https://storage.googleapis.com/ultralytics/yolov3-tiny.pt 
+- https://drive.google.com/drive/u/0/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI
 
 # Validation mAP
 
