@@ -23,7 +23,10 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 **Resume Training:** Run `train.py --resume` to resume training from the most recently saved checkpoint `weights/latest.pt`.
 
-Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. An Nvidia GTX 1080 Ti will process about 10-20 epochs/day depending on image size and augmentation. Loss plots are shown here using default training settings.
+Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. Default training settings produce loss plots below, with **training speed of 0.6 s/batch on a 1080 Ti (15 epochs/day)** or 0.45 s/batch on a 2080 Ti.
+
+![Alt](https://user-images.githubusercontent.com/26833433/49822374-3b27bf00-fd7d-11e8-9180-f0ac9fe2fdb4.png "coco training loss")
+
 
 ![Alt](https://user-images.githubusercontent.com/26833433/49822374-3b27bf00-fd7d-11e8-9180-f0ac9fe2fdb4.png "coco training loss")
 
@@ -72,4 +75,4 @@ Run `test.py --weights weights/latest.pt` to validate against the latest trainin
 
 # Contact
 
-For questions or comments please contact Glenn Jocher at glenn.jocher@ultralytics.com or visit us at https://contact.ultralytics.com
+For questions or comments please contact Glenn Jocher at glenn.jocher@ultralytics.com or visit us at https://contact.ultralytics.com.
