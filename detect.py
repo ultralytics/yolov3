@@ -24,7 +24,7 @@ def detect(
     device = torch_utils.select_device()
     print("Using device: \"{}\"".format(device))
 
-    os.system('rm -rf ' + output)
+    # os.system('rm -rf ' + output)
     os.makedirs(output, exist_ok=True)
 
     data_config = parse_data_config(data_config_path)
