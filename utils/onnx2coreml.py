@@ -105,9 +105,9 @@ def main():
         pipeline = Pipeline(input_features, output_features)
 
         # Add 3rd dimension of size 1 (apparently not needed, produces error on compile)
-        # ssd_output = coreml_model._spec.description.output
-        # ssd_output[0].type.multiArrayType.shape[:] = [num_classes, num_anchors, 1]
-        # ssd_output[1].type.multiArrayType.shape[:] = [4, num_anchors, 1]
+        ssd_output = coreml_model._spec.description.output
+        ssd_output[0].type.multiArrayType.shape[:] = [num_classes, num_anchors, 1]
+        ssd_output[1].type.multiArrayType.shape[:] = [4, num_anchors, 1]
 
         # And now we can add the three models, in order:
         pipeline.add_model(coreml_model)
