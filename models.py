@@ -168,7 +168,7 @@ class YOLOLayer(nn.Module):
 
             p_boxes = None
             if batch_report:
-                # Predictd boxes: add offset and scale with anchors (in grid space, i.e. 0-13)
+                # Predicted boxes: add offset and scale with anchors (in grid space, i.e. 0-13)
                 gx = x.data + self.grid_x[:, :, :nG, :nG]
                 gy = y.data + self.grid_y[:, :, :nG, :nG]
                 p_boxes = torch.stack((gx - width / 2,
