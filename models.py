@@ -89,7 +89,7 @@ class Upsample(torch.nn.Module):
         self.mode = mode
 
     def forward(self, x):
-        return nn.functional.interpolate(x, scale_factor=self.scale_factor, mode=self.mode)
+        return F.interpolate(x, scale_factor=self.scale_factor, mode=self.mode)
 
 
 class YOLOLayer(nn.Module):
@@ -120,9 +120,10 @@ class YOLOLayer(nn.Module):
         nG = int(self.img_dim / stride)  # number grid points
         self.grid_x = torch.arange(nG).repeat(nG, 1).view([1, 1, nG, nG]).float()
         self.grid_y = torch.arange(nG).repeat(nG, 1).t().view([1, 1, nG, nG]).float()
-        self.scaled_anchors = torch.FloatTensor([(a_w / stride, a_h / stride) for a_w, a_h in anchors])
-        self.anchor_w = self.scaled_anchors[:, 0:1].view((1, nA, 1, 1))
-        self.anchor_h = self.scaled_anchors[:, 1:2].view((1, nA, 1, 1))
+        self.grid_y = torch.arange(nG).repeat(nG, 1).t().view([1, 1, nG, nG]).float()
+        self.anchor_wh = torch.FloatTensor([(a_w / stride, a_h / stride) for a_w, a_h in anchors])  # scale anchors
+        self.anchor_w = self.anchor_wh[:, 0:1].view((1, nA, 1, 1))
+        self.anchor_h = self.anchor_wh[:, 1:2].view((1, nA, 1, 1))
         self.weights = class_weights()
 
         self.loss_means = torch.ones(6)
@@ -177,7 +178,7 @@ class YOLOLayer(nn.Module):
                                        gy + height / 2), 4)  # x1y1x2y2
 
             tx, ty, tw, th, mask, tcls, TP, FP, FN, TC = \
-                build_targets(p_boxes, p_conf, p_cls, targets, self.scaled_anchors, self.nA, self.nC, nG, batch_report)
+                build_targets(p_boxes, p_conf, p_cls, targets, self.anchor_wh, self.nA, self.nC, nG, batch_report)
 
             tcls = tcls[mask]
             if x.is_cuda:
@@ -319,8 +320,8 @@ class Darknet(nn.Module):
         if ONNX_export:
             # Produce a single-layer *.onnx model (upsample ops not working in PyTorch 1.0 export yet)
             output = output[0].squeeze().transpose(0, 1)  # first layer reshaped to 85 x 507
-            output[5:] = torch.nn.functional.softmax(torch.sigmoid(output[5:]) * output[4:5], dim=0)  # SSD-like conf
-            return output[5:], output[:4]  # ONNX scores, boxes
+            output[5:85] = F.softmax(output[5:85], dim=0) * output[4:5]  # SSD-like conf
+            return output[5:85], output[:4] # ONNX scores, boxes
 
         return sum(output) if is_training else torch.cat(output, 1)
 

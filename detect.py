@@ -24,7 +24,7 @@ def detect(
     device = torch_utils.select_device()
     print("Using device: \"{}\"".format(device))
 
-    # os.system('rm -rf ' + output)
+    os.system('rm -rf ' + output)
     os.makedirs(output, exist_ok=True)
 
     data_config = parse_data_config(data_config_path)
@@ -66,6 +66,7 @@ def detect(
 
         # Get detections
         with torch.no_grad():
+            # cv2.imwrite('zidane_416.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # letterboxed
             img = torch.from_numpy(img).unsqueeze(0).to(device)
             # pred = torch.onnx._export(model, img, 'weights/model.onnx', verbose=True); return  # ONNX export
             pred = model(img)
