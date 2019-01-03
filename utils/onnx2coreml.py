@@ -1,4 +1,5 @@
 import os
+import onnx
 from onnx import onnx_pb
 from onnx_coreml import convert
 import glob
@@ -8,7 +9,6 @@ import glob
 # http://machinethink.net/blog/mobilenet-ssdlite-coreml/
 # https://github.com/hollance/YOLO-CoreML-MPSNNGraph
 
-
 def main():
     os.system('rm -rf saved_models && mkdir saved_models')
     files = glob.glob('saved_models/*.onnx') + glob.glob('../yolov3/weights/*.onnx')
@@ -17,32 +17,64 @@ def main():
         # 1. ONNX to CoreML
         name = 'saved_models/' + f.split('/')[-1].replace('.onnx', '')
 
+        # # Load the ONNX model
+        model = onnx.load(f)
+
+        # Check that the IR is well formed
+        print(onnx.checker.check_model(model))
+
+        # Print a human readable representation of the graph
+        print(onnx.helper.printable_graph(model.graph))
+
         model_file = open(f, 'rb')
         model_proto = onnx_pb.ModelProto()
         model_proto.ParseFromString(model_file.read())
-        coreml_model = convert(model_proto, image_input_names=['0'])
-        # coreml_model.save(model_out)
+        yolov3_model = convert(model_proto, image_input_names=['0'], preprocessing_args={'image_scale': 1. / 255})
 
         # 2. Reduce model to FP16, change outputs to DOUBLE and save
         import coremltools
 
-        spec = coreml_model.get_spec()
+        spec = yolov3_model.get_spec()
         for i in range(2):
             spec.description.output[i].type.multiArrayType.dataType = \
                 coremltools.proto.FeatureTypes_pb2.ArrayFeatureType.ArrayDataType.Value('DOUBLE')
 
         spec = coremltools.utils.convert_neural_network_spec_weights_to_fp16(spec)
-        coreml_model = coremltools.models.MLModel(spec)
+        yolov3_model = coremltools.models.MLModel(spec)
 
         num_classes = 80
         num_anchors = 507
-        spec.description.output[0].type.multiArrayType.shape.append(num_classes)
         spec.description.output[0].type.multiArrayType.shape.append(num_anchors)
+        spec.description.output[0].type.multiArrayType.shape.append(num_classes)
+        # spec.description.output[0].type.multiArrayType.shape.append(1)
 
-        spec.description.output[1].type.multiArrayType.shape.append(4)
         spec.description.output[1].type.multiArrayType.shape.append(num_anchors)
-        coreml_model.save(name + '.mlmodel')
+        spec.description.output[1].type.multiArrayType.shape.append(4)
+        # spec.description.output[1].type.multiArrayType.shape.append(1)
+
+        # rename
+        # input_mlmodel = input_tensor.replace(":", "__").replace("/", "__")
+        # class_output_mlmodel = class_output_tensor.replace(":", "__").replace("/", "__")
+        # bbox_output_mlmodel = bbox_output_tensor.replace(":", "__").replace("/", "__")
+        #
+        # for i in range(len(spec.neuralNetwork.layers)):
+        #     if spec.neuralNetwork.layers[i].input[0] == input_mlmodel:
+        #         spec.neuralNetwork.layers[i].input[0] = 'image'
+        #     if spec.neuralNetwork.layers[i].output[0] == class_output_mlmodel:
+        #         spec.neuralNetwork.layers[i].output[0] = 'scores'
+        #     if spec.neuralNetwork.layers[i].output[0] == bbox_output_mlmodel:
+        #         spec.neuralNetwork.layers[i].output[0] = 'boxes'
+
+        spec.neuralNetwork.preprocessing[0].featureName = '0'
+
+        yolov3_model.save(name + '.mlmodel')
         print(spec.description)
+
+        # 2.5. Try to Predict:
+        from PIL import Image
+        img = Image.open('../yolov3/data/samples/zidane_416.jpg')
+        out = yolov3_model.predict({'0': img})
+        print(out['141'].shape, out['143'].shape)
 
         # 3. Create NMS protobuf
         import numpy as np
@@ -51,7 +83,7 @@ def main():
         nms_spec.specificationVersion = 3
 
         for i in range(2):
-            decoder_output = coreml_model._spec.description.output[i].SerializeToString()
+            decoder_output = yolov3_model._spec.description.output[i].SerializeToString()
 
             nms_spec.description.input.add()
             nms_spec.description.input[i].ParseFromString(decoder_output)
@@ -74,15 +106,15 @@ def main():
             del ma_type.shape[:]
 
         nms = nms_spec.nonMaximumSuppression
-        nms.confidenceInputFeatureName = '133'  # 1x507x80
-        nms.coordinatesInputFeatureName = '134'  # 1x507x4
+        nms.confidenceInputFeatureName = '141'  # 1x507x80
+        nms.coordinatesInputFeatureName = '143'  # 1x507x4
         nms.confidenceOutputFeatureName = 'confidence'
         nms.coordinatesOutputFeatureName = 'coordinates'
         nms.iouThresholdInputFeatureName = 'iouThreshold'
         nms.confidenceThresholdInputFeatureName = 'confidenceThreshold'
 
         nms.iouThreshold = 0.6
-        nms.confidenceThreshold = 0.4
+        nms.confidenceThreshold = 0.9
         nms.pickTop.perClass = True
 
         labels = np.loadtxt('../yolov3/data/coco.names', dtype=str, delimiter='\n')
@@ -91,12 +123,40 @@ def main():
         nms_model = coremltools.models.MLModel(nms_spec)
         nms_model.save(name + '_nms.mlmodel')
 
+        # out_nms = nms_model.predict({
+        #     '143': out['143'].squeeze().reshape((80, 507)),
+        #     '144': out['144'].squeeze().reshape((4, 507))
+        # })
+        # print(out_nms['confidence'].shape, out_nms['coordinates'].shape)
+
+        # # # 3.5 Add Softmax model
+        # from coremltools.models import datatypes
+        # from coremltools.models import neural_network
+        #
+        # input_features = [
+        #     ("141", datatypes.Array(num_anchors, num_classes, 1)),
+        #     ("143", datatypes.Array(num_anchors, 4, 1))
+        # ]
+        #
+        # output_features = [
+        #     ("141", datatypes.Array(num_anchors, num_classes, 1)),
+        #     ("143", datatypes.Array(num_anchors, 4, 1))
+        # ]
+        #
+        # builder = neural_network.NeuralNetworkBuilder(input_features, output_features)
+        # builder.add_softmax(name="softmax_pcls",
+        #                     dim=(0, 3, 2, 1),
+        #                     input_name="scores",
+        #                     output_name="permute_scores_output")
+        # softmax_model = coremltools.models.MLModel(builder.spec)
+        # softmax_model.save("softmax.mlmodel")
+
         # 4. Pipeline models togethor
         from coremltools.models import datatypes
         # from coremltools.models import neural_network
         from coremltools.models.pipeline import Pipeline
 
-        input_features = [('image', datatypes.Array(3, 416, 416)),
+        input_features = [('0', datatypes.Array(3, 416, 416)),
                           ('iouThreshold', datatypes.Double()),
                           ('confidenceThreshold', datatypes.Double())]
 
@@ -105,16 +165,21 @@ def main():
         pipeline = Pipeline(input_features, output_features)
 
         # Add 3rd dimension of size 1 (apparently not needed, produces error on compile)
-        ssd_output = coreml_model._spec.description.output
-        ssd_output[0].type.multiArrayType.shape[:] = [num_classes, num_anchors, 1]
-        ssd_output[1].type.multiArrayType.shape[:] = [4, num_anchors, 1]
+        yolov3_output = yolov3_model._spec.description.output
+        yolov3_output[0].type.multiArrayType.shape[:] = [num_anchors, num_classes, 1]
+        yolov3_output[1].type.multiArrayType.shape[:] = [num_anchors, 4, 1]
+
+        nms_input = nms_model._spec.description.input
+        for i in range(2):
+            nms_input[i].type.multiArrayType.shape[:] = yolov3_output[i].type.multiArrayType.shape[:]
 
         # And now we can add the three models, in order:
-        pipeline.add_model(coreml_model)
+        pipeline.add_model(yolov3_model)
+
         pipeline.add_model(nms_model)
 
         # Correct datatypes
-        pipeline.spec.description.input[0].ParseFromString(coreml_model._spec.description.input[0].SerializeToString())
+        pipeline.spec.description.input[0].ParseFromString(yolov3_model._spec.description.input[0].SerializeToString())
         pipeline.spec.description.output[0].ParseFromString(nms_model._spec.description.output[0].SerializeToString())
         pipeline.spec.description.output[1].ParseFromString(nms_model._spec.description.output[1].SerializeToString())
 
