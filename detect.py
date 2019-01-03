@@ -7,7 +7,6 @@ from utils.utils import *
 
 from utils import torch_utils
 
-
 def detect(
         net_config_path,
         data_config_path,
@@ -68,7 +67,8 @@ def detect(
         with torch.no_grad():
             # cv2.imwrite('zidane_416.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # letterboxed
             img = torch.from_numpy(img).unsqueeze(0).to(device)
-            # pred = torch.onnx._export(model, img, 'weights/model.onnx', verbose=True); return  # ONNX export
+            if ONNX_EXPORT:
+                pred = torch.onnx._export(model, img, 'weights/model.onnx', verbose=True); return  # ONNX export
             pred = model(img)
             pred = pred[pred[:, :, 4] > conf_thres]
 
