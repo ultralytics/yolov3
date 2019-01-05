@@ -1,5 +1,5 @@
 # pip3 install -U -r requirements.txt
 numpy
 opencv-python
-torch
+torch >= 1.0.0
 matplotlib
