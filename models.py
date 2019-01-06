@@ -254,9 +254,14 @@ class YOLOLayer(nn.Module):
                 xy = torch.sigmoid(p[..., 0:2]) + self.grid_xy  # x, y
                 width_height = torch.exp(p[..., 2:4]) * self.anchor_wh  # width, height
                 p_conf = torch.sigmoid(p[..., 4:5])  # Conf
-                ## p_cls = torch.sigmoid(p[..., 5:85])  # Class
-                p_cls = F.softmax(p[..., 5:85], 2) * p_conf  # SSD-like conf
-                # p_cls = torch.exp(p[..., 5:85]) / torch.exp(p[..., 5:85]).sum(2).unsqueeze(2) #* p_conf  # F.softmax() equivalent
+                p_cls = p[..., 5:85]
+
+                # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
+                # p_cls = F.softmax(p_cls, 2) * p_conf  # SSD-like conf
+                p_cls = torch.exp(p_cls).permute(2, 1, 0)
+                p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute(2, 1, 0)  # F.softmax() equivalent
+                p_cls = p_cls.permute(2, 1, 0)
+
                 return torch.cat((xy / nG, width_height, p_conf, p_cls), 2).squeeze().t()
 
             p[..., 0] = torch.sigmoid(p[..., 0]) + self.grid_x  # x
