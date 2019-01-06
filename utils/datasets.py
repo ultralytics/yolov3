@@ -15,7 +15,9 @@ from utils.utils import xyxy2xywh
 class load_images():  # for inference
     def __init__(self, path, batch_size=1, img_size=416):
         if os.path.isdir(path):
+            image_format = ['.jpg', '.jpeg', '.png', '.tif']
             self.files = sorted(glob.glob('%s/*.*' % path))
+            self.files = list(filter(lambda x: os.path.splitext(x)[1].lower() in image_format, self.files))
         elif os.path.isfile(path):
             self.files = [path]
 
