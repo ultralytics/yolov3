@@ -14,3 +14,8 @@ wget -c https://pjreddie.com/media/files/yolov3-spp.weights
 
 # darknet53 weights (first 75 layers only)
 wget -c https://pjreddie.com/media/files/darknet53.conv.74
+
+# yolov3-tiny weights from darknet (first 16 layers only)
+# ./darknet partial cfg/yolov3-tiny.cfg yolov3-tiny.weights yolov3-tiny.conv.15 15
+# mv yolov3-tiny.conv.15 ../
+

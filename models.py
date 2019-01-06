@@ -354,6 +354,8 @@ def load_weights(self, weights_path, cutoff=-1):
 
     if weights_path.endswith('darknet53.conv.74'):
         cutoff = 75
+    elif weights_path.endswith('yolov3-tiny.conv.15'):
+        cutoff = 16
 
     # Open the weights file
     fp = open(weights_path, 'rb')
