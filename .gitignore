@@ -27,6 +27,7 @@ temp-plot.html
 *.onnx
 *.mlmodel
 darknet53.conv.74
+yolov3-tiny.conv.15
 
 # GitHub Python GitIgnore ----------------------------------------------------------------------------------------------
 # Byte-compiled / optimized / DLL files
