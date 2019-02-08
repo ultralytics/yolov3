@@ -334,17 +334,17 @@ class Darknet(nn.Module):
         return sum(output) if is_training else torch.cat(output, 1)
 
 
-def load_darknet_weights(self, weights_path, cutoff=-1):
-    # Parses and loads the weights stored in 'weights_path'
+def load_darknet_weights(self, weights, cutoff=-1):
+    # Parses and loads the weights stored in 'weights'
     # cutoff: save layers between 0 and cutoff (if cutoff = -1 all are saved)
-    weights_file = weights_path.split(os.sep)[-1]
+    weights_file = weights.split(os.sep)[-1]
 
     # Try to download weights if not available locally
-    if not os.path.isfile(weights_path):
+    if not os.path.isfile(weights):
         try:
-            os.system('wget https://pjreddie.com/media/files/' + weights_file + ' -P ' + weights_path)
+            os.system('wget https://pjreddie.com/media/files/' + weights_file + ' -P ' + weights)
         except:
-            assert os.path.isfile(weights_path)
+            assert os.path.isfile(weights)
 
     # Establish cutoffs
     if weights_file == 'darknet53.conv.74':
@@ -353,7 +353,7 @@ def load_darknet_weights(self, weights_path, cutoff=-1):
         cutoff = 16
 
     # Open the weights file
-    fp = open(weights_path, 'rb')
+    fp = open(weights, 'rb')
     header = np.fromfile(fp, dtype=np.int32, count=5)  # First five are header values
 
     # Needed to write header when saving weights

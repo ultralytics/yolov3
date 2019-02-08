@@ -12,38 +12,37 @@ import test
 
 
 def train(
-        net_config_path,
-        data_config_path,
+        cfg,
+        data_cfg,
         img_size=416,
         resume=False,
         epochs=100,
         batch_size=16,
         accumulated_batches=1,
-        weights_path='weights',
+        weights='weights',
         report=False,
         multi_scale=False,
         freeze_backbone=True,
         var=0,
 ):
     device = torch_utils.select_device()
-    print("Using device: \"{}\"".format(device))
 
     if multi_scale:  # pass maximum multi_scale size
         img_size = 608
     else:
         torch.backends.cudnn.benchmark = True
 
-    os.makedirs(weights_path, exist_ok=True)
-    latest_weights_file = os.path.join(weights_path, 'latest.pt')
-    best_weights_file = os.path.join(weights_path, 'best.pt')
+    os.makedirs(weights, exist_ok=True)
+    latest_weights_file = os.path.join(weights, 'latest.pt')
+    best_weights_file = os.path.join(weights, 'best.pt')
 
     # Configure run
-    data_config = parse_data_config(data_config_path)
-    num_classes = int(data_config['classes'])
-    train_path = data_config['train']
+    data_cfg = parse_data_cfg(data_cfg)
+    num_classes = int(data_cfg['classes'])
+    train_path = data_cfg['train']
 
     # Initialize model
-    model = Darknet(net_config_path, img_size)
+    model = Darknet(cfg, img_size)
 
     # Get dataloader
     dataloader = load_images_and_labels(train_path, batch_size=batch_size, img_size=img_size,
@@ -80,7 +79,7 @@ def train(
         best_loss = float('inf')
 
         # Initialize model with darknet53 weights (optional)
-        load_darknet_weights(model, os.path.join(weights_path, 'darknet53.conv.74'))
+        load_darknet_weights(model, os.path.join(weights, 'darknet53.conv.74'))
 
         if torch.cuda.device_count() > 1:
             raise Exception('Multi-GPU not currently supported: https://github.com/ultralytics/yolov3/issues/21')
@@ -191,24 +190,16 @@ def train(
 
         # Save best checkpoint
         if best_loss == loss_per_target:
-            os.system('cp {} {}'.format(
-                latest_weights_file,
-                best_weights_file,
-            ))
+            os.system('cp ' + latest_weights_file + ' ' + best_weights_file)
 
         # Save backup weights every 5 epochs
         if (epoch > 0) & (epoch % 5 == 0):
-            backup_file_name = 'backup{}.pt'.format(epoch)
-            backup_file_path = os.path.join(weights_path, backup_file_name)
-            os.system('cp {} {}'.format(
-                latest_weights_file,
-                backup_file_path,
-            ))
+            os.system('cp ' + latest_weights_file + ' ' + os.path.join(weights, 'backup{}.pt'.format(epoch)))
 
         # Calculate mAP
         mAP, R, P = test.test(
-            net_config_path,
-            data_config_path,
+            cfg,
+            data_cfg,
             latest_weights_file,
             batch_size=batch_size,
             img_size=img_size,
@@ -224,11 +215,11 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulated-batches', type=int, default=1, help='number of batches before optimizer step')
-    parser.add_argument('--data-config', type=str, default='cfg/coco.data', help='path to data config file')
+    parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='path to data config file')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
-    parser.add_argument('--weights-path', type=str, default='weights', help='path to store weights')
+    parser.add_argument('--weights', type=str, default='weights', help='path to store weights')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--report', action='store_true', help='report TP, FP, FN, P and R per batch (slower)')
     parser.add_argument('--freeze', action='store_true', help='freeze darknet53.conv.74 layers for first epoch')
@@ -241,13 +232,13 @@ if __name__ == '__main__':
     torch.cuda.empty_cache()
     train(
         opt.cfg,
-        opt.data_config,
+        opt.data_cfg,
         img_size=opt.img_size,
         resume=opt.resume,
         epochs=opt.epochs,
         batch_size=opt.batch_size,
         accumulated_batches=opt.accumulated_batches,
-        weights_path=opt.weights_path,
+        weights=opt.weights,
         report=opt.report,
         multi_scale=opt.multi_scale,
         freeze_backbone=opt.freeze,

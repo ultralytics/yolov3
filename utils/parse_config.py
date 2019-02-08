@@ -20,7 +20,7 @@ def parse_model_config(path):
 
     return module_defs
 
-def parse_data_config(path):
+def parse_data_cfg(path):
     """Parses the data configuration file"""
     options = dict()
     options['gpus'] = '0,1,2,3'

@@ -21,4 +21,5 @@ def select_device(force_cpu=False):
         device = torch.device('cpu')
     else:
         device = torch.device('cuda:0' if CUDA_AVAILABLE else 'cpu')
+    print('Using ' + str(device) + '\n')
     return device
