@@ -89,21 +89,21 @@ def detect(
                     # Rescale coordinates to original dimensions
                     box_h = ((y2 - y1) / unpad_h) * img.shape[0]
                     box_w = ((x2 - x1) / unpad_w) * img.shape[1]
-                    y1 = (((y1 - pad_y // 2) / unpad_h) * img.shape[0]).round().item()
-                    x1 = (((x1 - pad_x // 2) / unpad_w) * img.shape[1]).round().item()
-                    x2 = (x1 + box_w).round().item()
-                    y2 = (y1 + box_h).round().item()
+                    y1 = (((y1 - pad_y // 2) / unpad_h) * img.shape[0]).round()
+                    x1 = (((x1 - pad_x // 2) / unpad_w) * img.shape[1]).round()
+                    x2 = (x1 + box_w).round()
+                    y2 = (y1 + box_h).round()
                     x1, y1, x2, y2 = max(x1, 0), max(y1, 0), max(x2, 0), max(y2, 0)
 
                     # write to file
                     if save_txt:
                         with open(results_txt_path, 'a') as file:
-                            file.write(('%g %g %g %g %g %g \n') % (x1, y1, x2, y2, cls_pred, cls_conf * conf))
+                            file.write(('%g %g %g %g %g %g\n') % (x1, y1, x2, y2, cls_pred, cls_conf * conf))
 
                     if save_images:
                         # Add the bbox to the plot
                         label = '%s %.2f' % (classes[int(cls_pred)], conf)
-                        color = bbox_colors[int(np.where(unique_classes == int(cls_pred))[0])]
+                        color = bbox_colors[list(unique_classes).index(cls_pred)]
                         plot_one_box([x1, y1, x2, y2], img, label=label, color=color)
 
                 if save_images:
