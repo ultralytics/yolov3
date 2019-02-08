@@ -29,9 +29,7 @@ def test(
 
     # Load weights
     if weights.endswith('.pt'):  # pytorch format
-        checkpoint = torch.load(weights, map_location='cpu')
-        model.load_state_dict(checkpoint['model'])
-        del checkpoint
+        model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
     else:  # darknet format
         load_darknet_weights(model, weights)
 
