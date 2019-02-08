@@ -43,7 +43,7 @@ def detect(
 
     # Classes and colors
     classes = load_classes(parse_data_cfg('cfg/coco.data')['names'])  # Extracts class labels from file
-    color_list = [[random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)] for _ in range(len(classes))]
+    colors = [[random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)] for _ in range(len(classes))]
 
     for i, (path, img, img0) in enumerate(dataloader):
         print("%g/%g '%s': " % (i + 1, len(dataloader), path), end='')
@@ -73,7 +73,6 @@ def detect(
                 unpad_w = img_size - pad_x
 
                 unique_classes = detections[:, -1].cpu().unique()
-                bbox_colors = random.sample(color_list, len(unique_classes))
 
                 # write results to .txt file
                 results_img_path = os.path.join(output, path.split('/')[-1])
@@ -101,10 +100,9 @@ def detect(
                             file.write(('%g %g %g %g %g %g\n') % (x1, y1, x2, y2, cls_pred, cls_conf * conf))
 
                     if save_images:
-                        # Add the bbox to the plot
+                        # Add bbox to the image
                         label = '%s %.2f' % (classes[int(cls_pred)], conf)
-                        color = bbox_colors[list(unique_classes).index(cls_pred)]
-                        plot_one_box([x1, y1, x2, y2], img, label=label, color=color)
+                        plot_one_box([x1, y1, x2, y2], img, label=label, color=colors[int(cls_pred)])
 
                 if save_images:
                     # Save generated image with detections
