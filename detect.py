@@ -8,17 +8,8 @@ from utils.utils import *
 from utils import torch_utils
 
 
-def detect(
-        cfg,
-        weights,
-        images_path,
-        output='output',
-        img_size=416,
-        conf_thres=0.3,
-        nms_thres=0.45,
-        save_txt=False,
-        save_images=True,
-):
+def detect(cfg, weights, images, output='output', img_size=416, conf_thres=0.3, nms_thres=0.45,
+           save_txt=False, save_images=True):
     device = torch_utils.select_device()
 
     os.system('rm -rf ' + output)
@@ -37,7 +28,7 @@ def detect(
     model.to(device).eval()
 
     # Set Dataloader
-    dataloader = load_images(images_path, img_size=img_size)
+    dataloader = load_images(images, img_size=img_size)
 
     # Classes and colors
     classes = load_classes(parse_data_cfg('cfg/coco.data')['names'])  # Extracts class labels from file
@@ -109,20 +100,13 @@ def detect(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--image-folder', type=str, default='data/samples', help='path to images')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
+    parser.add_argument('--images', type=str, default='data/samples', help='path to images')
+    parser.add_argument('--img-size', type=int, default=32 * 13, help='size of each image dimension')
     parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
-    parser.add_argument('--img-size', type=int, default=32 * 13, help='size of each image dimension')
     opt = parser.parse_args()
     print(opt)
 
-    detect(
-        opt.cfg,
-        opt.weights,
-        opt.image_folder,
-        img_size=opt.img_size,
-        conf_thres=opt.conf_thres,
-        nms_thres=opt.nms_thres,
-    )
+    detect(opt.cfg, opt.weights, opt.images, img_size=opt.img_size, conf_thres=opt.conf_thres, nms_thres=opt.nms_thres)
