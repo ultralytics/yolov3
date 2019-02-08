@@ -46,7 +46,7 @@ def detect(
     color_list = [[random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)] for _ in range(len(classes))]
 
     for i, (path, img, img0) in enumerate(dataloader):
-        print('image %g/%g: %s' % (i + 1, len(dataloader), path))
+        print("%g/%g '%s': " % (i + 1, len(dataloader), path), end='')
         t = time.time()
 
         # Get detections
@@ -83,7 +83,7 @@ def detect(
 
                 for i in unique_classes:
                     n = (detections[:, -1].cpu() == i).sum()
-                    print('%g %ss' % (n, classes[int(i)]))
+                    print('%g %ss' % (n, classes[int(i)]), end=', ')
 
                 for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
                     # Rescale coordinates to original dimensions
@@ -110,7 +110,7 @@ def detect(
                     # Save generated image with detections
                     cv2.imwrite(results_img_path.replace('.bmp', '.jpg').replace('.tif', '.jpg'), img)
 
-        print('Done. (%.3fs)\n' % (time.time() - t))
+        print(' Done. (%.3fs)' % (time.time() - t))
 
     if platform == 'darwin':  # MacOS (local)
         os.system('open ' + output)

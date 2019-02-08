@@ -41,7 +41,7 @@ class load_images():  # for inference
         assert img0 is not None, 'Failed to load ' + img_path
 
         # Padded resize
-        img, _, _, _ = resize_square(img0, height=self.height, color=(127.5, 127.5, 127.5))
+        img, _, _, _ = letterbox(img0, height=self.height, color=(127.5, 127.5, 127.5))
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)
@@ -128,7 +128,7 @@ class load_images_and_labels():  # for training
                 cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)
 
             h, w, _ = img.shape
-            img, ratio, padw, padh = resize_square(img, height=height, color=(127.5, 127.5, 127.5))
+            img, ratio, padw, padh = letterbox(img, height=height, color=(127.5, 127.5, 127.5))
 
             # Load labels
             if os.path.isfile(label_path):
@@ -189,7 +189,7 @@ class load_images_and_labels():  # for training
         return self.nB  # number of batches
 
 
-def resize_square(img, height=416, color=(0, 0, 0)):  # resize a rectangular image to a padded square
+def letterbox(img, height=416, color=(0, 0, 0)):  # resize a rectangular image to a padded square
     shape = img.shape[:2]  # shape = [height, width]
     ratio = float(height) / max(shape)  # ratio  = old / new
     new_shape = [round(shape[0] * ratio), round(shape[1] * ratio)]
@@ -200,6 +200,16 @@ def resize_square(img, height=416, color=(0, 0, 0)):  # resize a rectangular ima
     img = cv2.resize(img, (new_shape[1], new_shape[0]), interpolation=cv2.INTER_AREA)  # resized, no border
     return cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color), ratio, dw // 2, dh // 2
 
+def letterbox_undo(img, height=416, color=(0, 0, 0)):  # resize a rectangular image to a padded square
+    shape = img.shape[:2]  # shape = [height, width]
+    ratio = float(height) / max(shape)  # ratio  = old / new
+    new_shape = [round(shape[0] * ratio), round(shape[1] * ratio)]
+    dw = height - new_shape[1]  # width padding
+    dh = height - new_shape[0]  # height padding
+    top, bottom = dh // 2, dh - (dh // 2)
+    left, right = dw // 2, dw - (dw // 2)
+    img = cv2.resize(img, (new_shape[1], new_shape[0]), interpolation=cv2.INTER_AREA)  # resized, no border
+    return cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color), ratio, dw // 2, dh // 2
 
 def random_affine(img, targets=None, degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-2, 2),
                   borderValue=(127.5, 127.5, 127.5)):
