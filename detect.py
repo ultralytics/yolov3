@@ -106,7 +106,7 @@ def detect(
 
                 if save_images:
                     # Save generated image with detections
-                    cv2.imwrite(results_img_path.replace('.bmp', '.jpg').replace('.tif', '.jpg'), img)
+                    cv2.imwrite(results_img_path, img)
 
         print(' Done. (%.3fs)' % (time.time() - t))
 
