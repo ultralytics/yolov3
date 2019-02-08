@@ -63,6 +63,8 @@ def detect(
 
             # Draw bounding boxes and labels of detections
             if detections is not None:
+                save_img_path = os.path.join(output, path.split('/')[-1])
+                save_txt_path = save_img_path + '.txt'
                 img = img0
 
                 # The amount of padding that was added
@@ -73,13 +75,6 @@ def detect(
                 unpad_w = img_size - pad_x
 
                 unique_classes = detections[:, -1].cpu().unique()
-
-                # write results to .txt file
-                results_img_path = os.path.join(output, path.split('/')[-1])
-                results_txt_path = results_img_path + '.txt'
-                if os.path.isfile(results_txt_path):
-                    os.remove(results_txt_path)
-
                 for i in unique_classes:
                     n = (detections[:, -1].cpu() == i).sum()
                     print('%g %ss' % (n, classes[int(i)]), end=', ')
@@ -96,7 +91,7 @@ def detect(
 
                     # write to file
                     if save_txt:
-                        with open(results_txt_path, 'a') as file:
+                        with open(save_txt_path, 'a') as file:
                             file.write(('%g %g %g %g %g %g\n') % (x1, y1, x2, y2, cls_pred, cls_conf * conf))
 
                     if save_images:
@@ -106,18 +101,17 @@ def detect(
 
                 if save_images:
                     # Save generated image with detections
-                    cv2.imwrite(results_img_path, img)
+                    cv2.imwrite(save_img_path, img)
 
         print(' Done. (%.3fs)' % (time.time() - t))
 
-    if platform == 'darwin':  # MacOS (local)
+    if platform == 'darwin':  # MacOS
         os.system('open ' + output)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image-folder', type=str, default='data/samples', help='path to images')
-    parser.add_argument('--output-folder', type=str, default='output', help='path to outputs')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
     parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')
@@ -130,7 +124,6 @@ if __name__ == '__main__':
         opt.cfg,
         opt.weights,
         opt.image_folder,
-        output=opt.output_folder,
         img_size=opt.img_size,
         conf_thres=opt.conf_thres,
         nms_thres=opt.nms_thres,
