@@ -1,4 +1,5 @@
 # pip3 install -U -r requirements.txt
+# conda install numpy opencv matplotlib && conda install pytorch torchvision -c pytorch
 numpy
 opencv-python
 torch >= 1.0.0
