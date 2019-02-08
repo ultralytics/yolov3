@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+import os
 import torch.nn as nn
 
 from utils.parse_config import *
@@ -333,13 +334,22 @@ class Darknet(nn.Module):
         return sum(output) if is_training else torch.cat(output, 1)
 
 
-def load_weights(self, weights_path, cutoff=-1):
+def load_darknet_weights(self, weights_path, cutoff=-1):
     # Parses and loads the weights stored in 'weights_path'
-    # @:param cutoff  - save layers between 0 and cutoff (cutoff = -1 -> all are saved)
+    # cutoff: save layers between 0 and cutoff (if cutoff = -1 all are saved)
+    weights_file = weights_path.split(os.sep)[-1]
 
-    if weights_path.endswith('darknet53.conv.74'):
+    # Try to download weights if not available locally
+    if not os.path.isfile(weights_path):
+        try:
+            os.system('wget https://pjreddie.com/media/files/' + weights_file + ' -P ' + weights_path)
+        except:
+            assert os.path.isfile(weights_path)
+
+    # Establish cutoffs
+    if weights_file == 'darknet53.conv.74':
         cutoff = 75
-    elif weights_path.endswith('yolov3-tiny.conv.15'):
+    elif weights_file == 'yolov3-tiny.conv.15':
         cutoff = 16
 
     # Open the weights file

@@ -10,7 +10,7 @@ from utils import torch_utils
 def test(
         net_config_path,
         data_config_path,
-        weights_file_path,
+        weights_path,
         batch_size=16,
         img_size=416,
         iou_thres=0.5,
@@ -30,12 +30,12 @@ def test(
     model = Darknet(net_config_path, img_size)
 
     # Load weights
-    if weights_file_path.endswith('.pt'):  # pytorch format
-        checkpoint = torch.load(weights_file_path, map_location='cpu')
+    if weights_path.endswith('.pt'):  # pytorch format
+        checkpoint = torch.load(weights_path, map_location='cpu')
         model.load_state_dict(checkpoint['model'])
         del checkpoint
     else:  # darknet format
-        load_weights(model, weights_file_path)
+        load_darknet_weights(model, weights_path)
 
     model.to(device).eval()
 

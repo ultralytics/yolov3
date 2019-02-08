@@ -11,7 +11,7 @@ from utils import torch_utils
 def detect(
         net_config_path,
         data_config_path,
-        weights_file_path,
+        weights_path,
         images_path,
         output='output',
         batch_size=16,
@@ -32,14 +32,14 @@ def detect(
     # Load model
     model = Darknet(net_config_path, img_size)
 
-    if weights_file_path.endswith('.pt'):  # pytorch format
-        if weights_file_path.endswith('weights/yolov3.pt') and not os.path.isfile(weights_file_path):
-            os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights_file_path)
-        checkpoint = torch.load(weights_file_path, map_location='cpu')
+    if weights_path.endswith('.pt'):  # pytorch format
+        if weights_path.endswith('weights/yolov3.pt') and not os.path.isfile(weights_path):
+            os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights_path)
+        checkpoint = torch.load(weights_path, map_location='cpu')
         model.load_state_dict(checkpoint['model'])
         del checkpoint
     else:  # darknet format
-        load_weights(model, weights_file_path)
+        load_darknet_weights(model, weights_path)
 
     model.to(device).eval()
 
@@ -136,8 +136,6 @@ def detect(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    # Get data configuration
-
     parser.add_argument('--image-folder', type=str, default='data/samples', help='path to images')
     parser.add_argument('--output-folder', type=str, default='output', help='path to outputs')
     parser.add_argument('--plot-flag', type=bool, default=True)

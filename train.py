@@ -10,9 +10,6 @@ from utils import torch_utils
 # Import test.py to get mAP after each epoch
 import test
 
-DARKNET_WEIGHTS_FILENAME = 'darknet53.conv.74'
-DARKNET_WEIGHTS_URL = 'https://pjreddie.com/media/files/{}'.format(DARKNET_WEIGHTS_FILENAME)
-
 
 def train(
         net_config_path,
@@ -83,13 +80,7 @@ def train(
         best_loss = float('inf')
 
         # Initialize model with darknet53 weights (optional)
-        def_weight_file = os.path.join(weights_path, DARKNET_WEIGHTS_FILENAME)
-        if not os.path.isfile(def_weight_file):
-            os.system('wget {} -P {}'.format(
-                DARKNET_WEIGHTS_URL,
-                weights_path))
-        assert os.path.isfile(def_weight_file)
-        load_weights(model, def_weight_file)
+        load_darknet_weights(model, os.path.join(weights_path, 'darknet53.conv.74'))
 
         if torch.cuda.device_count() > 1:
             raise Exception('Multi-GPU not currently supported: https://github.com/ultralytics/yolov3/issues/21')
