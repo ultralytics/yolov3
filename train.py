@@ -45,8 +45,7 @@ def train(
     model = Darknet(cfg, img_size)
 
     # Get dataloader
-    dataloader = load_images_and_labels(train_path, batch_size=batch_size, img_size=img_size,
-                                        multi_scale=multi_scale, augment=True)
+    dataloader = load_images_and_labels(train_path, batch_size, img_size, multi_scale=multi_scale, augment=True)
 
     lr0 = 0.001
     if resume:

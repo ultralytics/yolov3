@@ -41,7 +41,8 @@ class load_images():  # for inference
         assert img0 is not None, 'Failed to load ' + img_path
 
         # Padded resize
-        img, _, _, _ = letterbox(img0, height=self.height, color=(127.5, 127.5, 127.5))
+        img, ratio, padw, padh = letterbox(img0, height=self.height, color=(127.5, 127.5, 127.5))
+        print(ratio, padw, padh)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)

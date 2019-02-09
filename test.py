@@ -27,8 +27,7 @@ def test(cfg, data_cfg, weights, batch_size=16, img_size=416, iou_thres=0.5, con
     model.to(device).eval()
 
     # Get dataloader
-    # dataset = load_images_with_labels(test_path)
-    # dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=n_cpus)
+    # dataloader = torch.utils.data.DataLoader(load_images_with_labels(test_path), batch_size=batch_size)  # pytorch
     dataloader = load_images_and_labels(test_path, batch_size=batch_size, img_size=img_size)
 
     mean_mAP, mean_R, mean_P = 0.0, 0.0, 0.0
