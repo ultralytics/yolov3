@@ -96,6 +96,8 @@ def detect(cfg, weights, images, output='output', img_size=416, conf_thres=0.3, 
 
     if platform == 'darwin':  # MacOS
         os.system('open ' + output)
+        os.system('open ' + save_img_path)
+
 
 
 if __name__ == '__main__':

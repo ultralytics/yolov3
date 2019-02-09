@@ -7,16 +7,7 @@ from utils.utils import *
 from utils import torch_utils
 
 
-def test(
-        cfg,
-        data_cfg,
-        weights,
-        batch_size=16,
-        img_size=416,
-        iou_thres=0.5,
-        conf_thres=0.3,
-        nms_thres=0.45,
-):
+def test(cfg, data_cfg, weights, batch_size=16, img_size=416, iou_thres=0.5, conf_thres=0.3, nms_thres=0.45):
     device = torch_utils.select_device()
 
     # Configure run
@@ -135,15 +126,5 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
-    init_seeds()
-
-    mAP = test(
-        opt.cfg,
-        opt.data_cfg,
-        opt.weights,
-        batch_size=opt.batch_size,
-        img_size=opt.img_size,
-        iou_thres=opt.iou_thres,
-        conf_thres=opt.conf_thres,
-        nms_thres=opt.nms_thres,
-    )
+    mAP = test(opt.cfg, opt.data_cfg, opt.weights, opt.batch_size, opt.img_size, opt.iou_thres, opt.conf_thres,
+               opt.nms_thres)
