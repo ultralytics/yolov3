@@ -196,13 +196,7 @@ def train(
             os.system('cp ' + latest_weights_file + ' ' + os.path.join(weights, 'backup{}.pt'.format(epoch)))
 
         # Calculate mAP
-        mAP, R, P = test.test(
-            cfg,
-            data_cfg,
-            latest_weights_file,
-            batch_size=batch_size,
-            img_size=img_size,
-        )
+        mAP, R, P = test.test(cfg, data_cfg, weights=latest_weights_file, batch_size=batch_size, img_size=img_size)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
@@ -228,7 +222,6 @@ if __name__ == '__main__':
 
     init_seeds()
 
-    torch.cuda.empty_cache()
     train(
         opt.cfg,
         opt.data_cfg,
