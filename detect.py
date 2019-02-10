@@ -8,12 +8,8 @@ from utils.utils import *
 from utils import torch_utils
 
 
-def unletterbox(img0_shape, letterbox_shape):
-    return None
-
-
-def detect(cfg, weights, images, output='output', img_size=416, conf_thres=0.3, nms_thres=0.45,
-           save_txt=False, save_images=True):
+def detect(cfg, weights, images, output='output', img_size=416, conf_thres=0.3, nms_thres=0.45, save_txt=False,
+           save_images=True):
     device = torch_utils.select_device()
 
     os.system('rm -rf ' + output)
@@ -59,12 +55,8 @@ def detect(cfg, weights, images, output='output', img_size=416, conf_thres=0.3, 
                 save_img_path = os.path.join(output, path.split('/')[-1])
                 save_txt_path = save_img_path + '.txt'
 
-                # The amount of padding that was added
-                pad_x = max(im0.shape[0] - im0.shape[1], 0) * (img_size / max(im0.shape))
-                pad_y = max(im0.shape[1] - im0.shape[0], 0) * (img_size / max(im0.shape))
-                # Image height and width after padding is removed
-                unpad_h = img_size - pad_y
-                unpad_w = img_size - pad_x
+                # Rescale boxes from 416 to true image size
+                detections[:, :4] = scale_coords(img_size, detections[:, :4], im0.shape)
 
                 unique_classes = detections[:, -1].cpu().unique()
                 for i in unique_classes:
@@ -72,13 +64,6 @@ def detect(cfg, weights, images, output='output', img_size=416, conf_thres=0.3, 
                     print('%g %ss' % (n, classes[int(i)]), end=', ')
 
                 for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
-                    # Rescale coordinates to original dimensions
-                    y1 = (((y1 - pad_y // 2) / unpad_h) * im0.shape[0]).round()
-                    x1 = (((x1 - pad_x // 2) / unpad_w) * im0.shape[1]).round()
-                    y2 = (((y2 - pad_y // 2) / unpad_h) * im0.shape[0]).round()
-                    x2 = (((x2 - pad_x // 2) / unpad_w) * im0.shape[1]).round()
-                    x1, y1, x2, y2 = max(x1, 0), max(y1, 0), max(x2, 0), max(y2, 0)
-
                     if save_txt:  # Write to file
                         with open(save_txt_path, 'a') as file:
                             file.write('%g %g %g %g %g %g\n' % (x1, y1, x2, y2, cls_pred, cls_conf * conf))
