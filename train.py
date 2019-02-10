@@ -195,7 +195,8 @@ def train(
             os.system('cp ' + latest + ' ' + os.path.join(weights, 'backup{}.pt'.format(epoch)))
 
         # Calculate mAP
-        mAP, R, P = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
+        with torch.no_grad():
+            mAP, R, P = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
