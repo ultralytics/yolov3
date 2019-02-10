@@ -193,24 +193,13 @@ class load_images_and_labels():  # for training
 def letterbox(img, height=416, color=(0, 0, 0)):  # resize a rectangular image to a padded square
     shape = img.shape[:2]  # shape = [height, width]
     ratio = float(height) / max(shape)  # ratio  = old / new
-    new_shape = [round(shape[0] * ratio), round(shape[1] * ratio)]
-    dw = height - new_shape[1]  # width padding
-    dh = height - new_shape[0]  # height padding
-    top, bottom = dh // 2, dh - (dh // 2)
-    left, right = dw // 2, dw - (dw // 2)
-    img = cv2.resize(img, (new_shape[1], new_shape[0]), interpolation=cv2.INTER_AREA)  # resized, no border
-    return cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color), ratio, dw // 2, dh // 2
+    new_shape = (round(shape[1] * ratio), round(shape[0] * ratio))
+    padw = (height - new_shape[0]) // 2  # width padding
+    padh = (height - new_shape[1]) // 2  # height padding
+    img = cv2.resize(img, new_shape, interpolation=cv2.INTER_AREA)  # resized, no border
+    img = cv2.copyMakeBorder(img, padh, padh, padw, padw, cv2.BORDER_CONSTANT, value=color)  # padded square
+    return img, ratio, padw, padh
 
-def letterbox_undo(img, height=416, color=(0, 0, 0)):  # resize a rectangular image to a padded square
-    shape = img.shape[:2]  # shape = [height, width]
-    ratio = float(height) / max(shape)  # ratio  = old / new
-    new_shape = [round(shape[0] * ratio), round(shape[1] * ratio)]
-    dw = height - new_shape[1]  # width padding
-    dh = height - new_shape[0]  # height padding
-    top, bottom = dh // 2, dh - (dh // 2)
-    left, right = dw // 2, dw - (dw // 2)
-    img = cv2.resize(img, (new_shape[1], new_shape[0]), interpolation=cv2.INTER_AREA)  # resized, no border
-    return cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color), ratio, dw // 2, dh // 2
 
 def random_affine(img, targets=None, degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-2, 2),
                   borderValue=(127.5, 127.5, 127.5)):

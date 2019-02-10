@@ -8,6 +8,10 @@ from utils.utils import *
 from utils import torch_utils
 
 
+def unletterbox(img0_shape, letterbox_shape):
+    return None
+
+
 def detect(cfg, weights, images, output='output', img_size=416, conf_thres=0.3, nms_thres=0.45,
            save_txt=False, save_images=True):
     device = torch_utils.select_device()
@@ -69,12 +73,10 @@ def detect(cfg, weights, images, output='output', img_size=416, conf_thres=0.3, 
 
                 for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
                     # Rescale coordinates to original dimensions
-                    box_h = ((y2 - y1) / unpad_h) * im0.shape[0]
-                    box_w = ((x2 - x1) / unpad_w) * im0.shape[1]
                     y1 = (((y1 - pad_y // 2) / unpad_h) * im0.shape[0]).round()
                     x1 = (((x1 - pad_x // 2) / unpad_w) * im0.shape[1]).round()
-                    x2 = (x1 + box_w).round()
-                    y2 = (y1 + box_h).round()
+                    y2 = (((y2 - pad_y // 2) / unpad_h) * im0.shape[0]).round()
+                    x2 = (((x2 - pad_x // 2) / unpad_w) * im0.shape[1]).round()
                     x1, y1, x2, y2 = max(x1, 0), max(y1, 0), max(x2, 0), max(y2, 0)
 
                     if save_txt:  # Write to file
