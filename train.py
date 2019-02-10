@@ -111,7 +111,7 @@ def train(
         for g in optimizer.param_groups:
             g['lr'] = lr
 
-        # Freeze darknet53.conv.74 layers for first epoch
+        # Freeze darknet53.conv.74 for first epoch
         if freeze_backbone:
             if epoch == 0:
                 for i, (name, p) in enumerate(model.named_parameters()):
