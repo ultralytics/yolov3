@@ -38,8 +38,8 @@ def detect(
     # Set Dataloader
     dataloader = load_images(images, img_size=img_size)
 
-    # Classes and colors
-    classes = load_classes(parse_data_cfg('cfg/coco.data')['names'])  # Extracts class labels from file
+    # Get classes and colors
+    classes = load_classes(parse_data_cfg('cfg/coco.data')['names'])
     colors = [[random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)] for _ in range(len(classes))]
 
     for i, (path, img, im0) in enumerate(dataloader):
@@ -49,7 +49,7 @@ def detect(
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
         if ONNX_EXPORT:
-            pred = torch.onnx._export(model, img, 'weights/model.onnx', verbose=True)
+            torch.onnx._export(model, img, 'weights/model.onnx', verbose=True)
             return  # ONNX export
         pred = model(img)
         pred = pred[pred[:, :, 4] > conf_thres]
