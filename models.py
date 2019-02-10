@@ -141,7 +141,7 @@ class YOLOLayer(nn.Module):
             self.grid_xy = torch.cat((self.grid_x, self.grid_y), 2)
             self.anchor_wh = torch.cat((self.anchor_w, self.anchor_h), 2) / nG
 
-    def forward(self, p, targets=None, batch_report=False, var=None):
+    def forward(self, p, targets=None, var=None):
         FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
         bs = 1 if ONNX_EXPORT else p.shape[0]  # batch size
         nG = self.nG  # number of grid points
@@ -178,18 +178,7 @@ class YOLOLayer(nn.Module):
             # width = ((w.data * 2) ** 2) * self.anchor_w
             # height = ((h.data * 2) ** 2) * self.anchor_h
 
-            p_boxes = None
-            if batch_report:
-                # Predicted boxes: add offset and scale with anchors (in grid space, i.e. 0-13)
-                gx = x.data + self.grid_x[:, :, :nG, :nG]
-                gy = y.data + self.grid_y[:, :, :nG, :nG]
-                p_boxes = torch.stack((gx - width / 2,
-                                       gy - height / 2,
-                                       gx + width / 2,
-                                       gy + height / 2), 4)  # x1y1x2y2
-
-            tx, ty, tw, th, mask, tcls, TP, FP, FN, TC = \
-                build_targets(p_boxes, p_conf, p_cls, targets, self.anchor_wh, self.nA, self.nC, nG, batch_report)
+            tx, ty, tw, th, mask, tcls = build_targets(targets, self.anchor_wh, self.nA, self.nC, nG)
 
             tcls = tcls[mask]
             if x.is_cuda:
@@ -214,26 +203,9 @@ class YOLOLayer(nn.Module):
             lconf = (k * 64) * BCEWithLogitsLoss(p_conf, mask.float())
 
             # Sum loss components
-            balance_losses_flag = False
-            if balance_losses_flag:
-                k = 1 / self.loss_means.clone()
-                loss = (lx * k[0] + ly * k[1] + lw * k[2] + lh * k[3] + lconf * k[4] + lcls * k[5]) / k.mean()
+            loss = lx + ly + lw + lh + lconf + lcls
 
-                self.loss_means = self.loss_means * 0.99 + \
-                                  FT([lx.data, ly.data, lw.data, lh.data, lconf.data, lcls.data]) * 0.01
-            else:
-                loss = lx + ly + lw + lh + lconf + lcls
-
-            # Sum False Positives from unassigned anchors
-            FPe = torch.zeros(self.nC)
-            if batch_report:
-                i = torch.sigmoid(p_conf[~mask]) > 0.5
-                if i.sum() > 0:
-                    FP_classes = torch.argmax(p_cls[~mask][i], 1)
-                    FPe = torch.bincount(FP_classes, minlength=self.nC).float().cpu()  # extra FPs
-
-            return loss, loss.item(), lx.item(), ly.item(), lw.item(), lh.item(), lconf.item(), lcls.item(), \
-                   nT, TP, FP, FPe, FN, TC
+            return loss, loss.item(), lx.item(), ly.item(), lw.item(), lh.item(), lconf.item(), lcls.item(), nT
 
         else:
             if ONNX_EXPORT:
@@ -273,9 +245,9 @@ class Darknet(nn.Module):
         self.module_defs[0]['height'] = img_size
         self.hyperparams, self.module_list = create_modules(self.module_defs)
         self.img_size = img_size
-        self.loss_names = ['loss', 'x', 'y', 'w', 'h', 'conf', 'cls', 'nT', 'TP', 'FP', 'FPe', 'FN', 'TC']
+        self.loss_names = ['loss', 'x', 'y', 'w', 'h', 'conf', 'cls', 'nT']
 
-    def forward(self, x, targets=None, batch_report=False, var=0):
+    def forward(self, x, targets=None, var=0):
         self.losses = defaultdict(float)
         is_training = targets is not None
         layer_outputs = []
@@ -296,7 +268,7 @@ class Darknet(nn.Module):
             elif module_def['type'] == 'yolo':
                 # Train phase: get loss
                 if is_training:
-                    x, *losses = module[0](x, targets, batch_report, var)
+                    x, *losses = module[0](x, targets, var)
                     for name, loss in zip(self.loss_names, losses):
                         self.losses[name] += loss
                 # Test phase: Get detections
@@ -306,29 +278,7 @@ class Darknet(nn.Module):
             layer_outputs.append(x)
 
         if is_training:
-            if batch_report:
-                self.losses['TC'] /= 3  # target category
-                metrics = torch.zeros(3, len(self.losses['FPe']))  # TP, FP, FN
-
-                ui = np.unique(self.losses['TC'])[1:]
-                for i in ui:
-                    j = self.losses['TC'] == float(i)
-                    metrics[0, i] = (self.losses['TP'][j] > 0).sum().float()  # TP
-                    metrics[1, i] = (self.losses['FP'][j] > 0).sum().float()  # FP
-                    metrics[2, i] = (self.losses['FN'][j] == 3).sum().float()  # FN
-                metrics[1] += self.losses['FPe']
-
-                self.losses['TP'] = metrics[0].sum()
-                self.losses['FP'] = metrics[1].sum()
-                self.losses['FN'] = metrics[2].sum()
-                self.losses['metrics'] = metrics
-            else:
-                self.losses['TP'] = 0
-                self.losses['FP'] = 0
-                self.losses['FN'] = 0
-
             self.losses['nT'] /= 3
-            self.losses['TC'] = 0
 
         if ONNX_EXPORT:
             output = torch.cat(output, 1)  # merge the 3 layers 85 x (507, 2028, 8112) to 85 x 10647

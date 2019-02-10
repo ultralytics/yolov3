@@ -20,7 +20,6 @@ def train(
         batch_size=16,
         accumulated_batches=1,
         weights='weights',
-        report=False,
         multi_scale=False,
         freeze_backbone=True,
         var=0,
@@ -30,7 +29,7 @@ def train(
     if multi_scale:  # pass maximum multi_scale size
         img_size = 608
     else:
-        torch.backends.cudnn.benchmark = True
+        torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
     latest = os.path.join(weights, 'latest.pt')
     best = os.path.join(weights, 'best.pt')
@@ -93,12 +92,11 @@ def train(
 
     model_info(model)
     t0 = time.time()
-    mean_recall, mean_precision = 0, 0
     for epoch in range(epochs):
         epoch += start_epoch
 
-        print(('%8s%12s' + '%10s' * 14) % ('Epoch', 'Batch', 'x', 'y', 'w', 'h', 'conf', 'cls', 'total', 'P', 'R',
-                                           'nTargets', 'TP', 'FP', 'FN', 'time'))
+        print(('%8s%12s' + '%10s' * 9) % (
+        'Epoch', 'Batch', 'x', 'y', 'w', 'h', 'conf', 'cls', 'total', 'nTargets', 'time'))
 
         # Update scheduler (automatic)
         # scheduler.step()
@@ -124,7 +122,6 @@ def train(
 
         ui = -1
         rloss = defaultdict(float)  # running loss
-        metrics = torch.zeros(3, num_classes)
         optimizer.zero_grad()
         for i, (imgs, targets) in enumerate(dataloader):
             if sum([len(x) for x in targets]) < 1:  # if no targets continue
@@ -137,7 +134,7 @@ def train(
                     g['lr'] = lr
 
             # Compute loss, compute gradient, update parameters
-            loss = model(imgs.to(device), targets, batch_report=report, var=var)
+            loss = model(imgs.to(device), targets, var=var)
             loss.backward()
 
             # accumulate gradient for x batches before optimizing
@@ -150,27 +147,10 @@ def train(
             for key, val in model.losses.items():
                 rloss[key] = (rloss[key] * ui + val) / (ui + 1)
 
-            if report:
-                TP, FP, FN = metrics
-                metrics += model.losses['metrics']
-
-                # Precision
-                precision = TP / (TP + FP)
-                k = (TP + FP) > 0
-                if k.sum() > 0:
-                    mean_precision = precision[k].mean()
-
-                # Recall
-                recall = TP / (TP + FN)
-                k = (TP + FN) > 0
-                if k.sum() > 0:
-                    mean_recall = recall[k].mean()
-
-            s = ('%8s%12s' + '%10.3g' * 14) % (
+            s = ('%8s%12s' + '%10.3g' * 9) % (
                 '%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, len(dataloader) - 1), rloss['x'],
                 rloss['y'], rloss['w'], rloss['h'], rloss['conf'], rloss['cls'],
-                rloss['loss'], mean_precision, mean_recall, model.losses['nT'], model.losses['TP'],
-                model.losses['FP'], model.losses['FN'], time.time() - t0)
+                rloss['loss'], model.losses['nT'], time.time() - t0)
             t0 = time.time()
             print(s)
 
@@ -214,9 +194,8 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--weights', type=str, default='weights', help='path to store weights')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
-    parser.add_argument('--report', action='store_true', help='report TP, FP, FN, P and R per batch (slower)')
     parser.add_argument('--freeze', action='store_true', help='freeze darknet53.conv.74 layers for first epoch')
-    parser.add_argument('--var', type=float, default=0, help='optional test variable')
+    parser.add_argument('--var', type=float, default=0, help='test variable')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
@@ -231,7 +210,6 @@ if __name__ == '__main__':
         batch_size=opt.batch_size,
         accumulated_batches=opt.accumulated_batches,
         weights=opt.weights,
-        report=opt.report,
         multi_scale=opt.multi_scale,
         freeze_backbone=opt.freeze,
         var=opt.var,
