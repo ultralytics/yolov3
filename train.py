@@ -52,7 +52,7 @@ def train(
 
         model.load_state_dict(checkpoint['model'])
         if torch.cuda.device_count() > 1:
-            raise Exception('Multi-GPU not currently supported: https://github.com/ultralytics/yolov3/issues/21')
+            raise Exception('Multi-GPU issue: https://github.com/ultralytics/yolov3/issues/21')
             # print('Using ', torch.cuda.device_count(), ' GPUs')
             # model = nn.DataParallel(model)
         model.to(device).train()
