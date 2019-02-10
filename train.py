@@ -96,7 +96,7 @@ def train(
         epoch += start_epoch
 
         print(('%8s%12s' + '%10s' * 9) % (
-        'Epoch', 'Batch', 'x', 'y', 'w', 'h', 'conf', 'cls', 'total', 'nTargets', 'time'))
+            'Epoch', 'Batch', 'x', 'y', 'w', 'h', 'conf', 'cls', 'total', 'nTargets', 'time'))
 
         # Update scheduler (automatic)
         # scheduler.step()
