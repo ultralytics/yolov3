@@ -18,7 +18,7 @@ def detect(
         nms_thres=0.45,
         save_txt=False,
         save_images=True,
-        webcam=False
+        webcam=True
 ):
     device = torch_utils.select_device()
     os.system('rm -rf ' + output)
@@ -85,13 +85,14 @@ def detect(
                 label = '%s %.2f' % (classes[int(cls)], conf)
                 plot_one_box([x1, y1, x2, y2], im0, label=label, color=colors[int(cls)])
 
-        print('Done. (%.3fs)' % (time.time() - t))
+        dt = time.time() - t
+        print('Done. (%.3fs)' % dt)
 
         if save_images:  # Save generated image with detections
             cv2.imwrite(save_path, im0)
 
         if webcam:  # Show live webcam
-            cv2.imshow(weights, im0)
+            cv2.imshow(weights + ' - %.2f FPS' % (1 / dt), im0)
 
     if save_images and (platform == 'darwin'):  # MacOS
         os.system('open ' + output + '&& open ' + save_path)
