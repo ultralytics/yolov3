@@ -18,7 +18,7 @@ def detect(
         nms_thres=0.45,
         save_txt=False,
         save_images=True,
-        webcam=True
+        webcam=False
 ):
     device = torch_utils.select_device()
     os.system('rm -rf ' + output)
