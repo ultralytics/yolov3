@@ -60,7 +60,7 @@ def detect(
         img = torch.from_numpy(img).unsqueeze(0).to(device)
         if ONNX_EXPORT:
             torch.onnx.export(model, img, 'weights/model.onnx', verbose=True)
-            return  # ONNX export
+            return
         pred = model(img)
         pred = pred[pred[:, :, 4] > conf_thres]  # remove boxes < threshold
 
