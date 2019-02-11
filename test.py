@@ -24,7 +24,7 @@ def test(
     nC = int(data_cfg['classes'])  # number of classes (80 for COCO)
     test_path = data_cfg['valid']
 
-    # Initiate model
+    # Initialize model
     model = Darknet(cfg, img_size)
 
     # Load weights

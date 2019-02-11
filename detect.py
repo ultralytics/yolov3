@@ -23,9 +23,10 @@ def detect(
     os.system('rm -rf ' + output)
     os.makedirs(output, exist_ok=True)
 
-    # Load model
+    # Initialize model
     model = Darknet(cfg, img_size)
 
+    # Load weights
     if weights.endswith('.pt'):  # pytorch format
         if weights.endswith('weights/yolov3.pt') and not os.path.isfile(weights):
             os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights)
