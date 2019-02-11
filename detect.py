@@ -59,8 +59,7 @@ def detect(
 
         # Draw bounding boxes and labels of detections
         if detections is not None:
-            save_img_path = os.path.join(output, path.split('/')[-1])
-            save_txt_path = save_img_path + '.txt'
+            save_path = os.path.join(output, path.split('/')[-1])
 
             # Rescale boxes from 416 to true image size
             detections[:, :4] = scale_coords(img_size, detections[:, :4], im0.shape)
@@ -70,22 +69,22 @@ def detect(
                 n = (detections[:, -1].cpu() == i).sum()
                 print('%g %ss' % (n, classes[int(i)]), end=', ')
 
-            for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
+            for x1, y1, x2, y2, conf, cls_conf, cls in detections:
                 if save_txt:  # Write to file
-                    with open(save_txt_path, 'a') as file:
-                        file.write('%g %g %g %g %g %g\n' % (x1, y1, x2, y2, cls_pred, cls_conf * conf))
+                    with open(save_path + '.txt', 'a') as file:
+                        file.write('%g %g %g %g %g %g\n' % (x1, y1, x2, y2, cls, cls_conf * conf))
 
                 if save_images:  # Add bbox to the image
-                    label = '%s %.2f' % (classes[int(cls_pred)], conf)
-                    plot_one_box([x1, y1, x2, y2], im0, label=label, color=colors[int(cls_pred)])
+                    label = '%s %.2f' % (classes[int(cls)], conf)
+                    plot_one_box([x1, y1, x2, y2], im0, label=label, color=colors[int(cls)])
 
             if save_images:  # Save generated image with detections
-                cv2.imwrite(save_img_path, im0)
+                cv2.imwrite(save_path, im0)
 
-    print(' Done. (%.3fs)' % (time.time() - t))
+        print(' Done. (%.3fs)' % (time.time() - t))
 
     if platform == 'darwin':  # MacOS
-        os.system('open ' + output + '&& open ' + save_img_path)
+        os.system('open ' + output + '&& open ' + save_path)
 
 
 if __name__ == '__main__':
