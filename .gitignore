@@ -19,7 +19,6 @@ data/*
 !data/samples/zidane.jpg
 
 results*.txt
-temp-plot.html
 
 # MATLAB GitIgnore -----------------------------------------------------------------------------------------------------
 *.m~
