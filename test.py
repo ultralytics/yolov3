@@ -36,8 +36,8 @@ def test(
     model.to(device).eval()
 
     # Get dataloader
-    # dataloader = torch.utils.data.DataLoader(load_images_with_labels(test_path), batch_size=batch_size)  # pytorch
-    dataloader = load_images_and_labels(test_path, batch_size=batch_size, img_size=img_size)
+    # dataloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path), batch_size=batch_size)  # pytorch
+    dataloader = LoadImagesAndLabels(test_path, batch_size=batch_size, img_size=img_size)
 
     mean_mAP, mean_R, mean_P = 0.0, 0.0, 0.0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))

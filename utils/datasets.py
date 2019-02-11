@@ -12,7 +12,7 @@ import torch
 from utils.utils import xyxy2xywh
 
 
-class load_images():  # for inference
+class LoadImages:  # for inference
     def __init__(self, path, img_size=416):
         if os.path.isdir(path):
             image_format = ['.jpg', '.jpeg', '.png', '.tif']
@@ -55,7 +55,7 @@ class load_images():  # for inference
         return self.nF  # number of files
 
 
-class load_images_and_labels():  # for training
+class LoadImagesAndLabels:  # for training
     def __init__(self, path, batch_size=1, img_size=608, multi_scale=False, augment=False):
         self.path = path
         with open(path, 'r') as file:

@@ -37,7 +37,7 @@ def detect(
     model.to(device).eval()
 
     # Set Dataloader
-    dataloader = load_images(images, img_size=img_size)
+    dataloader = LoadImages(images, img_size=img_size)
 
     # Get classes and colors
     classes = load_classes(parse_data_cfg('cfg/coco.data')['names'])
