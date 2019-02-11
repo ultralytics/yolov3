@@ -81,7 +81,7 @@ def detect(
             if save_images:  # Save generated image with detections
                 cv2.imwrite(save_path, im0)
 
-        print(' Done. (%.3fs)' % (time.time() - t))
+        print('Done. (%.3fs)' % (time.time() - t))
 
     if platform == 'darwin':  # MacOS
         os.system('open ' + output + '&& open ' + save_path)
