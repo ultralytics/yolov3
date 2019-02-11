@@ -17,7 +17,8 @@ def detect(
         conf_thres=0.3,
         nms_thres=0.45,
         save_txt=False,
-        save_images=True
+        save_images=True,
+        webcam=False
 ):
     device = torch_utils.select_device()
     os.system('rm -rf ' + output)
@@ -37,15 +38,20 @@ def detect(
     model.to(device).eval()
 
     # Set Dataloader
-    dataloader = LoadImages(images, img_size=img_size)
+    if webcam:
+        save_images = False
+        dataloader = LoadWebcam(images, img_size=img_size)
+    else:
+        dataloader = LoadImages(images, img_size=img_size)
 
     # Get classes and colors
     classes = load_classes(parse_data_cfg('cfg/coco.data')['names'])
     colors = [[random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)] for _ in range(len(classes))]
 
     for i, (path, img, im0) in enumerate(dataloader):
-        print("%g/%g '%s': " % (i + 1, len(dataloader), path), end='')
         t = time.time()
+        print("%g/%g '%s': " % (i + 1, len(dataloader), path), end='')
+        save_path = os.path.join(output, path.split('/')[-1])
 
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
@@ -53,45 +59,48 @@ def detect(
             torch.onnx._export(model, img, 'weights/model.onnx', verbose=True)
             return  # ONNX export
         pred = model(img)
-        pred = pred[pred[:, :, 4] > conf_thres]
+        pred = pred[pred[:, :, 4] > conf_thres]  # remove boxes < threshold
 
         if len(pred) > 0:
+            # Run NMS on predictions
             detections = non_max_suppression(pred.unsqueeze(0), conf_thres, nms_thres)[0]
-
-        # Draw bounding boxes and labels of detections
-        if detections is not None:
-            save_path = os.path.join(output, path.split('/')[-1])
 
             # Rescale boxes from 416 to true image size
             detections[:, :4] = scale_coords(img_size, detections[:, :4], im0.shape)
 
+            # Print results to screen
             unique_classes = detections[:, -1].cpu().unique()
             for i in unique_classes:
                 n = (detections[:, -1].cpu() == i).sum()
                 print('%g %ss' % (n, classes[int(i)]), end=', ')
 
+            # Draw bounding boxes and labels of detections
             for x1, y1, x2, y2, conf, cls_conf, cls in detections:
                 if save_txt:  # Write to file
                     with open(save_path + '.txt', 'a') as file:
-                        file.write('%g %g %g %g %g %g\n' % (x1, y1, x2, y2, cls, cls_conf * conf))
+                        file.write('%g %g %g %g %g %g\n' %
+                                   (x1, y1, x2, y2, cls, cls_conf * conf))
 
-                if save_images:  # Add bbox to the image
-                    label = '%s %.2f' % (classes[int(cls)], conf)
-                    plot_one_box([x1, y1, x2, y2], im0, label=label, color=colors[int(cls)])
-
-            if save_images:  # Save generated image with detections
-                cv2.imwrite(save_path, im0)
+                # Add bbox to the image
+                label = '%s %.2f' % (classes[int(cls)], conf)
+                plot_one_box([x1, y1, x2, y2], im0, label=label, color=colors[int(cls)])
 
         print('Done. (%.3fs)' % (time.time() - t))
 
-    if platform == 'darwin':  # MacOS
+        if save_images:  # Save generated image with detections
+            cv2.imwrite(save_path, im0)
+
+        if webcam:  # Show live webcam
+            cv2.imshow(weights, im0)
+
+    if save_images and (platform == 'darwin'):  # MacOS
         os.system('open ' + output + '&& open ' + save_path)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-    parser.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
+    parser.add_argument('--cfg', type=str, default='cfg/yolov3-tiny.cfg', help='cfg file path')
+    parser.add_argument('--weights', type=str, default='weights/yolov3-tiny.pt', help='path to weights file')
     parser.add_argument('--images', type=str, default='data/samples', help='path to images')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='size of each image dimension')
     parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')

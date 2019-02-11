@@ -55,6 +55,42 @@ class LoadImages:  # for inference
         return self.nF  # number of files
 
 
+class LoadWebcam:  # for inference
+    def __init__(self, path, img_size=416):
+        self.cam = cv2.VideoCapture(0)
+        self.nF = 9999  # number of image files
+        self.height = img_size
+
+    def __iter__(self):
+        self.count = -1
+        return self
+
+    def __next__(self):
+        self.count += 1
+        if cv2.waitKey(1) == 27:  # esc to quit
+            cv2.destroyAllWindows()
+            raise StopIteration
+
+        # Read image
+        ret_val, img0 = self.cam.read()
+        assert ret_val, 'Webcam Error'
+        img_path = 'webcam_%g.jpg' % self.count
+        img0 = cv2.flip(img0, 1)
+
+        # Padded resize
+        img, _, _, _ = letterbox(img0, height=self.height)
+
+        # Normalize RGB
+        img = img[:, :, ::-1].transpose(2, 0, 1)
+        img = np.ascontiguousarray(img, dtype=np.float32)
+        img /= 255.0
+
+        return img_path, img, img0
+
+    def __len__(self):
+        return self.nF  # number of files
+
+
 class LoadImagesAndLabels:  # for training
     def __init__(self, path, batch_size=1, img_size=608, multi_scale=False, augment=False):
         self.path = path
