@@ -58,7 +58,6 @@ class LoadImages:  # for inference
 class LoadWebcam:  # for inference
     def __init__(self, img_size=416):
         self.cam = cv2.VideoCapture(0)
-        self.nF = 9999  # number of image files
         self.height = img_size
 
     def __iter__(self):
@@ -88,7 +87,7 @@ class LoadWebcam:  # for inference
         return img_path, img, img0
 
     def __len__(self):
-        return self.nF  # number of files
+        return 0
 
 
 class LoadImagesAndLabels:  # for training

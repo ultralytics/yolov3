@@ -82,6 +82,9 @@ class EmptyLayer(nn.Module):
     def __init__(self):
         super(EmptyLayer, self).__init__()
 
+    def forward(self, x):
+        return x
+
 
 class Upsample(nn.Module):
     # Custom Upsample layer (nn.Upsample gives deprecated warning message)
@@ -121,8 +124,8 @@ class YOLOLayer(nn.Module):
 
         # Build anchor grids
         nG = int(self.img_dim / stride)  # number grid points
-        self.grid_x = torch.arange(nG).repeat(nG, 1).view([1, 1, nG, nG]).float()
-        self.grid_y = torch.arange(nG).repeat(nG, 1).t().view([1, 1, nG, nG]).float()
+        self.grid_x = torch.arange(nG).repeat((nG, 1)).view((1, 1, nG, nG)).float()
+        self.grid_y = torch.arange(nG).repeat((nG, 1)).t().view((1, 1, nG, nG)).float()
         self.anchor_wh = torch.FloatTensor([(a_w / stride, a_h / stride) for a_w, a_h in anchors])  # scale anchors
         self.anchor_w = self.anchor_wh[:, 0].view((1, nA, 1, 1))
         self.anchor_h = self.anchor_wh[:, 1].view((1, nA, 1, 1))
@@ -169,8 +172,8 @@ class YOLOLayer(nn.Module):
             # Width and height (yolo method)
             w = p[..., 2]  # Width
             h = p[..., 3]  # Height
-            width = torch.exp(w.data) * self.anchor_w
-            height = torch.exp(h.data) * self.anchor_h
+            # width = torch.exp(w.data) * self.anchor_w
+            # height = torch.exp(h.data) * self.anchor_h
 
             # Width and height (power method)
             # w = torch.sigmoid(p[..., 2])  # Width
@@ -217,8 +220,8 @@ class YOLOLayer(nn.Module):
 
                 # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
                 # p_cls = F.softmax(p_cls, 2) * p_conf  # SSD-like conf
-                p_cls = torch.exp(p_cls).permute(2, 1, 0)
-                p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute(2, 1, 0)  # F.softmax() equivalent
+                p_cls = torch.exp(p_cls).permute((2, 1, 0))
+                p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute((2, 1, 0))  # F.softmax() equivalent
                 p_cls = p_cls.permute(2, 1, 0)
 
                 return torch.cat((xy / nG, width_height, p_conf, p_cls), 2).squeeze().t()
@@ -246,6 +249,7 @@ class Darknet(nn.Module):
         self.hyperparams, self.module_list = create_modules(self.module_defs)
         self.img_size = img_size
         self.loss_names = ['loss', 'x', 'y', 'w', 'h', 'conf', 'cls', 'nT']
+        self.losses = []
 
     def forward(self, x, targets=None, var=0):
         self.losses = defaultdict(float)
@@ -296,8 +300,8 @@ def load_darknet_weights(self, weights, cutoff=-1):
     if not os.path.isfile(weights):
         try:
             os.system('wget https://pjreddie.com/media/files/' + weights_file + ' -P ' + weights)
-        except:
-            assert os.path.isfile(weights)
+        except IOError:
+            print(weights + ' not found')
 
     # Establish cutoffs
     if weights_file == 'darknet53.conv.74':

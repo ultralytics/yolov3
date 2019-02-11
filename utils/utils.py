@@ -254,7 +254,7 @@ def build_targets(target, anchor_wh, nA, nC, nG):
             iou_order = torch.argsort(-iou_best)  # best to worst
 
             # Unique anchor selection
-            u = torch.cat((gi, gj, a), 0).view(3, -1)
+            u = torch.cat((gi, gj, a), 0).view((3, -1))
             _, first_unique = np.unique(u[:, iou_order], axis=1, return_index=True)  # first unique indices
             # _, first_unique = torch.unique(u[:, iou_order], dim=1, return_inverse=True)  # different than numpy?
 
@@ -340,7 +340,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         # x = np.concatenate((log_w.reshape(-1, 1), log_h.reshape(-1, 1)), 1)
         # from scipy.stats import multivariate_normal
         # for c in range(60):
-        # shape_likelihood[:, c] = multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
+        # shape_likelihood[:, c] =
+        #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
         class_prob, class_pred = torch.max(F.softmax(pred[:, 5:], 1), 1)
 
@@ -436,7 +437,6 @@ def coco_class_count(path='../coco/labels/train2014/'):
 def plot_results():
     # Plot YOLO training results file 'results.txt'
     import glob
-    import numpy as np
     import matplotlib.pyplot as plt
     # import os; os.system('rm -rf results.txt && wget https://storage.googleapis.com/ultralytics/results_v1_0.txt')
 

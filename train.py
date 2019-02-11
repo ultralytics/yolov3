@@ -36,7 +36,6 @@ def train(
 
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
-    num_classes = int(data_cfg['classes'])
     train_path = data_cfg['train']
 
     # Initialize model
@@ -62,7 +61,7 @@ def train(
         #         p.requires_grad = False
 
         # Set optimizer
-        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr0, momentum=.9)
+        optimizer = torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()), lr=lr0, momentum=.9)
 
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
@@ -85,7 +84,7 @@ def train(
         model.to(device).train()
 
         # Set optimizer
-        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr0, momentum=.9)
+        optimizer = torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()), lr=lr0, momentum=.9)
 
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)

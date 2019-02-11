@@ -50,13 +50,16 @@ def detect(
 
     for i, (path, img, im0) in enumerate(dataloader):
         t = time.time()
-        print("%g/%g '%s': " % (i + 1, len(dataloader), path if not webcam else 'webcam'), end='')
+        if webcam:
+            print('webcam frame %g: ' % (i + 1), end='')
+        else:
+            print('image %g/%g %s: ' % (i + 1, len(dataloader), path), end='')
         save_path = os.path.join(output, path.split('/')[-1])
 
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
         if ONNX_EXPORT:
-            torch.onnx._export(model, img, 'weights/model.onnx', verbose=True)
+            torch.onnx.export(model, img, 'weights/model.onnx', verbose=True)
             return  # ONNX export
         pred = model(img)
         pred = pred[pred[:, :, 4] > conf_thres]  # remove boxes < threshold
@@ -70,9 +73,9 @@ def detect(
 
             # Print results to screen
             unique_classes = detections[:, -1].cpu().unique()
-            for i in unique_classes:
-                n = (detections[:, -1].cpu() == i).sum()
-                print('%g %ss' % (n, classes[int(i)]), end=', ')
+            for c in unique_classes:
+                n = (detections[:, -1].cpu() == c).sum()
+                print('%g %ss' % (n, classes[int(c)]), end=', ')
 
             # Draw bounding boxes and labels of detections
             for x1, y1, x2, y2, conf, cls_conf, cls in detections:
