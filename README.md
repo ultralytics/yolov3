@@ -44,9 +44,8 @@ HS**V** Intensity | +/- 50%
 <img src="https://user-images.githubusercontent.com/26833433/50525037-6cbcbc00-0ad9-11e9-8c38-9fd51af530e0.jpg">
 
 # Inference
-
 ## Images
-Run `detect.py` to apply trained weights to an image and visualize results, such as `zidane.jpg` from the `data/samples` folder, shown here. 
+Run `detect.py` to apply trained weights to an image, such as `zidane.jpg` from the `data/samples` folder, shown here. 
 
 **YOLOv3:** `detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.pt`
 <img src="https://user-images.githubusercontent.com/26833433/50524393-b0adc200-0ad5-11e9-9335-4774a1e52374.jpg" width="800">
