@@ -20,9 +20,9 @@ def test(
     device = torch_utils.select_device()
 
     # Configure run
-    data_cfg = parse_data_cfg(data_cfg)
-    nC = int(data_cfg['classes'])  # number of classes (80 for COCO)
-    test_path = data_cfg['valid']
+    data_cfg_dict = parse_data_cfg(data_cfg)
+    nC = int(data_cfg_dict['classes'])  # number of classes (80 for COCO)
+    test_path = data_cfg_dict['valid']
 
     # Initialize model
     model = Darknet(cfg, img_size)
@@ -111,7 +111,7 @@ def test(
     # Print mAP per class
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP') + '\n\nmAP Per Class:')
 
-    classes = load_classes(data_cfg['names'])  # Extracts class labels from file
+    classes = load_classes(data_cfg_dict['names'])  # Extracts class labels from file
     for i, c in enumerate(classes):
         print('%15s: %-.4f' % (c, AP_accum[i] / AP_accum_count[i]))
 
@@ -122,8 +122,8 @@ def test(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='path to model config file')
-    parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='path to data config file')
+    parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
+    parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3.pt', help='path to weights file')
     parser.add_argument('--iou-thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')

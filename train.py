@@ -35,8 +35,7 @@ def train(
     best = os.path.join(weights, 'best.pt')
 
     # Configure run
-    data_cfg = parse_data_cfg(data_cfg)
-    train_path = data_cfg['train']
+    train_path = parse_data_cfg(data_cfg)['train']
 
     # Initialize model
     model = Darknet(cfg, img_size)
@@ -187,8 +186,8 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulated-batches', type=int, default=1, help='number of batches before optimizer step')
-    parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='path to data config file')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
+    parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--weights', type=str, default='weights', help='path to store weights')
