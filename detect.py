@@ -40,7 +40,7 @@ def detect(
     # Set Dataloader
     if webcam:
         save_images = False
-        dataloader = LoadWebcam(images, img_size=img_size)
+        dataloader = LoadWebcam(img_size=img_size)
     else:
         dataloader = LoadImages(images, img_size=img_size)
 
@@ -50,7 +50,7 @@ def detect(
 
     for i, (path, img, im0) in enumerate(dataloader):
         t = time.time()
-        print("%g/%g '%s': " % (i + 1, len(dataloader), path), end='')
+        print("%g/%g '%s': " % (i + 1, len(dataloader), path if not webcam else 'webcam'), end='')
         save_path = os.path.join(output, path.split('/')[-1])
 
         # Get detections
