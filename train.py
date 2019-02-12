@@ -5,8 +5,6 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-from utils import torch_utils
-
 # Import test.py to get mAP after each epoch
 import test
 

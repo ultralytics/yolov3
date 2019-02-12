@@ -5,8 +5,6 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-from utils import torch_utils
-
 
 def detect(
         cfg,
