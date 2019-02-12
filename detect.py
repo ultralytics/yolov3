@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 import argparse
 import time
 from sys import platform
@@ -54,7 +55,7 @@ def detect(
             print('webcam frame %g: ' % (i + 1), end='')
         else:
             print('image %g/%g %s: ' % (i + 1, len(dataloader), path), end='')
-        save_path = os.path.join(output, path.split('/')[-1])
+        save_path = str(Path(output) / Path(path).name)
 
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
