@@ -30,7 +30,7 @@ def detect(
 
     # Load weights
     if weights.endswith('.pt'):  # pytorch format
-        if weights.endswith('weights/yolov3.pt') and not os.path.isfile(weights):
+        if weights.endswith('yolov3.pt') and not os.path.isfile(weights) and (platform == 'darwin'):
             os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights)
         model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
     else:  # darknet format
@@ -98,7 +98,7 @@ def detect(
         if webcam:  # Show live webcam
             cv2.imshow(weights + ' - %.2f FPS' % (1 / dt), im0)
 
-    if save_images and (platform == 'darwin'):  # MacOS
+    if save_images and (platform == 'darwin'):  # linux/macos
         os.system('open ' + output + ' ' + save_path)
 
 
