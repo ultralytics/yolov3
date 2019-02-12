@@ -1,3 +1,4 @@
+import shutil
 import argparse
 import time
 from sys import platform
@@ -20,8 +21,8 @@ def detect(
         webcam=False
 ):
     device = torch_utils.select_device()
-    os.system('rm -rf ' + output)
-    os.makedirs(output, exist_ok=True)
+    shutil.rmtree(output)  # delete output folder
+    os.makedirs(output)  # make new output folder
 
     # Initialize model
     model = Darknet(cfg, img_size)
