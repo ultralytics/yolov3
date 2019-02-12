@@ -2,7 +2,6 @@ import glob
 import math
 import os
 import random
-from sys import platform
 
 import cv2
 import numpy as np
