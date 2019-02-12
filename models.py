@@ -1,6 +1,6 @@
+import os
 from collections import defaultdict
 
-import os
 import torch.nn as nn
 
 from utils.parse_config import *

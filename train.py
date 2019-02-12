@@ -1,12 +1,10 @@
 import argparse
 import time
 
+import test  # Import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
 from utils.utils import *
-
-# Import test.py to get mAP after each epoch
-import test
 
 
 def train(

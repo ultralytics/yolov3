@@ -1,7 +1,7 @@
-import shutil
-from pathlib import Path
 import argparse
+import shutil
 import time
+from pathlib import Path
 from sys import platform
 
 from models import *
