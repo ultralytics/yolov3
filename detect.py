@@ -99,7 +99,7 @@ def detect(
             cv2.imshow(weights + ' - %.2f FPS' % (1 / dt), im0)
 
     if save_images and (platform == 'darwin'):  # MacOS
-        os.system('open ' + output + '&& open ' + save_path)
+        os.system('open ' + output + ' ' + save_path)
 
 
 if __name__ == '__main__':
