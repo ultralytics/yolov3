@@ -1,4 +1,7 @@
 <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="200">
+<p> <a href="https://itunes.apple.com/app/id1452689527">
+<img href="https://itunes.apple.com/app/id1452689527" src="https://user-images.githubusercontent.com/26833433/50044365-9b22ac00-0082-11e9-862f-e77aee7aa7b0.png" width="180"> 
+</a> </p>
 
 # Introduction
 
@@ -8,6 +11,8 @@ https://www.ultralytics.com.
 # Description
 
 The https://github.com/ultralytics/yolov3 repo contains inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. Training is done on the COCO dataset by default: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO** (https://pjreddie.com/darknet/yolo/) and to **Erik Lindernoren for the PyTorch implementation** this work is based on (https://github.com/eriklindernoren/PyTorch-YOLOv3).
+
+
 
 # Requirements
 
