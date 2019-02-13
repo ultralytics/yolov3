@@ -1,7 +1,10 @@
 <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="200">
+
 <p> <a href="https://itunes.apple.com/app/id1452689527">
 <img href="https://itunes.apple.com/app/id1452689527" src="https://user-images.githubusercontent.com/26833433/50044365-9b22ac00-0082-11e9-862f-e77aee7aa7b0.png" width="180"> 
 </a> </p>
+
+<img src="https://user-images.githubusercontent.com/26833433/52743528-e6096300-2fe2-11e9-970c-5fee45769fab.jpg" width="400">
 
 # Introduction
 
