@@ -316,7 +316,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
     # Needed to write header when saving weights
     self.header_info = header
 
-    self.seen = header[3]
+    self.seen = header[3]  # number of images seen during training
     weights = np.fromfile(fp, dtype=np.float32)  # The rest are weights
     fp.close()
 
@@ -365,7 +365,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
 
 def save_weights(self, path, cutoff=-1):
     fp = open(path, 'wb')
-    self.header_info[3] = self.seen
+    self.header_info[3] = self.seen  # number of images seen during training
     self.header_info.tofile(fp)
 
     # Iterate through layers
