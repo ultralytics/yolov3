@@ -13,7 +13,7 @@ def detect(
         cfg,
         weights,
         images,
-        output='output',
+        output='output',  # output folder
         img_size=416,
         conf_thres=0.3,
         nms_thres=0.45,
@@ -22,7 +22,8 @@ def detect(
         webcam=False
 ):
     device = torch_utils.select_device()
-    shutil.rmtree(output)  # delete output folder
+    if os.path.exists(output):
+        shutil.rmtree(output)  # delete output folder
     os.makedirs(output)  # make new output folder
 
     # Initialize model
