@@ -31,8 +31,9 @@ def detect(
 
     # Load weights
     if weights.endswith('.pt'):  # pytorch format
-        if weights.endswith('yolov3.pt') and not os.path.exists(weights) and (platform == 'darwin'):
-            os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights)
+        if weights.endswith('yolov3.pt') and not os.path.exists(weights):
+            if (platform == 'darwin') or (platform == 'linux'):
+                os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights)
         model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
     else:  # darknet format
         load_darknet_weights(model, weights)
