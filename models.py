@@ -146,7 +146,7 @@ class YOLOLayer(nn.Module):
 
     def forward(self, p, targets=None, var=None):
         bs = 1 if ONNX_EXPORT else p.shape[0]  # batch size
-        nG = self.nG  # number of grid points
+        nG = self.nG if ONNX_EXPORT else p.shape[-1]  # number of grid points
 
         if p.is_cuda and not self.weights.is_cuda:
             self.grid_x, self.grid_y = self.grid_x.cuda(), self.grid_y.cuda()
