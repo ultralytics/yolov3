@@ -345,7 +345,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
         class_prob, class_pred = torch.max(F.softmax(pred[:, 5:], 1), 1)
 
-        v = ((pred[:, 4] > conf_thres) & (class_prob > .4))  # TODO examine arbitrary 0.3 thres here
+        v = ((pred[:, 4] > conf_thres) & (class_prob > .4))  # TODO examine arbitrary 0.4 thres here
         v = v.nonzero().squeeze()
         if len(v.shape) == 0:
             v = v.unsqueeze(0)
@@ -388,9 +388,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     dc = dc[1:][iou < nms_thres]  # remove ious > threshold
 
                 # Image      Total          P          R        mAP
-                #  5000       5000      0.627      0.593      0.584
-                #  4964       5000      0.629      0.594      0.586  # complete probability sort
-
+                #  4964       5000      0.629      0.594      0.586
 
             elif nms_style == 'AND':  # requires overlap, single boxes erased
                 while len(dc) > 1:
@@ -410,10 +408,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     dc = dc[iou < nms_thres]
 
                 # Image      Total          P          R        mAP
-                #  4964       5000      0.632      0.597      0.588  # normal
-                #  4964       5000      0.632      0.597      0.588  # squared
-                #  4964       5000      0.631      0.597      0.588  # sqrt
-                # normal best_v1_0.pt
+                #  4964       5000      0.633      0.598      0.589  # normal
 
             if len(det_max) > 0:
                 det_max = torch.cat(det_max)
