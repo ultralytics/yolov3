@@ -103,15 +103,15 @@ def test(
             mean_R = np.mean(mR)
             mean_P = np.mean(mP)
 
-            # Print image mAP and running mean mAP
-            print(('%11s%11s' + '%11.3g' * 3) % (len(mAPs), dataloader.nF, mean_P, mean_R, mean_mAP))
+        # Print image mAP and running mean mAP
+        print(('%11s%11s' + '%11.3g' * 3) % (len(mAPs), dataloader.nF, mean_P, mean_R, mean_mAP))
 
     # Print mAP per class
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP') + '\n\nmAP Per Class:')
 
     classes = load_classes(data_cfg_dict['names'])  # Extracts class labels from file
     for i, c in enumerate(classes):
-        print('%15s: %-.4f' % (c, AP_accum[i] / AP_accum_count[i]))
+        print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i] + 1E-16)))
 
     # Return mAP
     return mean_mAP, mean_R, mean_P

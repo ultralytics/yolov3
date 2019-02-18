@@ -91,13 +91,13 @@ class LoadWebcam:  # for inference
 
 class LoadImagesAndLabels:  # for training
     def __init__(self, path, batch_size=1, img_size=608, multi_scale=False, augment=False):
-        self.path = path
         with open(path, 'r') as file:
             self.img_files = file.readlines()
+            self.img_files = [x.replace('\n', '') for x in self.img_files]
+            self.img_files = list(filter(lambda x: len(x) > 0, self.img_files))
 
-        self.img_files = [path.replace('\n', '') for path in self.img_files]
-        self.label_files = [path.replace('images', 'labels').replace('.png', '.txt').replace('.jpg', '.txt')
-                            for path in self.img_files]
+        self.label_files = [x.replace('images', 'labels').replace('.png', '.txt').replace('.jpg', '.txt')
+                            for x in self.img_files]
 
         self.nF = len(self.img_files)  # number of image files
         self.nB = math.ceil(self.nF / batch_size)  # number of batches
