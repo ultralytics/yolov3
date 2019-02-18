@@ -294,7 +294,7 @@ def build_targets(target, anchor_wh, nA, nC, nG):
 
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
-    Removes detections with lower object confidence score than 'conf_thres' and performs
+    Removes detections with lower object confidence score than 'conf_thres'
     Non-Maximum Suppression to further filter detections.
     Returns detections with shape:
         (x1, y1, x2, y2, object_conf, class_score, class_pred)
@@ -369,7 +369,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         if prediction.is_cuda:
             unique_labels = unique_labels.cuda(prediction.device)
 
-        nms_style = 'OR'  # 'AND' or 'OR' (classical)
+        nms_style = 'OR'  # 'AND', 'OR' (classical), 'MERGE' (experimental)
         for c in unique_labels:
             # Get the detections with the particular class
             det_class = detections[detections[:, -1] == c]
