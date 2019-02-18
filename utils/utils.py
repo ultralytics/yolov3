@@ -392,6 +392,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                 #    64       5000      0.619      0.579      0.568
                 #    96       5000      0.652      0.622      0.613
                 #   128       5000      0.651      0.625      0.617
+                #  5000       5000      0.627      0.593      0.584
 
             elif nms_style == 'AND':  # requires overlap, single boxes erased
                 while len(dc) > 1:
@@ -405,7 +406,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     iou = bbox_iou(dc[:1], dc[0:])  # iou with other boxes
                     i = iou > nms_thres
 
-                    weights = dc[i, 4:5] * dc[i, 5:6]
+                    weights = (dc[i, 4:5] * dc[i, 5:6]) ** 0.5
                     dc[0, :4] = (weights * dc[i, :4]).sum(0) / weights.sum()
                     det_max.append(dc[:1])
                     dc = dc[iou < nms_thres]

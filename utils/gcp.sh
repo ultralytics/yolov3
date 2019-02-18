@@ -11,7 +11,8 @@ gsutil cp gs://ultralytics/yolov3.pt yolov3/weights
 python3 detect.py
 
 # Test
-python3 test.py --img_size 416 --weights weights/latest.pt
+sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3 && cd yolov3
+python3 test.py --weights weights/yolov3.weights
 
 # Test Darknet
 python3 test.py --img_size 416 --weights ../darknet/backup/yolov3.backup
