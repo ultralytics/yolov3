@@ -400,12 +400,12 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             elif nms_style == 'MERGE':  # weighted mixture box
                 while len(dc) > 0:
                     iou = bbox_iou(dc[:1], dc[0:])  # iou with other boxes
-                    i = iou > nms_thres
+                    i = iou > .3
 
-                    weights = (dc[i, 4:5] * dc[i, 5:6]) ** 2
+                    weights = dc[i, 4:5] * dc[i, 5:6]
                     dc[0, :4] = (weights * dc[i, :4]).sum(0) / weights.sum()
                     det_max.append(dc[:1])
-                    dc = dc[iou < nms_thres]
+                    dc = dc[iou < .3]
 
                 # Image      Total          P          R        mAP
                 #  4964       5000      0.632      0.597      0.588  # normal
