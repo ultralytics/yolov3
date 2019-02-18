@@ -145,7 +145,6 @@ class YOLOLayer(nn.Module):
             self.anchor_wh = torch.cat((self.anchor_w, self.anchor_h), 2) / nG
 
     def forward(self, p, targets=None, var=None):
-        FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
         bs = 1 if ONNX_EXPORT else p.shape[0]  # batch size
         nG = self.nG  # number of grid points
 
@@ -154,7 +153,7 @@ class YOLOLayer(nn.Module):
             self.anchor_w, self.anchor_h = self.anchor_w.cuda(), self.anchor_h.cuda()
             self.weights, self.loss_means = self.weights.cuda(), self.loss_means.cuda()
 
-        # p.view(12, 255, 13, 13) -- > (12, 3, 13, 13, 80)  # (bs, anchors, grid, grid, classes + xywh)
+        # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 80)  # (bs, anchors, grid, grid, classes + xywh)
         p = p.view(bs, self.nA, self.bbox_attrs, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
 
         # Training
@@ -201,6 +200,7 @@ class YOLOLayer(nn.Module):
                 lcls = (k / 4) * CrossEntropyLoss(p_cls[mask], torch.argmax(tcls, 1))
                 # lcls = (k * 10) * BCEWithLogitsLoss(p_cls[mask], tcls.float())
             else:
+                FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
                 lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
 
             lconf = (k * 64) * BCEWithLogitsLoss(p_conf, mask.float())
@@ -212,19 +212,26 @@ class YOLOLayer(nn.Module):
 
         else:
             if ONNX_EXPORT:
-                p = p.view(1, -1, 85)
-                xy = torch.sigmoid(p[..., 0:2]) + self.grid_xy  # x, y
-                width_height = torch.exp(p[..., 2:4]) * self.anchor_wh  # width, height
-                p_conf = torch.sigmoid(p[..., 4:5])  # Conf
-                p_cls = p[..., 5:85]
+                p = p.view(-1, 85)
+                xy = torch.sigmoid(p[:, 0:2]) + self.grid_xy[0]  # x, y
+                wh = torch.exp(p[:, 2:4]) * self.anchor_wh[0]  # width, height
+                p_conf = torch.sigmoid(p[:, 4:5])  # Conf
+                p_cls = F.softmax(p[:, 5:85], 1) * p_conf  # SSD-like conf
+                return torch.cat((xy / nG, wh, p_conf, p_cls), 1)
 
-                # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
-                # p_cls = F.softmax(p_cls, 2) * p_conf  # SSD-like conf
-                p_cls = torch.exp(p_cls).permute((2, 1, 0))
-                p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute((2, 1, 0))  # F.softmax() equivalent
-                p_cls = p_cls.permute(2, 1, 0)
-
-                return torch.cat((xy / nG, width_height, p_conf, p_cls), 2).squeeze().t()
+                # p = p.view(1, -1, 85)
+                # xy = torch.sigmoid(p[..., 0:2]) + self.grid_xy  # x, y
+                # wh = torch.exp(p[..., 2:4]) * self.anchor_wh  # width, height
+                # p_conf = torch.sigmoid(p[..., 4:5])  # Conf
+                # p_cls = p[..., 5:85]
+                #
+                # # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
+                # # p_cls = F.softmax(p_cls, 2) * p_conf  # SSD-like conf
+                # p_cls = torch.exp(p_cls).permute((2, 1, 0))
+                # p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute((2, 1, 0))  # F.softmax() equivalent
+                # p_cls = p_cls.permute(2, 1, 0)
+                #
+                # return torch.cat((xy / nG, wh, p_conf, p_cls), 2).squeeze().t()
 
             p[..., 0] = torch.sigmoid(p[..., 0]) + self.grid_x  # x
             p[..., 1] = torch.sigmoid(p[..., 1]) + self.grid_y  # y
@@ -285,8 +292,8 @@ class Darknet(nn.Module):
             self.losses['nT'] /= 3
 
         if ONNX_EXPORT:
-            output = torch.cat(output, 1)  # merge the 3 layers 85 x (507, 2028, 8112) to 85 x 10647
-            return output[5:85].t(), output[:4].t()  # ONNX scores, boxes
+            output = torch.cat(output, 0)  # merge the 3 layers 85 x (507, 2028, 8112) to 85 x 10647
+            return output[:, 5:85], output[:, :4]  # ONNX scores, boxes
 
         return sum(output) if is_training else torch.cat(output, 1)
 

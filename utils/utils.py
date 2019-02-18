@@ -443,7 +443,7 @@ def plot_results():
 
     plt.figure(figsize=(16, 8))
     s = ['X', 'Y', 'Width', 'Height', 'Confidence', 'Classification', 'Total Loss', 'mAP', 'Recall', 'Precision']
-    files = sorted(glob.glob('results.txt'))
+    files = sorted(glob.glob('results*.txt'))
     for f in files:
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 7, 8, 11, 12, 13]).T  # column 13 is mAP
         n = results.shape[1]
