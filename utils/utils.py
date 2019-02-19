@@ -38,7 +38,7 @@ def model_info(model):  # Plots a line-by-line description of a PyTorch model
     print('Model Summary: %g layers, %g parameters, %g gradients\n' % (i + 1, n_p, n_g))
 
 
-def class_weights():  # frequency of each class in coco train2014
+def coco_class_weights():  # frequency of each class in coco train2014
     weights = 1 / torch.FloatTensor(
         [187437, 4955, 30920, 6033, 3838, 4332, 3160, 7051, 7677, 9167, 1316, 1372, 833, 6757, 7355, 3302, 3776, 4671,
          6769, 5706, 3908, 903, 3686, 3596, 6200, 7920, 8779, 4505, 4272, 1862, 4698, 1962, 4403, 6659, 2402, 2689,
