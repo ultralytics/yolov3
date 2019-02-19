@@ -194,7 +194,7 @@ class YOLOLayer(nn.Module):
         else:
             if ONNX_EXPORT:
                 grid_xy = self.grid_xy.repeat((1, self.nA, 1, 1, 1)).view((1, -1, 2))
-                anchor_wh = self.anchor_wh.repeat((1, 1, nG, nG, 1)).view((1, -1, 2))
+                anchor_wh = self.anchor_wh.repeat((1, 1, nG, nG, 1)).view((1, -1, 2)) / nG
 
                 # p = p.view(-1, 85)
                 # xy = torch.sigmoid(p[:, 0:2]) + self.grid_xy[0]  # x, y
