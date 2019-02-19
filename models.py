@@ -144,52 +144,44 @@ class YOLOLayer(nn.Module):
             CrossEntropyLoss = nn.CrossEntropyLoss()
 
             # Get outputs
-            x = torch.sigmoid(p[..., 0])  # Center x
-            y = torch.sigmoid(p[..., 1])  # Center y
+            xy = torch.sigmoid(p[..., 0:2])
             p_conf = p[..., 4]  # Conf
             p_cls = p[..., 5:]  # Class
 
             # Width and height (yolo method)
-            w = p[..., 2]  # Width
-            h = p[..., 3]  # Height
-            # width = torch.exp(w.data) * self.anchor_w
-            # height = torch.exp(h.data) * self.anchor_h
+            wh = p[..., 2:4]  # wh
+            # wh_pixels = torch.exp(wh.data) * self.anchor_wh
 
             # Width and height (power method)
-            # w = torch.sigmoid(p[..., 2])  # Width
-            # h = torch.sigmoid(p[..., 3])  # Height
-            # width = ((w.data * 2) ** 2) * self.anchor_w
-            # height = ((h.data * 2) ** 2) * self.anchor_h
+            # wh = torch.sigmoid(p[..., 2:4])  # wh
+            # wh_pixels = ((wh.data * 2) ** 2) * self.anchor_wh
 
-            tx, ty, tw, th, mask, tcls = build_targets(targets, self.anchor_vec, self.nA, self.nC, nG)
+            txy, twh, mask, tcls = build_targets(targets, self.anchor_vec, self.nA, self.nC, nG)
 
             tcls = tcls[mask]
-            if x.is_cuda:
-                tx, ty, tw, th, mask, tcls = tx.cuda(), ty.cuda(), tw.cuda(), th.cuda(), mask.cuda(), tcls.cuda()
+            if xy.is_cuda:
+                txy, tw, th, mask, tcls = txy.cuda(), twh.cuda(), mask.cuda(), tcls.cuda()
 
             # Compute losses
             nT = sum([len(x) for x in targets])  # number of targets
             nM = mask.sum().float()  # number of anchors (assigned to targets)
-            nB = len(targets)  # batch size
-            k = nM / nB
+            k = nM / bs
             if nM > 0:
-                lx = k * MSELoss(x[mask], tx[mask])
-                ly = k * MSELoss(y[mask], ty[mask])
-                lw = k * MSELoss(w[mask], tw[mask])
-                lh = k * MSELoss(h[mask], th[mask])
+                lxy = k * MSELoss(xy[mask], txy[mask])
+                lwh = k * MSELoss(wh[mask], twh[mask])
 
                 lcls = (k / 4) * CrossEntropyLoss(p_cls[mask], torch.argmax(tcls, 1))
                 # lcls = (k * 10) * BCEWithLogitsLoss(p_cls[mask], tcls.float())
             else:
                 FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
-                lx, ly, lw, lh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
+                lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0])
 
             lconf = (k * 64) * BCEWithLogitsLoss(p_conf, mask.float())
 
             # Sum loss components
-            loss = lx + ly + lw + lh + lconf + lcls
+            loss = lxy + lwh + lconf + lcls
 
-            return loss, loss.item(), lx.item(), ly.item(), lw.item(), lh.item(), lconf.item(), lcls.item(), nT
+            return loss, loss.item(), lxy.item(), lwh.item(), lconf.item(), lcls.item(), nT
 
         else:
             if ONNX_EXPORT:
@@ -235,7 +227,7 @@ class Darknet(nn.Module):
         self.module_defs[0]['height'] = img_size
         self.hyperparams, self.module_list = create_modules(self.module_defs)
         self.img_size = img_size
-        self.loss_names = ['loss', 'x', 'y', 'w', 'h', 'conf', 'cls', 'nT']
+        self.loss_names = ['loss', 'xy', 'wh', 'conf', 'cls', 'nT']
         self.losses = []
 
     def forward(self, x, targets=None, var=0):

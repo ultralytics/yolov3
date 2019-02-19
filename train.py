@@ -87,8 +87,8 @@ def train(
     for epoch in range(epochs):
         epoch += start_epoch
 
-        print(('%8s%12s' + '%10s' * 9) % (
-            'Epoch', 'Batch', 'x', 'y', 'w', 'h', 'conf', 'cls', 'total', 'nTargets', 'time'))
+        print(('%8s%12s' + '%10s' * 7) % (
+            'Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
 
         # Update scheduler (automatic)
         # scheduler.step()
@@ -139,9 +139,9 @@ def train(
             for key, val in model.losses.items():
                 rloss[key] = (rloss[key] * ui + val) / (ui + 1)
 
-            s = ('%8s%12s' + '%10.3g' * 9) % (
-                '%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, len(dataloader) - 1), rloss['x'],
-                rloss['y'], rloss['w'], rloss['h'], rloss['conf'], rloss['cls'],
+            s = ('%8s%12s' + '%10.3g' * 7) % (
+                '%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, len(dataloader) - 1), rloss['xy'],
+                rloss['wh'], rloss['conf'], rloss['cls'],
                 rloss['loss'], model.losses['nT'], time.time() - t0)
             t0 = time.time()
             print(s)
