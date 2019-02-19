@@ -101,9 +101,7 @@ class Upsample(nn.Module):
 
 
 class YOLOLayer(nn.Module):
-
     def __init__(self, anchors, nC, img_size, yolo_layer, cfg):
-        # TODO: img_size from hyperparams in cfg file, NOT from parser. Make dynamic
         super(YOLOLayer, self).__init__()
 
         nA = len(anchors)
