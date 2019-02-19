@@ -269,19 +269,17 @@ def build_targets(target, anchor_wh, nA, nC, nG):
             if iou_best < 0.10:
                 continue
 
-        tc, gx, gy, gw, gh = t[:, 0].long(), t[:, 1] * nG, t[:, 2] * nG, t[:, 3] * nG, t[:, 4] * nG
+        tc, gx, gy, gwh = t[:, 0].long(), t[:, 1] * nG, t[:, 2] * nG, t[:, 3:5] * nG
 
         # Coordinates
         txy[b, a, gj, gi, 0] = gx - gi.float()
         txy[b, a, gj, gi, 1] = gy - gj.float()
 
         # Width and height (yolo method)
-        twh[b, a, gj, gi, 0] = torch.log(gw / anchor_wh[a, 0])
-        twh[b, a, gj, gi, 1] = torch.log(gh / anchor_wh[a, 1])
+        twh[b, a, gj, gi] = torch.log(gwh / anchor_wh[a])
 
         # Width and height (power method)
-        # twh[b, a, gj, gi, 0] = torch.sqrt(gw / anchor_wh[a, 0]) / 2
-        # twh[b, a, gj, gi, 1] = torch.sqrt(gh / anchor_wh[a, 1]) / 2
+        # twh[b, a, gj, gi] = torch.sqrt(gwh / anchor_wh[a]) / 2
 
         # One-hot encoding of label
         tcls[b, a, gj, gi, tc] = 1
