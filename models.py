@@ -110,7 +110,9 @@ class YOLOLayer(nn.Module):
         self.nA = nA  # number of anchors (3)
         self.nC = nC  # number of classes (80)
         self.bbox_attrs = 5 + nC
-        self.img_dim = img_dim  # from hyperparams in cfg file, NOT from parser
+        self.img_dim = img_dim  # TODO: from hyperparams in cfg file, NOT from parser. Make dynamic
+        self.initialized = False
+        # self.weights = class_weights()
 
         if anchor_idxs[0] == (nA * 2):  # 6
             stride = 32
@@ -124,34 +126,24 @@ class YOLOLayer(nn.Module):
 
         # Build anchor grids
         nG = int(self.img_dim / stride)  # number grid points
+        self.nG = nG
+        self.stride = stride
+
         self.grid_x = torch.arange(nG).repeat((nG, 1)).view((1, 1, nG, nG)).float()
         self.grid_y = torch.arange(nG).repeat((nG, 1)).t().view((1, 1, nG, nG)).float()
         self.anchor_wh = torch.FloatTensor([(a_w / stride, a_h / stride) for a_w, a_h in anchors])  # scale anchors
         self.anchor_w = self.anchor_wh[:, 0].view((1, nA, 1, 1))
         self.anchor_h = self.anchor_wh[:, 1].view((1, nA, 1, 1))
-        self.weights = class_weights()
-
-        self.loss_means = torch.ones(6)
-        self.yolo_layer = anchor_idxs[0] / nA  # 2, 1, 0
-        self.stride = stride
-        self.nG = nG
-
-        if ONNX_EXPORT:  # use fully populated and reshaped tensors
-            self.anchor_w = self.anchor_w.repeat((1, 1, nG, nG)).view(1, -1, 1)
-            self.anchor_h = self.anchor_h.repeat((1, 1, nG, nG)).view(1, -1, 1)
-            self.grid_x = self.grid_x.repeat(1, nA, 1, 1).view(1, -1, 1)
-            self.grid_y = self.grid_y.repeat(1, nA, 1, 1).view(1, -1, 1)
-            self.grid_xy = torch.cat((self.grid_x, self.grid_y), 2)
-            self.anchor_wh = torch.cat((self.anchor_w, self.anchor_h), 2) / nG
 
     def forward(self, p, targets=None, var=None):
         bs = 1 if ONNX_EXPORT else p.shape[0]  # batch size
         nG = self.nG if ONNX_EXPORT else p.shape[-1]  # number of grid points
 
-        if p.is_cuda and not self.weights.is_cuda:
-            self.grid_x, self.grid_y = self.grid_x.cuda(), self.grid_y.cuda()
-            self.anchor_w, self.anchor_h = self.anchor_w.cuda(), self.anchor_h.cuda()
-            self.weights, self.loss_means = self.weights.cuda(), self.loss_means.cuda()
+        if not self.initialized:
+            self.initialized = True
+            if p.is_cuda:
+                self.grid_x, self.grid_y = self.grid_x.cuda(), self.grid_y.cuda()
+                self.anchor_w, self.anchor_h = self.anchor_w.cuda(), self.anchor_h.cuda()
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 80)  # (bs, anchors, grid, grid, classes + xywh)
         p = p.view(bs, self.nA, self.bbox_attrs, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
@@ -212,6 +204,13 @@ class YOLOLayer(nn.Module):
 
         else:
             if ONNX_EXPORT:
+                anchor_w = self.anchor_w.repeat((1, 1, nG, nG)).view(1, -1, 1)
+                anchor_h = self.anchor_h.repeat((1, 1, nG, nG)).view(1, -1, 1)
+                grid_x = self.grid_x.repeat(1, self.nA, 1, 1).view(1, -1, 1)
+                grid_y = self.grid_y.repeat(1, self.nA, 1, 1).view(1, -1, 1)
+                grid_xy = torch.cat((grid_x, grid_y), 2)
+                anchor_wh = torch.cat((anchor_w, anchor_h), 2) / nG
+
                 # p = p.view(-1, 85)
                 # xy = torch.sigmoid(p[:, 0:2]) + self.grid_xy[0]  # x, y
                 # wh = torch.exp(p[:, 2:4]) * self.anchor_wh[0]  # width, height
@@ -220,8 +219,8 @@ class YOLOLayer(nn.Module):
                 # return torch.cat((xy / nG, wh, p_conf, p_cls), 1).t()
 
                 p = p.view(1, -1, 85)
-                xy = torch.sigmoid(p[..., 0:2]) + self.grid_xy  # x, y
-                wh = torch.exp(p[..., 2:4]) * self.anchor_wh  # width, height
+                xy = torch.sigmoid(p[..., 0:2]) + grid_xy  # x, y
+                wh = torch.exp(p[..., 2:4]) * anchor_wh  # width, height
                 p_conf = torch.sigmoid(p[..., 4:5])  # Conf
                 p_cls = p[..., 5:85]
                 # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
