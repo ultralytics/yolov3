@@ -13,6 +13,9 @@ wget -c https://pjreddie.com/media/files/val2014.zip
 unzip -q train2014.zip
 unzip -q val2014.zip
 
+# (optional) Delete zip files
+rm -rf *.zip
+
 cd ..
 
 # Download COCO Metadata
