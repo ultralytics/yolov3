@@ -163,8 +163,8 @@ def train(
             os.system('cp ' + latest + ' ' + best)
 
         # Save backup weights every 5 epochs
-        if (epoch > 0) & (epoch % 5 == 0):
-            os.system('cp ' + latest + ' ' + os.path.join(weights, 'backup{}.pt'.format(epoch)))
+        # if (epoch > 0) & (epoch % 5 == 0):
+        #     os.system('cp ' + latest + ' ' + os.path.join(weights, 'backup{}.pt'.format(epoch)))
 
         # Calculate mAP
         with torch.no_grad():
