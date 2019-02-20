@@ -131,6 +131,7 @@ class YOLOLayer(nn.Module):
                 if p.is_cuda:
                     self.grid_xy = self.grid_xy.cuda()
                     self.anchor_vec = self.anchor_vec.cuda()
+                    self.anchor_wh = self.anchor_wh.cuda()
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 80)  # (bs, anchors, grid, grid, classes + xywh)
         p = p.view(bs, self.nA, self.nC + 5, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
