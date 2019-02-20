@@ -186,7 +186,6 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--weights', type=str, default='weights', help='path to store weights')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
-    parser.add_argument('--freeze', action='store_true', help='freeze darknet53.conv.74 layers for first epoch')
     parser.add_argument('--var', type=float, default=0, help='test variable')
     opt = parser.parse_args()
     print(opt, end='\n\n')
@@ -203,6 +202,5 @@ if __name__ == '__main__':
         accumulated_batches=opt.accumulated_batches,
         weights=opt.weights,
         multi_scale=opt.multi_scale,
-        freeze_backbone=opt.freeze,
         var=opt.var,
     )
