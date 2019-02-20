@@ -430,6 +430,17 @@ def coco_class_count(path='../coco/labels/train2014/'):
         print(i, len(files))
 
 
+def coco_only_people(path='../coco/labels/val2014/'):
+    # find images with only people
+    import glob
+
+    files = sorted(glob.glob('%s/*.*' % path))
+    for i, file in enumerate(files):
+        labels = np.loadtxt(file, dtype=np.float32).reshape(-1, 5)
+        if all(labels[:, 0] == 0):
+            print(labels.shape[0], file)
+
+
 def plot_results():
     # Plot YOLO training results file 'results.txt'
     import glob
@@ -437,11 +448,11 @@ def plot_results():
     import numpy as np
     # import os; os.system('rm -rf results.txt && wget https://storage.googleapis.com/ultralytics/results_v1_0.txt')
 
-    plt.figure(figsize=(16, 8))
-    s = ['XY', 'Width-Height', 'Confidence', 'Classification', 'Total Loss', 'mAP', 'Recall', 'Precision']
+    plt.figure(figsize=(14, 7))
+    s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'mAP', 'Recall', 'Precision']
     files = sorted(glob.glob('results*.txt'))
     for f in files:
-        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 11, 12, 13]).T  # column 11 is mAP
+        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
         n = results.shape[1]
         for i in range(8):
             plt.subplot(2, 4, i + 1)
