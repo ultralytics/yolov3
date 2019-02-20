@@ -158,7 +158,7 @@ class YOLOLayer(nn.Module):
 
             tcls = tcls[mask]
             if xy.is_cuda:
-                txy, tw, th, mask, tcls = txy.cuda(), twh.cuda(), mask.cuda(), tcls.cuda()
+                txy, twth, mask, tcls = txy.cuda(), twh.cuda(), mask.cuda(), tcls.cuda()
 
             # Compute losses
             nT = sum([len(x) for x in targets])  # number of targets
