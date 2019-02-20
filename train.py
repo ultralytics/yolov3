@@ -162,7 +162,7 @@ def train(
         if best_loss == loss_per_target:
             os.system('cp ' + latest + ' ' + best)
 
-        # Save backup weights every 5 epochs
+        # Save backup weights every 5 epochs (optional)
         # if (epoch > 0) & (epoch % 5 == 0):
         #     os.system('cp ' + latest + ' ' + os.path.join(weights, 'backup{}.pt'.format(epoch)))
 
