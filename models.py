@@ -295,7 +295,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
     if weights_file == 'darknet53.conv.74':
         cutoff = 75
     elif weights_file == 'yolov3-tiny.conv.15':
-        cutoff = 16
+        cutoff = 15
 
     # Open the weights file
     fp = open(weights, 'rb')
