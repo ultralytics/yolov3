@@ -251,12 +251,13 @@ def build_targets(target, anchor_wh, nA, nC, nG):
 
             # Unique anchor selection
             u = torch.cat((gi, gj, a), 0).view((3, -1))
+            # u = torch.stack((gi, gj, a),0)
             _, first_unique = np.unique(u[:, iou_order], axis=1, return_index=True)  # first unique indices
             # _, first_unique = torch.unique(u[:, iou_order], dim=1, return_inverse=True)  # different than numpy?
 
             i = iou_order[first_unique]
             # best anchor must share significant commonality (iou) with target
-            i = i[iou_best[i] > 0.10]
+            i = i[iou_best[i] > 0.10]  # TODO: arbitrary threshold is problematic
             if len(i) == 0:
                 continue
 
