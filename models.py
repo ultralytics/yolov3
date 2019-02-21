@@ -159,7 +159,7 @@ class YOLOLayer(nn.Module):
             # Compute losses
             nT = sum([len(x) for x in targets])  # number of targets
             nM = mask.sum().float()  # number of anchors (assigned to targets)
-            k = 1 #nM / bs
+            k = 1  # nM / bs
 
             if nM > 0:
                 lxy = k * MSELoss(xy[mask], txy[mask])
