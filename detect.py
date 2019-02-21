@@ -98,7 +98,7 @@ def detect(
             cv2.imwrite(save_path, im0)
 
         if webcam:  # Show live webcam
-            cv2.imshow(weights + ' - %.2f FPS' % (1 / dt), im0)
+            cv2.imshow(weights, im0)
 
     if save_images and (platform == 'darwin'):  # linux/macos
         os.system('open ' + output + ' ' + save_path)
