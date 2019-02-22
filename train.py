@@ -43,7 +43,7 @@ def train(
     start_epoch = 0
     best_loss = float('inf')
     if resume:
-        checkpoint = torch.load('weights/yolov3.pt', map_location='cpu')
+        checkpoint = torch.load(latest, map_location='cpu')
 
         # Load weights to resume from
         model.load_state_dict(checkpoint['model'])
