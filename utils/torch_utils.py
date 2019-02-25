@@ -20,5 +20,5 @@ def select_device(force_cpu=False):
             torch.cuda.set_device(0)  # OPTIONAL: Set your GPU if multiple available
             # print('Using ', torch.cuda.device_count(), ' GPUs')
 
-    print('Using %s\n%s' % (device.type, torch.cuda.get_device_properties(0) if cuda else ''))
+    print('Using %s  %s\n' % (device.type, torch.cuda.get_device_properties(0) if cuda else ''))
     return device
