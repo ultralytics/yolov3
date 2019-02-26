@@ -146,8 +146,8 @@ def test(
         with open('results.json', 'w') as file:
             json.dump(jdict, file)
 
-        from utils.pycocotools.coco import COCO
-        from utils.pycocotools.cocoeval import COCOeval
+        from pycocotools.coco import COCO
+        from pycocotools.cocoeval import COCOeval
 
         # initialize COCO ground truth api
         cocoGt = COCO('../coco/annotations/instances_val2014.json')
