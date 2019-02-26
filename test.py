@@ -1,4 +1,6 @@
 import argparse
+import json
+from pathlib import Path
 
 from models import *
 from utils.datasets import *
@@ -13,7 +15,8 @@ def test(
         img_size=416,
         iou_thres=0.5,
         conf_thres=0.3,
-        nms_thres=0.45
+        nms_thres=0.45,
+        save_json=False
 ):
     device = torch_utils.select_device()
 
@@ -37,16 +40,21 @@ def test(
     # dataloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path), batch_size=batch_size)  # pytorch
     dataloader = LoadImagesAndLabels(test_path, batch_size=batch_size, img_size=img_size)
 
+    # Create JSON
+    jdict = []
+    float3 = lambda x: float(format(x, '.3f'))  # print json to 3 decimals
+    # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
+
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
     outputs, mAPs, mR, mP, TP, confidence, pred_class, target_class = [], [], [], [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
-    for batch_i, (imgs, targets) in enumerate(dataloader):
+    for batch_i, (imgs, targets, paths, shapes) in enumerate(dataloader):
         output = model(imgs.to(device))
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
 
         # Compute average precision for each sample
-        for sample_i, (labels, detections) in enumerate(zip(targets, output)):
+        for si, (labels, detections) in enumerate(zip(targets, output)):
             seen += 1
 
             if detections is None:
@@ -58,6 +66,22 @@ def test(
             # Get detections sorted by decreasing confidence scores
             detections = detections.cpu().numpy()
             detections = detections[np.argsort(-detections[:, 4])]
+
+            # Save JSON
+            if save_json:
+                # rescale box to original image size, top left origin
+                sbox = torch.from_numpy(detections[:, :4]).clone()  # x1y1x2y2
+                scale_coords(img_size, sbox, shapes[si])
+                sbox = xyxy2xywh(sbox)
+                sbox[:, :2] -= sbox[:, 2:] / 2  # origin from center to corner
+
+                for di, d in enumerate(detections):
+                    jdict.append({  # add to json dictionary
+                        'image_id': int(Path(paths[si]).stem.split('_')[-1]),
+                        'category_id': darknet2coco_class(int(d[6])),
+                        'bbox': [float3(x) for x in sbox[di]],
+                        'score': float3(d[4] * d[5])
+                    })
 
             # If no labels add number of detections as incorrect
             correct = []
@@ -115,6 +139,27 @@ def test(
     classes = load_classes(data_cfg_dict['names'])  # Extracts class labels from file
     for i, c in enumerate(classes):
         print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i] + 1E-16)))
+
+    # Save JSON
+    if save_json:
+        imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataloader.img_files]
+        with open('results.json', 'w') as file:
+            json.dump(jdict, file)
+
+        from utils.pycocotools.coco import COCO
+        from utils.pycocotools.cocoeval import COCOeval
+
+        # initialize COCO ground truth api
+        cocoGt = COCO('../coco/annotations/instances_val2014.json')
+
+        # initialize COCO detections api
+        cocoDt = cocoGt.loadRes('results.json')
+
+        cocoEval = COCOeval(cocoGt, cocoDt, 'bbox')
+        cocoEval.params.imgIds = imgIds  # [:32]  # only evaluate these images
+        cocoEval.evaluate()
+        cocoEval.accumulate()
+        cocoEval.summarize()
 
     # Return mAP
     return mean_mAP, mean_R, mean_P

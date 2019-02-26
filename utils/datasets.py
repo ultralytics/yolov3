@@ -128,8 +128,7 @@ class LoadImagesAndLabels:  # for training
             # Fixed-Scale YOLO Training
             height = self.height
 
-        img_all = []
-        labels_all = []
+        img_all, labels_all, img_paths, img_shapes = [], [], [], []
         for index, files_index in enumerate(range(ia, ib)):
             img_path = self.img_files[self.shuffled_vector[files_index]]
             label_path = self.label_files[self.shuffled_vector[files_index]]
@@ -210,13 +209,15 @@ class LoadImagesAndLabels:  # for training
 
             img_all.append(img)
             labels_all.append(torch.from_numpy(labels))
+            img_paths.append(img_path)
+            img_shapes.append((h, w))
 
         # Normalize
         img_all = np.stack(img_all)[:, :, :, ::-1].transpose(0, 3, 1, 2)  # BGR to RGB and cv2 to pytorch
         img_all = np.ascontiguousarray(img_all, dtype=np.float32)
         img_all /= 255.0
 
-        return torch.from_numpy(img_all), labels_all
+        return torch.from_numpy(img_all), labels_all, img_paths, img_shapes
 
     def __len__(self):
         return self.nB  # number of batches

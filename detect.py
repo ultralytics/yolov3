@@ -72,7 +72,7 @@ def detect(
             detections = non_max_suppression(pred.unsqueeze(0), conf_thres, nms_thres)[0]
 
             # Rescale boxes from 416 to true image size
-            detections[:, :4] = scale_coords(img_size, detections[:, :4], im0.shape)
+            scale_coords(img_size, detections[:, :4], im0.shape).round()
 
             # Print results to screen
             unique_classes = detections[:, -1].cpu().unique()

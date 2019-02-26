@@ -49,6 +49,14 @@ def coco_class_weights():  # frequency of each class in coco train2014
     return weights
 
 
+def darknet2coco_class(c):  # returns the coco class for each darknet class
+    # https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
+    a = np.loadtxt('data/coco.names', dtype='str', delimiter='\n')
+    b = np.loadtxt('data/coco_paper.names', dtype='str', delimiter='\n')
+    x = [list(a[i] == b).index(True) + 1 for i in range(80)]  # darknet to coco
+    return x[c]
+
+
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):  # Plots one bounding box on image img
     tl = line_thickness or round(0.002 * max(img.shape[0:2])) + 1  # line thickness
     color = color or [random.randint(0, 255) for _ in range(3)]
@@ -99,7 +107,7 @@ def scale_coords(img_size, coords, img0_shape):
     coords[:, [0, 2]] -= pad_x
     coords[:, [1, 3]] -= pad_y
     coords[:, :4] /= gain
-    coords[:, :4] = torch.round(torch.clamp(coords[:, :4], min=0))
+    coords[:, :4] = torch.clamp(coords[:, :4], min=0)
     return coords
 
 
