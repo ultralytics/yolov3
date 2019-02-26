@@ -75,7 +75,7 @@ def test(
                 for di, d in enumerate(detections):
                     jdict.append({
                         'image_id': int(Path(paths[si]).stem.split('_')[-1]),
-                        'category_id': coco91class(int(d[6])),
+                        'category_id': coco91class[int(d[6])],
                         'bbox': [float3(x) for x in box[di]],
                         'score': float3(d[4] * d[5])
                     })
