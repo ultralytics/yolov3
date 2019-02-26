@@ -70,16 +70,16 @@ def test(
             # Save JSON
             if save_json:
                 # rescale box to original image size, top left origin
-                sbox = torch.from_numpy(detections[:, :4]).clone()  # x1y1x2y2
-                scale_coords(img_size, sbox, shapes[si])
-                sbox = xyxy2xywh(sbox)
-                sbox[:, :2] -= sbox[:, 2:] / 2  # origin from center to corner
+                box = torch.from_numpy(detections[:, :4]).clone()  # x1y1x2y2
+                scale_coords(img_size, box, shapes[si])
+                box = xyxy2xywh(box)
+                box[:, :2] -= box[:, 2:] / 2  # origin center to corner
 
                 for di, d in enumerate(detections):
                     jdict.append({  # add to json dictionary
                         'image_id': int(Path(paths[si]).stem.split('_')[-1]),
                         'category_id': darknet2coco_class(int(d[6])),
-                        'bbox': [float3(x) for x in sbox[di]],
+                        'bbox': [float3(x) for x in box[di]],
                         'score': float3(d[4] * d[5])
                     })
 
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     parser.add_argument('--iou-thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
-    parser.add_argument('--coco-map', action='store_true', help='use pycocotools mAP')
+    parser.add_argument('--save-json', action='store_true', help='save a cocoapi-compatible JSON results file')
     parser.add_argument('--img-size', type=int, default=416, help='size of each image dimension')
     opt = parser.parse_args()
     print(opt, end='\n\n')
@@ -189,7 +189,7 @@ if __name__ == '__main__':
             opt.iou_thres,
             opt.conf_thres,
             opt.nms_thres,
-            opt.coco_map
+            opt.save_json
         )
 
 #       Image      Total          P          R        mAP  # YOLOv3 320
