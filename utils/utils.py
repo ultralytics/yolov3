@@ -12,6 +12,10 @@ torch.set_printoptions(linewidth=1320, precision=5, profile='long')
 np.set_printoptions(linewidth=320, formatter={'float_kind': '{:11.5g}'.format})  # format short g, %precision=5
 
 
+def float3(x):  # format floats to 3 decimals
+    return float(format(x, '.3f'))
+
+
 def init_seeds(seed=0):
     random.seed(seed)
     np.random.seed(seed)
@@ -49,12 +53,12 @@ def coco_class_weights():  # frequency of each class in coco train2014
     return weights
 
 
-def darknet2coco_class(c):  # returns the coco class for each darknet class
+def coco80_to_coco91_class():  # returns the coco class for each darknet class
     # https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
     a = np.loadtxt('data/coco.names', dtype='str', delimiter='\n')
     b = np.loadtxt('data/coco_paper.names', dtype='str', delimiter='\n')
     x = [list(a[i] == b).index(True) + 1 for i in range(80)]  # darknet to coco
-    return x[c]
+    return x
 
 
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):  # Plots one bounding box on image img

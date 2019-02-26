@@ -37,18 +37,15 @@ def test(
     model.to(device).eval()
 
     # Get dataloader
-    # dataloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path), batch_size=batch_size)  # pytorch
+    # dataloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path), batch_size=batch_size)
     dataloader = LoadImagesAndLabels(test_path, batch_size=batch_size, img_size=img_size)
-
-    # Create JSON
-    jdict = []
-    float3 = lambda x: float(format(x, '.3f'))  # print json to 3 decimals
-    # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
 
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
-    outputs, mAPs, mR, mP, TP, confidence, pred_class, target_class = [], [], [], [], [], [], [], []
+    outputs, mAPs, mR, mP, TP, confidence, pred_class, target_class, jdict = \
+        [], [], [], [], [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
+    coco91class = coco80_to_coco91_class()
     for batch_i, (imgs, targets, paths, shapes) in enumerate(dataloader):
         output = model(imgs.to(device))
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
@@ -67,18 +64,18 @@ def test(
             detections = detections.cpu().numpy()
             detections = detections[np.argsort(-detections[:, 4])]
 
-            # Save JSON
             if save_json:
-                # rescale box to original image size, top left origin
-                box = torch.from_numpy(detections[:, :4]).clone()  # x1y1x2y2
-                scale_coords(img_size, box, shapes[si])
-                box = xyxy2xywh(box)
-                box[:, :2] -= box[:, 2:] / 2  # origin center to corner
+                # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
+                box = torch.from_numpy(detections[:, :4]).clone()  # xyxy
+                scale_coords(img_size, box, shapes[si])  # to original shape
+                box = xyxy2xywh(box)  # xywh
+                box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
 
+                # add to json dictionary
                 for di, d in enumerate(detections):
-                    jdict.append({  # add to json dictionary
+                    jdict.append({
                         'image_id': int(Path(paths[si]).stem.split('_')[-1]),
-                        'category_id': darknet2coco_class(int(d[6])),
+                        'category_id': coco91class(int(d[6])),
                         'bbox': [float3(x) for x in box[di]],
                         'score': float3(d[4] * d[5])
                     })
