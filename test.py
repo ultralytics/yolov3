@@ -152,7 +152,9 @@ def test(
 
         cocoEval = COCOeval(cocoGt, cocoDt, 'bbox')
         cocoEval.params.imgIds = imgIds  # [:32]  # only evaluate these images
-        cocoEval.evaluate().accumulate().summarize()
+        cocoEval.evaluate()
+        cocoEval.accumulate()
+        cocoEval.summarize()
 
     # Return mAP
     return mean_mAP, mean_R, mean_P
