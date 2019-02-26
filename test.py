@@ -146,17 +146,13 @@ def test(
         from pycocotools.coco import COCO
         from pycocotools.cocoeval import COCOeval
 
-        # initialize COCO ground truth api
-        cocoGt = COCO('../coco/annotations/instances_val2014.json')
-
-        # initialize COCO detections api
-        cocoDt = cocoGt.loadRes('results.json')
+        # https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb
+        cocoGt = COCO('../coco/annotations/instances_val2014.json')  # initialize COCO ground truth api
+        cocoDt = cocoGt.loadRes('results.json')  # initialize COCO detections api
 
         cocoEval = COCOeval(cocoGt, cocoDt, 'bbox')
         cocoEval.params.imgIds = imgIds  # [:32]  # only evaluate these images
-        cocoEval.evaluate()
-        cocoEval.accumulate()
-        cocoEval.summarize()
+        cocoEval.evaluate().accumulate().summarize()
 
     # Return mAP
     return mean_mAP, mean_R, mean_P
