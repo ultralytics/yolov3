@@ -374,7 +374,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         if prediction.is_cuda:
             unique_labels = unique_labels.cuda(prediction.device)
 
-        nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
+        nms_style = 'MERGE'  # 'OR' (default), 'AND', 'MERGE' (experimental)
         for c in unique_labels:
             # Get the detections with class c
             dc = detections[detections[:, -1] == c]
@@ -384,7 +384,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
             # Non-maximum suppression
             det_max = []
-            if nms_style == 'MERGE':  # default
+            if nms_style == 'OR':  # default
                 while dc.shape[0]:
                     det_max.append(dc[:1])  # save highest conf detection
                     if len(dc) == 1:  # Stop if we're at the last detection
