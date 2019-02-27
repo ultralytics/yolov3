@@ -460,7 +460,7 @@ def coco_only_people(path='../coco/labels/val2014/'):
 
 def plot_results():
     # Plot YOLO training results file 'results.txt'
-    # import os; os.system('rm -rf results.txt && wget https://storage.googleapis.com/ultralytics/yolov3/results_v1.txt')
+    # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v1.txt')
 
     plt.figure(figsize=(14, 7))
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'mAP', 'Recall', 'Precision']
