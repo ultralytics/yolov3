@@ -460,17 +460,17 @@ def coco_only_people(path='../coco/labels/val2014/'):
 
 def plot_results():
     # Plot YOLO training results file 'results.txt'
-    # import os; os.system('rm -rf results.txt && wget https://storage.googleapis.com/ultralytics/results_v1_0.txt'
+    # import os; os.system('rm -rf results.txt && wget https://storage.googleapis.com/ultralytics/yolov3/results_v1.txt')
 
     plt.figure(figsize=(14, 7))
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'mAP', 'Recall', 'Precision']
     files = sorted(glob.glob('results*.txt'))
     for f in files:
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
-        n = results.shape[1]
+        x = range(1, results.shape[1])
         for i in range(8):
             plt.subplot(2, 4, i + 1)
-            plt.plot(range(1, n), results[i, 1:], marker='.', label=f)
+            plt.plot(x, results[i, x], marker='.', label=f)
             plt.title(s[i])
             if i == 0:
                 plt.legend()
