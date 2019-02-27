@@ -1,5 +1,6 @@
 import argparse
 import json
+import time
 from pathlib import Path
 
 from models import *
@@ -47,6 +48,7 @@ def test(
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
     for batch_i, (imgs, targets, paths, shapes) in enumerate(dataloader):
+        t = time.time()
         output = model(imgs.to(device))
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
 
@@ -128,13 +130,13 @@ def test(
             mean_P = np.mean(mP)
 
         # Print image mAP and running mean mAP
-        print(('%11s%11s' + '%11.3g' * 3) % (seen, dataloader.nF, mean_P, mean_R, mean_mAP))
+        print(('%11s%11s' + '%11.3g' * 4 + 's') %
+              (seen, dataloader.nF, mean_P, mean_R, mean_mAP, time.time() - t))
 
     # Print mAP per class
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP') + '\n\nmAP Per Class:')
 
-    classes = load_classes(data_cfg_dict['names'])  # Extracts class labels from file
-    for i, c in enumerate(classes):
+    for i, c in enumerate(load_classes(data_cfg_dict['names'])):
         print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i] + 1E-16)))
 
     # Save JSON
