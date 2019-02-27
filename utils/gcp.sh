@@ -18,7 +18,7 @@ python3 detect.py
 # Test
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
-cd yolov3 && python3 test.py --save-json
+cd yolov3 && python3 test.py --save-json --conf-thres 0.005
 
 # Test Darknet
 python3 test.py --img_size 416 --weights ../darknet/backup/yolov3.backup

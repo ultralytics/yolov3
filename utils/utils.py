@@ -384,7 +384,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
             # Non-maximum suppression
             det_max = []
-            if nms_style == 'OR':  # default
+            if nms_style == 'MERGE':  # default
                 while dc.shape[0]:
                     det_max.append(dc[:1])  # save highest conf detection
                     if len(dc) == 1:  # Stop if we're at the last detection
