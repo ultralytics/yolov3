@@ -242,7 +242,7 @@ def build_targets(target, anchor_vec, nA, nC, nG):
     tconf = torch.ByteTensor(nB, nA, nG, nG).fill_(0)
     tcls = torch.ByteTensor(nB, nA, nG, nG, nC).fill_(0)  # nC = number of classes
 
-    if anchor_vec.is_cuda():
+    if anchor_vec.is_cuda:
         txy = txy.cuda()
         twh = twh.cuda()
         tconf = tconf.cuda()
