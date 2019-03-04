@@ -75,8 +75,8 @@ def train(
             load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
             cutoff = 15
 
-        # if torch.cuda.device_count() > 1:
-        #     model = nn.DataParallel(model)
+        if torch.cuda.device_count() > 1:
+            model = nn.DataParallel(model)
         model.to(device).train()
 
         # Set optimizer
