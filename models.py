@@ -150,10 +150,13 @@ class YOLOLayer(nn.Module):
             p_conf = p[..., 4]  # Conf
             p_cls = p[..., 5:]  # Class
 
-            txy, twh, mask, tcls = build_targets(targets, self.anchor_vec, self.nA, self.nC, nG)
+            if p.is_cuda:
+                txy, twh, mask, tcls = build_targets(targets, self.anchor_vec.cuda(), self.nA, self.nC, nG)
+            else:
+                txy, twh, mask, tcls = build_targets(targets, self.anchor_vec, self.nA, self.nC, nG)
 
             tcls = tcls[mask]
-            if xy.is_cuda:
+            if p.is_cuda:
                 txy, twh, mask, tcls = txy.cuda(), twh.cuda(), mask.cuda(), tcls.cuda()
 
             # Compute losses
