@@ -150,7 +150,7 @@ class YOLOLayer(nn.Module):
             p_conf = p[..., 4]  # Conf
             p_cls = p[..., 5:]  # Class
 
-            txy, twh, mask, tcls = build_targets(targets, self.anchor_vec, self.nA, self.nC, nG)
+            txy, twh, mask, tcls = build_targets(targets, self.anchor_vec, self.nA, self.nC, nG.cpu())
 
             tcls = tcls[mask]
             if xy.is_cuda:

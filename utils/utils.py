@@ -231,7 +231,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
     return inter_area / (b1_area + b2_area - inter_area + 1e-16)
 
 
-def build_targets(target, anchor_wh, nA, nC, nG):
+def build_targets(target, anchor_vec, nA, nC, nG):
     """
     returns nT, nCorrect, tx, ty, tw, th, tconf, tcls
     """
@@ -255,7 +255,7 @@ def build_targets(target, anchor_wh, nA, nC, nG):
 
         # iou of targets-anchors (using wh only)
         box1 = gwh
-        box2 = anchor_wh.unsqueeze(1)
+        box2 = anchor_vec.unsqueeze(1)
         inter_area = torch.min(box1, box2).prod(2)
         iou = inter_area / (box1.prod(1) + box2.prod(2) - inter_area + 1e-16)
 
@@ -290,8 +290,8 @@ def build_targets(target, anchor_wh, nA, nC, nG):
         txy[b, a, gj, gi] = gxy - gxy.floor()
 
         # Width and height
-        twh[b, a, gj, gi] = torch.log(gwh / anchor_wh[a])  # yolo method
-        # twh[b, a, gj, gi] = torch.sqrt(gwh / anchor_wh[a]) / 2 # power method
+        twh[b, a, gj, gi] = torch.log(gwh / anchor_vec[a])  # yolo method
+        # twh[b, a, gj, gi] = torch.sqrt(gwh / anchor_vec[a]) / 2 # power method
 
         # One-hot encoding of label
         tcls[b, a, gj, gi, tc] = 1
