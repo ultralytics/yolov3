@@ -48,8 +48,8 @@ def train(
         # Load weights to resume from
         model.load_state_dict(checkpoint['model'])
 
-        # if torch.cuda.device_count() > 1:
-        #     model = nn.DataParallel(model)
+        if torch.cuda.device_count() > 1:
+            model = nn.DataParallel(model)
         model.to(device).train()
 
         # Transfer learning (train only YOLO layers)
