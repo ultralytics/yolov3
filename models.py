@@ -150,8 +150,6 @@ class YOLOLayer(nn.Module):
             p_conf = p[..., 4]  # Conf
             p_cls = p[..., 5:]  # Class
 
-            print(self.anchor_vec.device, self.anchor_vec, self.nA, self.nC, nG)
-
             txy, twh, mask, tcls = build_targets(targets, self.anchor_vec, self.nA, self.nC, nG)
 
             tcls = tcls[mask]

@@ -256,6 +256,9 @@ def build_targets(target, anchor_vec, nA, nC, nG):
         # iou of targets-anchors (using wh only)
         box1 = gwh
         box2 = anchor_vec.unsqueeze(1)
+
+        print(box1.device,box2.device)
+
         inter_area = torch.min(box1, box2).prod(2)
         iou = inter_area / (box1.prod(1) + box2.prod(2) - inter_area + 1e-16)
 
