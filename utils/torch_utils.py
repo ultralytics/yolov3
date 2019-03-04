@@ -18,7 +18,7 @@ def select_device(force_cpu=False):
         if torch.cuda.device_count() > 1:
             print('Found %g GPUs' % torch.cuda.device_count())
             print('WARNING Multi-GPU Issue: https://github.com/ultralytics/yolov3/issues/21')
-        #    torch.cuda.set_device(0)  # OPTIONAL: Set your GPU if multiple available
+            torch.cuda.set_device(0)  # OPTIONAL: Set your GPU if multiple available
         #    # print('Using ', torch.cuda.device_count(), ' GPUs')
 
     print('Using %s %s\n' % (device.type, torch.cuda.get_device_properties(0) if cuda else ''))
