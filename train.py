@@ -55,7 +55,7 @@ def train(
         shuffle=False,
         num_workers=num_workers)
 
-    lr0 = 0.01
+    lr0 = 0.001
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_loss = float('inf')
@@ -89,7 +89,6 @@ def train(
         if cfg.endswith('yolov3.cfg'):
             load_darknet_weights(model, weights + 'darknet53.conv.74')
             cutoff = 75
-            pass
         elif cfg.endswith('yolov3-tiny.cfg'):
             load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
             cutoff = 15
