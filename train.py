@@ -85,8 +85,9 @@ def train(
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
 
-    model_info(model)
     t0 = time.time()
+    model_info(model)
+    n_burnin = min(dataloader.nB / 5, 1000)  # number of burn-in batches
     for epoch in range(epochs):
         epoch += start_epoch
 
@@ -118,8 +119,8 @@ def train(
                 continue
 
             # SGD burn-in
-            if (epoch == 0) & (i <= 1000):
-                lr = lr0 * (i / 1000) ** 4
+            if (epoch == 0) & (i <= n_burnin):
+                lr = lr0 * (i / n_burnin) ** 4
                 for g in optimizer.param_groups:
                     g['lr'] = lr
 
