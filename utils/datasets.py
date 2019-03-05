@@ -37,7 +37,7 @@ class LoadImages:  # for inference
 
         # Read image
         img0 = cv2.imread(img_path)  # BGR
-        assert img0 is not None, 'Failed to load ' + img_path
+        assert img0 is not None, 'File Not Found ' + img_path
 
         # Padded resize
         img, _, _, _ = letterbox(img0, height=self.height)
@@ -106,7 +106,7 @@ class LoadImagesAndLabels:  # for training
         self.multi_scale = multi_scale
         self.augment = augment
 
-        assert self.nB > 0, 'No images found in %s' % path
+        assert self.nF > 0, 'No images found in %s' % path
 
     def __iter__(self):
         self.count = -1
@@ -134,8 +134,7 @@ class LoadImagesAndLabels:  # for training
             label_path = self.label_files[self.shuffled_vector[files_index]]
 
             img = cv2.imread(img_path)  # BGR
-            if img is None:
-                continue
+            assert img is not None, 'File Not Found ' + img_path
 
             augment_hsv = True
             if self.augment and augment_hsv:
