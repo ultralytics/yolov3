@@ -235,17 +235,18 @@ def build_targets(target, anchor_vec, nA, nC, nG):
     """
     returns nT, nCorrect, tx, ty, tw, th, tconf, tcls
     """
+    device = target[0].device.type
+    anchor_vec = anchor_vec.to(device)
     nB = len(target)  # number of images in batch
-
-    txy = torch.zeros(nB, nA, nG, nG, 2)  # batch size, anchors, grid size
-    twh = torch.zeros(nB, nA, nG, nG, 2)
-    tconf = torch.ByteTensor(nB, nA, nG, nG).fill_(0)
-    tcls = torch.ByteTensor(nB, nA, nG, nG, nC).fill_(0)  # nC = number of classes
+    txy = torch.zeros(nB, nA, nG, nG, 2).to(device)  # batch size, anchors, grid size
+    twh = torch.zeros(nB, nA, nG, nG, 2).to(device)
+    tconf = torch.ByteTensor(nB, nA, nG, nG).fill_(0).to(device)
+    tcls = torch.ByteTensor(nB, nA, nG, nG, nC).fill_(0).to(device)  # nC = number of classes
 
     for b in range(nB):
         t = target[b]
         nTb = len(t)  # number of targets
-        if nTb == 0:
+        if nTb == 0 or torch.all(target[b] == 0):
             continue
 
         gxy, gwh = t[:, 1:3] * nG, t[:, 3:5] * nG
@@ -256,20 +257,25 @@ def build_targets(target, anchor_vec, nA, nC, nG):
         # iou of targets-anchors (using wh only)
         box1 = gwh
         box2 = anchor_vec.unsqueeze(1)
-
         inter_area = torch.min(box1, box2).prod(2)
         iou = inter_area / (box1.prod(1) + box2.prod(2) - inter_area + 1e-16)
 
         # Select best iou_pred and anchor
-        iou_best, a = iou.max(0)  # best anchor [0-2] for each target
+        iou_best, a = iou.max(0)  # best anchor [0-2] for each target (if 3 anchors active)
 
         # Select best unique target-anchor combinations
         if nTb > 1:
-            iou_order = torch.argsort(-iou_best)  # best to worst
+            if torch.__version__ > "1.0.0":
+                iou_order = torch.argsort(-iou_best)  # best to worst
+            else:
+                _, iou_order = torch.sort(-iou_best)  # best to worst
 
             # Unique anchor selection
+            # u = torch.cat((gi, gj, a), 0).view((3, -1))
             u = torch.stack((gi, gj, a), 0)[:, iou_order]
-            # _, first_unique = np.unique(u, axis=1, return_index=True)  # first unique indices
+            # u = torch.stack((gi, gj, a),0)
+            # _, first_unique = np.unique(u[:, iou_order], axis=1, return_index=True)  # first unique indices
+            # _, first_unique = torch.unique(u[:, iou_order], dim=1, return_inverse=True)  # different than numpy?
             first_unique = return_torch_unique_index(u, torch.unique(u, dim=1))  # torch alternative
 
             i = iou_order[first_unique]
@@ -292,7 +298,7 @@ def build_targets(target, anchor_vec, nA, nC, nG):
 
         # Width and height
         twh[b, a, gj, gi] = torch.log(gwh / anchor_vec[a])  # yolo method
-        # twh[b, a, gj, gi] = torch.sqrt(gwh / anchor_vec[a]) / 2 # power method
+        # twh[b, a, gj, gi] = torch.sqrt(gwh / anchor_wh[a]) / 2 # power method
 
         # One-hot encoding of label
         tcls[b, a, gj, gi, tc] = 1

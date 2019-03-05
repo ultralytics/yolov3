@@ -1,10 +1,21 @@
 import argparse
 import time
 
+from torch.utils.data import DataLoader
+
 import test  # Import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
 from utils.utils import *
+
+# import visdom
+from PIL import Image, ImageDraw, ImageFont
+from torchvision.transforms import ToPILImage, ToTensor
+
+torch.multiprocessing.set_sharing_strategy('file_system')
+
+# font = ImageFont.truetype("./FreeSans.ttf", 16)
+# vis = visdom.Visdom()
 
 
 def train(
@@ -17,6 +28,7 @@ def train(
         accumulated_batches=1,
         multi_scale=False,
         freeze_backbone=False,
+        num_workers=0,
         var=0,
 ):
     weights = 'weights' + os.sep
@@ -35,21 +47,27 @@ def train(
     # Initialize model
     model = Darknet(cfg, img_size)
 
-    # Get dataloader
-    dataloader = LoadImagesAndLabels(train_path, batch_size, img_size, multi_scale=multi_scale, augment=True)
+    # Get dataloader with multi-threading
+    train_loader = ImageLabelDataset(train_path, batch_size, img_size, multi_scale=multi_scale, augment=False)
+    dataloader = DataLoader(
+        dataset=train_loader,
+        batch_size=1,
+        shuffle=False,
+        num_workers=num_workers)
 
-    lr0 = 0.001
+    lr0 = 0.01
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_loss = float('inf')
+
     if resume:
         checkpoint = torch.load(latest, map_location='cpu')
 
         # Load weights to resume from
         model.load_state_dict(checkpoint['model'])
 
-        # if torch.cuda.device_count() > 1:
-        #   model = nn.DataParallel(model)
+        if torch.cuda.device_count() > 1:
+            model = nn.DataParallel(model)
         model.to(device).train()
 
         # Transfer learning (train only YOLO layers)
@@ -71,23 +89,27 @@ def train(
         if cfg.endswith('yolov3.cfg'):
             load_darknet_weights(model, weights + 'darknet53.conv.74')
             cutoff = 75
+            pass
         elif cfg.endswith('yolov3-tiny.cfg'):
             load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
             cutoff = 15
 
-        # if torch.cuda.device_count() > 1:
-        #    model = nn.DataParallel(model)
+        if torch.cuda.device_count() > 1:
+            model = nn.DataParallel(model)
         model.to(device).train()
 
         # Set optimizer
         optimizer = torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()), lr=lr0, momentum=.9)
-
+        # optimizer = torch.optim.Adam(model.parameters())
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
 
     t0 = time.time()
     model_info(model)
-    n_burnin = min(round(dataloader.nB / 5), 1000)  # number of burn-in batches
+    n_burnin = min(round(train_loader.nB / 5), 1000)  # number of burn-in batches
+    losses = defaultdict(float)
+    loss_names = ['loss', 'xy', 'wh', 'conf', 'cls', 'nT']
+
     for epoch in range(epochs):
         epoch += start_epoch
 
@@ -115,9 +137,10 @@ def train(
         rloss = defaultdict(float)  # running loss
         optimizer.zero_grad()
         for i, (imgs, targets, _, _) in enumerate(dataloader):
-            if sum([len(x) for x in targets]) < 1:  # if no targets continue
+            if torch.all(targets == torch.zeros_like(targets)):  # if no targets continue
                 continue
-
+            imgs.squeeze_(0)
+            targets.squeeze_(0)
             # SGD burn-in
             if (epoch == 0) & (i <= n_burnin):
                 lr = lr0 * (i / n_burnin) ** 4
@@ -125,8 +148,13 @@ def train(
                     g['lr'] = lr
 
             # Compute loss, compute gradient, update parameters
-            loss = model(imgs.to(device), targets, var=var)
-            loss.backward()
+            model.train()
+            loss, losses_b = model(imgs.to(device), targets, var=var)
+
+            losses_b = losses_b.sum(0)
+            for k, name in enumerate(loss_names):
+                losses[name] += losses_b[k]
+            loss.sum().backward()
 
             # accumulate gradient for x batches before optimizing
             if ((i + 1) % accumulated_batches == 0) or (i == len(dataloader) - 1):
@@ -135,7 +163,7 @@ def train(
 
             # Running epoch-means of tracked metrics
             ui += 1
-            for key, val in model.losses.items():
+            for key, val in losses.items():
                 rloss[key] = (rloss[key] * ui + val) / (ui + 1)
 
             s = ('%8s%12s' + '%10.3g' * 7) % (
@@ -143,9 +171,35 @@ def train(
                 '%g/%g' % (i, len(dataloader) - 1),
                 rloss['xy'], rloss['wh'], rloss['conf'],
                 rloss['cls'], rloss['loss'],
-                model.losses['nT'], time.time() - t0)
+                losses['nT'], time.time() - t0)
             t0 = time.time()
             print(s)
+
+        #    # Visdom training visualization code
+        #    out_img = torch.ones_like(imgs.data)
+        #    model.eval()
+        #    with torch.no_grad():
+        #        output = model(imgs)
+
+        #    detections = non_max_suppression(output, 0.8, 0.4)
+        #    for img_i, img in enumerate(imgs.data):
+        #        detection = detections[img_i]
+        #        image = ToPILImage()(img.cpu()).convert("RGBA")
+        #        polys = Image.new('RGBA', image.size)
+        #        draw = ImageDraw.Draw(polys)
+        #        if detection is not None:
+        #            for det in detection:
+        #                draw.rectangle(xy=[
+        #                    det[0],
+        #                    det[1],
+        #                    det[2],
+        #                    det[3]],
+        #                    outline=(255, 0, 0))
+        #                draw.text((det[0], det[1]), classes[int(det[-1])], (255, 255, 255), font=font)
+        #        image.paste(polys, mask=polys)
+        #        image = ToTensor()(image.convert("RGB"))
+        #        out_img[img_i] = image
+        #    vis.images(out_img, win="1", env="mil")
 
         # Update best loss
         loss_per_target = rloss['loss'] / rloss['nT']
@@ -153,9 +207,13 @@ def train(
             best_loss = loss_per_target
 
         # Save latest checkpoint
+        if type(model) is nn.DataParallel:
+            state_dict = model.module.state_dict()
+        else:
+            state_dict = model.state_dict()
         checkpoint = {'epoch': epoch,
                       'best_loss': best_loss,
-                      'model': model.state_dict(),
+                      'model': state_dict,
                       'optimizer': optimizer.state_dict()}
         torch.save(checkpoint, latest)
 
@@ -168,12 +226,12 @@ def train(
         #     os.system('cp ' + latest + ' ' + weights + 'backup{}.pt'.format(epoch)))
 
         # Calculate mAP
-        with torch.no_grad():
-            mAP, R, P = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
+        # with torch.no_grad():
+        #     mAP, R, P = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
 
         # Write epoch results
-        with open('results.txt', 'a') as file:
-            file.write(s + '%11.3g' * 3 % (mAP, P, R) + '\n')
+        # with open('results.txt', 'a') as file:
+        #     file.write(s + '%11.3g' * 3 % (mAP, P, R) + '\n')
 
 
 if __name__ == '__main__':
@@ -186,11 +244,13 @@ if __name__ == '__main__':
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
+    parser.add_argument('--num-workers', type=int, default=0, help='number of workers for dataloader')
     parser.add_argument('--var', type=float, default=0, help='test variable')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
     init_seeds()
+    classes = load_classes("data/coco/coco.names")
 
     train(
         opt.cfg,
@@ -201,5 +261,6 @@ if __name__ == '__main__':
         batch_size=opt.batch_size,
         accumulated_batches=opt.accumulated_batches,
         multi_scale=opt.multi_scale,
+        num_workers=opt.num_workers,
         var=opt.var,
     )

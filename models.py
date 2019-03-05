@@ -123,7 +123,7 @@ class YOLOLayer(nn.Module):
         if ONNX_EXPORT:
             bs, nG = 1, self.nG  # batch size, grid size
         else:
-            bs, nG = p.shape[0], p.shape[-1]
+            bs, nG = p.shape[0], p.shape[-1]  # grid size defined by previous layer outputs
 
             if self.img_size != img_size:
                 create_grids(self, img_size, nG)
@@ -132,7 +132,7 @@ class YOLOLayer(nn.Module):
                     self.grid_xy = self.grid_xy.cuda()
                     self.anchor_wh = self.anchor_wh.cuda()
 
-        # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 80)  # (bs, anchors, grid, grid, classes + xywh)
+        # p.view(bs, 3, 80 + 5, 13, 13) -- > (bs, 3, 13, 13, 80 + 5)  # (bs, anchors, grid, grid, classes + xywh)
         p = p.view(bs, self.nA, self.nC + 5, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
 
         # xy, width and height
@@ -153,7 +153,7 @@ class YOLOLayer(nn.Module):
             txy, twh, mask, tcls = build_targets(targets, self.anchor_vec, self.nA, self.nC, nG)
 
             tcls = tcls[mask]
-            if p.is_cuda:
+            if xy.is_cuda:
                 txy, twh, mask, tcls = txy.cuda(), twh.cuda(), mask.cuda(), tcls.cuda()
 
             # Compute losses
@@ -226,7 +226,8 @@ class Darknet(nn.Module):
         self.losses = []
 
     def forward(self, x, targets=None, var=0):
-        self.losses = defaultdict(float)
+        # self.losses = defaultdict(float)
+        losses_b = torch.zeros(6).cuda() if x.is_cuda else torch.zeros(6)
         is_training = targets is not None
         img_size = x.shape[-1]
         layer_outputs = []
@@ -248,26 +249,23 @@ class Darknet(nn.Module):
             elif mtype == 'yolo':
                 if is_training:  # get loss
                     x, *losses = module[0](x, img_size, targets, var)
-                    for name, loss in zip(self.loss_names, losses):
-                        self.losses[name] += loss
+                    for k, (name, loss) in enumerate(zip(self.loss_names, losses)):
+                        # self.losses[name] += loss
+                        losses_b[k] += loss
                 else:  # get detections
                     x = module[0](x, img_size)
                 output.append(x)
             layer_outputs.append(x)
 
         if is_training:
-            self.losses['nT'] /= 3
+            # self.losses['nT'] /= 3
+            losses_b[-1] /= 3
 
         if ONNX_EXPORT:
             output = torch.cat(output, 1)  # merge the 3 layers 85 x (507, 2028, 8112) to 85 x 10647
             return output[5:85].t(), output[:4].t()  # ONNX scores, boxes
 
-        return sum(output) if is_training else torch.cat(output, 1)
-
-
-def get_yolo_layers(model):
-    a = [module_def['type'] == 'yolo' for module_def in model.module_defs]
-    return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
+        return (sum(output), losses_b.unsqueeze(0)) if is_training else torch.cat(output, 1)
 
 
 def create_grids(self, img_size, nG):
