@@ -98,6 +98,7 @@ def train(
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
 
+    # Start training
     t0 = time.time()
     model_info(model)
     n_burnin = min(round(train_loader.nB / 5), 1000)  # number of burn-in batches
@@ -149,7 +150,7 @@ def train(
                 losses[name] += losses_b[k]
             loss.sum().backward()
 
-            # accumulate gradient for x batches before optimizing
+            # Accumulate gradient for x batches before optimizing
             if ((i + 1) % accumulated_batches == 0) or (i == len(dataloader) - 1):
                 optimizer.step()
                 optimizer.zero_grad()
