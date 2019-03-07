@@ -50,7 +50,6 @@ def test(
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     # coco91class = coco80_to_coco91_class()
     classes = load_classes(data_cfg_dict['names'])
-    print(classes)
     for batch_i, (imgs, targets, paths, shapes) in enumerate(dataloader):
         imgs.squeeze_(0)
         targets.squeeze_(0)
