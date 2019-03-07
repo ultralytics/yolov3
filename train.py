@@ -105,10 +105,9 @@ def train(
 
     t0 = time.time()
     model_info(model)
-    n_burnin = min(round(train_loader.nB / 5), 1000)  # number of burn-in batches
     losses = defaultdict(float)
     loss_names = ['loss', 'xy', 'wh', 'conf', 'cls', 'nT']
-
+    n_burnin = min(round(dataloader.nB / 5 + 1), 1000)  # number of burn-in batches
     for epoch in range(epochs):
         epoch += start_epoch
 
