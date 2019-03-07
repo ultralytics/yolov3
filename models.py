@@ -157,7 +157,7 @@ class YOLOLayer(nn.Module):
                 txy, twh, mask, tcls = txy.cuda(), twh.cuda(), mask.cuda(), tcls.cuda()
 
             # Compute losses
-            nT = sum([len(x) for x in targets])  # number of targets
+            nT = sum([len(x[torch.unique(x.nonzero()[:, 0])]) for x in targets])  # number of targets
             nM = mask.sum().float()  # number of anchors (assigned to targets)
             k = 1  # nM / bs
             if nM > 0:
@@ -220,6 +220,7 @@ class Darknet(nn.Module):
         self.module_defs = parse_model_cfg(cfg_path)
         self.module_defs[0]['cfg'] = cfg_path
         self.module_defs[0]['height'] = img_size
+        self.num_yolo = len([x for x in self.module_defs if x['type'] == 'yolo'])
         self.hyperparams, self.module_list = create_modules(self.module_defs)
         self.img_size = img_size
         self.loss_names = ['loss', 'xy', 'wh', 'conf', 'cls', 'nT']
@@ -258,8 +259,7 @@ class Darknet(nn.Module):
             layer_outputs.append(x)
 
         if is_training:
-            # self.losses['nT'] /= 3
-            losses_b[-1] /= 3
+            losses_b[-1] /= self.num_yolo
 
         if ONNX_EXPORT:
             output = torch.cat(output, 1)  # merge the 3 layers 85 x (507, 2028, 8112) to 85 x 10647

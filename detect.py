@@ -48,7 +48,6 @@ def detect(
         dataloader = LoadImages(images, img_size=img_size)
 
     # Get classes and colors
-    classes = load_classes(parse_data_cfg('cfg/coco.data')['names'])
     colors = [[random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)] for _ in range(len(classes))]
 
     for i, (path, img, im0) in enumerate(dataloader):
@@ -112,8 +111,10 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=32 * 13, help='size of each image dimension')
     parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
+    parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
     opt = parser.parse_args()
     print(opt)
+    classes = load_classes(opt.data_cfg)
 
     with torch.no_grad():
         detect(

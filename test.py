@@ -3,6 +3,7 @@ import json
 import time
 from pathlib import Path
 
+from torch.utils.data import DataLoader
 from models import *
 from utils.datasets import *
 from utils.utils import *
@@ -39,15 +40,20 @@ def test(
 
     # Get dataloader
     # dataloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path), batch_size=batch_size)
-    dataloader = LoadImagesAndLabels(test_path, batch_size=batch_size, img_size=img_size)
+    dataset = ImageLabelDataset(test_path, batch_size=batch_size, img_size=img_size)
+    dataloader = DataLoader(dataset=dataset, batch_size=1, shuffle=False, num_workers=0)
 
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
     outputs, mAPs, mR, mP, TP, confidence, pred_class, target_class, jdict = \
         [], [], [], [], [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
-    coco91class = coco80_to_coco91_class()
+    # coco91class = coco80_to_coco91_class()
+    classes = load_classes(data_cfg_dict['names'])
+    print(classes)
     for batch_i, (imgs, targets, paths, shapes) in enumerate(dataloader):
+        imgs.squeeze_(0)
+        targets.squeeze_(0)
         t = time.time()
         output = model(imgs.to(device))
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
@@ -77,7 +83,7 @@ def test(
                 for di, d in enumerate(detections):
                     jdict.append({
                         'image_id': int(Path(paths[si]).stem.split('_')[-1]),
-                        'category_id': coco91class[int(d[6])],
+                        'category_id': classes[int(d[6])],
                         'bbox': [float3(x) for x in box[di]],
                         'score': float3(d[4] * d[5])
                     })
@@ -131,7 +137,7 @@ def test(
 
         # Print image mAP and running mean mAP
         print(('%11s%11s' + '%11.3g' * 4 + 's') %
-              (seen, dataloader.nF, mean_P, mean_R, mean_mAP, time.time() - t))
+              (seen, dataset.nF, mean_P, mean_R, mean_mAP, time.time() - t))
 
     # Print mAP per class
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP') + '\n\nmAP Per Class:')
@@ -141,7 +147,7 @@ def test(
 
     # Save JSON
     if save_json:
-        imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataloader.img_files]
+        imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataset.img_files]
         with open('results.json', 'w') as file:
             json.dump(jdict, file)
 

@@ -8,14 +8,14 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-# import visdom
+import visdom
 from PIL import Image, ImageDraw, ImageFont
 from torchvision.transforms import ToPILImage, ToTensor
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
-# font = ImageFont.truetype("./FreeSans.ttf", 16)
-# vis = visdom.Visdom()
+font = ImageFont.truetype("./FreeSans.ttf", 16)
+vis = visdom.Visdom()
 
 
 def train(
@@ -48,7 +48,7 @@ def train(
     model = Darknet(cfg, img_size)
 
     # Get dataloader with multi-threading
-    train_loader = ImageLabelDataset(train_path, batch_size, img_size, multi_scale=multi_scale, augment=False)
+    train_loader = ImageLabelDataset(train_path, batch_size, img_size, multi_scale=multi_scale, augment=True)
     dataloader = DataLoader(
         dataset=train_loader,
         batch_size=1,
@@ -80,18 +80,20 @@ def train(
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
             optimizer.load_state_dict(checkpoint['optimizer'])
-            best_loss = checkpoint['best_loss']
+            best_loss = checkpoint['best_loss'].to(device)
 
         del checkpoint  # current, saved
 
     else:
         # Initialize model with backbone (optional)
         if cfg.endswith('yolov3.cfg'):
-            load_darknet_weights(model, weights + 'darknet53.conv.74')
-            cutoff = 75
+            #load_darknet_weights(model, weights + 'darknet53.conv.74')
+            # cutoff = 75
+            pass
         elif cfg.endswith('yolov3-tiny.cfg'):
-            load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
-            cutoff = 15
+            #load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
+            # cutoff = 15
+            pass
 
         if torch.cuda.device_count() > 1:
             model = nn.DataParallel(model)
@@ -105,9 +107,10 @@ def train(
 
     t0 = time.time()
     model_info(model)
+    n_burnin = min(round(train_loader.nB / 5), 1000)  # number of burn-in batches
     losses = defaultdict(float)
     loss_names = ['loss', 'xy', 'wh', 'conf', 'cls', 'nT']
-    n_burnin = min(round(dataloader.nB / 5 + 1), 1000)  # number of burn-in batches
+
     for epoch in range(epochs):
         epoch += start_epoch
 
@@ -147,8 +150,8 @@ def train(
 
             # Compute loss, compute gradient, update parameters
             model.train()
+            losses = defaultdict(float)
             loss, losses_b = model(imgs.to(device), targets, var=var)
-
             losses_b = losses_b.sum(0)
             for k, name in enumerate(loss_names):
                 losses[name] += losses_b[k]
@@ -173,31 +176,31 @@ def train(
             t0 = time.time()
             print(s)
 
-        #    # Visdom training visualization code
-        #    out_img = torch.ones_like(imgs.data)
-        #    model.eval()
-        #    with torch.no_grad():
-        #        output = model(imgs)
+            if i % 100 == 0:
+                out_img = torch.ones_like(imgs.data)
+                model.eval()
+                with torch.no_grad():
+                    output = model(imgs)
 
-        #    detections = non_max_suppression(output, 0.8, 0.4)
-        #    for img_i, img in enumerate(imgs.data):
-        #        detection = detections[img_i]
-        #        image = ToPILImage()(img.cpu()).convert("RGBA")
-        #        polys = Image.new('RGBA', image.size)
-        #        draw = ImageDraw.Draw(polys)
-        #        if detection is not None:
-        #            for det in detection:
-        #                draw.rectangle(xy=[
-        #                    det[0],
-        #                    det[1],
-        #                    det[2],
-        #                    det[3]],
-        #                    outline=(255, 0, 0))
-        #                draw.text((det[0], det[1]), classes[int(det[-1])], (255, 255, 255), font=font)
-        #        image.paste(polys, mask=polys)
-        #        image = ToTensor()(image.convert("RGB"))
-        #        out_img[img_i] = image
-        #    vis.images(out_img, win="1", env="mil")
+                detections = non_max_suppression(output, 0.8, 0.4)
+                for img_i, img in enumerate(imgs.data):
+                    detection = detections[img_i]
+                    image = ToPILImage()(img.cpu()).convert("RGBA")
+                    polys = Image.new('RGBA', image.size)
+                    draw = ImageDraw.Draw(polys)
+                    if detection is not None:
+                        for det in detection:
+                            draw.rectangle(xy=[
+                                det[0],
+                                det[1],
+                                det[2],
+                                det[3]],
+                                outline=(255, 0, 0))
+                            draw.text((det[0], det[1]), classes[int(det[-1])], (255, 255, 255), font=font)
+                    image.paste(polys, mask=polys)
+                    image = ToTensor()(image.convert("RGB"))
+                    out_img[img_i] = image
+                vis.images(out_img, win="1", env="mil")
 
         # Update best loss
         loss_per_target = rloss['loss'] / rloss['nT']
@@ -224,12 +227,12 @@ def train(
         #     os.system('cp ' + latest + ' ' + weights + 'backup{}.pt'.format(epoch)))
 
         # Calculate mAP
-        # with torch.no_grad():
-        #     mAP, R, P = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
+        with torch.no_grad():
+             mAP, R, P = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
 
         # Write epoch results
-        # with open('results.txt', 'a') as file:
-        #     file.write(s + '%11.3g' * 3 % (mAP, P, R) + '\n')
+        with open('results.txt', 'a') as file:
+            file.write(s + '%11.3g' * 3 % (mAP, P, R) + '\n')
 
 
 if __name__ == '__main__':
@@ -248,7 +251,8 @@ if __name__ == '__main__':
     print(opt, end='\n\n')
 
     init_seeds()
-    classes = load_classes("data/coco/coco.names")
+    data_cfg = parse_data_cfg(opt.data_cfg)
+    classes = load_classes(data_cfg['names'])
 
     train(
         opt.cfg,
