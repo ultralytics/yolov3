@@ -8,14 +8,8 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-import visdom
-from PIL import Image, ImageDraw, ImageFont
-from torchvision.transforms import ToPILImage, ToTensor
 
 torch.multiprocessing.set_sharing_strategy('file_system')
-
-font = ImageFont.truetype("./FreeSans.ttf", 16)
-vis = visdom.Visdom()
 
 
 def train(
@@ -31,6 +25,7 @@ def train(
         num_workers=0,
         var=0,
 ):
+
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
     best = weights + 'best.pt'
@@ -87,13 +82,11 @@ def train(
     else:
         # Initialize model with backbone (optional)
         if cfg.endswith('yolov3.cfg'):
-            #load_darknet_weights(model, weights + 'darknet53.conv.74')
-            # cutoff = 75
-            pass
+            load_darknet_weights(model, weights + 'darknet53.conv.74')
+            cutoff = 75
         elif cfg.endswith('yolov3-tiny.cfg'):
-            #load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
-            # cutoff = 15
-            pass
+            load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
+            cutoff = 15
 
         if torch.cuda.device_count() > 1:
             model = nn.DataParallel(model)
@@ -101,14 +94,13 @@ def train(
 
         # Set optimizer
         optimizer = torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()), lr=lr0, momentum=.9)
-        # optimizer = torch.optim.Adam(model.parameters())
+
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
 
     t0 = time.time()
     model_info(model)
     n_burnin = min(round(train_loader.nB / 5), 1000)  # number of burn-in batches
-    losses = defaultdict(float)
     loss_names = ['loss', 'xy', 'wh', 'conf', 'cls', 'nT']
 
     for epoch in range(epochs):
@@ -175,32 +167,6 @@ def train(
                 losses['nT'], time.time() - t0)
             t0 = time.time()
             print(s)
-
-            if i % 100 == 0:
-                out_img = torch.ones_like(imgs.data)
-                model.eval()
-                with torch.no_grad():
-                    output = model(imgs)
-
-                detections = non_max_suppression(output, 0.8, 0.4)
-                for img_i, img in enumerate(imgs.data):
-                    detection = detections[img_i]
-                    image = ToPILImage()(img.cpu()).convert("RGBA")
-                    polys = Image.new('RGBA', image.size)
-                    draw = ImageDraw.Draw(polys)
-                    if detection is not None:
-                        for det in detection:
-                            draw.rectangle(xy=[
-                                det[0],
-                                det[1],
-                                det[2],
-                                det[3]],
-                                outline=(255, 0, 0))
-                            draw.text((det[0], det[1]), classes[int(det[-1])], (255, 255, 255), font=font)
-                    image.paste(polys, mask=polys)
-                    image = ToTensor()(image.convert("RGB"))
-                    out_img[img_i] = image
-                vis.images(out_img, win="1", env="mil")
 
         # Update best loss
         loss_per_target = rloss['loss'] / rloss['nT']

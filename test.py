@@ -48,8 +48,8 @@ def test(
     outputs, mAPs, mR, mP, TP, confidence, pred_class, target_class, jdict = \
         [], [], [], [], [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
-    # coco91class = coco80_to_coco91_class()
-    classes = load_classes(data_cfg_dict['names'])
+    coco91class = coco80_to_coco91_class()
+    # classes = load_classes(data_cfg_dict['names'])
     for batch_i, (imgs, targets, paths, shapes) in enumerate(dataloader):
         imgs.squeeze_(0)
         targets.squeeze_(0)
@@ -82,7 +82,7 @@ def test(
                 for di, d in enumerate(detections):
                     jdict.append({
                         'image_id': int(Path(paths[si]).stem.split('_')[-1]),
-                        'category_id': classes[int(d[6])],
+                        'category_id': coco91class[int(d[6])],
                         'bbox': [float3(x) for x in box[di]],
                         'score': float3(d[4] * d[5])
                     })

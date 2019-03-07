@@ -227,7 +227,6 @@ class Darknet(nn.Module):
         self.losses = []
 
     def forward(self, x, targets=None, var=0):
-        # self.losses = defaultdict(float)
         losses_b = torch.zeros(6).cuda() if x.is_cuda else torch.zeros(6)
         is_training = targets is not None
         img_size = x.shape[-1]
@@ -250,8 +249,7 @@ class Darknet(nn.Module):
             elif mtype == 'yolo':
                 if is_training:  # get loss
                     x, *losses = module[0](x, img_size, targets, var)
-                    for k, (name, loss) in enumerate(zip(self.loss_names, losses)):
-                        # self.losses[name] += loss
+                    for k, loss in enumerate(losses):
                         losses_b[k] += loss
                 else:  # get detections
                     x = module[0](x, img_size)
