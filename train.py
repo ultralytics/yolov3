@@ -143,7 +143,7 @@ def train(
             # Compute loss, compute gradient, update parameters
             model.train()
             losses = defaultdict(float)
-            loss, losses_b = model(imgs.to(device), targets, var=var)
+            loss, losses_b = model(imgs.to(device), targets.to(device), var=var)
             losses_b = losses_b.sum(0)
             for k, name in enumerate(loss_names):
                 losses[name] += losses_b[k]
