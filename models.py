@@ -141,65 +141,31 @@ class YOLOLayer(nn.Module):
 
         if self.training:
             return p
-        #     MSELoss = nn.MSELoss()
-        #     BCEWithLogitsLoss = nn.BCEWithLogitsLoss()
-        #     CrossEntropyLoss = nn.CrossEntropyLoss()
-        #
-        #     # Get outputs
-        #     p_conf = p[..., 4]  # Conf
-        #     p_cls = p[..., 5:]  # Class
-        #
-        #     txy, twh, mask, tcls = build_targets(targets, self.anchor_vec, self.nA, self.nC, nG)
-        #
-        #     tcls = tcls[mask]
-        #     if p.is_cuda:
-        #         txy, twh, mask, tcls = txy.cuda(), twh.cuda(), mask.cuda(), tcls.cuda()
-        #
-        #     # Compute losses
-        #     nT = sum([len(x) for x in targets])  # number of targets
-        #     nM = mask.sum().float()  # number of anchors (assigned to targets)
-        #     k = 1  # nM / bs
-        #     if nM > 0:
-        #         lxy = k * MSELoss(xy[mask], txy[mask])
-        #         lwh = k * MSELoss(wh[mask], twh[mask])
-        #
-        #         lcls = (k / 4) * CrossEntropyLoss(p_cls[mask], torch.argmax(tcls, 1))
-        #         # lcls = (k * 10) * BCEWithLogitsLoss(p_cls[mask], tcls.float())
-        #     else:
-        #         FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
-        #         lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0])
-        #
-        #     lconf = (k * 64) * BCEWithLogitsLoss(p_conf, mask.float())
-        #
-        #     # Sum loss components
-        #     loss = lxy + lwh + lconf + lcls
-        #
-        #     return loss, loss.item(), lxy.item(), lwh.item(), lconf.item(), lcls.item(), nT
-        #
+
+        elif ONNX_EXPORT:
+            grid_xy = self.grid_xy.repeat((1, self.nA, 1, 1, 1)).view((1, -1, 2))
+            anchor_wh = self.anchor_wh.repeat((1, 1, nG, nG, 1)).view((1, -1, 2)) / nG
+
+            # p = p.view(-1, 85)
+            # xy = xy + self.grid_xy[0]  # x, y
+            # wh = torch.exp(wh) * self.anchor_wh[0]  # width, height
+            # p_conf = torch.sigmoid(p[:, 4:5])  # Conf
+            # p_cls = F.softmax(p[:, 5:85], 1) * p_conf  # SSD-like conf
+            # return torch.cat((xy / nG, wh, p_conf, p_cls), 1).t()
+
+            p = p.view(1, -1, 85)
+            xy = xy + grid_xy  # x, y
+            wh = torch.exp(p[..., 2:4]) * anchor_wh  # width, height
+            p_conf = torch.sigmoid(p[..., 4:5])  # Conf
+            p_cls = p[..., 5:85]
+            # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
+            # p_cls = F.softmax(p_cls, 2) * p_conf  # SSD-like conf
+            p_cls = torch.exp(p_cls).permute((2, 1, 0))
+            p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute((2, 1, 0))  # F.softmax() equivalent
+            p_cls = p_cls.permute(2, 1, 0)
+            return torch.cat((xy / nG, wh, p_conf, p_cls), 2).squeeze().t()
+
         else:  # inference
-            if ONNX_EXPORT:
-                grid_xy = self.grid_xy.repeat((1, self.nA, 1, 1, 1)).view((1, -1, 2))
-                anchor_wh = self.anchor_wh.repeat((1, 1, nG, nG, 1)).view((1, -1, 2)) / nG
-
-                # p = p.view(-1, 85)
-                # xy = xy + self.grid_xy[0]  # x, y
-                # wh = torch.exp(wh) * self.anchor_wh[0]  # width, height
-                # p_conf = torch.sigmoid(p[:, 4:5])  # Conf
-                # p_cls = F.softmax(p[:, 5:85], 1) * p_conf  # SSD-like conf
-                # return torch.cat((xy / nG, wh, p_conf, p_cls), 1).t()
-
-                p = p.view(1, -1, 85)
-                xy = xy + grid_xy  # x, y
-                wh = torch.exp(p[..., 2:4]) * anchor_wh  # width, height
-                p_conf = torch.sigmoid(p[..., 4:5])  # Conf
-                p_cls = p[..., 5:85]
-                # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
-                # p_cls = F.softmax(p_cls, 2) * p_conf  # SSD-like conf
-                p_cls = torch.exp(p_cls).permute((2, 1, 0))
-                p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute((2, 1, 0))  # F.softmax() equivalent
-                p_cls = p_cls.permute(2, 1, 0)
-                return torch.cat((xy / nG, wh, p_conf, p_cls), 2).squeeze().t()
-
             p[..., 0:2] = xy + self.grid_xy  # xy
             p[..., 2:4] = torch.exp(wh) * self.anchor_wh  # wh yolo method
             # p[..., 2:4] = ((wh * 2) ** 2) * self.anchor_wh  # wh power method
