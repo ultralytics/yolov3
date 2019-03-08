@@ -234,7 +234,6 @@ def get_yolo_layers(model):
 
 def create_grids(self, img_size, nG, device):
     self.stride = img_size / nG
-    self.nG = nG
 
     # build xy offsets
     grid_x = torch.arange(nG).repeat((nG, 1)).view((1, 1, nG, nG)).float()
@@ -244,7 +243,7 @@ def create_grids(self, img_size, nG, device):
     # build wh gains
     self.anchor_vec = self.anchors.to(device) / self.stride
     self.anchor_wh = self.anchor_vec.view(1, self.nA, 1, 1, 2).to(device)
-
+    self.nG = torch.FloatTensor([nG]).to(device)
 
 def load_darknet_weights(self, weights, cutoff=-1):
     # Parses and loads the weights stored in 'weights'
