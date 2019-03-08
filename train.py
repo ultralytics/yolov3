@@ -113,10 +113,11 @@ def train(
                     p.requires_grad = False if (epoch == 0) else True
 
         ui = -1
-        rloss = defaultdict(float)  # running loss
         optimizer.zero_grad()
+        rloss = defaultdict(float)
         for i, (imgs, targets, _, _) in enumerate(dataloader):
-            if sum([len(x) for x in targets]) < 1:  # if no targets continue
+            nT = targets.shape[0]
+            if nT == 0:  # if no targets continue
                 continue
 
             # SGD burn-in
@@ -125,8 +126,15 @@ def train(
                 for g in optimizer.param_groups:
                     g['lr'] = lr
 
+            # Run model
+            pred = model(imgs.to(device))
+
+            # Build targets
+            target_matrix = build_targets_unified(model, targets, pred)
+
             # Compute loss
-            loss = model(imgs.to(device), targets, var=var)
+            # loss = model(imgs.to(device), targets, var=var)
+            loss, loss_dict = compute_loss(pred, target_matrix)
 
             # Compute gradient
             loss.backward()
@@ -138,15 +146,15 @@ def train(
 
             # Running epoch-means of tracked metrics
             ui += 1
-            for key, val in model.losses.items():
+            for key, val in loss_dict.items():
                 rloss[key] = (rloss[key] * ui + val) / (ui + 1)
 
             s = ('%8s%12s' + '%10.3g' * 7) % (
                 '%g/%g' % (epoch, epochs - 1),
                 '%g/%g' % (i, len(dataloader) - 1),
                 rloss['xy'], rloss['wh'], rloss['conf'],
-                rloss['cls'], rloss['loss'],
-                model.losses['nT'], time.time() - t0)
+                rloss['cls'], rloss['total'],
+                nT, time.time() - t0)
             t0 = time.time()
             print(s)
 

@@ -1,10 +1,12 @@
 import glob
 import random
+from collections import defaultdict
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 from utils import torch_utils
@@ -301,6 +303,112 @@ def build_targets(target, anchor_vec, nA, nC, nG):
     return txy, twh, tconf, tcls
 
 
+def compute_loss(p, t):  # model, predictions, targets
+    n = p[0].shape[-1]
+    for i in range(3):
+        p[i] = p[i].view(-1, n)
+        t[i] = t[i].view(-1, n)
+
+    # Group all yolo layers togethor
+    p0 = torch.cat(p, 0)
+    t = torch.cat(t, 0)
+
+    # Apply mask
+    mask = t[..., 4].byte()
+    p = p0[mask]
+    t = t[mask]
+
+    # Compute losses
+    nT = p.shape[0]  # number of targets
+    k = 3  # nT / bs
+    if nT > 0:
+        lxy = k * nn.MSELoss()(torch.sigmoid(p[..., 0:2]), t[..., 0:2])  # xy
+        lwh = k * nn.MSELoss()(p[..., 2:4], t[..., 2:4])  # wh
+
+        lcls = (k / 4) * nn.CrossEntropyLoss()(p[..., 5:], torch.argmax(t[..., 5:], 1))
+        # lcls = (k * 10) * nn.BCEWithLogitsLoss()(p[..., 5:], t[..., 5:])
+    else:
+        FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
+        lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0])
+
+    lconf = (k * 64) * nn.BCEWithLogitsLoss()(p0[..., 4], mask.float())
+
+    loss = lxy + lwh + lconf + lcls
+
+    # Add to dictionary
+    d = defaultdict(float)
+    losses = [loss.item(), lxy.item(), lwh.item(), lconf.item(), lcls.item()]
+    for name, x in zip(['total', 'xy', 'wh', 'conf', 'cls'], losses):
+        d[name] = x
+
+    return loss, d
+
+
+def build_targets_unified(model, targets, pred):
+    # targets = [image, class, x, y, w, h]
+    yolo_layers = get_yolo_layers(model)
+
+    p_out = []
+    anchors = closest_anchor(model, targets)  # [layer, anchor, i, j]
+    for i, layer in enumerate(yolo_layers):
+        nG = model.module_list[layer][0].nG  # grid size
+        anchor_vec = model.module_list[layer][0].anchor_vec
+
+        j = anchors[0] == i  # layer i anchor indices
+        ai = anchors[:, j]  # layer i anchors
+        ti = targets[j]  # layer i targets
+        pi = torch.zeros_like(pred[i])  # layer i predictions
+
+        # Indices
+        b, c = ti[:, 0:2].long().t()  # image in batch, class
+        a, gi, gj = ai[1:4]  # anchor, grid_i, grid_j
+
+        # XY coordinates
+        gxy = ti[:, 2:4] * nG
+        pi[b, a, gj, gi, 0:2] = gxy - gxy.floor()
+
+        # Width and height
+        gwh = ti[:, 4:6] * nG
+        pi[b, a, gj, gi, 2:4] = torch.log(gwh / anchor_vec[a])  # yolo method
+        # pi[b, a, gj, gi] = torch.sqrt(gwh / anchor_vec[a]) / 2 # power method
+
+        # One-hot encoding of label
+        pi[b, a, gj, gi, 4] = 1  # conf
+        pi[b, a, gj, gi, c + 5] = 1  # class
+        p_out.append(pi)
+
+    return p_out
+
+
+def closest_anchor(model, targets):
+    yolo_layers = get_yolo_layers(model)
+    nT = targets.shape[0]
+
+    # Get ious from targets to nearest anchors
+    gij, iou = [], []
+    box1 = targets[:, 2:6]  # normalized bounding box
+    for i, layer in enumerate(yolo_layers):
+        nG = model.module_list[layer][0].nG
+        anchor_vec = model.module_list[layer][0].anchor_vec
+
+        gij.append((targets[:, 2:4] * nG).floor())
+
+        # iou of targets-anchors
+        for anchor in anchor_vec:
+            box2 = torch.cat((gij[i], anchor.repeat(nT, 1)), 1) / nG
+            iou.append(bbox_iou(box1, box2, x1y1x2y2=False))
+
+    # Select best anchor for each target
+    nA = model.module_list[layer][0].nA  # all yolo layers must have same nA!
+    a9 = torch.stack(iou, 0).argmax(0).unsqueeze(1)  # best anchor (0-8)
+    a3 = torch.remainder(a9, nA)  # within yolo layer (0-2)
+    layer = (a9 - a3) / nA  # yolo layer (0-2)
+    gij = torch.stack([gij[l][i] for i, l in enumerate(layer)], 0).long()
+
+    # out = [yolo_layer (0-2), anchor (0-2), grid_i (0-52), grid_j (0-52)]
+    return torch.cat((layer, a3, gij), 1).t()
+
+
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
     Removes detections with lower object confidence score than 'conf_thres'
@@ -426,6 +534,11 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                 output[image_i] = det_max if output[image_i] is None else torch.cat((output[image_i], det_max))
 
     return output
+
+
+def get_yolo_layers(model):
+    a = [module_def['type'] == 'yolo' for module_def in model.module_defs]
+    return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
 
 
 def return_torch_unique_index(u, uv):
