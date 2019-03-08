@@ -116,6 +116,7 @@ def train(
         optimizer.zero_grad()
         rloss = defaultdict(float)
         for i, (imgs, targets, _, _) in enumerate(dataloader):
+            targets = targets.to(device)
             nT = targets.shape[0]
             if nT == 0:  # if no targets continue
                 continue
