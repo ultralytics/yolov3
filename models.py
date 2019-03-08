@@ -108,6 +108,7 @@ class YOLOLayer(nn.Module):
         self.nA = len(anchors)  # number of anchors (3)
         self.nC = nC  # number of classes (80)
         self.img_size = 0
+        self.nG = []
         # self.coco_class_weights = coco_class_weights()
 
         if ONNX_EXPORT:  # grids must be computed in __init__
@@ -126,11 +127,6 @@ class YOLOLayer(nn.Module):
 
             if self.img_size != img_size:
                 create_grids(self, img_size, nG, p.device)
-
-                if p.is_cuda:
-                    self.grid_xy = self.grid_xy.cuda()
-                    self.anchor_wh = self.anchor_wh.cuda()
-                    self.anchor_vec = self.anchor_vec.cuda()
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
         p = p.view(bs, self.nA, self.nC + 5, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
