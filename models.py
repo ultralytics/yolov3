@@ -109,6 +109,7 @@ class YOLOLayer(nn.Module):
         self.nC = nC  # number of classes (80)
         self.img_size = 0
         self.nG = []
+        self.anchor_vec = []
         # self.coco_class_weights = coco_class_weights()
 
         if ONNX_EXPORT:  # grids must be computed in __init__
