@@ -345,6 +345,8 @@ def compute_loss(p, t):  # model, predictions, targets
 
 def build_targets_unified(model, targets, pred):
     # targets = [image, class, x, y, w, h]
+    if isinstance(model, torch.nn.DataParallel):
+        model = model.module
     yolo_layers = get_yolo_layers(model)
 
     p_out = []
@@ -536,9 +538,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
 
 def get_yolo_layers(model):
-    # a = [module_def['type'] == 'yolo' for module_def in model.module_defs]
-    # return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
-    return [82, 94, 106]
+    a = [module_def['type'] == 'yolo' for module_def in model.module_defs]
+    return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
 
 
 def return_torch_unique_index(u, uv):
