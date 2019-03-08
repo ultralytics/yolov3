@@ -108,17 +108,15 @@ class YOLOLayer(nn.Module):
         self.nA = len(anchors)  # number of anchors (3)
         self.nC = nC  # number of classes (80)
         self.img_size = 0
-        self.nG = []
-        self.anchor_vec = []
         # self.coco_class_weights = coco_class_weights()
 
-        if ONNX_EXPORT:  # grids must be computed in __init__
-            stride = [32, 16, 8][yolo_layer]  # stride of this layer
-            if cfg.endswith('yolov3-tiny.cfg'):
-                stride *= 2
+        # if ONNX_EXPORT:  # grids must be computed in __init__
+        stride = [32, 16, 8][yolo_layer]  # stride of this layer
+        if cfg.endswith('yolov3-tiny.cfg'):
+            stride *= 2
 
-            nG = int(img_size / stride)  # number grid points
-            create_grids(self, img_size, nG)
+        nG = int(img_size / stride)  # number grid points
+        create_grids(self, img_size, nG)
 
     def forward(self, p, img_size, targets=None, var=None):
         if ONNX_EXPORT:
