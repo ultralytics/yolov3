@@ -114,7 +114,7 @@ class YOLOLayer(nn.Module):
 
         nG = int(img_size / stride)  # number grid points
 
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         create_grids(self, img_size, nG, device)
 
     def forward(self, p, img_size, targets=None, var=None):
