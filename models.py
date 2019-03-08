@@ -125,11 +125,12 @@ class YOLOLayer(nn.Module):
             bs, nG = p.shape[0], p.shape[-1]
 
             if self.img_size != img_size:
-                create_grids(self, img_size, nG)
+                create_grids(self, img_size, nG, p.device)
 
                 if p.is_cuda:
                     self.grid_xy = self.grid_xy.cuda()
                     self.anchor_wh = self.anchor_wh.cuda()
+                    self.anchor_vec = self.anchor_vec.cuda()
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
         p = p.view(bs, self.nA, self.nC + 5, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
@@ -231,18 +232,18 @@ def get_yolo_layers(model):
     return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
 
 
-def create_grids(self, img_size, nG):
+def create_grids(self, img_size, nG, device):
     self.stride = img_size / nG
     self.nG = nG
 
     # build xy offsets
     grid_x = torch.arange(nG).repeat((nG, 1)).view((1, 1, nG, nG)).float()
     grid_y = grid_x.permute(0, 1, 3, 2)
-    self.grid_xy = torch.stack((grid_x, grid_y), 4)
+    self.grid_xy = torch.stack((grid_x, grid_y), 4).to(device)
 
     # build wh gains
-    self.anchor_vec = self.anchors / self.stride
-    self.anchor_wh = self.anchor_vec.view(1, self.nA, 1, 1, 2)
+    self.anchor_vec = self.anchors.to(device) / self.stride
+    self.anchor_wh = self.anchor_vec.view(1, self.nA, 1, 1, 2).to(device)
 
 
 def load_darknet_weights(self, weights, cutoff=-1):
