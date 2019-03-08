@@ -302,9 +302,8 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
 #
 #     return txy, twh, tconf, tcls
 
-
 def compute_loss(p, t):  # model, predictions, targets
-    n = p[0].shape[-1]
+    n = p[0].shape[-1]  # number of yolo layers
     for i in range(3):
         p[i] = p[i].view(-1, n)
         t[i] = t[i].view(-1, n)
@@ -324,12 +323,11 @@ def compute_loss(p, t):  # model, predictions, targets
     if nT > 0:
         lxy = k * nn.MSELoss()(torch.sigmoid(p[..., 0:2]), t[..., 0:2])  # xy
         lwh = k * nn.MSELoss()(p[..., 2:4], t[..., 2:4])  # wh
-
         lcls = (k / 4) * nn.CrossEntropyLoss()(p[..., 5:], torch.argmax(t[..., 5:], 1))
         # lcls = (k * 10) * nn.BCEWithLogitsLoss()(p[..., 5:], t[..., 5:])
     else:
         FT = torch.cuda.FloatTensor if p.is_cuda else torch.FloatTensor
-        lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0])
+        lxy, lwh, lcls = FT([0]), FT([0]), FT([0])
 
     lconf = (k * 64) * nn.BCEWithLogitsLoss()(p0[..., 4], mask.float())
     loss = lxy + lwh + lconf + lcls
