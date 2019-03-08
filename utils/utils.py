@@ -536,8 +536,9 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
 
 def get_yolo_layers(model):
-    a = [module_def['type'] == 'yolo' for module_def in model.module_defs]
-    return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
+    # a = [module_def['type'] == 'yolo' for module_def in model.module_defs]
+    # return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
+    return [82, 94, 106]
 
 
 def return_torch_unique_index(u, uv):
