@@ -355,7 +355,7 @@ def build_targets_unified(model, targets, pred):
 
         j = anchors[0] == i  # layer i anchor indices
         ai = anchors[:, j]  # layer i anchors
-        ti = targets#[j]  # layer i targets
+        ti = targets  # [j]  # layer i targets
         pi = torch.zeros_like(pred[i])  # layer i predictions
 
         # Indices
@@ -431,11 +431,11 @@ def closest_anchor3(model, targets):
 
         a9 = torch.stack(iou, 0).argmax(0).unsqueeze(1)  # best anchor (0-8)
         a3.append(torch.remainder(a9, nA))  # within yolo layer (0-2)
-        layer.append(a9*0 + i)  # yolo layer (0-2)
+        layer.append(a9 * 0 + i)  # yolo layer (0-2)
 
-    a3 = torch.cat(a3,0)
-    layer = torch.cat(layer,0)
-    gij = torch.cat(gij,0).long()
+    a3 = torch.cat(a3, 0)
+    layer = torch.cat(layer, 0)
+    gij = torch.cat(gij, 0).long()
     # out = [yolo_layer (0-2), anchor (0-2), grid_ij (0-52)]
     return torch.cat((layer, a3, gij), 1).t()
 
