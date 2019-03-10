@@ -233,74 +233,43 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
     return inter_area / (b1_area + b2_area - inter_area + 1e-16)
 
 
-# def build_targets(target, anchor_vec, nA, nC, nG):  # OLD
-#     """
-#     returns nT, nCorrect, tx, ty, tw, th, tconf, tcls
-#     """
-#     nB = len(target)  # number of images in batch
-#
-#     txy = torch.zeros(nB, nA, nG, nG, 2)  # batch size, anchors, grid size
-#     twh = torch.zeros(nB, nA, nG, nG, 2)
-#     tconf = torch.ByteTensor(nB, nA, nG, nG).fill_(0)
-#     tcls = torch.ByteTensor(nB, nA, nG, nG, nC).fill_(0)  # nC = number of classes
-#
-#     for b in range(nB):
-#         t = target[b]
-#         nTb = len(t)  # number of targets
-#         if nTb == 0:
-#             continue
-#
-#         gxy, gwh = t[:, 1:3] * nG, t[:, 3:5] * nG
-#
-#         # Get grid box indices and prevent overflows (i.e. 13.01 on 13 anchors)
-#         gi, gj = torch.clamp(gxy.long(), min=0, max=nG - 1).t()
-#
-#         # iou of targets-anchors (using wh only)
-#         box1 = gwh
-#         box2 = anchor_vec.unsqueeze(1)
-#
-#         inter_area = torch.min(box1, box2).prod(2)
-#         iou = inter_area / (box1.prod(1) + box2.prod(2) - inter_area + 1e-16)
-#
-#         # Select best iou_pred and anchor
-#         iou_best, a = iou.max(0)  # best anchor [0-2] for each target
-#
-#         # Select best unique target-anchor combinations
-#         if nTb > 1:
-#             iou_order = torch.argsort(-iou_best)  # best to worst
-#
-#             # Unique anchor selection
-#             u = torch.stack((gi, gj, a), 0)[:, iou_order]
-#             # _, first_unique = np.unique(u, axis=1, return_index=True)  # first unique indices
-#             first_unique = return_torch_unique_index(u, torch.unique(u, dim=1))  # torch alternative
-#
-#             i = iou_order[first_unique]
-#             # best anchor must share significant commonality (iou) with target
-#             i = i[iou_best[i] > 0.10]  # TODO: examine arbitrary threshold
-#             if len(i) == 0:
-#                 continue
-#
-#             a, gj, gi, t = a[i], gj[i], gi[i], t[i]
-#             if len(t.shape) == 1:
-#                 t = t.view(1, 5)
-#         else:
-#             if iou_best < 0.10:
-#                 continue
-#
-#         tc, gxy, gwh = t[:, 0].long(), t[:, 1:3] * nG, t[:, 3:5] * nG
-#
-#         # XY coordinates
-#         txy[b, a, gj, gi] = gxy - gxy.floor()
-#
-#         # Width and height
-#         twh[b, a, gj, gi] = torch.log(gwh / anchor_vec[a])  # yolo method
-#         # twh[b, a, gj, gi] = torch.sqrt(gwh / anchor_vec[a]) / 2 # power method
-#
-#         # One-hot encoding of label
-#         tcls[b, a, gj, gi, tc] = 1
-#         tconf[b, a, gj, gi] = 1
-#
-#     return txy, twh, tconf, tcls
+def compute_loss3(p, t):  # model, predictions, targets
+    n = p[0].shape[-1]  # number of yolo layers
+    FT = torch.cuda.FloatTensor if p[0].is_cuda else torch.FloatTensor
+
+    loss, lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
+
+    # Group all yolo layers togethor
+    for i in range(len(p)):
+        pi0 = p[i].view(-1, n)
+        ti = t[i].view(-1, n)
+
+        # Apply mask
+        mask = ti[..., 4].byte()
+        print(mask.sum())
+        pi = pi0[mask]
+        ti = ti[mask]
+
+        # Compute losses
+        nT = pi.shape[0]  # number of targets
+        k = 1 / mask.sum().float()  # nT / bs
+        if nT > 0:
+            lxy += k * nn.MSELoss()(torch.sigmoid(pi[..., 0:2]), ti[..., 0:2])  # xy
+            lwh += k * nn.MSELoss()(pi[..., 2:4], ti[..., 2:4])  # wh
+            lcls += (k / 4) * nn.CrossEntropyLoss()(pi[..., 5:], torch.argmax(ti[..., 5:], 1))
+            # lcls += (k * 10) * nn.BCEWithLogitsLoss()(pi[..., 5:], ti[..., 5:])
+
+        lconf += (k * 64) * nn.BCEWithLogitsLoss()(pi0[..., 4], mask.float())
+    loss = lxy + lwh + lconf + lcls
+
+    # Add to dictionary
+    d = defaultdict(float)
+    losses = [loss.item(), lxy.item(), lwh.item(), lconf.item(), lcls.item()]
+    for name, x in zip(['total', 'xy', 'wh', 'conf', 'cls'], losses):
+        d[name] = x
+
+    return loss, d
+
 
 def compute_loss(p, t):  # model, predictions, targets
     n = p[0].shape[-1]  # number of yolo layers
@@ -314,12 +283,13 @@ def compute_loss(p, t):  # model, predictions, targets
 
     # Apply mask
     mask = t[..., 4].byte()
+    print(mask.sum())
     p = p0[mask]
     t = t[mask]
 
     # Compute losses
     nT = p.shape[0]  # number of targets
-    k = 3  # nT / bs
+    k = mask.sum().float()  # nT / bs
     if nT > 0:
         lxy = k * nn.MSELoss()(torch.sigmoid(p[..., 0:2]), t[..., 0:2])  # xy
         lwh = k * nn.MSELoss()(p[..., 2:4], t[..., 2:4])  # wh
@@ -385,7 +355,7 @@ def closest_anchor(model, targets):
 
     # Get ious from targets to nearest anchors
     gij, iou = [], []
-    box1 = targets[:, 2:6]  # normalized bounding box
+    box1 = targets[:, 2:6] * torch.FloatTensor([0, 0, 1, 1])  # normalized bounding box
     for i, layer in enumerate(yolo_layers):
         nG = model.module_list[layer][0].nG
         anchor_vec = model.module_list[layer][0].anchor_vec
@@ -394,7 +364,8 @@ def closest_anchor(model, targets):
 
         # iou of targets-anchors
         for anchor in anchor_vec:
-            box2 = torch.cat((gij[i], anchor.repeat(nT, 1)), 1) / nG
+            box2 = torch.cat((torch.zeros(1,2), anchor.unsqueeze(0)), 1) / nG
+            # box2 = torch.cat((gij[i], anchor.repeat(nT, 1)), 1) / nG
             iou.append(bbox_iou(box1, box2, x1y1x2y2=False))
 
     # Select best anchor for each target
@@ -415,7 +386,7 @@ def closest_anchor3(model, targets):
 
     # Get ious from targets to nearest anchors
     gij, iou = [], []
-    box1 = targets[:, 2:6]  # normalized bounding box
+    box1 = targets[:, 2:6] * torch.FloatTensor([0, 0, 1, 1])  # normalized bounding box
     a9, a3, layer = [], [], []
     for i, l in enumerate(yolo_layers):
         nG = model.module_list[l][0].nG
@@ -426,7 +397,8 @@ def closest_anchor3(model, targets):
         # iou of targets-anchors
         iou = []
         for anchor in anchor_vec:
-            box2 = torch.cat((gij[i], anchor.repeat(nT, 1)), 1) / nG
+            # box2 = torch.cat((gij[i], anchor.repeat(nT, 1)), 1) / nG
+            box2 = torch.cat((torch.zeros(1,2), anchor.unsqueeze(0)), 1) / nG
             iou.append(bbox_iou(box1, box2, x1y1x2y2=False))
 
         a9 = torch.stack(iou, 0).argmax(0).unsqueeze(1)  # best anchor (0-8)
