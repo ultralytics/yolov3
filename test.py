@@ -53,7 +53,8 @@ def test(
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
 
         # Compute average precision for each sample
-        for si, (labels, detections) in enumerate(zip(targets, output)):
+        for si, detections in enumerate(output):
+            labels = targets[targets[:, 0] == si, 1:]
             seen += 1
 
             if detections is None:
