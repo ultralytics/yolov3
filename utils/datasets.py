@@ -206,9 +206,10 @@ class LoadImagesAndLabels:  # for training
                     if nL > 0:
                         labels[:, 2] = 1 - labels[:, 2]
 
-            labels = np.concatenate((np.zeros((nL, 1), dtype='float32') + index, labels), 1)
-            labels_all.append(labels)
+            if nL > 0:
+                labels = np.concatenate((np.zeros((nL, 1), dtype='float32') + index, labels), 1)
 
+            labels_all.append(labels)
             img_all.append(img)
             img_paths.append(img_path)
             img_shapes.append((h, w))
