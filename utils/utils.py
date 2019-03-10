@@ -348,14 +348,14 @@ def build_targets_unified(model, targets, pred):
     yolo_layers = get_yolo_layers(model)
 
     p_out = []
-    anchors = closest_anchor(model, targets)  # [layer, anchor, i, j]
+    anchors = closest_anchor3(model, targets)  # [layer, anchor, i, j]
     for i, layer in enumerate(yolo_layers):
         nG = model.module_list[layer][0].nG  # grid size
         anchor_vec = model.module_list[layer][0].anchor_vec
 
         j = anchors[0] == i  # layer i anchor indices
         ai = anchors[:, j]  # layer i anchors
-        ti = targets[j]  # layer i targets
+        ti = targets#[j]  # layer i targets
         pi = torch.zeros_like(pred[i])  # layer i predictions
 
         # Indices
@@ -405,6 +405,38 @@ def closest_anchor(model, targets):
     gij = torch.stack([gij[l][i] for i, l in enumerate(layer)], 0).long()
 
     # out = [yolo_layer (0-2), anchor (0-2), grid_i (0-52), grid_j (0-52)]
+    return torch.cat((layer, a3, gij), 1).t()
+
+
+def closest_anchor3(model, targets):
+    yolo_layers = get_yolo_layers(model)
+    nA = model.module_list[yolo_layers[0]][0].nA  # layers must have same nA!
+    nT = targets.shape[0]
+
+    # Get ious from targets to nearest anchors
+    gij, iou = [], []
+    box1 = targets[:, 2:6]  # normalized bounding box
+    a9, a3, layer = [], [], []
+    for i, l in enumerate(yolo_layers):
+        nG = model.module_list[l][0].nG
+        anchor_vec = model.module_list[l][0].anchor_vec
+
+        gij.append((targets[:, 2:4] * nG).floor())
+
+        # iou of targets-anchors
+        iou = []
+        for anchor in anchor_vec:
+            box2 = torch.cat((gij[i], anchor.repeat(nT, 1)), 1) / nG
+            iou.append(bbox_iou(box1, box2, x1y1x2y2=False))
+
+        a9 = torch.stack(iou, 0).argmax(0).unsqueeze(1)  # best anchor (0-8)
+        a3.append(torch.remainder(a9, nA))  # within yolo layer (0-2)
+        layer.append(a9*0 + i)  # yolo layer (0-2)
+
+    a3 = torch.cat(a3,0)
+    layer = torch.cat(layer,0)
+    gij = torch.cat(gij,0).long()
+    # out = [yolo_layer (0-2), anchor (0-2), grid_ij (0-52)]
     return torch.cat((layer, a3, gij), 1).t()
 
 
