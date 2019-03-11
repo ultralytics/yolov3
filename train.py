@@ -135,7 +135,7 @@ def train(
 
             # Compute loss
             # loss = model(imgs.to(device), targets, var=var)
-            loss, loss_dict = compute_loss(pred, target_matrix)
+            loss, loss_dict = compute_loss3(pred, target_matrix)
 
             # Compute gradient
             loss.backward()

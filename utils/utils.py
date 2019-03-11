@@ -252,7 +252,7 @@ def compute_loss3(p, t):  # model, predictions, targets
 
         # Compute losses
         nT = pi.shape[0]  # number of targets
-        k = 1 / mask.sum().float()  # nT / bs
+        k = 1  # nT / bs
         if nT > 0:
             lxy += k * nn.MSELoss()(torch.sigmoid(pi[..., 0:2]), ti[..., 0:2])  # xy
             lwh += k * nn.MSELoss()(pi[..., 2:4], ti[..., 2:4])  # wh
@@ -289,7 +289,7 @@ def compute_loss(p, t):  # model, predictions, targets
 
     # Compute losses
     nT = p.shape[0]  # number of targets
-    k = mask.sum().float()  # nT / bs
+    k = 1  # nT / bs
     if nT > 0:
         lxy = k * nn.MSELoss()(torch.sigmoid(p[..., 0:2]), t[..., 0:2])  # xy
         lwh = k * nn.MSELoss()(p[..., 2:4], t[..., 2:4])  # wh
@@ -325,7 +325,7 @@ def build_targets_unified(model, targets, pred):
 
         j = anchors[0] == i  # layer i anchor indices
         ai = anchors[:, j]  # layer i anchors
-        ti = targets  # [j]  # layer i targets
+        ti = targets# [j]  # layer i targets
         pi = torch.zeros_like(pred[i])  # layer i predictions
 
         # Indices
