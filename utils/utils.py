@@ -279,7 +279,7 @@ def build_targets(model, targets, pred):
         ai = anchors[:, j]  # layer i anchors
 
         # reject below threshold ious
-        j = ai[4] > 0.10
+        j = ai[4] > 0.01
         ai = ai[:, j]
 
         # Indices
