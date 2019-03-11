@@ -269,7 +269,7 @@ def build_targets(model, targets, pred):
         model = model.module
     yolo_layers = get_yolo_layers(model)
 
-    print(targets.shape())
+    print(targets.shape)
 
     anchors = closest_anchor(model, targets)  # [layer, anchor, i, j]
     txy, twh, tcls, tconf, indices = [], [], [], [], []
