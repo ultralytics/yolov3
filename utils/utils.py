@@ -365,7 +365,7 @@ def closest_anchor(model, targets):
 
         # iou of targets-anchors
         for anchor in anchor_vec:
-            box2 = torch.cat((torch.zeros(1,2), anchor.unsqueeze(0)), 1) / nG
+            box2 = torch.cat((FT([[0, 0]]), anchor.unsqueeze(0)), 1) / nG
             # box2 = torch.cat((gij[i], anchor.repeat(nT, 1)), 1) / nG
             iou.append(bbox_iou(box1, box2, x1y1x2y2=False))
 
@@ -400,7 +400,7 @@ def closest_anchor3(model, targets):
         iou = []
         for anchor in anchor_vec:
             # box2 = torch.cat((gij[i], anchor.repeat(nT, 1)), 1) / nG
-            box2 = torch.cat((torch.zeros(1,2), anchor.unsqueeze(0)), 1) / nG
+            box2 = torch.cat((FT([[0, 0]]), anchor.unsqueeze(0)), 1) / nG
             iou.append(bbox_iou(box1, box2, x1y1x2y2=False))
 
         a9 = torch.stack(iou, 0).argmax(0).unsqueeze(1)  # best anchor (0-8)
