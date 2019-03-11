@@ -131,11 +131,11 @@ def train(
             pred = model(imgs.to(device))
 
             # Build targets
-            target_matrix = build_targets_unified(model, targets, pred)
+            target_list = build_targets_unified(model, targets, pred)
 
             # Compute loss
             # loss = model(imgs.to(device), targets, var=var)
-            loss, loss_dict = compute_loss3(pred, target_matrix)
+            loss, loss_dict = compute_loss3(pred, target_list)
 
             # Compute gradient
             loss.backward()
