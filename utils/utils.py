@@ -381,13 +381,14 @@ def closest_anchor(model, targets):
 
 
 def closest_anchor3(model, targets):
+    FT = torch.cuda.FloatTensor if targets.is_cuda else torch.FloatTensor
     yolo_layers = get_yolo_layers(model)
     nA = model.module_list[yolo_layers[0]][0].nA  # layers must have same nA!
     nT = targets.shape[0]
 
     # Get ious from targets to nearest anchors
     gij, iou = [], []
-    box1 = targets[:, 2:6] * torch.FloatTensor([0, 0, 1, 1])  # normalized bounding box
+    box1 = targets[:, 2:6] * FT([0, 0, 1, 1])  # normalized bounding box
     a9, a3, layer = [], [], []
     for i, l in enumerate(yolo_layers):
         nG = model.module_list[l][0].nG
