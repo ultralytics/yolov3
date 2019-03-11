@@ -246,7 +246,7 @@ def compute_loss3(p, t):  # model, predictions, targets
 
         # Apply mask
         mask = ti[..., 4].byte()
-        print(mask.sum())
+        #print(mask.sum())
         pi = pi0[mask]
         ti = ti[mask]
 
