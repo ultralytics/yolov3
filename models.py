@@ -239,6 +239,7 @@ def create_grids(self, img_size, nG, device):
     self.anchor_wh = self.anchor_vec.view(1, self.nA, 1, 1, 2).to(device)
     self.nG = torch.FloatTensor([nG]).to(device)
 
+
 def load_darknet_weights(self, weights, cutoff=-1):
     # Parses and loads the weights stored in 'weights'
     # cutoff: save layers between 0 and cutoff (if cutoff = -1 all are saved)

@@ -99,7 +99,7 @@ def train(
         # scheduler.step()
 
         # Update scheduler (manual)  at 0, 54, 61 epochs to 1e-3, 1e-4, 1e-5
-        if epoch > 50:
+        if epoch > 200:
             lr = lr0 / 10
         else:
             lr = lr0

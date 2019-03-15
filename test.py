@@ -59,7 +59,7 @@ def test(
 
             if detections is None:
                 # If there are labels but no detections mark as zero AP
-                if labels.size(0) != 0:
+                if len(labels) != 0:
                     mAPs.append(0), mR.append(0), mP.append(0)
                 continue
 
@@ -85,7 +85,7 @@ def test(
 
             # If no labels add number of detections as incorrect
             correct = []
-            if labels.size(0) == 0:
+            if len(labels) == 0:
                 # correct.extend([0 for _ in range(len(detections))])
                 mAPs.append(0), mR.append(0), mP.append(0)
                 continue
@@ -136,7 +136,6 @@ def test(
 
     # Print mAP per class
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP') + '\n\nmAP Per Class:')
-
     for i, c in enumerate(load_classes(data_cfg_dict['names'])):
         print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i] + 1E-16)))
 
