@@ -204,37 +204,48 @@ def compute_ap(recall, precision):
     return ap
 
 
-# @profile
 def bbox_iou(box1, box2, x1y1x2y2=True):
-    box1 = box1.t()
+    # Returns the IoU of box1 to box2. box1 is 4, box2 is nx4
     box2 = box2.t()
-    """
-    Returns the IoU of two bounding boxes
-    """
+
+    # Get the coordinates of bounding boxes
     if x1y1x2y2:
-        # Get the coordinates of bounding boxes
+        # x1, y1, x2, y2 = box1
         b1_x1, b1_y1, b1_x2, b1_y2 = box1[0], box1[1], box1[2], box1[3]
         b2_x1, b2_y1, b2_x2, b2_y2 = box2[0], box2[1], box2[2], box2[3]
     else:
-        # x1, y1, w1, h1 = box1
-        # Transform from center and width to exact coordinates
+        # x, y, w, h = box1
         b1_x1, b1_x2 = box1[0] - box1[2] / 2, box1[0] + box1[2] / 2
         b1_y1, b1_y2 = box1[1] - box1[3] / 2, box1[1] + box1[3] / 2
         b2_x1, b2_x2 = box2[0] - box2[2] / 2, box2[0] + box2[2] / 2
         b2_y1, b2_y2 = box2[1] - box2[3] / 2, box2[1] + box2[3] / 2
 
-    # get the coordinates of the intersection rectangle
-    inter_rect_x1 = torch.max(b1_x1, b2_x1)
-    inter_rect_y1 = torch.max(b1_y1, b2_y1)
-    inter_rect_x2 = torch.min(b1_x2, b2_x2)
-    inter_rect_y2 = torch.min(b1_y2, b2_y2)
     # Intersection area
-    inter_area = torch.clamp(inter_rect_x2 - inter_rect_x1, 0) * torch.clamp(inter_rect_y2 - inter_rect_y1, 0)
-    # Union Area
-    b1_area = (b1_x2 - b1_x1) * (b1_y2 - b1_y1)
-    b2_area = (b2_x2 - b2_x1) * (b2_y2 - b2_y1)
+    inter_area = (torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1)).clamp(0) * \
+                 (torch.min(b1_y2, b2_y2) - torch.max(b1_y1, b2_y1)).clamp(0)
 
-    return inter_area / (b1_area + b2_area - inter_area + 1e-16)
+    # Union Area
+    union_area = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1) + 1e-16) + \
+                 (b2_x2 - b2_x1) * (b2_y2 - b2_y1) - inter_area
+
+    return inter_area / union_area  # iou
+
+
+def wh_iou(box1, box2):
+    # Returns the IoU of wh1 to wh2. wh1 is 2, wh2 is nx2
+    box2 = box2.t()
+
+    # w, h = box1
+    w1, h1 = box1[0], box1[1]
+    w2, h2 = box2[0], box2[1]
+
+    # Intersection area
+    inter_area = torch.min(w1, w2) * torch.min(h1, h2)
+
+    # Union Area
+    union_area = (w1 * h1 + 1e-16) + w2 * h2 - inter_area
+
+    return inter_area / union_area  # iou
 
 
 def compute_loss(p, targets):  # model, predictions, targets
@@ -253,11 +264,11 @@ def compute_loss(p, targets):  # model, predictions, targets
             pi = pi0[b, a, gj, gi]
             lxy += k * nn.MSELoss()(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy
             lwh += k * nn.MSELoss()(pi[..., 2:4], twh[i])  # wh
-            lcls += (k / 1) * nn.CrossEntropyLoss()(pi[..., 5:], tcls[i])
+            lcls += (k / 4) * nn.CrossEntropyLoss()(pi[..., 5:], tcls[i])
 
-        pos_weight = (tconf[i] == 0).sum() / (tconf[i] == 1).sum() / 8
-        BCELoss = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 8) * BCELoss(pi0[..., 4], tconf[i])
+        # pos_weight = (tconf[i] == 0).sum() / (tconf[i] == 1).sum() / 1E16
+        # BCELoss = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+        lconf += (k * 64) * nn.BCEWithLogitsLoss()(pi0[..., 4], tconf[i])
     loss = lxy + lwh + lconf + lcls
 
     # Add to dictionary
@@ -314,12 +325,11 @@ def build_targets(model, targets, pred):
 
 
 def closest_anchor(model, targets):
-    FT = torch.cuda.FloatTensor if targets.is_cuda else torch.FloatTensor
     yolo_layers = get_yolo_layers(model)
 
     # Get ious from targets to nearest anchors
-    gij, iou, biou = [], [], []
-    box1 = targets[:, 2:6] * FT([0, 0, 1, 1])  # normalized bounding box
+    gij, iou_i, iou = [], [], []
+    targets_wh = targets[:, 4:6]  # normalized bounding box
     a, layer = [], []  # anchor, layer
     for i, l in enumerate(yolo_layers):
         nG = model.module_list[l][0].nG
@@ -328,26 +338,22 @@ def closest_anchor(model, targets):
         gij.append((targets[:, 2:4] * nG).floor())
 
         # iou of targets-anchors
-        iou = []
-        for anchor in anchor_vec:
-            box2 = torch.cat((FT([[0, 0]]), anchor.unsqueeze(0)), 1) / nG
-            iou.append(bbox_iou(box1, box2, x1y1x2y2=False))
+        iou_i = [wh_iou(anchor / nG, targets_wh) for anchor in anchor_vec]
+        best_iou, best_anchor = torch.stack(iou_i, 0).max(0)
 
-        best_iou, best_anchor = torch.stack(iou, 0).max(0)
-        biou.append(best_iou)
+        iou.append(best_iou)
         a.append(best_anchor)  # best anchor (0-2)
         # a.append(torch.stack(iou, 0).argmax(0))  # best anchor (0-2)
         layer.append(a[i] * 0 + i)  # yolo layer (0-2)
 
     a = torch.cat(a, 0).unsqueeze(1)
     layer = torch.cat(layer, 0).unsqueeze(1)
-    biou = torch.cat(biou, 0).unsqueeze(1)
+    iou = torch.cat(iou, 0).unsqueeze(1)
     gij = torch.cat(gij, 0)
     # out = [yolo_layer (0-2), anchor (0-2), grid_ij (0-52)]
-    return torch.cat((layer.float(), a.float(), gij, biou), 1).t()
+    return torch.cat((layer.float(), a.float(), gij, iou), 1).t()
 
 
-@profile
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
     Removes detections with lower object confidence score than 'conf_thres'
@@ -358,34 +364,6 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
     output = [None for _ in range(len(prediction))]
     for image_i, pred in enumerate(prediction):
-        # Filter out confidence scores below threshold
-        # Get score and class with highest confidence
-
-        # cross-class NMS (experimental)
-        cross_class_nms = False
-        if cross_class_nms:
-            a = pred.clone()
-            _, indices = torch.sort(-a[:, 4], 0)  # sort best to worst
-            a = a[indices]
-            radius = 30  # area to search for cross-class ious
-            for i in range(len(a)):
-                if i >= len(a) - 1:
-                    break
-
-                close = (torch.abs(a[i, 0] - a[i + 1:, 0]) < radius) & (torch.abs(a[i, 1] - a[i + 1:, 1]) < radius)
-                close = close.nonzero()
-
-                if len(close) > 0:
-                    close = close + i + 1
-                    iou = bbox_iou(a[i:i + 1, :4], a[close.squeeze(), :4].reshape(-1, 4), x1y1x2y2=False)
-                    bad = close[iou > nms_thres]
-
-                    if len(bad) > 0:
-                        mask = torch.ones(len(a)).type(torch.ByteTensor)
-                        mask[bad] = 0
-                        a = a[mask]
-            pred = a
-
         # Experiment: Prior class size rejection
         # x, y, w, h = pred[:, 0], pred[:, 1], pred[:, 2], pred[:, 3]
         # a = w * h  # area
@@ -399,6 +377,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         # shape_likelihood[:, c] =
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
+        # Filter out confidence scores below threshold
         class_prob, class_pred = torch.max(F.softmax(pred[:, 5:], 1), 1)
         v = pred[:, 4] > conf_thres
         v = v.nonzero().squeeze()
@@ -420,9 +399,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         # Detections ordered as (x1, y1, x2, y2, obj_conf, class_prob, class_pred)
         detections = torch.cat((pred[:, :5], class_prob.float().unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
         # Iterate through all predicted classes
-        unique_labels = detections[:, -1].cpu().unique()
-        if prediction.is_cuda:
-            unique_labels = unique_labels.cuda(prediction.device)
+        unique_labels = detections[:, -1].cpu().unique().to(prediction.device)
 
         nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
         for c in unique_labels:
@@ -437,15 +414,15 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             ind = list(range(len(dc)))
             if nms_style == 'OR':  # default
                 while len(ind):
-                    di = dc[ind[0]:ind[0] + 1]
-                    det_max.append(di)  # save highest conf detection
-                    reject = bbox_iou(di, dc[ind]) > nms_thres
+                    j = ind[0]
+                    det_max.append(dc[j:j + 1])  # save highest conf detection
+                    reject = bbox_iou(dc[j], dc[ind]) > nms_thres
                     [ind.pop(i) for i in reversed(reject.nonzero())]
                 # while dc.shape[0]:  # SLOWER METHOD
                 #     det_max.append(dc[:1])  # save highest conf detection
                 #     if len(dc) == 1:  # Stop if we're at the last detection
                 #         break
-                #     iou = bbox_iou(dc[:1], dc[1:])  # iou with other boxes
+                #     iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
                 #     dc = dc[1:][iou < nms_thres]  # remove ious > threshold
 
                 # Image      Total          P          R        mAP
@@ -453,14 +430,14 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
             elif nms_style == 'AND':  # requires overlap, single boxes erased
                 while len(dc) > 1:
-                    iou = bbox_iou(dc[:1], dc[1:])  # iou with other boxes
+                    iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
                     if iou.max() > 0.5:
                         det_max.append(dc[:1])
                     dc = dc[1:][iou < nms_thres]  # remove ious > threshold
 
             elif nms_style == 'MERGE':  # weighted mixture box
                 while len(dc) > 0:
-                    iou = bbox_iou(dc[:1], dc[0:])  # iou with other boxes
+                    iou = bbox_iou(dc[0], dc[0:])  # iou with other boxes
                     i = iou > nms_thres
 
                     weights = dc[i, 4:5] * dc[i, 5:6]

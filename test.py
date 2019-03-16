@@ -96,7 +96,6 @@ def test(
 
                 detected = []
                 for *pred_box, conf, obj_conf, obj_pred in detections:
-                    pred_box = torch.stack(pred_box).view((1, -1))
 
                     # Compute iou with target boxes
                     iou = bbox_iou(pred_box, target_box)
