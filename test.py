@@ -64,12 +64,11 @@ def test(
                 continue
 
             # Get detections sorted by decreasing confidence scores
-            detections = detections.cpu().numpy()
-            detections = detections[np.argsort(-detections[:, 4])]
+            detections = detections[(-detections[:, 4]).argsort()]
 
             if save_json:
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
-                box = torch.from_numpy(detections[:, :4]).clone()  # xyxy
+                box = detections[:, :4].clone()  # xyxy
                 scale_coords(img_size, box, shapes[si])  # to original shape
                 box = xyxy2xywh(box)  # xywh
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
@@ -97,12 +96,14 @@ def test(
 
                 detected = []
                 for *pred_bbox, conf, obj_conf, obj_pred in detections:
-
                     pred_bbox = torch.FloatTensor(pred_bbox).view(1, -1)
+
                     # Compute iou with target boxes
                     iou = bbox_iou(pred_bbox, target_boxes)
+
                     # Extract index of largest overlap
-                    best_i = np.argmax(iou)
+                    best_i = np.argmax(iou)  # WARNING torch.argmax behaves differently
+
                     # If overlap exceeds threshold and classification is correct mark as correct
                     if iou[best_i] > iou_thres and obj_pred == labels[best_i, 0] and best_i not in detected:
                         correct.append(1)
