@@ -4,6 +4,7 @@
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 bash yolov3/data/get_coco_dataset.sh
 sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
+sudo shutdown
 
 # Start
 python3 train.py
