@@ -47,7 +47,7 @@ def test(
         [], [], [], [], [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
-    for batch_i, (imgs, targets, paths, shapes) in enumerate(dataloader):
+    for (imgs, targets, paths, shapes) in dataloader:
         t = time.time()
         output = model(imgs.to(device))
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
@@ -138,7 +138,8 @@ def test(
     # Print mAP per class
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP') + '\n\nmAP Per Class:')
     for i, c in enumerate(load_classes(data_cfg_dict['names'])):
-        print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i] + 1E-16)))
+        if AP_accum_count[i]:
+            print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i])))
 
     # Save JSON
     if save_json:
