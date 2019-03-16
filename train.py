@@ -26,8 +26,8 @@ def train(
 
     if multi_scale:  # pass maximum multi_scale size
         img_size = 608
-    else:
-        torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
+    #else:
+    #    torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
     # Configure run
     train_path = parse_data_cfg(data_cfg)['train']
