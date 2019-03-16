@@ -92,14 +92,14 @@ def test(
                 target_cls = labels[:, 0]
 
                 # Extract target boxes as (x1, y1, x2, y2)
-                target_boxes = xywh2xyxy(labels[:, 1:5]) * img_size
+                target_box = xywh2xyxy(labels[:, 1:5]) * img_size
 
                 detected = []
-                for *pred_bbox, conf, obj_conf, obj_pred in detections:
-                    pred_bbox = torch.FloatTensor(pred_bbox).view(1, -1)
+                for *pred_box, conf, obj_conf, obj_pred in detections:
+                    pred_box = torch.stack(pred_box).view((1, -1))
 
                     # Compute iou with target boxes
-                    iou = bbox_iou(pred_bbox, target_boxes)
+                    iou = bbox_iou(pred_box, target_box)
 
                     # Extract index of largest overlap
                     best_i = np.argmax(iou)  # WARNING torch.argmax behaves differently
