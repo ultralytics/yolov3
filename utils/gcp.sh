@@ -15,10 +15,10 @@ python3 train.py --resume
 gsutil cp gs://ultralytics/yolov3.pt yolov3/weights
 python3 detect.py
 
-# Train new branch
+# Clone branch
 sudo rm -rf yolov3 && git clone -b multi_gpu --depth 1 https://github.com/ultralytics/yolov3
 # sudo rm -rf yolov3 && git clone -b multigpu --depth 1 https://github.com/alexpolichroniadis/yolov3
-cd yolov3 && python3 train.py --batch-size 24
+cd yolov3 && python3 train.py --batch-size 28
 
 # Test
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
