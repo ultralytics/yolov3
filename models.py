@@ -3,7 +3,7 @@ import os
 from utils.parse_config import *
 from utils.utils import *
 
-ONNX_EXPORT = False
+ONNX_EXPORT = True
 
 
 def create_modules(module_defs):
@@ -129,11 +129,6 @@ class YOLOLayer(nn.Module):
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
         p = p.view(bs, self.nA, self.nC + 5, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
 
-        # xy, width and height
-        xy = torch.sigmoid(p[..., 0:2])
-        wh = p[..., 2:4]  # wh (yolo method)
-        # wh = torch.sigmoid(p[..., 2:4])  # wh (power method)
-
         if self.training:
             return p
 
@@ -141,18 +136,18 @@ class YOLOLayer(nn.Module):
             grid_xy = self.grid_xy.repeat((1, self.nA, 1, 1, 1)).view((1, -1, 2))
             anchor_wh = self.anchor_wh.repeat((1, 1, nG, nG, 1)).view((1, -1, 2)) / nG
 
-            # p = p.view(-1, 85)
+            # p = p.view(-1, 5 + self.nC)
             # xy = xy + self.grid_xy[0]  # x, y
             # wh = torch.exp(wh) * self.anchor_wh[0]  # width, height
             # p_conf = torch.sigmoid(p[:, 4:5])  # Conf
-            # p_cls = F.softmax(p[:, 5:85], 1) * p_conf  # SSD-like conf
+            # p_cls = F.softmax(p[:, 5:], 1) * p_conf  # SSD-like conf
             # return torch.cat((xy / nG, wh, p_conf, p_cls), 1).t()
 
-            p = p.view(1, -1, 85)
-            xy = xy + grid_xy  # x, y
+            p = p.view(1, -1, 5 + self.nC)
+            xy = torch.sigmoid(p[..., 0:2]) + grid_xy  # x, y
             wh = torch.exp(p[..., 2:4]) * anchor_wh  # width, height
             p_conf = torch.sigmoid(p[..., 4:5])  # Conf
-            p_cls = p[..., 5:85]
+            p_cls = p[..., 5:]
             # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
             # p_cls = F.softmax(p_cls, 2) * p_conf  # SSD-like conf
             p_cls = torch.exp(p_cls).permute((2, 1, 0))
@@ -161,9 +156,9 @@ class YOLOLayer(nn.Module):
             return torch.cat((xy / nG, wh, p_conf, p_cls), 2).squeeze().t()
 
         else:  # inference
-            p[..., 0:2] = xy + self.grid_xy  # xy
-            p[..., 2:4] = torch.exp(wh) * self.anchor_wh  # wh yolo method
-            # p[..., 2:4] = ((wh * 2) ** 2) * self.anchor_wh  # wh power method
+            p[..., 0:2] = torch.sigmoid(p[..., 0:2]) + self.grid_xy  # xy
+            p[..., 2:4] = torch.exp(p[..., 2:4]) * self.anchor_wh  # wh yolo method
+            # p[..., 2:4] = ((torch.sigmoid(p[..., 2:4]) * 2) ** 2) * self.anchor_wh  # wh power method
             p[..., 4] = torch.sigmoid(p[..., 4])  # p_conf
             p[..., :4] *= self.stride
 
@@ -216,7 +211,7 @@ class Darknet(nn.Module):
 
         if ONNX_EXPORT:
             output = torch.cat(output, 1)  # merge the 3 layers 85 x (507, 2028, 8112) to 85 x 10647
-            return output[5:85].t(), output[:4].t()  # ONNX scores, boxes
+            return output[5:].t(), output[:4].t()  # ONNX scores, boxes
         else:
             return output if self.training else torch.cat(output, 1)
 
