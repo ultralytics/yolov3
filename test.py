@@ -45,8 +45,7 @@ def test(
 
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
-    outputs, mAPs, mR, mP, TP, confidence, pred_class, target_class, jdict = \
-        [], [], [], [], [], [], [], [], []
+    mAPs, mR, mP, TP, jdict = [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
     for (imgs, targets, paths, shapes) in dataloader:

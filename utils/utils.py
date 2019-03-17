@@ -252,23 +252,26 @@ def compute_loss(p, targets):  # predictions, targets
     FT = torch.cuda.FloatTensor if p[0].is_cuda else torch.FloatTensor
     loss, lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
     txy, twh, tcls, tconf, indices = targets
+    MSE = nn.MSELoss(reduction='sum')
+    CE = nn.CrossEntropyLoss(reduction='sum')
+    BCE = nn.BCEWithLogitsLoss(reduction='sum')
 
     # Group all yolo layers togethor
     for i in range(len(p)):
-        pi0 = p[i]  # .view(-1, n)
+        pi0 = p[i]  # layer i predictions
         b, a, gj, gi = indices[i]  # image, anchor, gridx, gridy
 
         # Compute losses
         k = 1  # nT / bs
         if len(b) > 0:
-            pi = pi0[b, a, gj, gi]
-            lxy += k * nn.MSELoss()(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy
-            lwh += k * nn.MSELoss()(pi[..., 2:4], twh[i])  # wh
-            lcls += (k / 4) * nn.CrossEntropyLoss()(pi[..., 5:], tcls[i])
+            pi = pi0[b, a, gj, gi]  # predictions closest to anchors
+            lxy += k * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy
+            lwh += k * MSE(pi[..., 2:4], twh[i])  # wh
+            lcls += (k / 1) * CE(pi[..., 5:], tcls[i])
 
         # pos_weight = (tconf[i] == 0).sum() / (tconf[i] == 1).sum() / 8
-        BCELoss = nn.BCEWithLogitsLoss(pos_weight=None)
-        lconf += (k * 64) * BCELoss(pi0[..., 4], tconf[i])
+        # BCE = nn.BCEWithLogitsLoss(pos_weight=None)
+        lconf += (k * 1) * BCE(pi0[..., 4], tconf[i])
     loss = lxy + lwh + lconf + lcls
 
     # Add to dictionary
@@ -474,7 +477,7 @@ def plot_results(start=0):
     # from utils.utils import *; plot_results()
 
     plt.figure(figsize=(14, 7))
-    s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'mAP', 'Recall', 'Precision']
+    s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'mAP', 'Precision', 'Recall']
     files = sorted(glob.glob('results*.txt'))
     for f in files:
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
