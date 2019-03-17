@@ -7,7 +7,6 @@ from utils.datasets import *
 from utils.utils import *
 
 
-# @profile
 def train(
         cfg,
         data_cfg,
@@ -164,7 +163,7 @@ def train(
             # Save latest checkpoint
             checkpoint = {'epoch': epoch,
                           'best_loss': best_loss,
-                          'model': model.state_dict(),
+                          'model': model.module.state_dict() if type(model) is nn.DataParallel else model.state_dict(),
                           'optimizer': optimizer.state_dict()}
             torch.save(checkpoint, latest)
 

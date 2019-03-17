@@ -8,7 +8,6 @@ from utils.datasets import *
 from utils.utils import *
 
 
-# @profile
 def test(
         cfg,
         data_cfg,
