@@ -49,6 +49,7 @@ def test(
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
     for (imgs, targets, paths, shapes) in dataloader:
+        targets = targets.to(device)
         t = time.time()
         output = model(imgs.to(device))
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
@@ -184,27 +185,3 @@ if __name__ == '__main__':
             opt.conf_thres,
             opt.nms_thres,
             opt.save_json)
-
-#       Image      Total          P          R        mAP  # YOLOv3 320
-#          32       5000       0.66      0.597      0.591
-#          64       5000      0.664       0.62      0.604
-#          96       5000      0.653      0.627      0.614
-#         128       5000      0.639      0.623      0.607
-#         160       5000      0.642       0.63      0.616
-#         192       5000      0.651      0.636      0.621
-
-#       Image      Total          P          R        mAP  # YOLOv3 416
-#          32       5000      0.635      0.581       0.57
-#          64       5000       0.63      0.591      0.578
-#          96       5000      0.661      0.632      0.622
-#         128       5000      0.659      0.632      0.623
-#         160       5000      0.665       0.64      0.633
-#         192       5000       0.66      0.637       0.63
-
-#       Image      Total          P          R        mAP  # YOLOv3 608
-#          32       5000      0.653      0.606      0.591
-#          64       5000      0.653      0.635      0.625
-#          96       5000      0.655      0.642      0.633
-#         128       5000      0.667      0.651      0.642
-#         160       5000      0.663      0.645      0.637
-#         192       5000      0.663      0.643      0.634
