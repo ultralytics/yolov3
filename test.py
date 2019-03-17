@@ -45,7 +45,7 @@ def test(
 
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
-    mAPs, mR, mP, TP, jdict = [], [], [], [], []
+    mP, mR, mAPs, TP, jdict = [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
     for (imgs, targets, paths, shapes) in dataloader:
@@ -61,7 +61,7 @@ def test(
             if detections is None:
                 # If there are labels but no detections mark as zero AP
                 if len(labels) != 0:
-                    mAPs.append(0), mR.append(0), mP.append(0)
+                    mP.append(0), mR.append(0), mAPs.append(0)
                 continue
 
             # Get detections sorted by decreasing confidence scores
@@ -87,7 +87,7 @@ def test(
             correct = []
             if len(labels) == 0:
                 # correct.extend([0 for _ in range(len(detections))])
-                mAPs.append(0), mR.append(0), mP.append(0)
+                mP.append(0), mR.append(0), mAPs.append(0)
                 continue
             else:
                 # Extract target boxes as (x1, y1, x2, y2)
@@ -117,14 +117,14 @@ def test(
             AP_accum += np.bincount(AP_class, minlength=nC, weights=AP)
 
             # Compute mean AP across all classes in this image, and append to image list
-            mAPs.append(AP.mean())
-            mR.append(R.mean())
             mP.append(P.mean())
+            mR.append(R.mean())
+            mAPs.append(AP.mean())
 
             # Means of all images
-            mean_mAP = np.mean(mAPs)
-            mean_R = np.mean(mR)
             mean_P = np.mean(mP)
+            mean_R = np.mean(mR)
+            mean_mAP = np.mean(mAPs)
 
         # Print image mAP and running mean mAP
         print(('%11s%11s' + '%11.3g' * 4 + 's') %
@@ -156,7 +156,7 @@ def test(
         cocoEval.summarize()
 
     # Return mAP
-    return mean_mAP, mean_R, mean_P
+    return mean_P, mean_R, mean_mAP
 
 
 if __name__ == '__main__':

@@ -158,7 +158,7 @@ def train(
         if rloss['total'] < best_loss:
             best_loss = rloss['total']
 
-        save = True
+        save = True  # save training results
         if save:
             # Save latest checkpoint
             checkpoint = {'epoch': epoch,
@@ -177,16 +177,16 @@ def train(
 
         # Calculate mAP
         with torch.no_grad():
-            mAP, R, P = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size, model=model)
+            P, R, mAP = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size, model=model)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
-            file.write(s + '%11.3g' * 3 % (mAP, P, R) + '\n')
+            file.write(s + '%11.3g' * 3 % (P, R, mAP) + '\n')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', type=int, default=300, help='number of epochs')
+    parser.add_argument('--epochs', type=int, default=270, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulated-batches', type=int, default=1, help='number of batches before optimizer step')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')

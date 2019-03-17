@@ -252,13 +252,13 @@ def compute_loss(p, targets):  # predictions, targets
     FT = torch.cuda.FloatTensor if p[0].is_cuda else torch.FloatTensor
     loss, lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
     txy, twh, tcls, tconf, indices = targets
-    MSE = nn.MSELoss(reduction='sum')
-    CE = nn.CrossEntropyLoss(reduction='sum')
-    BCE = nn.BCEWithLogitsLoss(reduction='sum')
+    MSE = nn.MSELoss()
+    CE = nn.CrossEntropyLoss()
+    BCE = nn.BCEWithLogitsLoss()
 
-    # Group all yolo layers togethor
-    for i in range(len(p)):
-        pi0 = p[i]  # layer i predictions
+    # Compute losses
+    # gp = [x.numel() for x in tconf]  # grid points
+    for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridx, gridy
 
         # Compute losses
@@ -267,11 +267,11 @@ def compute_loss(p, targets):  # predictions, targets
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
             lxy += k * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy
             lwh += k * MSE(pi[..., 2:4], twh[i])  # wh
-            lcls += (k / 1) * CE(pi[..., 5:], tcls[i])
+            lcls += k * CE(pi[..., 5:], tcls[i])
 
-        # pos_weight = (tconf[i] == 0).sum() / (tconf[i] == 1).sum() / 8
-        # BCE = nn.BCEWithLogitsLoss(pos_weight=None)
-        lconf += (k * 1) * BCE(pi0[..., 4], tconf[i])
+        # pos_weight = FT([gp[i] / min(gp) * 4.])
+        # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+        lconf += (k * 16) * BCE(pi0[..., 4], tconf[i])
     loss = lxy + lwh + lconf + lcls
 
     # Add to dictionary
@@ -477,7 +477,7 @@ def plot_results(start=0):
     # from utils.utils import *; plot_results()
 
     plt.figure(figsize=(14, 7))
-    s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'mAP', 'Precision', 'Recall']
+    s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
     files = sorted(glob.glob('results*.txt'))
     for f in files:
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
