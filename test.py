@@ -92,22 +92,17 @@ def test(
                 mAPs.append(0), mR.append(0), mP.append(0)
                 continue
             else:
-                target_cls = labels[:, 0]
-
                 # Extract target boxes as (x1, y1, x2, y2)
                 target_box = xywh2xyxy(labels[:, 1:5]) * img_size
+                target_cls = labels[:, 0]
 
                 detected = []
-                for *pred_box, conf, obj_conf, obj_pred in detections:
+                for *pred_box, conf, cls_conf, cls_pred in detections:
+                    # Best iou, index between pred and targets
+                    iou, bi = bbox_iou(pred_box, target_box).max(0)
 
-                    # Compute iou with target boxes
-                    iou = bbox_iou(pred_box, target_box)
-
-                    # Best iou index
-                    bi = iou.argmax()  # WARNING torch and numpy different?
-
-                    # If overlap exceeds threshold and classification is correct mark as correct
-                    if iou[bi] > iou_thres and obj_pred == labels[bi, 0] and bi not in detected:
+                    # If iou > threshold and class is correct mark as correct
+                    if iou > iou_thres and cls_pred == target_cls[bi] and bi not in detected:
                         correct.append(1)
                         detected.append(bi)
                     else:
