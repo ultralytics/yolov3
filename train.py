@@ -17,7 +17,6 @@ def train(
         accumulated_batches=1,
         multi_scale=False,
         freeze_backbone=False,
-        var=0,
 ):
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
@@ -197,7 +196,6 @@ if __name__ == '__main__':
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
-    parser.add_argument('--var', type=float, default=0, help='test variable')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
@@ -212,5 +210,4 @@ if __name__ == '__main__':
         batch_size=opt.batch_size,
         accumulated_batches=opt.accumulated_batches,
         multi_scale=opt.multi_scale,
-        var=opt.var,
     )

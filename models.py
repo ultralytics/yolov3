@@ -105,7 +105,6 @@ class YOLOLayer(nn.Module):
         self.nA = len(anchors)  # number of anchors (3)
         self.nC = nC  # number of classes (80)
         self.img_size = 0
-        # self.coco_class_weights = coco_class_weights()
 
         # if ONNX_EXPORT:  # grids must be computed in __init__
         stride = [32, 16, 8][yolo_layer]  # stride of this layer
@@ -117,7 +116,7 @@ class YOLOLayer(nn.Module):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         create_grids(self, img_size, nG, device)
 
-    def forward(self, p, img_size, targets=None, var=None):
+    def forward(self, p, img_size, var=None):
         if ONNX_EXPORT:
             bs, nG = 1, self.nG  # batch size, grid size
         else:
@@ -180,7 +179,7 @@ class Darknet(nn.Module):
         self.loss_names = ['loss', 'xy', 'wh', 'conf', 'cls', 'nT']
         self.losses = []
 
-    def forward(self, x, targets=None, var=0):
+    def forward(self, x, var=None):
         img_size = x.shape[-1]
         layer_outputs = []
         output = []
@@ -199,12 +198,6 @@ class Darknet(nn.Module):
                 layer_i = int(module_def['from'])
                 x = layer_outputs[-1] + layer_outputs[layer_i]
             elif mtype == 'yolo':
-                # if self.training:  # get loss
-                #     x, *losses = module[0](x, img_size, targets, var)
-                #     for name, loss in zip(self.loss_names, losses):
-                #         self.losses[name] += loss
-                # else:  # get detections
-                #     x = module[0](x, img_size)
                 x = module[0](x, img_size)
                 output.append(x)
             layer_outputs.append(x)
