@@ -160,20 +160,22 @@ def train(
         if rloss['total'] < best_loss:
             best_loss = rloss['total']
 
-        # # Save latest checkpoint
-        checkpoint = {'epoch': epoch,
-                      'best_loss': best_loss,
-                      'model': model.state_dict(),
-                      'optimizer': optimizer.state_dict()}
-        torch.save(checkpoint, latest)
+        save = False
+        if save:
+            # Save latest checkpoint
+            checkpoint = {'epoch': epoch,
+                          'best_loss': best_loss,
+                          'model': model.state_dict(),
+                          'optimizer': optimizer.state_dict()}
+            torch.save(checkpoint, latest)
 
-        # Save best checkpoint
-        if best_loss == rloss['total']:
-            os.system('cp ' + latest + ' ' + best)
+            # Save best checkpoint
+            if best_loss == rloss['total']:
+                os.system('cp ' + latest + ' ' + best)
 
-        # Save backup weights every 5 epochs (optional)
-        if (epoch > 0) & (epoch % 5 == 0):
-            os.system('cp ' + latest + ' ' + weights + 'backup{}.pt'.format(epoch))
+            # Save backup weights every 5 epochs (optional)
+            if (epoch > 0) & (epoch % 5 == 0):
+                os.system('cp ' + latest + ' ' + weights + 'backup{}.pt'.format(epoch))
 
         # Calculate mAP
         with torch.no_grad():
@@ -186,7 +188,7 @@ def train(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', type=int, default=3, help='number of epochs')
+    parser.add_argument('--epochs', type=int, default=300, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulated-batches', type=int, default=1, help='number of batches before optimizer step')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
