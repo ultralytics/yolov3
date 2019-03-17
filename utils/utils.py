@@ -443,15 +443,13 @@ def return_torch_unique_index(u, uv):
 
 def strip_optimizer_from_checkpoint(filename='weights/best.pt'):
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
-
     a = torch.load(filename, map_location='cpu')
     a['optimizer'] = []
     torch.save(a, filename.replace('.pt', '_lite.pt'))
 
 
 def coco_class_count(path='../coco/labels/train2014/'):
-    # histogram of occurrences per class
-
+    # Histogram of occurrences per class
     nC = 80  # number classes
     x = np.zeros(nC, dtype='int32')
     files = sorted(glob.glob('%s/*.*' % path))
@@ -462,8 +460,7 @@ def coco_class_count(path='../coco/labels/train2014/'):
 
 
 def coco_only_people(path='../coco/labels/val2014/'):
-    # find images with only people
-
+    # Find images with only people
     files = sorted(glob.glob('%s/*.*' % path))
     for i, file in enumerate(files):
         labels = np.loadtxt(file, dtype=np.float32).reshape(-1, 5)
@@ -471,7 +468,7 @@ def coco_only_people(path='../coco/labels/val2014/'):
             print(labels.shape[0], file)
 
 
-def plot_results(start=-1):
+def plot_results(start=0):
     # Plot YOLO training results file 'results.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
     # from utils.utils import *; plot_results()
