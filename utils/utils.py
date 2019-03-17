@@ -27,15 +27,14 @@ def init_seeds(seed=0):
 
 
 def load_classes(path):
-    """
-    Loads class labels at 'path'
-    """
+    # Loads class labels at 'path'
     fp = open(path, 'r')
     names = fp.read().split('\n')
     return list(filter(None, names))  # filter removes empty strings (such as last line)
 
 
-def model_info(model):  # Plots a line-by-line description of a PyTorch model
+def model_info(model):
+    # Plots a line-by-line description of a PyTorch model
     n_p = sum(x.numel() for x in model.parameters())  # number parameters
     n_g = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
     print('\n%5s %50s %9s %12s %20s %12s %12s' % ('layer', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
@@ -43,7 +42,7 @@ def model_info(model):  # Plots a line-by-line description of a PyTorch model
         name = name.replace('module_list.', '')
         print('%5g %50s %9s %12g %20s %12.3g %12.3g' % (
             i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std()))
-    print('Model Summary: %g layers, %g parameters, %g gradients\n' % (i + 1, n_p, n_g))
+    print('Model Summary: %g layers, %g parameters, %g gradients' % (i + 1, n_p, n_g))
 
 
 def coco_class_weights():  # frequency of each class in coco train2014
@@ -68,7 +67,8 @@ def coco80_to_coco91_class():  # converts 80-index (val2014) to 91-index (paper)
     return x
 
 
-def plot_one_box(x, img, color=None, label=None, line_thickness=None):  # Plots one bounding box on image img
+def plot_one_box(x, img, color=None, label=None, line_thickness=None):
+    # Plots one bounding box on image img
     tl = line_thickness or round(0.002 * max(img.shape[0:2])) + 1  # line thickness
     color = color or [random.randint(0, 255) for _ in range(3)]
     c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
@@ -124,7 +124,7 @@ def scale_coords(img_size, coords, img0_shape):
 
 def ap_per_class(tp, conf, pred_cls, target_cls):
     """ Compute the average precision, given the recall and precision curves.
-    Method originally from https://github.com/rafaelpadilla/Object-Detection-Metrics.
+    Source: https://github.com/rafaelpadilla/Object-Detection-Metrics.
     # Arguments
         tp:    True positives (list).
         conf:  Objectness value from 0-1 (list).
@@ -178,7 +178,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
 
 def compute_ap(recall, precision):
     """ Compute the average precision, given the recall and precision curves.
-    Code originally from https://github.com/rbgirshick/py-faster-rcnn.
+    Source: https://github.com/rbgirshick/py-faster-rcnn.
     # Arguments
         recall:    The recall curve (list).
         precision: The precision curve (list).
@@ -266,9 +266,9 @@ def compute_loss(p, targets):  # model, predictions, targets
             lwh += k * nn.MSELoss()(pi[..., 2:4], twh[i])  # wh
             lcls += (k / 4) * nn.CrossEntropyLoss()(pi[..., 5:], tcls[i])
 
-        # pos_weight = (tconf[i] == 0).sum() / (tconf[i] == 1).sum() / 1E16
-        # BCELoss = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 64) * nn.BCEWithLogitsLoss()(pi0[..., 4], tconf[i])
+        pos_weight = (tconf[i] == 0).sum() / (tconf[i] == 1).sum() / 8
+        BCELoss = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+        lconf += (k * 8) * BCELoss(pi0[..., 4], tconf[i])
     loss = lxy + lwh + lconf + lcls
 
     # Add to dictionary
@@ -286,30 +286,31 @@ def build_targets(model, targets, pred):
         model = model.module
     yolo_layers = get_yolo_layers(model)
 
-    anchors = closest_anchor(model, targets)  # [layer, anchor, i, j]
+    # anchors = closest_anchor(model, targets)  # [layer, anchor, i, j]
     txy, twh, tcls, tconf, indices = [], [], [], [], []
     for i, layer in enumerate(yolo_layers):
         nG = model.module_list[layer][0].nG  # grid size
         anchor_vec = model.module_list[layer][0].anchor_vec
 
-        j = anchors[0] == i  # layer i anchor indices
-        ai = anchors[:, j]  # layer i anchors
+        # iou of targets-anchors
+        gwh = targets[:, 4:6] * nG
+        iou = [wh_iou(x, gwh) for x in anchor_vec]
+        iou, a = torch.stack(iou, 0).max(0)  # best iou and anchor
 
-        # reject below threshold ious
-        j = ai[4] > 0.01
-        ai = ai[:, j]
+        # reject below threshold ious (OPTIONAL)
+        j = iou > 0.01
+        t, a, gwh = targets[j], a[j], gwh[j]
 
         # Indices
-        b, c = targets[j, 0:2].long().t()  # target image, class
-        a, gi, gj = ai[1:4].long()  # anchor, grid_i, grid_j
+        b, c = t[:, 0:2].long().t()  # target image, class
+        gxy = t[:, 2:4] * nG
+        gi, gj = gxy.long().t()  # grid_i, grid_j
         indices.append((b, a, gj, gi))
 
         # XY coordinates
-        gxy = targets[j, 2:4] * nG
         txy.append(gxy - gxy.floor())
 
         # Width and height
-        gwh = targets[j, 4:6] * nG
         twh.append(torch.log(gwh / anchor_vec[a]))  # yolo method
         # twh.append(torch.sqrt(gwh / anchor_vec[a]) / 2)  # power method
 
@@ -338,7 +339,7 @@ def closest_anchor(model, targets):
         gij.append((targets[:, 2:4] * nG).floor())
 
         # iou of targets-anchors
-        iou_i = [wh_iou(anchor / nG, targets_wh) for anchor in anchor_vec]
+        iou_i = [wh_iou(x / nG, targets_wh) for x in anchor_vec]
         best_iou, best_anchor = torch.stack(iou_i, 0).max(0)
 
         iou.append(best_iou)

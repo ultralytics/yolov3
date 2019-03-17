@@ -8,6 +8,7 @@ from utils.datasets import *
 from utils.utils import *
 
 
+# @profile
 def test(
         cfg,
         data_cfg,
@@ -17,7 +18,8 @@ def test(
         iou_thres=0.5,
         conf_thres=0.3,
         nms_thres=0.45,
-        save_json=False
+        save_json=False,
+        model=None
 ):
     device = torch_utils.select_device()
 
@@ -26,14 +28,15 @@ def test(
     nC = int(data_cfg_dict['classes'])  # number of classes (80 for COCO)
     test_path = data_cfg_dict['valid']
 
-    # Initialize model
-    model = Darknet(cfg, img_size)
+    if model is None:
+        # Initialize model
+        model = Darknet(cfg, img_size)
 
-    # Load weights
-    if weights.endswith('.pt'):  # pytorch format
-        model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
-    else:  # darknet format
-        load_darknet_weights(model, weights)
+        # Load weights
+        if weights.endswith('.pt'):  # pytorch format
+            model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
+        else:  # darknet format
+            load_darknet_weights(model, weights)
 
     model.to(device).eval()
 
@@ -100,13 +103,13 @@ def test(
                     # Compute iou with target boxes
                     iou = bbox_iou(pred_box, target_box)
 
-                    # Extract index of largest overlap
-                    best_i = np.argmax(iou)  # WARNING torch.argmax behaves differently
+                    # Best iou index
+                    bi = iou.argmax()  # WARNING torch and numpy different?
 
                     # If overlap exceeds threshold and classification is correct mark as correct
-                    if iou[best_i] > iou_thres and obj_pred == labels[best_i, 0] and best_i not in detected:
+                    if iou[bi] > iou_thres and obj_pred == labels[bi, 0] and bi not in detected:
                         correct.append(1)
-                        detected.append(best_i)
+                        detected.append(bi)
                     else:
                         correct.append(0)
 
@@ -135,7 +138,7 @@ def test(
               (seen, dataloader.nF, mean_P, mean_R, mean_mAP, time.time() - t))
 
     # Print mAP per class
-    print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP') + '\n\nmAP Per Class:')
+    print('\nmAP Per Class:')
     for i, c in enumerate(load_classes(data_cfg_dict['names'])):
         if AP_accum_count[i]:
             print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i])))
@@ -187,8 +190,7 @@ if __name__ == '__main__':
             opt.iou_thres,
             opt.conf_thres,
             opt.nms_thres,
-            opt.save_json
-        )
+            opt.save_json)
 
 #       Image      Total          P          R        mAP  # YOLOv3 320
 #          32       5000       0.66      0.597      0.591
