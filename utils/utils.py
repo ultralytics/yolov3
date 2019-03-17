@@ -267,11 +267,11 @@ def compute_loss(p, targets):  # predictions, targets
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
             lxy += k * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy
             lwh += k * MSE(pi[..., 2:4], twh[i])  # wh
-            lcls += k * CE(pi[..., 5:], tcls[i])
+            lcls += (k / 4) * CE(pi[..., 5:], tcls[i])
 
         # pos_weight = FT([gp[i] / min(gp) * 4.])
         # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 16) * BCE(pi0[..., 4], tconf[i])
+        lconf += (k * 64) * BCE(pi0[..., 4], tconf[i])
     loss = lxy + lwh + lconf + lcls
 
     # Add to dictionary
