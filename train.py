@@ -104,7 +104,7 @@ def train(
             g['lr'] = lr
 
         # Freeze darknet53.conv.74 for first epoch
-        if freeze_backbone and (epoch == 0):
+        if freeze_backbone and (epoch < 2):
             for i, (name, p) in enumerate(model.named_parameters()):
                 if int(name.split('.')[1]) < cutoff:  # if layer < 75
                     p.requires_grad = False if (epoch == 0) else True
@@ -131,7 +131,6 @@ def train(
             target_list = build_targets(model, targets, pred)
 
             # Compute loss
-            # loss = model(imgs.to(device), targets, var=var)
             loss, loss_dict = compute_loss(pred, target_list)
 
             # Compute gradient
@@ -160,7 +159,7 @@ def train(
         if rloss['total'] < best_loss:
             best_loss = rloss['total']
 
-        save = False
+        save = True
         if save:
             # Save latest checkpoint
             checkpoint = {'epoch': epoch,

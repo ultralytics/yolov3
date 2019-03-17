@@ -248,7 +248,7 @@ def wh_iou(box1, box2):
     return inter_area / union_area  # iou
 
 
-def compute_loss(p, targets):  # model, predictions, targets
+def compute_loss(p, targets):  # predictions, targets
     FT = torch.cuda.FloatTensor if p[0].is_cuda else torch.FloatTensor
     loss, lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
     txy, twh, tcls, tconf, indices = targets
@@ -266,9 +266,9 @@ def compute_loss(p, targets):  # model, predictions, targets
             lwh += k * nn.MSELoss()(pi[..., 2:4], twh[i])  # wh
             lcls += (k / 4) * nn.CrossEntropyLoss()(pi[..., 5:], tcls[i])
 
-        pos_weight = (tconf[i] == 0).sum() / (tconf[i] == 1).sum() / 8
-        BCELoss = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 8) * BCELoss(pi0[..., 4], tconf[i])
+        # pos_weight = (tconf[i] == 0).sum() / (tconf[i] == 1).sum() / 8
+        BCELoss = nn.BCEWithLogitsLoss(pos_weight=None)
+        lconf += (k * 64) * BCELoss(pi0[..., 4], tconf[i])
     loss = lxy + lwh + lconf + lcls
 
     # Add to dictionary
@@ -323,36 +323,6 @@ def build_targets(model, targets, pred):
         tconf.append(tci)
 
     return txy, twh, tcls, tconf, indices
-
-
-def closest_anchor(model, targets):
-    yolo_layers = get_yolo_layers(model)
-
-    # Get ious from targets to nearest anchors
-    gij, iou_i, iou = [], [], []
-    targets_wh = targets[:, 4:6]  # normalized bounding box
-    a, layer = [], []  # anchor, layer
-    for i, l in enumerate(yolo_layers):
-        nG = model.module_list[l][0].nG
-        anchor_vec = model.module_list[l][0].anchor_vec
-
-        gij.append((targets[:, 2:4] * nG).floor())
-
-        # iou of targets-anchors
-        iou_i = [wh_iou(x / nG, targets_wh) for x in anchor_vec]
-        best_iou, best_anchor = torch.stack(iou_i, 0).max(0)
-
-        iou.append(best_iou)
-        a.append(best_anchor)  # best anchor (0-2)
-        # a.append(torch.stack(iou, 0).argmax(0))  # best anchor (0-2)
-        layer.append(a[i] * 0 + i)  # yolo layer (0-2)
-
-    a = torch.cat(a, 0).unsqueeze(1)
-    layer = torch.cat(layer, 0).unsqueeze(1)
-    iou = torch.cat(iou, 0).unsqueeze(1)
-    gij = torch.cat(gij, 0)
-    # out = [yolo_layer (0-2), anchor (0-2), grid_ij (0-52)]
-    return torch.cat((layer.float(), a.float(), gij, iou), 1).t()
 
 
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
@@ -501,7 +471,7 @@ def coco_only_people(path='../coco/labels/val2014/'):
             print(labels.shape[0], file)
 
 
-def plot_results():
+def plot_results(start=-1):
     # Plot YOLO training results file 'results.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
     # from utils.utils import *; plot_results()
@@ -514,7 +484,7 @@ def plot_results():
         x = range(1, results.shape[1])
         for i in range(8):
             plt.subplot(2, 4, i + 1)
-            plt.plot(x, results[i, x], marker='.', label=f)
+            plt.plot(results[i, x[start:]], marker='.', label=f)
             plt.title(s[i])
             if i == 0:
                 plt.legend()
