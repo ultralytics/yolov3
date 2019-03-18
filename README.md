@@ -77,8 +77,6 @@ Run `detect.py` with `webcam=True` to show a live webcam feed.
 
 # Pretrained Weights
 
-Download official YOLOv3 weights:
-
 **Darknet** format: 
 - https://pjreddie.com/media/files/yolov3.weights
 - https://pjreddie.com/media/files/yolov3-tiny.weights
