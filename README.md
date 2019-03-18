@@ -36,7 +36,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 # Training
 
-**Start Training:** Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`. Training runs about 1 hour per COCO epoch on a 1080 Ti.
+**Start Training:** Run `train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`.
 
 **Resume Training:** Run `train.py --resume` to resume training from the most recently saved checkpoint `weights/latest.pt`.
 
