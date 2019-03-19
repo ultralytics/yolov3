@@ -37,10 +37,10 @@ def model_info(model):
     # Plots a line-by-line description of a PyTorch model
     n_p = sum(x.numel() for x in model.parameters())  # number parameters
     n_g = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
-    print('\n%5s %50s %9s %12s %20s %12s %12s' % ('layer', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
+    print('\n%5s %40s %9s %12s %20s %12s %12s' % ('layer', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
     for i, (name, p) in enumerate(model.named_parameters()):
         name = name.replace('module_list.', '')
-        print('%5g %50s %9s %12g %20s %12.3g %12.3g' % (
+        print('%5g %40s %9s %12g %20s %12.3g %12.3g' % (
             i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std()))
     print('Model Summary: %g layers, %g parameters, %g gradients' % (i + 1, n_p, n_g))
 
@@ -298,8 +298,12 @@ def build_targets(model, targets, pred):
         iou, a = torch.stack(iou, 0).max(0)  # best iou and anchor
 
         # reject below threshold ious (OPTIONAL)
-        j = iou > 0.01
-        t, a, gwh = targets[j], a[j], gwh[j]
+        reject = True
+        if reject:
+            j = iou > 0.01
+            t, a, gwh = targets[j], a[j], gwh[j]
+        else:
+            t = targets
 
         # Indices
         b, c = t[:, 0:2].long().t()  # target image, class
