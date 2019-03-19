@@ -106,22 +106,19 @@ class YOLOLayer(nn.Module):
         self.nC = nC  # number of classes (80)
         self.img_size = 0
 
-        # if ONNX_EXPORT:  # grids must be computed in __init__
-        stride = [32, 16, 8][yolo_layer]  # stride of this layer
-        if cfg.endswith('yolov3-tiny.cfg'):
-            stride *= 2
+        if ONNX_EXPORT:  # grids must be computed in __init__
+            stride = [32, 16, 8][yolo_layer]  # stride of this layer
+            if cfg.endswith('yolov3-tiny.cfg'):
+                stride *= 2
 
-        nG = int(img_size / stride)  # number grid points
-
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        create_grids(self, img_size, nG, device)
+            nG = int(img_size / stride)  # number grid points
+            create_grids(self, img_size, nG)
 
     def forward(self, p, img_size, var=None):
         if ONNX_EXPORT:
             bs, nG = 1, self.nG  # batch size, grid size
         else:
             bs, nG = p.shape[0], p.shape[-1]
-
             if self.img_size != img_size:
                 create_grids(self, img_size, nG, p.device)
 
@@ -214,7 +211,8 @@ def get_yolo_layers(model):
     return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
 
 
-def create_grids(self, img_size, nG, device):
+def create_grids(self, img_size, nG, device='cpu'):
+    self.img_size = img_size
     self.stride = img_size / nG
 
     # build xy offsets
@@ -225,7 +223,7 @@ def create_grids(self, img_size, nG, device):
     # build wh gains
     self.anchor_vec = self.anchors.to(device) / self.stride
     self.anchor_wh = self.anchor_vec.view(1, self.nA, 1, 1, 2).to(device)
-    self.nG = torch.FloatTensor([nG]).to(device)
+    self.nG = torch.Tensor([nG], device=device)
 
 
 def load_darknet_weights(self, weights, cutoff=-1):

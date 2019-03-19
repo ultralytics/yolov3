@@ -23,10 +23,8 @@ def train(
     best = weights + 'best.pt'
     device = torch_utils.select_device()
 
-    if multi_scale:  # pass maximum multi_scale size
-        img_size = 608
-        ms_index = -1
-        ms_sizes = [320, 352, 384, 416, 448, 480, 512, 544, 576, 608]
+    if multi_scale:
+        img_size = 608  # initiate with maximum multi_scale size
     else:
         torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
@@ -155,9 +153,7 @@ def train(
 
             # Multi-Scale training (320 - 608 pixels) every 10 batches
             if multi_scale and (i + 1) % 10 == 0:
-                ms_index += 1
-                dataloader.img_size = ms_sizes[ms_index]
-                # dataloader.img_size = random.choice(range(10, 20)) * 32
+                dataloader.img_size = random.choice(range(10, 20)) * 32
                 print('multi_scale img_size = %g' % dataloader.img_size)
 
         # Update best loss
