@@ -12,7 +12,7 @@ def train(
         data_cfg,
         img_size=416,
         resume=False,
-        epochs=100,
+        epochs=270,
         batch_size=16,
         accumulate=1,
         multi_scale=False,

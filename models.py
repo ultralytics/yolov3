@@ -105,6 +105,9 @@ class YOLOLayer(nn.Module):
         self.nA = len(anchors)  # number of anchors (3)
         self.nC = nC  # number of classes (80)
         self.img_size = 0
+        # self.nG, self.stride, self.grid_xy, self.anchor_vec, self.anchor_wh = \
+        #    [], [], [], [], []
+        create_grids(self, 32, 1)
 
         if ONNX_EXPORT:  # grids must be computed in __init__
             stride = [32, 16, 8][yolo_layer]  # stride of this layer
@@ -224,6 +227,7 @@ def create_grids(self, img_size, nG, device='cpu'):
     self.anchor_vec = self.anchors.to(device) / self.stride
     self.anchor_wh = self.anchor_vec.view(1, self.nA, 1, 1, 2).to(device)
     self.nG = torch.FloatTensor([nG]).to(device)
+
 
 def load_darknet_weights(self, weights, cutoff=-1):
     # Parses and loads the weights stored in 'weights'
