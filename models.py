@@ -293,11 +293,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
             conv_layer.weight.data.copy_(conv_w)
             ptr += num_w
 
-
-"""
-    @:param path    - path of the new weights file
-    @:param cutoff  - save layers between 0 and cutoff (cutoff = -1 -> all are saved)
-"""
+    return cutoff
 
 
 def save_weights(self, path, cutoff=-1):
