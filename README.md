@@ -84,11 +84,48 @@ Run `detect.py` with `webcam=True` to show a live webcam feed.
 **PyTorch** format:
 - https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI
 
-# Validation mAP
+# mAP
 
-Run `test.py` to validate the official YOLOv3 weights `weights/yolov3.weights` against the 5000 validation images. You should obtain a .584 mAP at `--img-size 416`, or .586 at `--img-size 608` using this repo, compared to .579 at 608 x 608 reported in darknet (https://arxiv.org/abs/1804.02767).
+Run `test.py --save-json --conf-thres 0.005` to test the official YOLOv3 weights `weights/yolov3.weights` against the 5000 validation images. Compare to .579 at 608 x 608 reported in darknet (https://arxiv.org/abs/1804.02767).
 
-Run `test.py --weights weights/latest.pt` to validate against the latest training results. **Default training settings produce a 0.522 mAP at epoch 62.** Hyperparameter settings and loss equation changes affect these results significantly, and additional trade studies may be needed to further improve this.
+Run `test.py --weights weights/latest.pt` to validate against the latest training results. Hyperparameter settings and loss equation changes affect these results significantly, and additional trade studies may be needed to further improve this.
+
+``` bash
+sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
+# bash yolov3/data/get_coco_dataset.sh
+sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
+cd yolov3 && python3 test.py --save-json --conf-thres 0.005
+
+...
+
+Namespace(batch_size=32, cfg='cfg/yolov3.cfg', conf_thres=0.005, data_cfg='cfg/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.45, save_json=True, weights='weights/yolov3.weights')
+
+loading annotations into memory...
+Done (t=4.17s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=1.75s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=39.30s).
+Accumulating evaluation results...
+DONE (t=4.63s).
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.307
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.545
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.309
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.140
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.333
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.453
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.266
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.396
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.415
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.222
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.449
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.575
+```
 
 # Contact
 
