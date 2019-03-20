@@ -61,6 +61,21 @@ HS**V** Intensity | +/- 50%
 
 <img src="https://user-images.githubusercontent.com/26833433/50525037-6cbcbc00-0ad9-11e9-8c38-9fd51af530e0.jpg">
 
+## Speed
+
+https://cloud.google.com/deep-learning-vm/  
+**Machine type:** n1-highmem-4 (4 vCPUs, 26 GB memory)  
+**CPU platform:** Intel Skylake  
+**GPUs:** 1-4 x NVIDIA Tesla P100  
+**HDD:** 100 GB SSD  
+
+GPUs | `batch_size` | speed | COCO epoch
+--- |---| --- | --- 
+(P100)   |  (images)  | (s/batch) | (min/epoch)
+1 | 24 | 0.84s  | 70min
+2 | 48 | 1.27s | 53min
+4 | 96 | 2.11s | 44min
+
 # Inference
 
 Run `detect.py` to apply trained weights to an image, such as `zidane.jpg` from the `data/samples` folder:
@@ -77,18 +92,57 @@ Run `detect.py` with `webcam=True` to show a live webcam feed.
 
 # Pretrained Weights
 
-**Darknet** format: 
-- https://pjreddie.com/media/files/yolov3.weights
-- https://pjreddie.com/media/files/yolov3-tiny.weights
+- Darknet `*.weights` format: https://pjreddie.com/media/files/yolov3.weights
+- PyTorch `*.pt` format: https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI
 
-**PyTorch** format:
-- https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI
+# mAP
 
-# Validation mAP
+- Use `test.py --weights weights/yolov3.weights` to test the official YOLOv3 weights.
+- Use `test.py --weights weights/latest.pt` to test the latest training results.
+- Compare to official darknet results from https://arxiv.org/abs/1804.02767.
 
-Run `test.py` to validate the official YOLOv3 weights `weights/yolov3.weights` against the 5000 validation images. You should obtain a .584 mAP at `--img-size 416`, or .586 at `--img-size 608` using this repo, compared to .579 at 608 x 608 reported in darknet (https://arxiv.org/abs/1804.02767).
+<i></i> | ultralytics/yolov3 | darknet  
+--- | ---| ---   
+YOLOv3-320 | 51.3 | 51.5  
+YOLOv3-416 | 54.9 | 55.3  
+YOLOv3-608 | 57.9 | 57.9  
 
-Run `test.py --weights weights/latest.pt` to validate against the latest training results. **Default training settings produce a 0.522 mAP at epoch 62.** Hyperparameter settings and loss equation changes affect these results significantly, and additional trade studies may be needed to further improve this.
+``` bash
+sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
+# bash yolov3/data/get_coco_dataset.sh
+sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
+cd yolov3
+
+python3 test.py --save-json --conf-thres 0.001 --img-size 416
+Namespace(batch_size=32, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.45, save_json=True, weights='weights/yolov3.weights')
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.308
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.549
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.310
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.141
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.334
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.454
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.267
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.403
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.428
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.237
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.464
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.585
+ 
+python3 test.py --save-json --conf-thres 0.001 --img-size 608 --batch-size 16
+Namespace(batch_size=16, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=608, iou_thres=0.5, nms_thres=0.45, save_json=True, weights='weights/yolov3.weights')
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.328
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.579
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.335
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.190
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.357
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.428
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.279
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.429
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.456
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.299
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.483
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.572
+```
 
 # Contact
 
