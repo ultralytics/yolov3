@@ -43,9 +43,9 @@ class LoadImages:  # for inference
         img, _, _, _ = letterbox(img0, height=self.height)
 
         # Normalize RGB
-        img = img[:, :, ::-1].transpose(2, 0, 1)
-        img = np.ascontiguousarray(img, dtype=np.float32)
-        img /= 255.0
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
+        img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
         # cv2.imwrite(img_path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
         return img_path, img, img0
@@ -79,9 +79,9 @@ class LoadWebcam:  # for inference
         img, _, _, _ = letterbox(img0, height=self.height)
 
         # Normalize RGB
-        img = img[:, :, ::-1].transpose(2, 0, 1)
-        img = np.ascontiguousarray(img, dtype=np.float32)
-        img /= 255.0
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
+        img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
         return img_path, img, img0
 
@@ -207,8 +207,8 @@ class LoadImagesAndLabels:  # for training
             img_shapes.append((h, w))
 
         # Normalize
-        img_all = np.stack(img_all)[:, :, :, ::-1].transpose(0, 3, 1, 2)  # BGR to RGB and cv2 to pytorch
-        img_all = np.ascontiguousarray(img_all, dtype=np.float32)  # int8 to float32
+        img_all = np.stack(img_all)[:, :, :, ::-1].transpose(0, 3, 1, 2)  # list to np.array and BGR to RGB
+        img_all = np.ascontiguousarray(img_all, dtype=np.float32)  # uint8 to float32
         img_all /= 255.0  # 0 - 255 to 0.0 - 1.0
 
         labels_all = torch.from_numpy(np.concatenate(labels_all, 0))
