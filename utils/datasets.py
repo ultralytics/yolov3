@@ -73,7 +73,7 @@ class LoadWebcam:  # for inference
         ret_val, img0 = self.cam.read()
         assert ret_val, 'Webcam Error'
         img_path = 'webcam_%g.jpg' % self.count
-        img0 = cv2.flip(img0, 1)
+        img0 = cv2.flip(img0, 1)  # flip left-right
 
         # Padded resize
         img, _, _, _ = letterbox(img0, height=self.height)
@@ -155,7 +155,10 @@ class LoadImagesAndLabels:  # for training
 
             # Load labels
             if os.path.isfile(label_path):
-                labels0 = np.loadtxt(label_path, dtype=np.float32).reshape(-1, 5)
+                # labels0 = np.loadtxt(label_path, dtype=np.float32).reshape(-1, 5)  # SLOWER
+                with open(label_path, 'r') as file:
+                    lines = file.read().splitlines()
+                    labels0 = np.array([x.split() for x in lines], dtype=np.float32)
 
                 # Normalized xywh to pixel xyxy format
                 labels = labels0.copy()
