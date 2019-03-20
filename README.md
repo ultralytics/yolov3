@@ -92,54 +92,56 @@ Run `detect.py` with `webcam=True` to show a live webcam feed.
 
 # Pretrained Weights
 
-**Darknet** format: 
-- https://pjreddie.com/media/files/yolov3.weights
-- https://pjreddie.com/media/files/yolov3-tiny.weights
-
-**PyTorch** format:
-- https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI
+- Darknet `*.weights` format: https://pjreddie.com/media/files/yolov3.weights
+- PyTorch `*.pt` format: https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI
 
 # mAP
 
-Run `test.py --save-json --conf-thres 0.005` to test the official YOLOv3 weights `weights/yolov3.weights` against the 5000 validation images. Compare to .579 at 608 x 608 reported in darknet (https://arxiv.org/abs/1804.02767).
+- Use `test.py --weights weights/yolov3.weights` to test the official YOLOv3 weights.
+- Use `test.py --weights weights/latest.pt` to test the latest training results.
+- Compare to official darknet results from https://arxiv.org/abs/1804.02767.
 
-Run `test.py --weights weights/latest.pt` to validate against the latest training results. Hyperparameter settings and loss equation changes affect these results significantly, and additional trade studies may be needed to further improve this.
+<i></i> | ultralytics/yolov3 | darknet  
+--- | ---| ---   
+YOLOv3-320 | 51.3 | 51.5  
+YOLOv3-416 | 54.9 | 55.3  
+YOLOv3-608 | 57.9 | 57.9  
 
 ``` bash
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 # bash yolov3/data/get_coco_dataset.sh
 sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
-cd yolov3 && python3 test.py --save-json --conf-thres 0.005
+cd yolov3
 
-...
-
-Namespace(batch_size=32, cfg='cfg/yolov3.cfg', conf_thres=0.005, data_cfg='cfg/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.45, save_json=True, weights='weights/yolov3.weights')
-
-loading annotations into memory...
-Done (t=4.17s)
-creating index...
-index created!
-Loading and preparing results...
-DONE (t=1.75s)
-creating index...
-index created!
-Running per image evaluation...
-Evaluate annotation type *bbox*
-DONE (t=39.30s).
-Accumulating evaluation results...
-DONE (t=4.63s).
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.307
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.545
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.309
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.140
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.333
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.453
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.266
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.396
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.415
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.222
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.449
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.575
+python3 test.py --save-json --conf-thres 0.001 --img-size 416
+Namespace(batch_size=32, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.45, save_json=True, weights='weights/yolov3.weights')
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.308
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.549
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.310
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.141
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.334
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.454
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.267
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.403
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.428
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.237
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.464
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.585
+ 
+python3 test.py --save-json --conf-thres 0.001 --img-size 608 --batch-size 16
+Namespace(batch_size=16, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=608, iou_thres=0.5, nms_thres=0.45, save_json=True, weights='weights/yolov3.weights')
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.328
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.579
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.335
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.190
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.357
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.428
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.279
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.429
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.456
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.299
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.483
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.572
 ```
 
 # Contact
