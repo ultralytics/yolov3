@@ -72,9 +72,9 @@ https://cloud.google.com/deep-learning-vm/
 GPUs | `batch_size` | speed | COCO epoch
 --- |---| --- | --- 
 (P100)   |  (images)  | (s/batch) | (min/epoch)
-1 | 24 | 0.84s  | 70min
-2 | 48 | 1.27s | 53min
-4 | 96 | 2.11s | 44min
+1 | 16 | 0.54s  | 66min
+2 | 32 | 0.99s | 61min
+4 | 64 | 1.61s | 49min
 
 # Inference
 
