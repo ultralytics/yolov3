@@ -208,8 +208,8 @@ class LoadImagesAndLabels:  # for training
 
         # Normalize
         img_all = np.stack(img_all)[:, :, :, ::-1].transpose(0, 3, 1, 2)  # BGR to RGB and cv2 to pytorch
-        img_all = np.ascontiguousarray(img_all, dtype=np.float32)
-        img_all /= 255.0
+        img_all = np.ascontiguousarray(img_all, dtype=np.float32)  # int8 to float32
+        img_all /= 255.0  # 0 - 255 to 0.0 - 1.0
 
         labels_all = torch.from_numpy(np.concatenate(labels_all, 0))
         return torch.from_numpy(img_all), labels_all, img_paths, img_shapes
