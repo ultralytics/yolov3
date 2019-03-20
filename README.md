@@ -45,21 +45,6 @@ Each epoch trains on 120,000 images from the train and validate COCO sets, and t
 `from utils import utils; utils.plot_results()`
 ![Alt](https://user-images.githubusercontent.com/26833433/53494085-3251aa00-3a9d-11e9-8af7-8c08cf40d70b.png "train.py results")
 
-# Speed
-
-https://cloud.google.com/deep-learning-vm/  
-**Machine type:** n1-highmem-4 (4 vCPUs, 26 GB memory)  
-**CPU platform:** Intel Skylake  
-**GPUs:** 1-4 x NVIDIA Tesla P100  
-**HDD:** 100 GB SSD  
-
-GPUs | `batch_size` | speed | COCO epoch
---- |---| --- | --- 
-(P100)   |  (images)  | (s/batch) | (min/epoch)
-1 | 24 | 0.84s  | 70min
-2 | 48 | 1.27s | 53min
-4 | 96 | 2.11s | 44min
-
 ## Image Augmentation
 
 `datasets.py` applies random OpenCV-powered (https://opencv.org/) augmentation to the input images in accordance with the following specifications. Augmentation is applied **only** during training, not during inference. Bounding boxes are automatically tracked and updated with the images. 416 x 416 examples pictured below.
@@ -75,6 +60,21 @@ H**S**V Saturation | +/- 50%
 HS**V** Intensity | +/- 50%
 
 <img src="https://user-images.githubusercontent.com/26833433/50525037-6cbcbc00-0ad9-11e9-8c38-9fd51af530e0.jpg">
+
+## Speed
+
+https://cloud.google.com/deep-learning-vm/  
+**Machine type:** n1-highmem-4 (4 vCPUs, 26 GB memory)  
+**CPU platform:** Intel Skylake  
+**GPUs:** 1-4 x NVIDIA Tesla P100  
+**HDD:** 100 GB SSD  
+
+GPUs | `batch_size` | speed | COCO epoch
+--- |---| --- | --- 
+(P100)   |  (images)  | (s/batch) | (min/epoch)
+1 | 24 | 0.84s  | 70min
+2 | 48 | 1.27s | 53min
+4 | 96 | 2.11s | 44min
 
 # Inference
 
