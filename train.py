@@ -197,7 +197,7 @@ if __name__ == '__main__':
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
-    parser.add_argument('--num_workers', type=int, default=0, help='number of Pytorch DataLoader workers')
+    parser.add_argument('--num_workers', type=int, default=4, help='number of Pytorch DataLoader workers')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
