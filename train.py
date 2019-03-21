@@ -1,6 +1,8 @@
 import argparse
 import time
 
+from torch.utils.data import DataLoader
+
 import test  # Import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
@@ -17,6 +19,7 @@ def train(
         accumulate=1,
         multi_scale=False,
         freeze_backbone=False,
+        num_workers=0
 ):
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
@@ -38,10 +41,11 @@ def train(
     lr0 = 0.001  # initial learning rate
     optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9)
 
-    # Get dataloader
-    dataloader = LoadImagesAndLabels(train_path, batch_size, img_size, augment=True)
-    # from torch.utils.data import DataLoader
-    # dataloader = DataLoader(dataloader, batch_size=batch_size, num_workers=1)
+    # Dataloader
+    if num_workers > 0:
+        cv2.setNumThreads(0)  # to prevent OpenCV from multithreading
+    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
@@ -102,7 +106,6 @@ def train(
         ui = -1
         rloss = defaultdict(float)
         for i, (imgs, targets, _, _) in enumerate(dataloader):
-
             if targets.shape[1] == 100:  # multithreaded 100-size block
                 targets = targets.view((-1, 6))
                 targets = targets[targets[:, 5].nonzero().squeeze()]
@@ -150,8 +153,8 @@ def train(
 
             # Multi-Scale training (320 - 608 pixels) every 10 batches
             if multi_scale and (i + 1) % 10 == 0:
-                dataloader.img_size = random.choice(range(10, 20)) * 32
-                print('multi_scale img_size = %g' % dataloader.img_size)
+                dataset.img_size = random.choice(range(10, 20)) * 32
+                print('multi_scale img_size = %g' % dataset.img_size)
 
         # Update best loss
         if rloss['total'] < best_loss:
@@ -194,6 +197,7 @@ if __name__ == '__main__':
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
+    parser.add_argument('--num_workers', type=int, default=0, help='number of Pytorch DataLoader workers')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
@@ -208,4 +212,5 @@ if __name__ == '__main__':
         batch_size=opt.batch_size,
         accumulate=opt.accumulate,
         multi_scale=opt.multi_scale,
+        num_workers=opt.num_workers
     )
