@@ -64,7 +64,7 @@ HS**V** Intensity | +/- 50%
 ## Speed
 
 https://cloud.google.com/deep-learning-vm/  
-**Machine type:** n1-highmem-4 (4 vCPUs, 26 GB memory)  
+**Machine type:** n1-standard-8 (8 vCPUs, 30 GB memory)
 **CPU platform:** Intel Skylake  
 **GPUs:** 1-4 x NVIDIA Tesla P100  
 **HDD:** 100 GB SSD  
@@ -72,9 +72,9 @@ https://cloud.google.com/deep-learning-vm/
 GPUs | `batch_size` | speed | COCO epoch
 --- |---| --- | --- 
 (P100)   |  (images)  | (s/batch) | (min/epoch)
-1 | 16 | 0.54s  | 66min
-2 | 32 | 0.99s | 61min
-4 | 64 | 1.61s | 49min
+1 | 16 | 0.39s  | 48min
+2 | 32 | 0.48s | 29min
+4 | 64 | 0.65s | 20min
 
 # Inference
 
