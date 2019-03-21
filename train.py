@@ -7,7 +7,6 @@ from utils.datasets import *
 from utils.utils import *
 
 
-# @profile
 def train(
         cfg,
         data_cfg,
@@ -155,9 +154,6 @@ def train(
                 dataloader.img_size = random.choice(range(10, 20)) * 32
                 print('multi_scale img_size = %g' % dataloader.img_size)
 
-            if i == 10:
-                return
-
         # Update best loss
         if rloss['total'] < best_loss:
             best_loss = rloss['total']
@@ -192,7 +188,7 @@ def train(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=270, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=2, help='size of each image batch')
+    parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
