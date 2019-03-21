@@ -7,6 +7,7 @@ from utils.datasets import *
 from utils.utils import *
 
 
+# @profile
 def train(
         cfg,
         data_cfg,
@@ -34,47 +35,39 @@ def train(
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
 
+    # Optimizer
+    lr0 = 0.001  # initial learning rate
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9)
+
     # Get dataloader
     dataloader = LoadImagesAndLabels(train_path, batch_size, img_size, augment=True)
-    # dataloader = torch.utils.data.DataLoader(dataloader, batch_size=batch_size, num_workers=0)
+    # from torch.utils.data import DataLoader
+    # dataloader = DataLoader(dataloader, batch_size=batch_size, num_workers=1)
 
-    lr0 = 0.001  # initial learning rate
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_loss = float('inf')
-    if resume:
-        checkpoint = torch.load(latest, map_location=device)
-
-        # Load weights to resume from
+    if resume:  # Load previously saved PyTorch model
+        checkpoint = torch.load(latest, map_location=device)  # load checkpoin
         model.load_state_dict(checkpoint['model'])
-
-        # Transfer learning (train only YOLO layers)
-        # for i, (name, p) in enumerate(model.named_parameters()):
-        #     p.requires_grad = True if (p.shape[0] == 255) else False
-
-        # Set optimizer
-        optimizer = torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()), lr=lr0, momentum=.9)
-
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
             optimizer.load_state_dict(checkpoint['optimizer'])
             best_loss = checkpoint['best_loss']
-
         del checkpoint  # current, saved
 
-    else:
-        # Initialize model with backbone (optional)
+    else:  # Initialize model with backbone (optional)
         if cfg.endswith('yolov3.cfg'):
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
         elif cfg.endswith('yolov3-tiny.cfg'):
             cutoff = load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
 
-        # Set optimizer
-        optimizer = torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()), lr=lr0, momentum=.9)
-
     if torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
-    model.to(device).train()
+
+    # # Transfer learning (train only YOLO layers)
+    for i, (name, p) in enumerate(model.named_parameters()):
+        p.requires_grad = True if (p.shape[0] == 255) else False
 
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
@@ -110,6 +103,11 @@ def train(
         ui = -1
         rloss = defaultdict(float)
         for i, (imgs, targets, _, _) in enumerate(dataloader):
+
+            if targets.shape[1] == 100:  # multithreaded forced to 100
+                targets = targets.view((-1, 6))
+                targets = targets[targets[:, 5].nonzero().squeeze()]
+
             targets = targets.to(device)
             nT = targets.shape[0]
             if nT == 0:  # if no targets continue
@@ -157,6 +155,9 @@ def train(
                 dataloader.img_size = random.choice(range(10, 20)) * 32
                 print('multi_scale img_size = %g' % dataloader.img_size)
 
+            if i == 10:
+                return
+
         # Update best loss
         if rloss['total'] < best_loss:
             best_loss = rloss['total']
@@ -191,7 +192,7 @@ def train(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=270, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
+    parser.add_argument('--batch-size', type=int, default=2, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
