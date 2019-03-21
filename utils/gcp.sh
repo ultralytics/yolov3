@@ -9,7 +9,7 @@ sudo shutdown
 # Start
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 cp -r weights yolov3
-cd yolov3 && python3 train.py --batch-size 64 --multi_scale
+cd yolov3 && python3 train.py --batch-size 16 --num-workers 4
 
 # Resume
 python3 train.py --resume
