@@ -51,7 +51,7 @@ def train(
     start_epoch = 0
     best_loss = float('inf')
     if resume:  # Load previously saved PyTorch model
-        checkpoint = torch.load(latest, map_location=device)  # load checkpoin
+        checkpoint = torch.load(latest, map_location=device)  # load checkpoint
         model.load_state_dict(checkpoint['model'])
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
