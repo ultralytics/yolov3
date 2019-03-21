@@ -43,7 +43,7 @@ def test(
 
     # Dataloader
     dataset = LoadImagesAndLabels(test_path, img_size=img_size)
-    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=0)
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=4)
 
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
