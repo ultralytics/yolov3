@@ -42,10 +42,8 @@ def train(
     optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9)
 
     # Dataloader
-    if num_workers > 0:
-        cv2.setNumThreads(0)  # to prevent OpenCV from multithreading
     dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
-    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=4)
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
@@ -103,16 +101,27 @@ def train(
                 if int(name.split('.')[1]) < cutoff:  # if layer < 75
                     p.requires_grad = False if (epoch == 0) else True
 
-        ui = -1
         rloss = defaultdict(float)
         for i, (imgs, targets, _, _) in enumerate(dataloader):
-            if targets.shape[1] == 100:  # multithreaded 100-size block
-                targets = targets.view((-1, 6))
-                targets = targets[targets[:, 5].nonzero().squeeze()]
+            # Unpad and collate targets
+            for j, t in enumerate(targets):
+                t[:, 0] = j
+            targets = torch.cat([t[t[:, 5].nonzero()] for t in targets], 0).squeeze(1)
 
-            nT = targets.shape[0]
+            nT = len(targets)
             if nT == 0:  # if no targets continue
                 continue
+
+            # Plot images with bounding boxes
+            plot_images = False
+            if plot_images:
+                import matplotlib.pyplot as plt
+                plt.figure(figsize=(10, 10))
+                for ip in range(batch_size):
+                    labels = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy() * img_size
+                    plt.subplot(3, 3, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
+                    plt.plot(labels[:, [0, 2, 2, 0, 0]].T, labels[:, [1, 1, 3, 3, 1]].T, '.-')
+                    plt.axis('off')
 
             # SGD burn-in
             if (epoch == 0) and (i <= n_burnin):
@@ -138,9 +147,8 @@ def train(
                 optimizer.zero_grad()
 
             # Running epoch-means of tracked metrics
-            ui += 1
             for key, val in loss_dict.items():
-                rloss[key] = (rloss[key] * ui + val) / (ui + 1)
+                rloss[key] = (rloss[key] * i + val) / (i + 1)
 
             s = ('%8s%12s' + '%10.3g' * 7) % (
                 '%g/%g' % (epoch, epochs - 1),
@@ -197,7 +205,7 @@ if __name__ == '__main__':
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
-    parser.add_argument('--num_workers', type=int, default=4, help='number of Pytorch DataLoader workers')
+    parser.add_argument('--num_workers', type=int, default=0, help='number of Pytorch DataLoader workers')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 

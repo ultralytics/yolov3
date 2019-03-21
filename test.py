@@ -3,6 +3,8 @@ import json
 import time
 from pathlib import Path
 
+from torch.utils.data import DataLoader
+
 from models import *
 from utils.datasets import *
 from utils.utils import *
@@ -39,16 +41,21 @@ def test(
 
     model.to(device).eval()
 
-    # Get dataloader
-    # dataloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path), batch_size=batch_size)
-    dataloader = LoadImagesAndLabels(test_path, batch_size=batch_size, img_size=img_size)
+    # Dataloader
+    dataset = LoadImagesAndLabels(test_path, img_size=img_size)
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=0)
 
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
     mP, mR, mAPs, TP, jdict = [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
-    for (imgs, targets, paths, shapes) in dataloader:
+    for imgs, targets, paths, shapes in dataloader:
+        # Unpad and collate targets
+        for j, t in enumerate(targets):
+            t[:, 0] = j
+        targets = torch.cat([t[t[:, 5].nonzero()] for t in targets], 0).squeeze(1)
+
         targets = targets.to(device)
         t = time.time()
         output = model(imgs.to(device))
@@ -71,7 +78,7 @@ def test(
             if save_json:
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
                 box = detections[:, :4].clone()  # xyxy
-                scale_coords(img_size, box, shapes[si])  # to original shape
+                scale_coords(img_size, box, (shapes[0][si], shapes[1][si]))  # to original shape
                 box = xyxy2xywh(box)  # xywh
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
 
@@ -129,7 +136,7 @@ def test(
 
         # Print image mAP and running mean mAP
         print(('%11s%11s' + '%11.3g' * 4 + 's') %
-              (seen, dataloader.nF, mean_P, mean_R, mean_mAP, time.time() - t))
+              (seen, len(dataset), mean_P, mean_R, mean_mAP, time.time() - t))
 
     # Print mAP per class
     print('\nmAP Per Class:')
@@ -139,7 +146,7 @@ def test(
 
     # Save JSON
     if save_json:
-        imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataloader.img_files]
+        imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataset.img_files]
         with open('results.json', 'w') as file:
             json.dump(jdict, file)
 

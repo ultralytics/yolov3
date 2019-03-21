@@ -15,6 +15,9 @@ from utils import torch_utils
 torch.set_printoptions(linewidth=1320, precision=5, profile='long')
 np.set_printoptions(linewidth=320, formatter={'float_kind': '{:11.5g}'.format})  # format short g, %precision=5
 
+# Prevent OpenCV from multithreading (to use PyTorch DataLoader)
+cv2.setNumThreads(0)
+
 
 def float3(x):  # format floats to 3 decimals
     return float(format(x, '.3f'))
