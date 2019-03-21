@@ -104,7 +104,6 @@ class LoadImagesAndLabels:  # for training
         self.batch_size = batch_size
         self.img_size = img_size
         self.augment = augment
-        iter(self)
 
     def __iter__(self):
         self.count = -1
