@@ -100,7 +100,7 @@ def detect(
         if webcam:  # Show live webcam
             cv2.imshow(weights, im0)
 
-    if save_images and (platform == 'darwin'):  # linux/macos
+    if save_images and platform is 'darwin':  # linux/macos
         os.system('open ' + output + ' ' + save_path)
 
 

@@ -251,7 +251,7 @@ def wh_iou(box1, box2):
 def compute_loss(p, targets):  # predictions, targets
     FT = torch.cuda.FloatTensor if p[0].is_cuda else torch.FloatTensor
     loss, lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
-    txy, twh, tcls, tconf, indices = targets
+    txy, twh, tcls, indices = targets
     MSE = nn.MSELoss()
     CE = nn.CrossEntropyLoss()
     BCE = nn.BCEWithLogitsLoss()
@@ -260,18 +260,21 @@ def compute_loss(p, targets):  # predictions, targets
     # gp = [x.numel() for x in tconf]  # grid points
     for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridx, gridy
+        tconf = torch.zeros_like(pi0[..., 0])  # conf
 
         # Compute losses
         k = 1  # nT / bs
         if len(b) > 0:
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
+            tconf[b, a, gj, gi] = 1  # conf
+
             lxy += k * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy
             lwh += k * MSE(pi[..., 2:4], twh[i])  # wh
             lcls += (k / 4) * CE(pi[..., 5:], tcls[i])
 
         # pos_weight = FT([gp[i] / min(gp) * 4.])
         # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 64) * BCE(pi0[..., 4], tconf[i])
+        lconf += (k * 64) * BCE(pi0[..., 4], tconf)
     loss = lxy + lwh + lconf + lcls
 
     # Add to dictionary
@@ -283,15 +286,13 @@ def compute_loss(p, targets):  # predictions, targets
     return loss, d
 
 
-def build_targets(model, targets, pred):
+def build_targets(model, targets):
     # targets = [image, class, x, y, w, h]
     if isinstance(model, nn.DataParallel):
         model = model.module
-    yolo_layers = get_yolo_layers(model)
 
-    # anchors = closest_anchor(model, targets)  # [layer, anchor, i, j]
-    txy, twh, tcls, tconf, indices = [], [], [], [], []
-    for i, layer in enumerate(yolo_layers):
+    txy, twh, tcls, indices = [], [], [], []
+    for i, layer in enumerate(get_yolo_layers(model)):
         nG = model.module_list[layer][0].nG  # grid size
         anchor_vec = model.module_list[layer][0].anchor_vec
 
@@ -324,12 +325,7 @@ def build_targets(model, targets, pred):
         # Class
         tcls.append(c)
 
-        # Conf
-        tci = torch.zeros_like(pred[i][..., 0])
-        tci[b, a, gj, gi] = 1  # conf
-        tconf.append(tci)
-
-    return txy, twh, tcls, tconf, indices
+    return txy, twh, tcls, indices
 
 
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):

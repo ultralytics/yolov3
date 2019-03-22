@@ -4,3 +4,4 @@ numpy
 opencv-python
 torch >= 1.0.0
 matplotlib
+pycocotools

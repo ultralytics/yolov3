@@ -43,7 +43,12 @@ def train(
 
     # Dataloader
     dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
-    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
+    dataloader = DataLoader(dataset,
+                            batch_size=batch_size,
+                            num_workers=num_workers,
+                            shuffle=False,
+                            pin_memory=False,
+                            collate_fn=dataset.collate_fn)
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
@@ -99,13 +104,8 @@ def train(
                 if int(name.split('.')[1]) < cutoff:  # if layer < 75
                     p.requires_grad = False if (epoch == 0) else True
 
-        rloss = defaultdict(float)
+        mloss = defaultdict(float)  # mean loss
         for i, (imgs, targets, _, _) in enumerate(dataloader):
-            # Unpad and collate targets
-            for j, t in enumerate(targets):
-                t[:, 0] = j
-            targets = torch.cat([t[t[:, 5].nonzero()] for t in targets], 0).squeeze(1)
-
             nT = len(targets)
             if nT == 0:  # if no targets continue
                 continue
@@ -113,7 +113,6 @@ def train(
             # Plot images with bounding boxes
             plot_images = False
             if plot_images:
-                import matplotlib.pyplot as plt
                 plt.figure(figsize=(10, 10))
                 for ip in range(batch_size):
                     labels = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy() * img_size
@@ -131,7 +130,7 @@ def train(
             pred = model(imgs.to(device))
 
             # Build targets
-            target_list = build_targets(model, targets.to(device), pred)
+            target_list = build_targets(model, targets.to(device))
 
             # Compute loss
             loss, loss_dict = compute_loss(pred, target_list)
@@ -146,13 +145,13 @@ def train(
 
             # Running epoch-means of tracked metrics
             for key, val in loss_dict.items():
-                rloss[key] = (rloss[key] * i + val) / (i + 1)
+                mloss[key] = (mloss[key] * i + val) / (i + 1)
 
             s = ('%8s%12s' + '%10.3g' * 7) % (
                 '%g/%g' % (epoch, epochs - 1),
                 '%g/%g' % (i, len(dataloader) - 1),
-                rloss['xy'], rloss['wh'], rloss['conf'],
-                rloss['cls'], rloss['total'],
+                mloss['xy'], mloss['wh'], mloss['conf'],
+                mloss['cls'], mloss['total'],
                 nT, time.time() - t0)
             t0 = time.time()
             print(s)
@@ -163,11 +162,11 @@ def train(
                 print('multi_scale img_size = %g' % dataset.img_size)
 
         # Update best loss
-        if rloss['total'] < best_loss:
-            best_loss = rloss['total']
+        if mloss['total'] < best_loss:
+            best_loss = mloss['total']
 
         # Save training results
-        save = True
+        save = False
         if save:
             # Save latest checkpoint
             checkpoint = {'epoch': epoch,
@@ -177,7 +176,7 @@ def train(
             torch.save(checkpoint, latest)
 
             # Save best checkpoint
-            if best_loss == rloss['total']:
+            if best_loss == mloss['total']:
                 os.system('cp ' + latest + ' ' + best)
 
             # Save backup weights every 5 epochs (optional)
@@ -196,7 +195,7 @@ def train(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=270, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
+    parser.add_argument('--batch-size', type=int, default=3, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')

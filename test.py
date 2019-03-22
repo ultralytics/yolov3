@@ -43,7 +43,11 @@ def test(
 
     # Dataloader
     dataset = LoadImagesAndLabels(test_path, img_size=img_size)
-    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=0)
+    dataloader = DataLoader(dataset,
+                            batch_size=batch_size,
+                            num_workers=0,
+                            pin_memory=False,
+                            collate_fn=dataset.collate_fn)
 
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
@@ -51,11 +55,6 @@ def test(
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
     for imgs, targets, paths, shapes in dataloader:
-        # Unpad and collate targets
-        for j, t in enumerate(targets):
-            t[:, 0] = j
-        targets = torch.cat([t[t[:, 5].nonzero()] for t in targets], 0).squeeze(1)
-
         targets = targets.to(device)
         t = time.time()
         output = model(imgs.to(device))
@@ -78,7 +77,7 @@ def test(
             if save_json:
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
                 box = detections[:, :4].clone()  # xyxy
-                scale_coords(img_size, box, (shapes[0][si], shapes[1][si]))  # to original shape
+                scale_coords(img_size, box, shapes[si])  # to original shape
                 box = xyxy2xywh(box)  # xywh
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
 
@@ -191,4 +190,5 @@ if __name__ == '__main__':
             opt.iou_thres,
             opt.conf_thres,
             opt.nms_thres,
-            opt.save_json)
+            opt.save_json
+        )
