@@ -161,7 +161,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         nL = len(labels)
         if nL > 0:
             # convert xyxy to xywh
-            labels[:, 1:5] = xyxy2xywh(labels[:, 1:5].copy()) / self.img_size
+            labels[:, 1:5] = xyxy2xywh(labels[:, 1:5]) / self.img_size
 
         if self.augment:
             # random left-right flip
