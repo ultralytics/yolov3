@@ -141,13 +141,16 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             with open(label_path, 'r') as file:
                 lines = file.read().splitlines()
                 labels0 = np.array([x.split() for x in lines], dtype=np.float32)
-
-            # Normalized xywh to pixel xyxy format
-            labels = labels0.copy()
-            labels[:, 1] = ratio * w * (labels0[:, 1] - labels0[:, 3] / 2) + padw
-            labels[:, 2] = ratio * h * (labels0[:, 2] - labels0[:, 4] / 2) + padh
-            labels[:, 3] = ratio * w * (labels0[:, 1] + labels0[:, 3] / 2) + padw
-            labels[:, 4] = ratio * h * (labels0[:, 2] + labels0[:, 4] / 2) + padh
+            # If label file is empty
+            if labels0.size is 0:
+                labels = np.array([])
+            else:
+                # Normalized xywh to pixel xyxy format
+                labels = labels0.copy()
+                labels[:, 1] = ratio * w * (labels0[:, 1] - labels0[:, 3] / 2) + padw
+                labels[:, 2] = ratio * h * (labels0[:, 2] - labels0[:, 4] / 2) + padh
+                labels[:, 3] = ratio * w * (labels0[:, 1] + labels0[:, 3] / 2) + padw
+                labels[:, 4] = ratio * h * (labels0[:, 2] + labels0[:, 4] / 2) + padh
         else:
             labels = np.array([])
 
