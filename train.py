@@ -64,6 +64,7 @@ def train(
             cutoff = load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
 
     if torch.cuda.device_count() > 1:
+        print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
         model = nn.DataParallel(model)
 
     # Transfer learning (train only YOLO layers)
@@ -88,10 +89,7 @@ def train(
         # scheduler.step()
 
         # Update scheduler (manual)
-        if epoch > 250:
-            lr = lr0 / 10
-        else:
-            lr = lr0
+        lr = lr0 / 10 if epoch > 250 else lr0
         for x in optimizer.param_groups:
             x['lr'] = lr
 
@@ -119,7 +117,7 @@ def train(
                 plt.figure(figsize=(10, 10))
                 for ip in range(batch_size):
                     labels = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy() * img_size
-                    plt.subplot(3, 3, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
+                    plt.subplot(4, 4, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
                     plt.plot(labels[:, [0, 2, 2, 0, 0]].T, labels[:, [1, 1, 3, 3, 1]].T, '.-')
                     plt.axis('off')
 
