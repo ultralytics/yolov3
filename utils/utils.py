@@ -476,10 +476,9 @@ def plot_results(start=0):
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
     # from utils.utils import *; plot_results()
 
-    plt.figure(figsize=(14, 7))
+    fig = plt.figure(figsize=(14, 7))
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
-    files = sorted(glob.glob('results*.txt'))
-    for f in files:
+    for f in sorted(glob.glob('results*.txt')):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
         x = range(1, results.shape[1])
         for i in range(8):
@@ -488,3 +487,4 @@ def plot_results(start=0):
             plt.title(s[i])
             if i == 0:
                 plt.legend()
+    fig.tight_layout()

@@ -111,14 +111,16 @@ def train(
                 continue
 
             # Plot images with bounding boxes
-            plot_images = False
+            plot_images = True
             if plot_images:
-                plt.figure(figsize=(10, 10))
+                fig = plt.figure(figsize=(10, 10))
                 for ip in range(batch_size):
                     labels = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy() * img_size
                     plt.subplot(4, 4, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
                     plt.plot(labels[:, [0, 2, 2, 0, 0]].T, labels[:, [1, 1, 3, 3, 1]].T, '.-')
                     plt.axis('off')
+                fig.tight_layout()
+                fig.savefig('batch_%g.jpg' % i, dpi=fig.dpi)
 
             # SGD burn-in
             if (epoch == 0) and (i <= n_burnin):
@@ -195,7 +197,7 @@ def train(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=270, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=3, help='size of each image batch')
+    parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')

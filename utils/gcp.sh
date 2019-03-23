@@ -20,6 +20,8 @@ python3 detect.py
 
 # Clone a branch
 sudo rm -rf yolov3 && git clone -b multi_gpu --depth 1 https://github.com/ultralytics/yolov3
+cp -r weights yolov3
+cd yolov3 && python3 train.py --batch-size 16 --epochs 1
 
 # Test
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
