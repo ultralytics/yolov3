@@ -40,12 +40,15 @@ def test(
             _ = load_darknet_weights(model, weights)
 
     model.to(device).eval()
+    if torch.cuda.device_count() > 1:
+        print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
+        model = nn.DataParallel(model)
 
     # Dataloader
     dataset = LoadImagesAndLabels(test_path, img_size=img_size)
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
-                            num_workers=0,
+                            num_workers=4,
                             pin_memory=False,
                             collate_fn=dataset.collate_fn)
 
