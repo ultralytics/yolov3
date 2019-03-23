@@ -58,9 +58,10 @@ def test(
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
     for imgs, targets, paths, shapes in dataloader:
-        targets = targets.to(device)
         t = time.time()
-        output = model(imgs.to(device))
+        targets = targets.to(device)
+        imgs = imgs.to(device)
+        output = model(imgs)
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
 
         # Compute average precision for each sample
