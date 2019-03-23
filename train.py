@@ -80,7 +80,7 @@ def train(
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
 
     # Start training
-    t0 = time.time()
+    t = time.time()
     model_info(model)
     n_burnin = min(round(len(dataloader) / 5 + 1), 1000)  # burn-in batches
     for epoch in range(epochs):
@@ -106,6 +106,9 @@ def train(
 
         mloss = defaultdict(float)  # mean loss
         for i, (imgs, targets, _, _) in enumerate(dataloader):
+            imgs = imgs.to(device)
+            targets = targets.to(device)
+
             nT = len(targets)
             if nT == 0:  # if no targets continue
                 continue
@@ -129,10 +132,10 @@ def train(
                     x['lr'] = lr
 
             # Run model
-            pred = model(imgs.to(device))
+            pred = model(imgs)
 
             # Build targets
-            target_list = build_targets(model, targets.to(device))
+            target_list = build_targets(model, targets)
 
             # Compute loss
             loss, loss_dict = compute_loss(pred, target_list)
@@ -154,8 +157,8 @@ def train(
                 '%g/%g' % (i, len(dataloader) - 1),
                 mloss['xy'], mloss['wh'], mloss['conf'],
                 mloss['cls'], mloss['total'],
-                nT, time.time() - t0)
-            t0 = time.time()
+                nT, time.time() - t)
+            t = time.time()
             print(s)
 
             # Multi-Scale training (320 - 608 pixels) every 10 batches
