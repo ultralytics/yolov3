@@ -111,7 +111,7 @@ def train(
                 continue
 
             # Plot images with bounding boxes
-            plot_images = True
+            plot_images = False
             if plot_images:
                 fig = plt.figure(figsize=(10, 10))
                 for ip in range(batch_size):
@@ -168,7 +168,7 @@ def train(
             best_loss = mloss['total']
 
         # Save training results
-        save = False
+        save = True
         if save:
             # Save latest checkpoint
             checkpoint = {'epoch': epoch,
@@ -187,7 +187,7 @@ def train(
 
         # Calculate mAP
         with torch.no_grad():
-            P, R, mAP = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size, model=model)
+            P, R, mAP = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
