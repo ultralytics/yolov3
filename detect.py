@@ -34,7 +34,7 @@ def detect(
         if weights.endswith('yolov3.pt') and not os.path.exists(weights):
             if (platform == 'darwin') or (platform == 'linux'):
                 os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights)
-        model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
+        model.load_state_dict(torch.load(weights, map_location=device)['model'])
     else:  # darknet format
         _ = load_darknet_weights(model, weights)
 
