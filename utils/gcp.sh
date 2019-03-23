@@ -12,6 +12,8 @@ cd yolov3 && python3
 from utils.datasets import *
 convert_images2bmp('../coco/images/val2014/')
 convert_images2bmp('../coco/images/train2014/')
+exit()
+sudo shutdown
 
 # Train
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
