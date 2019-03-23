@@ -3,11 +3,13 @@ import math
 import os
 import random
 import shutil
+from pathlib import Path
 
 import cv2
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
 from utils.utils import xyxy2xywh
 
@@ -278,17 +280,14 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
 
 
 def convert_images2bmp(path='../coco/images/val2014/'):
-    from pathlib import Path
-    source_name = os.sep + Path(path).name
-    dest_name = source_name + 'bmp'
-    files = sorted(glob.glob('%s*.jpg' % path))
+    # cv2.imread() *.jpg at 230 img/s, *.bmp at 400 img/s
 
-    output = path.replace(source_name, dest_name)
+    folder = os.sep + Path(path).name
+    output = path.replace(folder, folder + 'bmp')
     if os.path.exists(output):
         shutil.rmtree(output)  # delete output folder
     os.makedirs(output)  # make new output folder
 
-    for i, f in enumerate(files):
-        print('%g/%g' % (i + 1, len(files)))
-        save_name = f.replace('.jpg', '.bmp').replace(source_name, dest_name)
+    for f in tqdm(glob.glob('%s*.jpg' % path)):
+        save_name = f.replace('.jpg', '.bmp').replace(folder, folder + 'bmp')
         cv2.imwrite(save_name, cv2.imread(f))

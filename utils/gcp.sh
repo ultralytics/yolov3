@@ -16,7 +16,7 @@ convert_images2bmp('../coco/images/train2014/')
 # Train
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 cp -r weights yolov3
-cd yolov3 && python3 train.py --batch-size 128 --epochs 1
+cd yolov3 && python3 train.py --batch-size 24 --epochs 1
 sudo shutdown
 
 # Resume
