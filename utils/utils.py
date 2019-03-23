@@ -435,15 +435,6 @@ def get_yolo_layers(model):
     return [i for i, x in enumerate(bool_vec) if x]  # [82, 94, 106] for yolov3
 
 
-def return_torch_unique_index(u, uv):
-    n = uv.shape[1]  # number of columns
-    first_unique = torch.zeros(n, device=u.device).long()
-    for j in range(n):
-        first_unique[j] = (uv[:, j:j + 1] == u).all(0).nonzero()[0]
-
-    return first_unique
-
-
 def strip_optimizer_from_checkpoint(filename='weights/best.pt'):
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
     a = torch.load(filename, map_location='cpu')

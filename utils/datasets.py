@@ -2,6 +2,7 @@ import glob
 import math
 import os
 import random
+import shutil
 
 import cv2
 import numpy as np
@@ -276,11 +277,18 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
     return imw, targets
 
 
-def convert_tif2bmp(p='../xview/val_images_bmp'):
-    import glob
-    import cv2
-    files = sorted(glob.glob('%s/*.tif' % p))
+def convert_images2bmp(path='../coco/images/val2014/'):
+    from pathlib import Path
+    source_name = os.sep + Path(path).name
+    dest_name = source_name + 'bmp'
+    files = sorted(glob.glob('%s*.jpg' % path))
+
+    output = path.replace(source_name, dest_name)
+    if os.path.exists(output):
+        shutil.rmtree(output)  # delete output folder
+    os.makedirs(output)  # make new output folder
+
     for i, f in enumerate(files):
         print('%g/%g' % (i + 1, len(files)))
-        cv2.imwrite(f.replace('.tif', '.bmp'), cv2.imread(f))
-        os.system('rm -rf ' + f)
+        save_name = f.replace('.jpg', '.bmp').replace(source_name, dest_name)
+        cv2.imwrite(save_name, cv2.imread(f))
