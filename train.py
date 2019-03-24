@@ -8,8 +8,7 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-
-# torch.multiprocessing.set_sharing_strategy('file_system')
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 def train(
@@ -31,8 +30,8 @@ def train(
 
     if multi_scale:
         img_size = 608  # initiate with maximum multi_scale size
-    # else:
-    #    torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
+    else:
+        torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
