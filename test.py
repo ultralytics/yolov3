@@ -25,7 +25,11 @@ def test(
 
     if model is None:
         # Initialize model
-        model = Darknet(cfg, img_size).to(device)
+        model = Darknet(cfg, img_size)
+        if torch.cuda.device_count() > 1:
+            print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
+            model = nn.DataParallel(model)
+        model.to(device)
 
         # Load weights
         if weights.endswith('.pt'):  # pytorch format
@@ -33,10 +37,7 @@ def test(
         else:  # darknet format
             _ = load_darknet_weights(model, weights)
 
-    model.to(device).eval()
-    if torch.cuda.device_count() > 1:
-        print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
-        model = nn.DataParallel(model)
+    model.eval()
 
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
@@ -61,6 +62,7 @@ def test(
         t = time.time()
         targets = targets.to(device)
         imgs = imgs.to(device)
+
         output = model(imgs)
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
 
