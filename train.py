@@ -19,7 +19,7 @@ def train(
         accumulate=1,
         multi_scale=False,
         freeze_backbone=False,
-        num_workers=0
+        num_workers=4
 ):
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
@@ -80,9 +80,10 @@ def train(
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
 
     # Start training
+    nB = len(dataloader)
     t = time.time()
     model_info(model)
-    n_burnin = min(round(len(dataloader) / 5 + 1), 1000)  # burn-in batches
+    n_burnin = min(round(nB / 5 + 1), 1000)  # burn-in batches
     for epoch in range(epochs):
         model.train()
         epoch += start_epoch
@@ -126,7 +127,7 @@ def train(
                 fig.savefig('batch_%g.jpg' % i, dpi=fig.dpi)
 
             # SGD burn-in
-            if (epoch == 0) and (i <= n_burnin):
+            if epoch == 0 and i <= n_burnin:
                 lr = lr0 * (i / n_burnin) ** 4
                 for x in optimizer.param_groups:
                     x['lr'] = lr
@@ -144,7 +145,7 @@ def train(
             loss.backward()
 
             # Accumulate gradient for x batches before optimizing
-            if (i + 1) % accumulate == 0 or (i + 1) == len(dataloader):
+            if (i + 1) % accumulate == 0 or (i + 1) == nB:
                 optimizer.step()
                 optimizer.zero_grad()
 
@@ -153,11 +154,9 @@ def train(
                 mloss[key] = (mloss[key] * i + val) / (i + 1)
 
             s = ('%8s%12s' + '%10.3g' * 7) % (
-                '%g/%g' % (epoch, epochs - 1),
-                '%g/%g' % (i, len(dataloader) - 1),
-                mloss['xy'], mloss['wh'], mloss['conf'],
-                mloss['cls'], mloss['total'],
-                nT, time.time() - t)
+                '%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, nB - 1),
+                mloss['xy'], mloss['wh'], mloss['conf'], mloss['cls'],
+                mloss['total'], nT, time.time() - t)
             t = time.time()
             print(s)
 
@@ -185,8 +184,8 @@ def train(
                 os.system('cp ' + latest + ' ' + best)
 
             # Save backup weights every 5 epochs (optional)
-            if (epoch > 0) and (epoch % 5 == 0):
-                os.system('cp ' + latest + ' ' + weights + 'backup{}.pt'.format(epoch))
+            if epoch > 0 and epoch % 5 == 0:
+                os.system('cp ' + latest + ' ' + weights + 'backup%g.pt' % epoch)
 
         # Calculate mAP
         with torch.no_grad():
