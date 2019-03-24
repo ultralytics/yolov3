@@ -76,7 +76,7 @@ def train(
     # for i, (name, p) in enumerate(model.named_parameters()):
     #     p.requires_grad = True if (p.shape[0] == 255) else False
 
-    # Set scheduler
+    # Set scheduler (reduce lr at epoch 250)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[250], gamma=0.1, last_epoch=start_epoch - 1)
 
     # Start training
