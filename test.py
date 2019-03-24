@@ -39,9 +39,9 @@ def test(
         model = nn.DataParallel(model)
 
     # Configure run
-    data_cfg_dict = parse_data_cfg(data_cfg)
-    nC = int(data_cfg_dict['classes'])  # number of classes (80 for COCO)
-    test_path = data_cfg_dict['valid']
+    data_cfg = parse_data_cfg(data_cfg)
+    nC = int(data_cfg['classes'])  # number of classes (80 for COCO)
+    test_path = data_cfg['valid']
 
     # Dataloader
     dataset = LoadImagesAndLabels(test_path, img_size=img_size)
@@ -143,7 +143,7 @@ def test(
 
     # Print mAP per class
     print('\nmAP Per Class:')
-    for i, c in enumerate(load_classes(data_cfg_dict['names'])):
+    for i, c in enumerate(load_classes(data_cfg['names'])):
         if AP_accum_count[i]:
             print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i])))
 
