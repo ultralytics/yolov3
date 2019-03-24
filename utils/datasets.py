@@ -100,7 +100,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         assert len(self.img_files) > 0, 'No images found in %s' % path
         self.img_size = img_size
         self.augment = augment
-        self.label_files = [x.replace('images', 'labels').replace('.png', '.txt').replace('.jpg', '.txt')
+        self.label_files = [x.replace('images', 'labels').replace('.bmp', '.txt').replace('.jpg', '.txt')
                             for x in self.img_files]
 
     def __len__(self):
@@ -291,3 +291,10 @@ def convert_images2bmp():
         for f in tqdm(glob.glob('%s*.jpg' % path)):
             save_name = f.replace('.jpg', '.bmp').replace(folder, folder + 'bmp')
             cv2.imwrite(save_name, cv2.imread(f))
+
+    for label_path in ['../coco/trainvalno5k.txt', '../coco/5k.txt']:
+        with open(label_path, 'r') as file:
+            lines = file.read()
+        lines = lines.replace('2014/', '2014bmp/').replace('.jpg', '.bmp')
+        with open(label_path.replace('5k', '5k_bmp'), 'w') as file:
+            file.write(lines)
