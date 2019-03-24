@@ -86,16 +86,10 @@ def train(
     n_burnin = min(round(nB / 5 + 1), 1000)  # burn-in batches
     for epoch in range(start_epoch, epochs):
         model.train()
-
         print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
 
         # Update scheduler
         scheduler.step()
-
-        # Update scheduler (manual)
-        # lr = lr0 / 10 if epoch > 250 else lr0
-        # for x in optimizer.param_groups:
-        #    x['lr'] = lr
 
         # Freeze backbone at epoch 0, unfreeze at epoch 1
         if freeze_backbone and epoch < 2:
