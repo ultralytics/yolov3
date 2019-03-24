@@ -19,7 +19,7 @@ sudo shutdown
 # Train
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 cp -r weights yolov3
-cd yolov3 && python3 train.py --batch-size 48 --epochs 1
+cd yolov3 && python3 train.py --batch-size 24 --epochs 1
 sudo shutdown
 
 # Resume
@@ -32,6 +32,7 @@ python3 detect.py
 sudo rm -rf yolov3 && git clone -b multi_gpu --depth 1 https://github.com/ultralytics/yolov3
 cp -r weights yolov3
 cd yolov3 && python3 train.py --batch-size 16 --epochs 1
+sudo shutdown
 
 # Test
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
