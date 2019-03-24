@@ -31,8 +31,6 @@ def train(
     else:
         torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
-    torch.backends.cudnn.benchmark = False  # unsuitable for multiscale
-
     # Configure run
     train_path = parse_data_cfg(data_cfg)['train']
 
