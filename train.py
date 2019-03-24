@@ -8,7 +8,8 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-torch.multiprocessing.set_sharing_strategy('file_system')
+
+# torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 def train(
