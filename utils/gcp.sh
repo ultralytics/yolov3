@@ -49,7 +49,7 @@ python3 test.py --img_size 416 --weights ../darknet/backup/yolov3.backup
 wget https://storage.googleapis.com/ultralytics/yolov3.pt -O weights/latest.pt
 
 # Copy latest.pt to bucket
-gsutil cp yolov3/weights/latest.pt gs://ultralytics
+gsutil cp yolov3/weights/latest1gpu.pt gs://ultralytics
 
 # Copy latest.pt from bucket
 gsutil cp gs://ultralytics/latest.pt yolov3/weights/latest.pt
