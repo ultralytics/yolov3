@@ -23,14 +23,9 @@ def test(
 ):
     device = torch_utils.select_device()
 
-    # Configure run
-    data_cfg_dict = parse_data_cfg(data_cfg)
-    nC = int(data_cfg_dict['classes'])  # number of classes (80 for COCO)
-    test_path = data_cfg_dict['valid']
-
     if model is None:
         # Initialize model
-        model = Darknet(cfg, img_size)
+        model = Darknet(cfg, img_size).to(device)
 
         # Load weights
         if weights.endswith('.pt'):  # pytorch format
@@ -42,6 +37,11 @@ def test(
     # if torch.cuda.device_count() > 1:
     #    print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
     #    model = nn.DataParallel(model)
+
+    # Configure run
+    data_cfg_dict = parse_data_cfg(data_cfg)
+    nC = int(data_cfg_dict['classes'])  # number of classes (80 for COCO)
+    test_path = data_cfg_dict['valid']
 
     # Dataloader
     dataset = LoadImagesAndLabels(test_path, img_size=img_size)
