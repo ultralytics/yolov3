@@ -8,7 +8,8 @@ sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd co
 sudo shutdown
 
 # Convert COCO to *.bmp
-cd yolov3 && python3
+cd yolov3
+python3
 from utils.datasets import *
 convert_images2bmp('../coco/images/val2014/')
 convert_images2bmp('../coco/images/train2014/')
@@ -18,7 +19,7 @@ sudo shutdown
 # Train
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 cp -r weights yolov3
-cd yolov3 && python3 train.py --batch-size 24 --epochs 1
+cd yolov3 && python3 train.py --batch-size 48 --epochs 1
 sudo shutdown
 
 # Resume

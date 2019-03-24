@@ -279,15 +279,15 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
     return imw, targets
 
 
-def convert_images2bmp(path='../coco/images/val2014/'):
-    # cv2.imread() *.jpg at 230 img/s, *.bmp at 400 img/s
+def convert_images2bmp():
+    # cv2.imread() jpg at 230 img/s, *.bmp at 400 img/s
+    for path in ['../coco/images/val2014/', '../coco/images/train2014/']:
+        folder = os.sep + Path(path).name
+        output = path.replace(folder, folder + 'bmp')
+        if os.path.exists(output):
+            shutil.rmtree(output)  # delete output folder
+        os.makedirs(output)  # make new output folder
 
-    folder = os.sep + Path(path).name
-    output = path.replace(folder, folder + 'bmp')
-    if os.path.exists(output):
-        shutil.rmtree(output)  # delete output folder
-    os.makedirs(output)  # make new output folder
-
-    for f in tqdm(glob.glob('%s*.jpg' % path)):
-        save_name = f.replace('.jpg', '.bmp').replace(folder, folder + 'bmp')
-        cv2.imwrite(save_name, cv2.imread(f))
+        for f in tqdm(glob.glob('%s*.jpg' % path)):
+            save_name = f.replace('.jpg', '.bmp').replace(folder, folder + 'bmp')
+            cv2.imwrite(save_name, cv2.imread(f))
