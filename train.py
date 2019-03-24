@@ -40,7 +40,7 @@ def train(
 
     # Dataloader
     train_path = parse_data_cfg(data_cfg)['train']
-    dataset = LoadImagesAndLabels(parse_data_cfg(data_cfg)['train'], img_size=img_size, augment=True)
+    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=num_workers,
