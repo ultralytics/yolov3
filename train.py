@@ -36,10 +36,6 @@ def train(
 
     # Initialize model
     model = Darknet(cfg, img_size)
-    if torch.cuda.device_count() > 1:
-        print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
-        model = nn.DataParallel(model)
-    model.to(device)
 
     # Optimizer
     lr0 = 0.001  # initial learning rate
@@ -59,7 +55,7 @@ def train(
     start_epoch = 0
     best_loss = float('inf')
     if resume:  # Load previously saved PyTorch model
-        checkpoint = torch.load(latest, map_location=device)  # load checkpoint
+        checkpoint = torch.load(latest, map_location='cpu')  # load checkpoint
         model.load_state_dict(checkpoint['model'])
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
@@ -72,6 +68,11 @@ def train(
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
         elif cfg.endswith('yolov3-tiny.cfg'):
             cutoff = load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
+
+    if torch.cuda.device_count() > 1:
+        print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
+        model = nn.DataParallel(model)
+    model.to(device)
 
     # Transfer learning (train only YOLO layers)
     # for i, (name, p) in enumerate(model.named_parameters()):
