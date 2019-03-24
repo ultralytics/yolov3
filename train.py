@@ -9,6 +9,9 @@ from utils.datasets import *
 from utils.utils import *
 
 
+# torch.multiprocessing.set_sharing_strategy('file_system')
+
+
 def train(
         cfg,
         data_cfg,
@@ -75,33 +78,31 @@ def train(
     #     p.requires_grad = True if (p.shape[0] == 255) else False
 
     # Set scheduler
-    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[250], gamma=0.1, last_epoch=start_epoch - 1)
 
     # Start training
     nB = len(dataloader)
     t = time.time()
     model_info(model)
     n_burnin = min(round(nB / 5 + 1), 1000)  # burn-in batches
-    for epoch in range(epochs):
+    for epoch in range(start_epoch, epochs):
         model.train()
-        epoch += start_epoch
 
-        print(('\n%8s%12s' + '%10s' * 7) % (
-            'Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
+        print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
 
-        # Update scheduler (automatic)
-        # scheduler.step()
+        # Update scheduler
+        scheduler.step()
 
         # Update scheduler (manual)
-        lr = lr0 / 10 if epoch > 250 else lr0
-        for x in optimizer.param_groups:
-            x['lr'] = lr
+        # lr = lr0 / 10 if epoch > 250 else lr0
+        # for x in optimizer.param_groups:
+        #    x['lr'] = lr
 
         # Freeze backbone at epoch 0, unfreeze at epoch 1
         if freeze_backbone and epoch < 2:
-            for i, (name, p) in enumerate(model.named_parameters()):
+            for name, p in model.named_parameters():
                 if int(name.split('.')[1]) < cutoff:  # if layer < 75
-                    p.requires_grad = False if (epoch == 0) else True
+                    p.requires_grad = False if epoch == 0 else True
 
         mloss = defaultdict(float)  # mean loss
         for i, (imgs, targets, _, _) in enumerate(dataloader):
