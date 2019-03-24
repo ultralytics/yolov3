@@ -295,6 +295,7 @@ def convert_images2bmp():
     for label_path in ['../coco/trainvalno5k.txt', '../coco/5k.txt']:
         with open(label_path, 'r') as file:
             lines = file.read()
-        lines = lines.replace('2014/', '2014bmp/').replace('.jpg', '.bmp')
+        lines = lines.replace('2014/', '2014bmp/').replace('.jpg', '.bmp').replace(
+            '/Users/glennjocher/PycharmProjects/', '../')
         with open(label_path.replace('5k', '5k_bmp'), 'w') as file:
             file.write(lines)
