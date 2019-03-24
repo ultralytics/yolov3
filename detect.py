@@ -30,7 +30,7 @@ def detect(
     # Load weights
     if weights.endswith('.pt'):  # pytorch format
         if weights.endswith('yolov3.pt') and not os.path.exists(weights):
-            if platform == 'darwin' or platform == 'linux':
+            if platform in ('darwin', 'linux'):  # linux/macos
                 os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights)
         model.load_state_dict(torch.load(weights, map_location=device)['model'])
     else:  # darknet format
@@ -51,11 +51,11 @@ def detect(
 
     for i, (path, img, im0) in enumerate(dataloader):
         t = time.time()
+        save_path = str(Path(output) / Path(path).name)
         if webcam:
             print('webcam frame %g: ' % (i + 1), end='')
         else:
             print('image %g/%g %s: ' % (i + 1, len(dataloader), path), end='')
-        save_path = str(Path(output) / Path(path).name)
 
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
@@ -96,7 +96,7 @@ def detect(
         if webcam:  # Show live webcam
             cv2.imshow(weights, im0)
 
-    if save_images and platform == 'darwin':  # linux/macos
+    if save_images and platform == 'darwin':  # macos
         os.system('open ' + output + ' ' + save_path)
 
 
