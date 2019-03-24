@@ -1,7 +1,6 @@
 import argparse
 import json
 import time
-from pathlib import Path
 
 from torch.utils.data import DataLoader
 
@@ -52,6 +51,7 @@ def test(
                             pin_memory=False,
                             collate_fn=dataset.collate_fn)
 
+    model_info(model)
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
     mP, mR, mAPs, TP, jdict = [], [], [], [], []
