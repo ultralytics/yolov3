@@ -34,6 +34,9 @@ cp -r weights yolov3
 cd yolov3 && python3 train.py --batch-size 24 --epochs 1
 sudo shutdown
 
+# Git Pull Branch Changes
+git pull https://github.com/ultralytics/yolov3 multi_gpu
+
 # Test
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3

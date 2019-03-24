@@ -28,11 +28,8 @@ def train(
 
     if multi_scale:
         img_size = 608  # initiate with maximum multi_scale size
-    else:
-        torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
-
-    # Configure run
-    train_path = parse_data_cfg(data_cfg)['train']
+    # else:
+    #    torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
@@ -42,7 +39,8 @@ def train(
     optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9)
 
     # Dataloader
-    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
+    train_path = parse_data_cfg(data_cfg)['train']
+    dataset = LoadImagesAndLabels(parse_data_cfg(data_cfg)['train'], img_size=img_size, augment=True)
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=num_workers,
