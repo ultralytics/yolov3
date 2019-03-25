@@ -136,9 +136,9 @@ def test(
             mean_R = np.mean(mR)
             mean_mAP = np.mean(mAPs)
 
-        # Print image mAP and running mean mAP
-        # print(('%11s%11s' + '%11.3g' * 4 + 's') %
-        #      (seen, len(dataset), mean_P, mean_R, mean_mAP, time.time() - t))
+    # Print image mAP and running mean mAP
+    print(('%11s%11s' + '%11.3g' * 4 + 's') %
+          (seen, len(dataset), mean_P, mean_R, mean_mAP, time.time() - t))
 
     # Print mAP per class
     print('\nmAP Per Class:')

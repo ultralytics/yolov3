@@ -16,7 +16,6 @@ data/*
 !data/samples/zidane.jpg
 !data/coco.names
 !data/coco_paper.names
-!data/coco2bmp.py
 
 results*.txt
 
