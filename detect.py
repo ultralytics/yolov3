@@ -1,7 +1,5 @@
 import argparse
-import shutil
 import time
-from pathlib import Path
 from sys import platform
 
 from models import *
@@ -32,9 +30,9 @@ def detect(
     # Load weights
     if weights.endswith('.pt'):  # pytorch format
         if weights.endswith('yolov3.pt') and not os.path.exists(weights):
-            if (platform == 'darwin') or (platform == 'linux'):
+            if platform in ('darwin', 'linux'):  # linux/macos
                 os.system('wget https://storage.googleapis.com/ultralytics/yolov3.pt -O ' + weights)
-        model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
+        model.load_state_dict(torch.load(weights, map_location=device)['model'])
     else:  # darknet format
         _ = load_darknet_weights(model, weights)
 
@@ -49,15 +47,15 @@ def detect(
 
     # Get classes and colors
     classes = load_classes(parse_data_cfg('cfg/coco.data')['names'])
-    colors = [[random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)] for _ in range(len(classes))]
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(classes))]
 
     for i, (path, img, im0) in enumerate(dataloader):
         t = time.time()
+        save_path = str(Path(output) / Path(path).name)
         if webcam:
             print('webcam frame %g: ' % (i + 1), end='')
         else:
             print('image %g/%g %s: ' % (i + 1, len(dataloader), path), end='')
-        save_path = str(Path(output) / Path(path).name)
 
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
@@ -81,18 +79,16 @@ def detect(
                 print('%g %ss' % (n, classes[int(c)]), end=', ')
 
             # Draw bounding boxes and labels of detections
-            for x1, y1, x2, y2, conf, cls_conf, cls in detections:
+            for *xyxy, conf, cls_conf, cls in detections:
                 if save_txt:  # Write to file
                     with open(save_path + '.txt', 'a') as file:
-                        file.write('%g %g %g %g %g %g\n' %
-                                   (x1, y1, x2, y2, cls, cls_conf * conf))
+                        file.write(('%g ' * 6 + '\n') % (*xyxy, cls, cls_conf * conf))
 
                 # Add bbox to the image
                 label = '%s %.2f' % (classes[int(cls)], conf)
-                plot_one_box([x1, y1, x2, y2], im0, label=label, color=colors[int(cls)])
+                plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
 
-        dt = time.time() - t
-        print('Done. (%.3fs)' % dt)
+        print('Done. (%.3fs)' % (time.time() - t))
 
         if save_images:  # Save generated image with detections
             cv2.imwrite(save_path, im0)
@@ -100,7 +96,7 @@ def detect(
         if webcam:  # Show live webcam
             cv2.imshow(weights, im0)
 
-    if save_images and (platform == 'darwin'):  # linux/macos
+    if save_images and platform == 'darwin':  # macos
         os.system('open ' + output + ' ' + save_path)
 
 

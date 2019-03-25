@@ -1,7 +1,6 @@
 import argparse
 import json
 import time
-from pathlib import Path
 
 from torch.utils.data import DataLoader
 
@@ -24,41 +23,44 @@ def test(
 ):
     device = torch_utils.select_device()
 
-    # Configure run
-    data_cfg_dict = parse_data_cfg(data_cfg)
-    nC = int(data_cfg_dict['classes'])  # number of classes (80 for COCO)
-    test_path = data_cfg_dict['valid']
-
     if model is None:
         # Initialize model
-        model = Darknet(cfg, img_size)
+        model = Darknet(cfg, img_size).to(device)
 
         # Load weights
         if weights.endswith('.pt'):  # pytorch format
-            model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
+            model.load_state_dict(torch.load(weights, map_location=device)['model'])
         else:  # darknet format
             _ = load_darknet_weights(model, weights)
 
-    model.to(device).eval()
+    if torch.cuda.device_count() > 1:
+        model = nn.DataParallel(model)
+
+    # Configure run
+    data_cfg = parse_data_cfg(data_cfg)
+    nC = int(data_cfg['classes'])  # number of classes (80 for COCO)
+    test_path = data_cfg['valid']
 
     # Dataloader
     dataset = LoadImagesAndLabels(test_path, img_size=img_size)
-    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=4)
+    dataloader = DataLoader(dataset,
+                            batch_size=batch_size,
+                            num_workers=4,
+                            pin_memory=False,
+                            collate_fn=dataset.collate_fn)
 
+    model.eval()
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
     mP, mR, mAPs, TP, jdict = [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
-    for imgs, targets, paths, shapes in dataloader:
-        # Unpad and collate targets
-        for j, t in enumerate(targets):
-            t[:, 0] = j
-        targets = torch.cat([t[t[:, 5].nonzero()] for t in targets], 0).squeeze(1)
-
-        targets = targets.to(device)
+    for imgs, targets, paths, shapes in tqdm(dataloader):
         t = time.time()
-        output = model(imgs.to(device))
+        targets = targets.to(device)
+        imgs = imgs.to(device)
+
+        output = model(imgs)
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
 
         # Compute average precision for each sample
@@ -78,7 +80,7 @@ def test(
             if save_json:
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
                 box = detections[:, :4].clone()  # xyxy
-                scale_coords(img_size, box, (shapes[0][si], shapes[1][si]))  # to original shape
+                scale_coords(img_size, box, shapes[si])  # to original shape
                 box = xyxy2xywh(box)  # xywh
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
 
@@ -134,13 +136,13 @@ def test(
             mean_R = np.mean(mR)
             mean_mAP = np.mean(mAPs)
 
-        # Print image mAP and running mean mAP
-        print(('%11s%11s' + '%11.3g' * 4 + 's') %
-              (seen, len(dataset), mean_P, mean_R, mean_mAP, time.time() - t))
+    # Print image mAP and running mean mAP
+    print(('%11s%11s' + '%11.3g' * 4 + 's') %
+          (seen, len(dataset), mean_P, mean_R, mean_mAP, time.time() - t))
 
     # Print mAP per class
     print('\nmAP Per Class:')
-    for i, c in enumerate(load_classes(data_cfg_dict['names'])):
+    for i, c in enumerate(load_classes(data_cfg['names'])):
         if AP_accum_count[i]:
             print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i])))
 
@@ -191,4 +193,5 @@ if __name__ == '__main__':
             opt.iou_thres,
             opt.conf_thres,
             opt.nms_thres,
-            opt.save_json)
+            opt.save_json
+        )

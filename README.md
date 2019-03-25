@@ -17,7 +17,7 @@ This directory contains python software and an iOS App developed by Ultralytics 
 
 # Description
 
-The https://github.com/ultralytics/yolov3 repo contains inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. Training is done on the COCO dataset by default: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO** (https://pjreddie.com/darknet/yolo/) and to **Erik Lindernoren for the PyTorch implementation** this work is based on (https://github.com/eriklindernoren/PyTorch-YOLOv3).
+The https://github.com/ultralytics/yolov3 repo contains inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. Training is done on the COCO dataset by default: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO: ** https://pjreddie.com/darknet/yolo/.
 
 # Requirements
 
@@ -26,6 +26,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 - `numpy`
 - `torch >= 1.0.0`
 - `opencv-python`
+- `tqdm`
 
 # Tutorials
 
@@ -64,17 +65,22 @@ HS**V** Intensity | +/- 50%
 ## Speed
 
 https://cloud.google.com/deep-learning-vm/  
-**Machine type:** n1-standard-8 (8 vCPUs, 30 GB memory)
+**Machine type:** n1-standard-8 (8 vCPUs, 30 GB memory)  
 **CPU platform:** Intel Skylake  
-**GPUs:** 1-4 x NVIDIA Tesla P100  
+**GPUs:** 1-4x P100 ($0.493/hr), 1-8x V100 ($0.803/hr)  
 **HDD:** 100 GB SSD  
+**Dataset:** COCO train 2014 
 
-GPUs | `batch_size` | speed | COCO epoch
---- |---| --- | --- 
-(P100)   |  (images)  | (s/batch) | (min/epoch)
-1 | 16 | 0.39s  | 48min
-2 | 32 | 0.48s | 29min
-4 | 64 | 0.65s | 20min
+GPUs | `batch_size` | batch time | epoch time | epoch cost
+--- |---| --- | --- | --- 
+<i></i> |  (images)  | (s/batch) |  |
+1 P100 | 16 | 0.39s  | 48min  | $0.39
+2 P100 | 32 | 0.48s | 29min | $0.47
+4 P100 | 64 | 0.65s | 20min | $0.65
+1 V100 | 16 | 0.25s  | 31min | $0.41
+2 V100 | 32 | 0.29s | 18min | $0.48
+4 V100 | 64 | 0.41s | 13min | $0.70
+8 V100 | 128 | 0.49s | 7min | $0.80
 
 # Inference
 

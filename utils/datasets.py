@@ -2,11 +2,14 @@ import glob
 import math
 import os
 import random
+import shutil
+from pathlib import Path
 
 import cv2
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
 from utils.utils import xyxy2xywh
 
@@ -97,7 +100,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         assert len(self.img_files) > 0, 'No images found in %s' % path
         self.img_size = img_size
         self.augment = augment
-        self.label_files = [x.replace('images', 'labels').replace('.png', '.txt').replace('.jpg', '.txt')
+        self.label_files = [x.replace('images', 'labels').replace('.bmp', '.txt').replace('.jpg', '.txt')
                             for x in self.img_files]
 
     def __len__(self):
@@ -136,58 +139,61 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img, ratio, padw, padh = letterbox(img, height=self.img_size)
 
         # Load labels
+        labels = []
         if os.path.isfile(label_path):
             with open(label_path, 'r') as file:
                 lines = file.read().splitlines()
 
             x = np.array([x.split() for x in lines], dtype=np.float32)
-            if x.size is 0:
-                # Empty labels file
-                labels = np.array([])
-            else:
+            if x.size > 0:
                 # Normalized xywh to pixel xyxy format
                 labels = x.copy()
                 labels[:, 1] = ratio * w * (x[:, 1] - x[:, 3] / 2) + padw
                 labels[:, 2] = ratio * h * (x[:, 2] - x[:, 4] / 2) + padh
                 labels[:, 3] = ratio * w * (x[:, 1] + x[:, 3] / 2) + padw
                 labels[:, 4] = ratio * h * (x[:, 2] + x[:, 4] / 2) + padh
-        else:
-            labels = np.array([])
 
         # Augment image and labels
         if self.augment:
-            img, labels, M = random_affine(img, labels, degrees=(-5, 5), translate=(0.10, 0.10), scale=(0.90, 1.10))
+            img, labels = random_affine(img, labels, degrees=(-5, 5), translate=(0.10, 0.10), scale=(0.90, 1.10))
 
-        nL = len(labels)
-        if nL > 0:
+        nL = len(labels)  # number of labels
+        if nL:
             # convert xyxy to xywh
             labels[:, 1:5] = xyxy2xywh(labels[:, 1:5]) / self.img_size
 
         if self.augment:
             # random left-right flip
             lr_flip = True
-            if lr_flip & (random.random() > 0.5):
+            if lr_flip and random.random() > 0.5:
                 img = np.fliplr(img)
-                if nL > 0:
+                if nL:
                     labels[:, 1] = 1 - labels[:, 1]
 
             # random up-down flip
             ud_flip = False
-            if ud_flip & (random.random() > 0.5):
+            if ud_flip and random.random() > 0.5:
                 img = np.flipud(img)
-                if nL > 0:
+                if nL:
                     labels[:, 2] = 1 - labels[:, 2]
 
-        labels_out = np.zeros((100, 6), dtype=np.float32)
-        if nL > 0:
-            labels_out[:nL, 1:] = labels  # max 100 labels per image
+        labels_out = torch.zeros((nL, 6))
+        if nL:
+            labels_out[:, 1:] = torch.from_numpy(labels)
 
         # Normalize
-        img = img[:, :, ::-1].transpose(2, 0, 1)  # list to np.array and BGR to RGB
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
-        return torch.from_numpy(img), torch.from_numpy(labels_out), img_path, (h, w)
+        return torch.from_numpy(img), labels_out, img_path, (h, w)
+
+    @staticmethod
+    def collate_fn(batch):
+        img, label, path, hw = list(zip(*batch))  # transposed
+        for i, l in enumerate(label):
+            l[:, 0] = i  # add target image index for build_targets()
+        return torch.stack(img, 0), torch.cat(label, 0), path, hw
 
 
 def letterbox(img, height=416, color=(127.5, 127.5, 127.5)):  # resize a rectangular image to a padded square
@@ -203,11 +209,13 @@ def letterbox(img, height=416, color=(127.5, 127.5, 127.5)):  # resize a rectang
     return img, ratio, dw, dh
 
 
-def random_affine(img, targets=None, degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-2, 2),
+def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-2, 2),
                   borderValue=(127.5, 127.5, 127.5)):
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
     # https://medium.com/uruvideo/dataset-augmentation-with-random-homographies-a8f4b44830d4
 
+    if targets is None:
+        targets = []
     border = 0  # width of added border (optional)
     height = max(img.shape[0], img.shape[1]) + border * 2
 
@@ -233,52 +241,61 @@ def random_affine(img, targets=None, degrees=(-10, 10), translate=(.1, .1), scal
                               borderValue=borderValue)  # BGR order borderValue
 
     # Return warped points also
-    if targets is not None:
-        if len(targets) > 0:
-            n = targets.shape[0]
-            points = targets[:, 1:5].copy()
-            area0 = (points[:, 2] - points[:, 0]) * (points[:, 3] - points[:, 1])
+    if len(targets) > 0:
+        n = targets.shape[0]
+        points = targets[:, 1:5].copy()
+        area0 = (points[:, 2] - points[:, 0]) * (points[:, 3] - points[:, 1])
 
-            # warp points
-            xy = np.ones((n * 4, 3))
-            xy[:, :2] = points[:, [0, 1, 2, 3, 0, 3, 2, 1]].reshape(n * 4, 2)  # x1y1, x2y2, x1y2, x2y1
-            xy = (xy @ M.T)[:, :2].reshape(n, 8)
+        # warp points
+        xy = np.ones((n * 4, 3))
+        xy[:, :2] = points[:, [0, 1, 2, 3, 0, 3, 2, 1]].reshape(n * 4, 2)  # x1y1, x2y2, x1y2, x2y1
+        xy = (xy @ M.T)[:, :2].reshape(n, 8)
 
-            # create new boxes
-            x = xy[:, [0, 2, 4, 6]]
-            y = xy[:, [1, 3, 5, 7]]
-            xy = np.concatenate((x.min(1), y.min(1), x.max(1), y.max(1))).reshape(4, n).T
+        # create new boxes
+        x = xy[:, [0, 2, 4, 6]]
+        y = xy[:, [1, 3, 5, 7]]
+        xy = np.concatenate((x.min(1), y.min(1), x.max(1), y.max(1))).reshape(4, n).T
 
-            # apply angle-based reduction
-            radians = a * math.pi / 180
-            reduction = max(abs(math.sin(radians)), abs(math.cos(radians))) ** 0.5
-            x = (xy[:, 2] + xy[:, 0]) / 2
-            y = (xy[:, 3] + xy[:, 1]) / 2
-            w = (xy[:, 2] - xy[:, 0]) * reduction
-            h = (xy[:, 3] - xy[:, 1]) * reduction
-            xy = np.concatenate((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).reshape(4, n).T
+        # apply angle-based reduction
+        radians = a * math.pi / 180
+        reduction = max(abs(math.sin(radians)), abs(math.cos(radians))) ** 0.5
+        x = (xy[:, 2] + xy[:, 0]) / 2
+        y = (xy[:, 3] + xy[:, 1]) / 2
+        w = (xy[:, 2] - xy[:, 0]) * reduction
+        h = (xy[:, 3] - xy[:, 1]) * reduction
+        xy = np.concatenate((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).reshape(4, n).T
 
-            # reject warped points outside of image
-            np.clip(xy, 0, height, out=xy)
-            w = xy[:, 2] - xy[:, 0]
-            h = xy[:, 3] - xy[:, 1]
-            area = w * h
-            ar = np.maximum(w / (h + 1e-16), h / (w + 1e-16))
-            i = (w > 4) & (h > 4) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
+        # reject warped points outside of image
+        np.clip(xy, 0, height, out=xy)
+        w = xy[:, 2] - xy[:, 0]
+        h = xy[:, 3] - xy[:, 1]
+        area = w * h
+        ar = np.maximum(w / (h + 1e-16), h / (w + 1e-16))
+        i = (w > 4) & (h > 4) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
 
-            targets = targets[i]
-            targets[:, 1:5] = xy[i]
+        targets = targets[i]
+        targets[:, 1:5] = xy[i]
 
-        return imw, targets, M
-    else:
-        return imw
+    return imw, targets
 
 
-def convert_tif2bmp(p='../xview/val_images_bmp'):
-    import glob
-    import cv2
-    files = sorted(glob.glob('%s/*.tif' % p))
-    for i, f in enumerate(files):
-        print('%g/%g' % (i + 1, len(files)))
-        cv2.imwrite(f.replace('.tif', '.bmp'), cv2.imread(f))
-        os.system('rm -rf ' + f)
+def convert_images2bmp():
+    # cv2.imread() jpg at 230 img/s, *.bmp at 400 img/s
+    for path in ['../coco/images/val2014/', '../coco/images/train2014/']:
+        folder = os.sep + Path(path).name
+        output = path.replace(folder, folder + 'bmp')
+        if os.path.exists(output):
+            shutil.rmtree(output)  # delete output folder
+        os.makedirs(output)  # make new output folder
+
+        for f in tqdm(glob.glob('%s*.jpg' % path)):
+            save_name = f.replace('.jpg', '.bmp').replace(folder, folder + 'bmp')
+            cv2.imwrite(save_name, cv2.imread(f))
+
+    for label_path in ['../coco/trainvalno5k.txt', '../coco/5k.txt']:
+        with open(label_path, 'r') as file:
+            lines = file.read()
+        lines = lines.replace('2014/', '2014bmp/').replace('.jpg', '.bmp').replace(
+            '/Users/glennjocher/PycharmProjects/', '../')
+        with open(label_path.replace('5k', '5k_bmp'), 'w') as file:
+            file.write(lines)

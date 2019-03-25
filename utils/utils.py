@@ -95,7 +95,7 @@ def weights_init_normal(m):
 
 def xyxy2xywh(x):
     # Convert bounding box format from [x1, y1, x2, y2] to [x, y, w, h]
-    y = torch.zeros_like(x) if x.dtype is torch.float32 else np.zeros_like(x)
+    y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
     y[:, 0] = (x[:, 0] + x[:, 2]) / 2
     y[:, 1] = (x[:, 1] + x[:, 3]) / 2
     y[:, 2] = x[:, 2] - x[:, 0]
@@ -105,7 +105,7 @@ def xyxy2xywh(x):
 
 def xywh2xyxy(x):
     # Convert bounding box format from [x, y, w, h] to [x1, y1, x2, y2]
-    y = torch.zeros_like(x) if x.dtype is torch.float32 else np.zeros_like(x)
+    y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
     y[:, 0] = (x[:, 0] - x[:, 2] / 2)
     y[:, 1] = (x[:, 1] - x[:, 3] / 2)
     y[:, 2] = (x[:, 0] + x[:, 2] / 2)
@@ -251,7 +251,7 @@ def wh_iou(box1, box2):
 def compute_loss(p, targets):  # predictions, targets
     FT = torch.cuda.FloatTensor if p[0].is_cuda else torch.FloatTensor
     loss, lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
-    txy, twh, tcls, tconf, indices = targets
+    txy, twh, tcls, indices = targets
     MSE = nn.MSELoss()
     CE = nn.CrossEntropyLoss()
     BCE = nn.BCEWithLogitsLoss()
@@ -260,18 +260,21 @@ def compute_loss(p, targets):  # predictions, targets
     # gp = [x.numel() for x in tconf]  # grid points
     for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridx, gridy
+        tconf = torch.zeros_like(pi0[..., 0])  # conf
 
         # Compute losses
         k = 1  # nT / bs
         if len(b) > 0:
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
+            tconf[b, a, gj, gi] = 1  # conf
+
             lxy += k * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy
             lwh += k * MSE(pi[..., 2:4], twh[i])  # wh
             lcls += (k / 4) * CE(pi[..., 5:], tcls[i])
 
         # pos_weight = FT([gp[i] / min(gp) * 4.])
         # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 64) * BCE(pi0[..., 4], tconf[i])
+        lconf += (k * 64) * BCE(pi0[..., 4], tconf)
     loss = lxy + lwh + lconf + lcls
 
     # Add to dictionary
@@ -283,15 +286,13 @@ def compute_loss(p, targets):  # predictions, targets
     return loss, d
 
 
-def build_targets(model, targets, pred):
+def build_targets(model, targets):
     # targets = [image, class, x, y, w, h]
     if isinstance(model, nn.parallel.DistributedDataParallel):
         model = model.module
-    yolo_layers = get_yolo_layers(model)
 
-    # anchors = closest_anchor(model, targets)  # [layer, anchor, i, j]
-    txy, twh, tcls, tconf, indices = [], [], [], [], []
-    for i, layer in enumerate(yolo_layers):
+    txy, twh, tcls, indices = [], [], [], []
+    for i, layer in enumerate(get_yolo_layers(model)):
         nG = model.module_list[layer][0].nG  # grid size
         anchor_vec = model.module_list[layer][0].anchor_vec
 
@@ -324,12 +325,7 @@ def build_targets(model, targets, pred):
         # Class
         tcls.append(c)
 
-        # Conf
-        tci = torch.zeros_like(pred[i][..., 0])
-        tci[b, a, gj, gi] = 1  # conf
-        tconf.append(tci)
-
-    return txy, twh, tcls, tconf, indices
+    return txy, twh, tcls, indices
 
 
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
@@ -439,15 +435,6 @@ def get_yolo_layers(model):
     return [i for i, x in enumerate(bool_vec) if x]  # [82, 94, 106] for yolov3
 
 
-def return_torch_unique_index(u, uv):
-    n = uv.shape[1]  # number of columns
-    first_unique = torch.zeros(n, device=u.device).long()
-    for j in range(n):
-        first_unique[j] = (uv[:, j:j + 1] == u).all(0).nonzero()[0]
-
-    return first_unique
-
-
 def strip_optimizer_from_checkpoint(filename='weights/best.pt'):
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
     a = torch.load(filename, map_location='cpu')
@@ -480,10 +467,9 @@ def plot_results(start=0):
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
     # from utils.utils import *; plot_results()
 
-    plt.figure(figsize=(14, 7))
+    fig = plt.figure(figsize=(14, 7))
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
-    files = sorted(glob.glob('results*.txt'))
-    for f in files:
+    for f in sorted(glob.glob('results*.txt')):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
         x = range(1, results.shape[1])
         for i in range(8):
@@ -492,3 +478,4 @@ def plot_results(start=0):
             plt.title(s[i])
             if i == 0:
                 plt.legend()
+    fig.tight_layout()
