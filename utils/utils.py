@@ -288,7 +288,7 @@ def compute_loss(p, targets):  # predictions, targets
 
 def build_targets(model, targets):
     # targets = [image, class, x, y, w, h]
-    if isinstance(model, nn.DataParallel):
+    if isinstance(model, nn.parallel.DistributedDataParallel):
         model = model.module
 
     txy, twh, tcls, indices = [], [], [], []
