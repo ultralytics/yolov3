@@ -25,11 +25,11 @@ def test(
 
     if model is None:
         # Initialize model
-        model = Darknet(cfg, img_size)
+        model = Darknet(cfg, img_size).to(device)
 
         # Load weights
         if weights.endswith('.pt'):  # pytorch format
-            model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
+            model.load_state_dict(torch.load(weights, map_location=device)['model'])
         else:  # darknet format
             _ = load_darknet_weights(model, weights)
 
@@ -50,7 +50,7 @@ def test(
                             pin_memory=False,
                             collate_fn=dataset.collate_fn)
 
-    model.to(device).eval()
+    model.eval()
     model_info(model)
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
