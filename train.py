@@ -169,7 +169,8 @@ def train(
             # Save latest checkpoint
             checkpoint = {'epoch': epoch,
                           'best_loss': best_loss,
-                          'model': model.module.state_dict() if type(model) is nn.DataParallel else model.state_dict(),
+                          'model': model.module.state_dict() if type(
+                              model) is nn.parallel.DistributedDataParallel else model.state_dict(),
                           'optimizer': optimizer.state_dict()}
             torch.save(checkpoint, latest)
 
