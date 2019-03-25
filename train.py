@@ -41,16 +41,6 @@ def train(
     lr0 = 0.001  # initial learning rate
     optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9)
 
-    # Dataloader
-    train_path = parse_data_cfg(data_cfg)['train']
-    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
-    dataloader = DataLoader(dataset,
-                            batch_size=batch_size,
-                            num_workers=num_workers,
-                            shuffle=False,
-                            pin_memory=False,
-                            collate_fn=dataset.collate_fn)
-
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_loss = float('inf')
@@ -80,6 +70,16 @@ def train(
 
     # Set scheduler (reduce lr at epoch 250)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[250], gamma=0.1, last_epoch=start_epoch - 1)
+
+    # Dataloader
+    train_path = parse_data_cfg(data_cfg)['train']
+    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
+    dataloader = DataLoader(dataset,
+                            batch_size=batch_size,
+                            num_workers=num_workers,
+                            shuffle=False,
+                            pin_memory=False,
+                            collate_fn=dataset.collate_fn)
 
     # Start training
     nB = len(dataloader)
@@ -193,7 +193,7 @@ def train(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=270, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=24, help='size of each image batch')
+    parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
@@ -201,6 +201,11 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
+    parser.add_argument('--dist-url', default='tcp://224.66.41.62:23456', type=str,
+                        help='url used to set up distributed training')
+    parser.add_argument('--rank', default=-1, type=int, help='node rank for distributed training')
+    parser.add_argument('--world-size', default=-1, type=int, help='number of nodes for distributed training')
+    parser.add_argument('--dist-backend', default='nccl', type=str, help='distributed backend')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
