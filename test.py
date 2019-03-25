@@ -51,13 +51,12 @@ def test(
                             collate_fn=dataset.collate_fn)
 
     model.eval()
-    model_info(model)
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
     mP, mR, mAPs, TP, jdict = [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
     coco91class = coco80_to_coco91_class()
-    for imgs, targets, paths, shapes in dataloader:
+    for imgs, targets, paths, shapes in tqdm(dataloader):
         t = time.time()
         targets = targets.to(device)
         imgs = imgs.to(device)
@@ -139,8 +138,8 @@ def test(
             mean_mAP = np.mean(mAPs)
 
         # Print image mAP and running mean mAP
-        print(('%11s%11s' + '%11.3g' * 4 + 's') %
-              (seen, len(dataset), mean_P, mean_R, mean_mAP, time.time() - t))
+        # print(('%11s%11s' + '%11.3g' * 4 + 's') %
+        #      (seen, len(dataset), mean_P, mean_R, mean_mAP, time.time() - t))
 
     # Print mAP per class
     print('\nmAP Per Class:')
