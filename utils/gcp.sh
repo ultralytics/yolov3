@@ -7,15 +7,6 @@ bash yolov3/weights/download_yolov3_weights.sh
 sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
 sudo shutdown
 
-# Convert COCO to *.bmp
-cd yolov3
-python3
-from utils.datasets import *
-convert_images2bmp('../coco/images/val2014/')
-convert_images2bmp('../coco/images/train2014/')
-exit()
-sudo shutdown
-
 # Train
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 cp -r weights yolov3
@@ -28,7 +19,7 @@ python3 train.py --resume
 # Detect
 python3 detect.py
 
-# Clone branch
+# Clone a branch
 sudo rm -rf yolov3 && git clone -b multi_gpu --depth 1 https://github.com/ultralytics/yolov3
 cp -r weights yolov3
 cd yolov3 && python3 train.py --batch-size 48 --epochs 1
@@ -41,7 +32,6 @@ git pull https://github.com/ultralytics/yolov3 multi_gpu
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
 cd yolov3 && python3 test.py --save-json --conf-thres 0.001 --img-size 416
-
 
 # Test Darknet training
 python3 test.py --img_size 416 --weights ../darknet/backup/yolov3.backup
