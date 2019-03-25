@@ -69,7 +69,7 @@ def train(
 
     # initialize for distributed training
     if torch.cuda.device_count() > 1:
-        dist.init_process_group(backend=opt.dist_backend, init_method=opt.dis_init, world_size=4, rank=0)
+        dist.init_process_group(backend=opt.dist_backend, init_method=opt.dist_url, world_size=4, rank=0)
         model = torch.nn.parallel.DistributedDataParallel(model)
 
     # Dataloader
