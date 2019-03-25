@@ -59,11 +59,6 @@ def train(
         elif cfg.endswith('yolov3-tiny.cfg'):
             cutoff = load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
 
-    if torch.cuda.device_count() > 1:
-        print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
-        # model = nn.DataParallel(model)
-        model = nn.parallel.DistributedDataParallel(model)
-
     # Transfer learning (train only YOLO layers)
     # for i, (name, p) in enumerate(model.named_parameters()):
     #     p.requires_grad = True if (p.shape[0] == 255) else False
@@ -71,15 +66,29 @@ def train(
     # Set scheduler (reduce lr at epoch 250)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[250], gamma=0.1, last_epoch=start_epoch - 1)
 
-    # Dataloader
+    # Dataset
     train_path = parse_data_cfg(data_cfg)['train']
     dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
+
+    # Initialize for distributed training
+    if torch.cuda.device_count() > 1:
+        torch.distributed.init_process_group(backend=opt.dist_backend,
+                                             init_method=opt.dist_url,
+                                             world_size=opt.world_size,
+                                             rank=opt.rank)
+        sampler = torch.utils.data.distributed.DistributedSampler(dataset)
+        model = nn.parallel.DistributedDataParallel(model)
+    else:
+        sampler = None
+
+    # Dataloader
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=num_workers,
                             shuffle=False,
                             pin_memory=False,
-                            collate_fn=dataset.collate_fn)
+                            collate_fn=dataset.collate_fn,
+                            sampler=sampler)
 
     # Start training
     nB = len(dataloader)
