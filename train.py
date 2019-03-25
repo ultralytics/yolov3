@@ -69,7 +69,10 @@ def train(
 
     # initialize for distributed training
     if torch.cuda.device_count() > 1:
-        dist.init_process_group(backend=opt.dist_backend, init_method=opt.dist_url, world_size=opt.world_size,
+        sharefile = 'file:///' + os.getcwd() + os.sep + 'sharefile'
+        if os.path.exists(sharefile):
+            os.remove(sharefile)
+        dist.init_process_group(backend=opt.dist_backend, init_method=sharefile, world_size=opt.world_size,
                                 rank=opt.rank)
         model = torch.nn.parallel.DistributedDataParallel(model)
 
