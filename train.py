@@ -72,8 +72,8 @@ def train(
         sharefile = 'file:///' + os.getcwd() + os.sep + 'sharefile'
         if os.path.exists(sharefile):
             os.remove(sharefile)
-        dist.init_process_group(backend=opt.dist_backend, init_method=sharefile, world_size=opt.world_size,
-                                rank=opt.rank)
+        dist.init_process_group(backend=opt.dist_backend, init_method=sharefile, world_size=4,
+                                rank=0)
         model = torch.nn.parallel.DistributedDataParallel(model)
 
     # Dataloader
