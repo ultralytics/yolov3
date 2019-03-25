@@ -67,14 +67,13 @@ def train(
     # Set scheduler (reduce lr at epoch 250)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[250], gamma=0.1, last_epoch=start_epoch - 1)
 
-    # initialize for distributed training
-    if torch.cuda.device_count() > 1:
-        dist.init_process_group(backend=opt.dist_backend, init_method=opt.dist_url, world_size=opt.world_size, rank=0)
-        model = torch.nn.parallel.DistributedDataParallel(model)
-
-    # Dataloader
+    # Dataset
     dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
+
+    # Initialize distributed training
     if torch.cuda.device_count() > 1:
+        dist.init_process_group(backend=opt.backend, init_method=opt.dist_url, world_size=opt.world_size, rank=opt.rank)
+        model = torch.nn.parallel.DistributedDataParallel(model)
         sampler = torch.utils.data.distributed.DistributedSampler(dataset)
     else:
         sampler = None
@@ -83,7 +82,7 @@ def train(
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=num_workers,
-                            shuffle=False,
+                            shuffle=True,
                             pin_memory=False,
                             collate_fn=dataset.collate_fn,
                             sampler=sampler)
@@ -212,7 +211,7 @@ if __name__ == '__main__':
     parser.add_argument('--dist-url', default='tcp://127.0.0.1:9999', type=str, help='distributed training init method')
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
-    parser.add_argument('--dist-backend', default='nccl', type=str, help='distributed backend')
+    parser.add_argument('--backend', default='nccl', type=str, help='distributed backend')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
