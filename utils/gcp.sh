@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
 # New VM
-sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
+git clone https://github.com/ultralytics/yolov3
 bash yolov3/data/get_coco_dataset.sh
-bash yolov3/weights/download_yolov3_weights.sh
-sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
-sudo shutdown
+bash yolov3/weights/download_yolov3_weights.sh && cp -r yolov3/weights weights
+git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
+sudo reboot now
 
 # Train
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 cp -r weights yolov3
-cd yolov3 && python3 train.py --batch-size 48 --epochs 1
+cd yolov3 && python3 train.py --batch-size 24 --epochs 1
 sudo shutdown
 
 # Resume
@@ -22,7 +22,7 @@ python3 detect.py
 # Clone a branch
 sudo rm -rf yolov3 && git clone -b multi_gpu --depth 1 https://github.com/ultralytics/yolov3
 cp -r weights yolov3
-cd yolov3 && python3 train.py --batch-size 48 --epochs 1
+cd yolov3 && python3 train.py --batch-size 24 --epochs 1
 sudo shutdown
 
 # Git pull branch
