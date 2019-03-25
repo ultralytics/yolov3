@@ -83,7 +83,7 @@ def train(
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=num_workers,
-                            shuffle=True,
+                            shuffle=False,
                             pin_memory=False,
                             collate_fn=dataset.collate_fn,
                             sampler=sampler)
