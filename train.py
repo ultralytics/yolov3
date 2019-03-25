@@ -190,8 +190,6 @@ def train(
                 os.system('cp ' + latest + ' ' + weights + 'backup%g.pt' % epoch)
 
         # Calculate mAP
-        if type(model) is nn.parallel.DistributedDataParallel:
-            model = model.module
         with torch.no_grad():
             P, R, mAP = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
 
