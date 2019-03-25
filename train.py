@@ -60,11 +60,6 @@ def train(
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
         elif cfg.endswith('yolov3-tiny.cfg'):
             cutoff = load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
-        
-    #initialize for distributed training
-    if torch.cuda.device_count() > 1:
-        dist.init_process_group(backend=opt.backend, init_method=opt.dist_url,world_size=opt.world_size, rank=opt.rank)
-        model = torch.nn.parallel.DistributedDataParallel(model)
 
     # Transfer learning (train only YOLO layers)
     # for i, (name, p) in enumerate(model.named_parameters()):
