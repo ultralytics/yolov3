@@ -1,6 +1,8 @@
 import argparse
 import time
 
+from torch.utils.data import DataLoader
+
 import test  # Import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
@@ -17,6 +19,7 @@ def train(
         accumulate=1,
         multi_scale=False,
         freeze_backbone=False,
+        num_workers=0
 ):
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
@@ -34,47 +37,39 @@ def train(
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
 
-    # Get dataloader
-    dataloader = LoadImagesAndLabels(train_path, batch_size, img_size, augment=True)
-    # dataloader = torch.utils.data.DataLoader(dataloader, batch_size=batch_size, num_workers=0)
-
+    # Optimizer
     lr0 = 0.001  # initial learning rate
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9)
+
+    # Dataloader
+    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
+
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_loss = float('inf')
-    if resume:
-        checkpoint = torch.load(latest, map_location=device)
-
-        # Load weights to resume from
+    if resume:  # Load previously saved PyTorch model
+        checkpoint = torch.load(latest, map_location=device)  # load checkpoint
         model.load_state_dict(checkpoint['model'])
-
-        # Transfer learning (train only YOLO layers)
-        # for i, (name, p) in enumerate(model.named_parameters()):
-        #     p.requires_grad = True if (p.shape[0] == 255) else False
-
-        # Set optimizer
-        optimizer = torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()), lr=lr0, momentum=.9)
-
         start_epoch = checkpoint['epoch'] + 1
         if checkpoint['optimizer'] is not None:
             optimizer.load_state_dict(checkpoint['optimizer'])
             best_loss = checkpoint['best_loss']
-
         del checkpoint  # current, saved
 
-    else:
-        # Initialize model with backbone (optional)
+    else:  # Initialize model with backbone (optional)
         if cfg.endswith('yolov3.cfg'):
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
         elif cfg.endswith('yolov3-tiny.cfg'):
             cutoff = load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
 
-        # Set optimizer
-        optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9)
-
     if torch.cuda.device_count() > 1:
+        print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
         model = nn.DataParallel(model)
-    model.to(device).train()
+
+    # Transfer learning (train only YOLO layers)
+    # for i, (name, p) in enumerate(model.named_parameters()):
+    #     p.requires_grad = True if (p.shape[0] == 255) else False
 
     # Set scheduler
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[54, 61], gamma=0.1)
@@ -94,10 +89,7 @@ def train(
         # scheduler.step()
 
         # Update scheduler (manual)
-        if epoch > 250:
-            lr = lr0 / 10
-        else:
-            lr = lr0
+        lr = lr0 / 10 if epoch > 250 else lr0
         for x in optimizer.param_groups:
             x['lr'] = lr
 
@@ -107,13 +99,27 @@ def train(
                 if int(name.split('.')[1]) < cutoff:  # if layer < 75
                     p.requires_grad = False if (epoch == 0) else True
 
-        ui = -1
         rloss = defaultdict(float)
         for i, (imgs, targets, _, _) in enumerate(dataloader):
-            targets = targets.to(device)
-            nT = targets.shape[0]
+            # Unpad and collate targets
+            for j, t in enumerate(targets):
+                t[:, 0] = j
+            targets = torch.cat([t[t[:, 5].nonzero()] for t in targets], 0).squeeze(1)
+
+            nT = len(targets)
             if nT == 0:  # if no targets continue
                 continue
+
+            # Plot images with bounding boxes
+            plot_images = False
+            if plot_images:
+                import matplotlib.pyplot as plt
+                plt.figure(figsize=(10, 10))
+                for ip in range(batch_size):
+                    labels = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy() * img_size
+                    plt.subplot(4, 4, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
+                    plt.plot(labels[:, [0, 2, 2, 0, 0]].T, labels[:, [1, 1, 3, 3, 1]].T, '.-')
+                    plt.axis('off')
 
             # SGD burn-in
             if (epoch == 0) and (i <= n_burnin):
@@ -125,7 +131,7 @@ def train(
             pred = model(imgs.to(device))
 
             # Build targets
-            target_list = build_targets(model, targets, pred)
+            target_list = build_targets(model, targets.to(device), pred)
 
             # Compute loss
             loss, loss_dict = compute_loss(pred, target_list)
@@ -139,9 +145,8 @@ def train(
                 optimizer.zero_grad()
 
             # Running epoch-means of tracked metrics
-            ui += 1
             for key, val in loss_dict.items():
-                rloss[key] = (rloss[key] * ui + val) / (ui + 1)
+                rloss[key] = (rloss[key] * i + val) / (i + 1)
 
             s = ('%8s%12s' + '%10.3g' * 7) % (
                 '%g/%g' % (epoch, epochs - 1),
@@ -154,8 +159,8 @@ def train(
 
             # Multi-Scale training (320 - 608 pixels) every 10 batches
             if multi_scale and (i + 1) % 10 == 0:
-                dataloader.img_size = random.choice(range(10, 20)) * 32
-                print('multi_scale img_size = %g' % dataloader.img_size)
+                dataset.img_size = random.choice(range(10, 20)) * 32
+                print('multi_scale img_size = %g' % dataset.img_size)
 
         # Update best loss
         if rloss['total'] < best_loss:
@@ -198,6 +203,7 @@ if __name__ == '__main__':
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
+    parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
@@ -212,4 +218,5 @@ if __name__ == '__main__':
         batch_size=opt.batch_size,
         accumulate=opt.accumulate,
         multi_scale=opt.multi_scale,
+        num_workers=opt.num_workers
     )

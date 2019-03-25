@@ -64,7 +64,7 @@ HS**V** Intensity | +/- 50%
 ## Speed
 
 https://cloud.google.com/deep-learning-vm/  
-**Machine type:** n1-highmem-4 (4 vCPUs, 26 GB memory)  
+**Machine type:** n1-standard-8 (8 vCPUs, 30 GB memory)
 **CPU platform:** Intel Skylake  
 **GPUs:** 1-4 x NVIDIA Tesla P100  
 **HDD:** 100 GB SSD  
@@ -72,19 +72,22 @@ https://cloud.google.com/deep-learning-vm/
 GPUs | `batch_size` | speed | COCO epoch
 --- |---| --- | --- 
 (P100)   |  (images)  | (s/batch) | (min/epoch)
-1 | 16 | 0.54s  | 66min
-2 | 32 | 0.99s | 61min
-4 | 64 | 1.61s | 49min
+1 | 16 | 0.39s  | 48min
+2 | 32 | 0.48s | 29min
+4 | 64 | 0.65s | 20min
 
 # Inference
 
 Run `detect.py` to apply trained weights to an image, such as `zidane.jpg` from the `data/samples` folder:
 
-**YOLOv3:** `detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.pt`
-<img src="https://user-images.githubusercontent.com/26833433/50524393-b0adc200-0ad5-11e9-9335-4774a1e52374.jpg" width="700">
+**YOLOv3:** `python3 detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.weights`
+<img src="https://user-images.githubusercontent.com/26833433/50524393-b0adc200-0ad5-11e9-9335-4774a1e52374.jpg" width="600">
 
-**YOLOv3-tiny:** `detect.py --cfg cfg/yolov3-tiny.cfg --weights weights/yolov3-tiny.pt`
-<img src="https://user-images.githubusercontent.com/26833433/50374155-21427380-05ea-11e9-8d24-f1a4b2bac1ad.jpg" width="700">
+**YOLOv3-tiny:** `python3 detect.py --cfg cfg/yolov3-tiny.cfg --weights weights/yolov3-tiny.weights`
+<img src="https://user-images.githubusercontent.com/26833433/50374155-21427380-05ea-11e9-8d24-f1a4b2bac1ad.jpg" width="600">
+
+**YOLOv3-SPP:** `python3 detect.py --cfg cfg/yolov3-spp.cfg --weights weights/yolov3-spp.weights`
+<img src="https://user-images.githubusercontent.com/26833433/54747926-e051ff00-4bd8-11e9-8b5d-93a41d871ec7.jpg" width="600">
 
 ## Webcam
 

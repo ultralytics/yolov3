@@ -15,6 +15,9 @@ from utils import torch_utils
 torch.set_printoptions(linewidth=1320, precision=5, profile='long')
 np.set_printoptions(linewidth=320, formatter={'float_kind': '{:11.5g}'.format})  # format short g, %precision=5
 
+# Prevent OpenCV from multithreading (to use PyTorch DataLoader)
+cv2.setNumThreads(0)
+
 
 def float3(x):  # format floats to 3 decimals
     return float(format(x, '.3f'))
@@ -37,10 +40,10 @@ def model_info(model):
     # Plots a line-by-line description of a PyTorch model
     n_p = sum(x.numel() for x in model.parameters())  # number parameters
     n_g = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
-    print('\n%5s %38s %9s %12s %20s %12s %12s' % ('layer', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
+    print('\n%5s %40s %9s %12s %20s %10s %10s' % ('layer', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
     for i, (name, p) in enumerate(model.named_parameters()):
         name = name.replace('module_list.', '')
-        print('%5g %38s %9s %12g %20s %12.3g %12.3g' % (
+        print('%5g %40s %9s %12g %20s %10.3g %10.3g' % (
             i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std()))
     print('Model Summary: %g layers, %g parameters, %g gradients' % (i + 1, n_p, n_g))
 
