@@ -69,11 +69,7 @@ def train(
 
     # initialize for distributed training
     if torch.cuda.device_count() > 1:
-        sharefile = 'file:///' + os.getcwd() + os.sep + 'sharefile'
-        if os.path.exists(sharefile):
-            os.remove(sharefile)
-        dist.init_process_group(backend=opt.dist_backend, init_method=sharefile, world_size=4,
-                                rank=0)
+        dist.init_process_group(backend=opt.dist_backend, init_method=opt.dis_init, world_size=4, rank=0)
         model = torch.nn.parallel.DistributedDataParallel(model)
 
     # Dataloader
@@ -213,9 +209,8 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
-    parser.add_argument('--dist-url', default='tcp://10.128.0.4:23456', type=str,
-                        help='url used to set up distributed training')
-    parser.add_argument('--rank', default=0, type=int, help='node rank for distributed training')
+    parser.add_argument('--dist-url', default='tcp://127.0.0.1:9999', type=str, help='distributed training init method')
+    parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
     parser.add_argument('--world-size', default=4, type=int, help='number of nodes for distributed training')
     parser.add_argument('--dist-backend', default='nccl', type=str, help='distributed backend')
     opt = parser.parse_args()
