@@ -69,7 +69,7 @@ def train(
 
     # initialize for distributed training
     if torch.cuda.device_count() > 1:
-        dist.init_process_group(backend=opt.dist_backend, init_method=opt.dist_url, world_size=4, rank=0)
+        dist.init_process_group(backend=opt.dist_backend, init_method=opt.dist_url, world_size=opt.world_size, rank=0)
         model = torch.nn.parallel.DistributedDataParallel(model)
 
     # Dataloader
@@ -211,7 +211,7 @@ if __name__ == '__main__':
     parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
     parser.add_argument('--dist-url', default='tcp://127.0.0.1:9999', type=str, help='distributed training init method')
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
-    parser.add_argument('--world-size', default=4, type=int, help='number of nodes for distributed training')
+    parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
     parser.add_argument('--dist-backend', default='nccl', type=str, help='distributed backend')
     opt = parser.parse_args()
     print(opt, end='\n\n')
