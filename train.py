@@ -1,15 +1,13 @@
 import argparse
 import time
 
+import torch.distributed as dist
 from torch.utils.data import DataLoader
 
 import test  # Import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
 from utils.utils import *
-
-
-# torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 def train(
@@ -34,12 +32,15 @@ def train(
     else:
         torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
+    # Configure run
+    train_path = parse_data_cfg(data_cfg)['train']
+
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
 
     # Optimizer
     lr0 = 0.001  # initial learning rate
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9, weight_decay=0.0005)
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
@@ -66,18 +67,16 @@ def train(
     # Set scheduler (reduce lr at epoch 250)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[250], gamma=0.1, last_epoch=start_epoch - 1)
 
-    # Dataset
-    train_path = parse_data_cfg(data_cfg)['train']
-    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
-
-    # Initialize for distributed training
+    # initialize for distributed training
     if torch.cuda.device_count() > 1:
-        torch.distributed.init_process_group(backend=opt.dist_backend,
-                                             init_method=opt.dist_url,
-                                             world_size=opt.world_size,
-                                             rank=opt.rank)
+        dist.init_process_group(backend=opt.dist_backend, init_method=opt.dist_url, world_size=opt.world_size,
+                                rank=opt.rank)
+        model = torch.nn.parallel.DistributedDataParallel(model)
+
+    # Dataloader
+    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
+    if torch.cuda.device_count() > 1:
         sampler = torch.utils.data.distributed.DistributedSampler(dataset)
-        model = nn.parallel.DistributedDataParallel(model)
     else:
         sampler = None
 
