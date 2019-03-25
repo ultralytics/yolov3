@@ -25,19 +25,18 @@ def test(
 
     if model is None:
         # Initialize model
-        model = Darknet(cfg, img_size)
+        model = Darknet(cfg, img_size).to(device)
 
         # Load weights
         if weights.endswith('.pt'):  # pytorch format
-            model.load_state_dict(torch.load(weights, map_location='cpu')['model'])
+            model.load_state_dict(torch.load(weights, map_location=device)['model'])
         else:  # darknet format
             _ = load_darknet_weights(model, weights)
 
     if torch.cuda.device_count() > 1:
         print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
-        model = nn.DataParallel(model)
-    model.to(device)
-    model.eval()
+        # model = nn.DataParallel(model)
+        model = nn.parallel.DistributedDataParallel(model)
 
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
@@ -52,6 +51,7 @@ def test(
                             pin_memory=False,
                             collate_fn=dataset.collate_fn)
 
+    model.eval()
     model_info(model)
     mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))

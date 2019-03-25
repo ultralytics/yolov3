@@ -35,7 +35,7 @@ def train(
         torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
     # Initialize model
-    model = Darknet(cfg, img_size)
+    model = Darknet(cfg, img_size).to(device)
 
     # Optimizer
     lr0 = 0.001  # initial learning rate
@@ -71,8 +71,8 @@ def train(
 
     if torch.cuda.device_count() > 1:
         print('WARNING: MultiGPU Issue: https://github.com/ultralytics/yolov3/issues/146')
-        model = nn.DataParallel(model)
-    model.to(device)
+        # model = nn.DataParallel(model)
+        model = nn.parallel.DistributedDataParallel(model)
 
     # Transfer learning (train only YOLO layers)
     # for i, (name, p) in enumerate(model.named_parameters()):
