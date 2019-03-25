@@ -210,10 +210,10 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
-    parser.add_argument('--dist-url', default='tcp://224.66.41.62:23456', type=str,
+    parser.add_argument('--dist-url', default='tcp://10.128.0.4:23456', type=str,
                         help='url used to set up distributed training')
     parser.add_argument('--rank', default=0, type=int, help='node rank for distributed training')
-    parser.add_argument('--world-size', default=0, type=int, help='number of nodes for distributed training')
+    parser.add_argument('--world-size', default=-1, type=int, help='number of nodes for distributed training')
     parser.add_argument('--dist-backend', default='nccl', type=str, help='distributed backend')
     opt = parser.parse_args()
     print(opt, end='\n\n')
