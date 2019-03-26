@@ -1,6 +1,5 @@
 import argparse
 import json
-import time
 
 from torch.utils.data import DataLoader
 
@@ -50,13 +49,11 @@ def test(
                             collate_fn=dataset.collate_fn)
 
     model.eval()
-    mean_mAP, mean_R, mean_P, seen = 0.0, 0.0, 0.0, 0
+    seen = 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
-    mP, mR, mAPs, TP, jdict = [], [], [], [], []
-    AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
+    mP, mR, mAP, jdict, stats, AP, AP_class = 0.0, 0.0, 0.0, [], [], [], []
     coco91class = coco80_to_coco91_class()
     for imgs, targets, paths, shapes in tqdm(dataloader):
-        t = time.time()
         targets = targets.to(device)
         imgs = imgs.to(device)
 
@@ -69,13 +66,7 @@ def test(
             seen += 1
 
             if detections is None:
-                # If there are labels but no detections mark as zero AP
-                if len(labels) != 0:
-                    mP.append(0), mR.append(0), mAPs.append(0)
                 continue
-
-            # Get detections sorted by decreasing confidence scores
-            detections = detections[(-detections[:, 4]).argsort()]
 
             if save_json:
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
@@ -97,7 +88,6 @@ def test(
             correct = []
             if len(labels) == 0:
                 # correct.extend([0 for _ in range(len(detections))])
-                mP.append(0), mR.append(0), mAPs.append(0)
                 continue
             else:
                 # Extract target boxes as (x1, y1, x2, y2)
@@ -105,7 +95,7 @@ def test(
                 target_cls = labels[:, 0]
 
                 detected = []
-                for *pred_box, conf, cls_conf, cls_pred in detections:
+                for *pred_box, _, _, cls_pred in detections:
                     # Best iou, index between pred and targets
                     iou, bi = bbox_iou(pred_box, target_box).max(0)
 
@@ -116,35 +106,27 @@ def test(
                     else:
                         correct.append(0)
 
-            # Compute Average Precision (AP) per class
-            AP, AP_class, R, P = ap_per_class(tp=np.array(correct),
-                                              conf=detections[:, 4].cpu().numpy(),
-                                              pred_cls=detections[:, 6].cpu().numpy(),
-                                              target_cls=target_cls.cpu().numpy())
+            # Convert to Numpy
+            tp = np.array(correct)
+            conf = detections[:, 4].cpu().numpy()
+            pred_cls = detections[:, 6].cpu().numpy()
+            target_cls = target_cls.cpu().numpy()
+            stats.append((tp, conf, pred_cls, target_cls))
 
-            # Accumulate AP per class
-            AP_accum_count += np.bincount(AP_class, minlength=nC)
-            AP_accum += np.bincount(AP_class, minlength=nC, weights=AP)
+    # Compute means
+    stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
+    AP, AP_class, R, P = ap_per_class(*stats_np)
+    mP, mR, mAP = P.mean(), R.mean(), AP.mean()
 
-            # Compute mean AP across all classes in this image, and append to image list
-            mP.append(P.mean())
-            mR.append(R.mean())
-            mAPs.append(AP.mean())
-
-            # Means of all images
-            mean_P = np.mean(mP)
-            mean_R = np.mean(mR)
-            mean_mAP = np.mean(mAPs)
-
-    # Print image mAP and running mean mAP
-    print(('%11s%11s' + '%11.3g' * 4 + 's') %
-          (seen, len(dataset), mean_P, mean_R, mean_mAP, time.time() - t))
+    # Print P, R, mAP
+    print(('%11s%11s' + '%11.3g' * 3) %
+          (seen, len(dataset), P.mean(), R.mean(), AP.mean()))
 
     # Print mAP per class
     print('\nmAP Per Class:')
-    for i, c in enumerate(load_classes(data_cfg['names'])):
-        if AP_accum_count[i]:
-            print('%15s: %-.4f' % (c, AP_accum[i] / (AP_accum_count[i])))
+    names = load_classes(data_cfg['names'])
+    for a, c in zip(AP, AP_class):
+        print('%15s: %-.4f' % (names[c], a))
 
     # Save JSON
     if save_json:
@@ -166,7 +148,7 @@ def test(
         cocoEval.summarize()
 
     # Return mAP
-    return mean_P, mean_R, mean_mAP
+    return mP, mR, mAP
 
 
 if __name__ == '__main__':
@@ -176,7 +158,7 @@ if __name__ == '__main__':
     parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3.weights', help='path to weights file')
     parser.add_argument('--iou-thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
-    parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
     parser.add_argument('--save-json', action='store_true', help='save a cocoapi-compatible JSON results file')
     parser.add_argument('--img-size', type=int, default=416, help='size of each image dimension')
@@ -193,5 +175,5 @@ if __name__ == '__main__':
             opt.iou_thres,
             opt.conf_thres,
             opt.nms_thres,
-            opt.save_json
+            True
         )

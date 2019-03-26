@@ -106,10 +106,10 @@ def xyxy2xywh(x):
 def xywh2xyxy(x):
     # Convert bounding box format from [x, y, w, h] to [x1, y1, x2, y2]
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
-    y[:, 0] = (x[:, 0] - x[:, 2] / 2)
-    y[:, 1] = (x[:, 1] - x[:, 3] / 2)
-    y[:, 2] = (x[:, 0] + x[:, 2] / 2)
-    y[:, 3] = (x[:, 1] + x[:, 3] / 2)
+    y[:, 0] = x[:, 0] - x[:, 2] / 2
+    y[:, 1] = x[:, 1] - x[:, 3] / 2
+    y[:, 2] = x[:, 0] + x[:, 2] / 2
+    y[:, 3] = x[:, 1] + x[:, 3] / 2
     return y
 
 
@@ -151,9 +151,9 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
         n_gt = sum(target_cls == c)  # Number of ground truth objects
         n_p = sum(i)  # Number of predicted objects
 
-        if (n_p == 0) and (n_gt == 0):
+        if n_p == 0 and n_gt == 0:
             continue
-        elif (n_p == 0) or (n_gt == 0):
+        elif n_p == 0 or n_gt == 0:
             ap.append(0)
             r.append(0)
             p.append(0)
@@ -336,7 +336,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         (x1, y1, x2, y2, object_conf, class_score, class_pred)
     """
 
-    output = [None for _ in range(len(prediction))]
+    output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
         # Experiment: Prior class size rejection
         # x, y, w, h = pred[:, 0], pred[:, 1], pred[:, 2], pred[:, 3]
@@ -375,32 +375,32 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         # Iterate through all predicted classes
         unique_labels = detections[:, -1].cpu().unique().to(prediction.device)
 
+        # Get detections sorted by decreasing confidence scores
+        detections = detections[(-detections[:, 4] * detections[:, 5]).argsort()]
+
+        det_max = []
         nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
         for c in unique_labels:
             # Get the detections with class c
             dc = detections[detections[:, -1] == c]
-            # Sort the detections by maximum object confidence
-            _, conf_sort_index = torch.sort(dc[:, 4] * dc[:, 5], descending=True)
-            dc = dc[conf_sort_index]
 
             # Non-maximum suppression
-            det_max = []
-            ind = list(range(len(dc)))
             if nms_style == 'OR':  # default
+                # Image      Total          P          R        mAP
+
+                ind = list(range(len(dc)))
                 while len(ind):
                     j = ind[0]
                     det_max.append(dc[j:j + 1])  # save highest conf detection
-                    reject = bbox_iou(dc[j], dc[ind]) > nms_thres
-                    [ind.pop(i) for i in reversed(reject.nonzero())]
+                    reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
+                    [ind.pop(i) for i in reversed(reject)]
+
                 # while dc.shape[0]:  # SLOWER METHOD
                 #     det_max.append(dc[:1])  # save highest conf detection
                 #     if len(dc) == 1:  # Stop if we're at the last detection
                 #         break
                 #     iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
                 #     dc = dc[1:][iou < nms_thres]  # remove ious > threshold
-
-                # Image      Total          P          R        mAP
-                #  4964       5000      0.629      0.594      0.586
 
             elif nms_style == 'AND':  # requires overlap, single boxes erased
                 while len(dc) > 1:
@@ -410,22 +410,18 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     dc = dc[1:][iou < nms_thres]  # remove ious > threshold
 
             elif nms_style == 'MERGE':  # weighted mixture box
+                # Image      Total          P          R        mAP
+
                 while len(dc) > 0:
                     iou = bbox_iou(dc[0], dc[0:])  # iou with other boxes
                     i = iou > nms_thres
-
                     weights = dc[i, 4:5] * dc[i, 5:6]
                     dc[0, :4] = (weights * dc[i, :4]).sum(0) / weights.sum()
                     det_max.append(dc[:1])
                     dc = dc[iou < nms_thres]
 
-                # Image      Total          P          R        mAP
-                #  4964       5000      0.633      0.598      0.589  # normal
-
-            if len(det_max) > 0:
-                det_max = torch.cat(det_max)
-                # Add max detections to outputs
-                output[image_i] = det_max if output[image_i] is None else torch.cat((output[image_i], det_max))
+        if len(det_max) > 0:
+            output[image_i] = torch.cat(det_max)
 
     return output
 

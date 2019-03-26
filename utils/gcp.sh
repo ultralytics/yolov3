@@ -11,7 +11,7 @@ sudo reboot now
 # Re-clone
 sudo rm -rf yolov3
 git clone https://github.com/ultralytics/yolov3  # master
-# git clone -b multi_gpu --depth 1 https://github.com/ultralytics/yolov3  # branch
+# git clone -b branch_name --depth 1 https://github.com/ultralytics/yolov3 branch_name  # branch
 cp -r weights yolov3
 cp -r cocoapi/PythonAPI/pycocotools yolov3
 cd yolov3
