@@ -17,7 +17,7 @@ def test(
         iou_thres=0.5,
         conf_thres=0.3,
         nms_thres=0.5,
-        save_json=True,
+        save_json=False,
         model=None
 ):
     device = torch_utils.select_device()
@@ -37,7 +37,6 @@ def test(
 
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
-    nC = int(data_cfg['classes'])  # number of classes (80 for COCO)
     test_path = data_cfg['valid']
 
     # Dataloader
@@ -136,17 +135,19 @@ def test(
 
     # Compute means
     stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
-    AP, AP_class, R, P = ap_per_class(*stats_np)
-    mP, mR, mAP = P.mean(), R.mean(), AP.mean()
+    if len(stats_np):
+        AP, AP_class, R, P = ap_per_class(*stats_np)
+        mP, mR, mAP = P.mean(), R.mean(), AP.mean()
 
     # Print P, R, mAP
     print(('%11s%11s' + '%11.3g' * 3) % (seen, len(dataset), mP, mR, mAP))
 
     # Print mAP per class
-    print('\nmAP Per Class:')
-    names = load_classes(data_cfg['names'])
-    for a, c in zip(AP, AP_class):
-        print('%15s: %-.4f' % (names[c], a))
+    if len(stats_np):
+        print('\nmAP Per Class:')
+        names = load_classes(data_cfg['names'])
+        for a, c in zip(AP, AP_class):
+            print('%15s: %-.4f' % (names[c], a))
 
     # Save JSON
     if save_json:
@@ -178,7 +179,7 @@ if __name__ == '__main__':
     parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3.weights', help='path to weights file')
     parser.add_argument('--iou-thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
-    parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.1, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
     parser.add_argument('--save-json', action='store_true', help='save a cocoapi-compatible JSON results file')
     parser.add_argument('--img-size', type=int, default=416, help='size of each image dimension')
@@ -195,5 +196,5 @@ if __name__ == '__main__':
             opt.iou_thres,
             opt.conf_thres,
             opt.nms_thres,
-            True
+            opt.save_json
         )
