@@ -379,7 +379,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         detections = detections[(-detections[:, 4] * detections[:, 5]).argsort()]
 
         det_max = []
-        nms_style = 'MERGE'  # 'OR' (default), 'AND', 'MERGE' (experimental)
+        nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
         for c in unique_labels:
             # Get the detections with class c
             dc = detections[detections[:, -1] == c]
@@ -390,6 +390,9 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
                 ind = list(range(len(dc)))
                 while len(ind):
+                    if len(dc) == 1:
+                        det_max.append(dc)
+                        break
                     j = ind[0]
                     det_max.append(dc[j:j + 1])  # save highest conf detection
                     reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
@@ -412,7 +415,11 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             elif nms_style == 'MERGE':  # weighted mixture box
                 # Image      Total          P          R        mAP
 
-                while len(dc) > 0:
+                while len(dc):
+                    if len(dc) == 1:
+                        det_max.append(dc)
+                        break
+
                     iou = bbox_iou(dc[0], dc[0:])  # iou with other boxes
                     i = iou > nms_thres
                     weights = dc[i, 4:5] * dc[i, 5:6]
