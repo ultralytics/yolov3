@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from utils import torch_utils
 
@@ -327,7 +326,8 @@ def build_targets(model, targets):
 
     return txy, twh, tcls, indices
 
-#@profile
+
+# @profile
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
     Removes detections with lower object confidence score than 'conf_thres'
@@ -352,7 +352,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
         # Filter out confidence scores below threshold
-        #class_prob, class_pred = F.softmax(pred[:, 5:], 1).max(1)
+        # class_prob, class_pred = F.softmax(pred[:, 5:], 1).max(1)
         class_prob, class_pred = torch.sigmoid(pred[:, 5:]).max(1)
         v = pred[:, 4] > conf_thres
         v = v.nonzero().squeeze()
@@ -391,7 +391,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
                 ind = list(range(len(dc)))
                 while len(ind):
-                    #if len(dc) == 1:
+                    # if len(dc) == 1:
                     #    det_max.append(dc)
                     #    break
                     j = ind[0]
