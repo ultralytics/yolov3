@@ -391,9 +391,10 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
                 ind = list(range(len(dc)))
                 while len(ind):
-                    # if len(dc) == 1:
-                    #    det_max.append(dc)
-                    #    break
+                    if len(dc) == 1:
+                        det_max.append(dc)
+                        break
+
                     j = ind[0]
                     det_max.append(dc[j:j + 1])  # save highest conf detection
                     reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
