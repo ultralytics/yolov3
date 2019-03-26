@@ -382,6 +382,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             # Sort the detections by maximum object confidence
             _, conf_sort_index = torch.sort(dc[:, 4] * dc[:, 5], descending=True)
             dc = dc[conf_sort_index]
+            dc = dc[:min(len(dc), 100)]  # limit to first 100 boxes: https://github.com/ultralytics/yolov3/issues/117
 
             # Non-maximum suppression
             det_max = []
