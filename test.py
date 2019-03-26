@@ -119,8 +119,7 @@ def test(
     mP, mR, mAP = P.mean(), R.mean(), AP.mean()
 
     # Print P, R, mAP
-    print(('%11s%11s' + '%11.3g' * 3) %
-          (seen, len(dataset), P.mean(), R.mean(), AP.mean()))
+    print(('%11s%11s' + '%11.3g' * 3) % (seen, len(dataset), mP, mR, mAP))
 
     # Print mAP per class
     print('\nmAP Per Class:')
