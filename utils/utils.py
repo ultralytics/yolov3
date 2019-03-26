@@ -327,7 +327,7 @@ def build_targets(model, targets):
 
     return txy, twh, tcls, indices
 
-
+#@profile
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
     Removes detections with lower object confidence score than 'conf_thres'
@@ -352,7 +352,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
         # Filter out confidence scores below threshold
-        class_prob, class_pred = torch.max(F.softmax(pred[:, 5:], 1), 1)
+        # class_prob, class_pred = F.softmax(pred[:, 5:], 1).max(1)
+        class_prob, class_pred = torch.sigmoid(pred[:, 5:]).max(1)
         v = pred[:, 4] > conf_thres
         v = v.nonzero().squeeze()
         if len(v.shape) == 0:
@@ -371,7 +372,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         pred[:, :4] = xywh2xyxy(pred[:, :4])
 
         # Detections ordered as (x1, y1, x2, y2, obj_conf, class_prob, class_pred)
-        detections = torch.cat((pred[:, :5], class_prob.float().unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
+        detections = torch.cat((pred[:, :5], class_prob.unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
         # Iterate through all predicted classes
         unique_labels = detections[:, -1].cpu().unique().to(prediction.device)
 

@@ -10,8 +10,8 @@ sudo reboot now
 
 # Re-clone
 sudo rm -rf yolov3
-git clone https://github.com/ultralytics/yolov3  # master
-# git clone -b branch_name --depth 1 https://github.com/ultralytics/yolov3 branch_name  # branch
+# git clone https://github.com/ultralytics/yolov3  # master
+git clone -b map_update --depth 1 https://github.com/ultralytics/yolov3 yolov3  # branch
 cp -r weights yolov3
 cp -r cocoapi/PythonAPI/pycocotools yolov3
 cd yolov3
@@ -30,7 +30,7 @@ python3 detect.py --save-json --conf-thres 0.001 --img-size 416
 
 # Git pull
 git pull https://github.com/ultralytics/yolov3  # master
-git pull https://github.com/ultralytics/yolov3 multi_gpu  # branch
+git pull https://github.com/ultralytics/yolov3 map_update  # branch
 
 # Test Darknet training
 python3 test.py --weights ../darknet/backup/yolov3.backup
