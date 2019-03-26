@@ -368,7 +368,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         detections = torch.cat((pred[:, :5], class_prob.unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
 
         # Get detections sorted by decreasing confidence scores
-        detections = detections[(-detections[:, 4] * detections[:, 5]).argsort()]
+        detections[:, 4] *= detections[:, 5]
+        detections = detections[(-detections[:, 4]).argsort()]
 
         det_max = []
         nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
