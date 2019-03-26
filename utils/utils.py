@@ -352,8 +352,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
         # Filter out confidence scores below threshold
-        # class_prob, class_pred = F.softmax(pred[:, 5:], 1).max(1)
-        class_prob, class_pred = torch.sigmoid(pred[:, 5:]).max(1)
+        class_prob, class_pred = pred[:, 5:].max(1)
         v = pred[:, 4] > conf_thres
         v = v.nonzero().squeeze()
         if len(v.shape) == 0:
@@ -384,7 +383,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         for c in unique_labels:
             # Get the detections with class c
             dc = detections[detections[:, -1] == c]  # select class c
-            dc = dc[:min(len(dc), 100)]  # limit to first 100 boxes
+            dc = dc[:min(len(dc), 100)]  # limit to first 100 boxes: https://github.com/ultralytics/yolov3/issues/117
 
             # Non-maximum suppression
             if nms_style == 'OR':  # default
