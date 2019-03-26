@@ -14,7 +14,7 @@ def detect(
         output='output',  # output folder
         img_size=416,
         conf_thres=0.3,
-        nms_thres=0.45,
+        nms_thres=0.5,
         save_txt=False,
         save_images=True,
         webcam=False
@@ -63,16 +63,15 @@ def detect(
             torch.onnx.export(model, img, 'weights/model.onnx', verbose=True)
             return
         pred = model(img)
-        detections = non_max_suppression(pred.unsqueeze(0), conf_thres, nms_thres)[0]
+        detections = non_max_suppression(pred, conf_thres, nms_thres)[0]
 
         if len(detections) > 0:
             # Rescale boxes from 416 to true image size
             scale_coords(img_size, detections[:, :4], im0.shape).round()
 
             # Print results to screen
-            unique_classes = detections[:, -1].cpu().unique()
-            for c in unique_classes:
-                n = (detections[:, -1].cpu() == c).sum()
+            for c in detections[:, -1].unique():
+                n = (detections[:, -1] == c).sum()
                 print('%g %ss' % (n, classes[int(c)]), end=', ')
 
             # Draw bounding boxes and labels of detections
@@ -103,8 +102,8 @@ if __name__ == '__main__':
     parser.add_argument('--weights', type=str, default='weights/yolov3.weights', help='path to weights file')
     parser.add_argument('--images', type=str, default='data/samples', help='path to images')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='size of each image dimension')
-    parser.add_argument('--conf-thres', type=float, default=0.50, help='object confidence threshold')
-    parser.add_argument('--nms-thres', type=float, default=0.45, help='iou threshold for non-maximum suppression')
+    parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
+    parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
     opt = parser.parse_args()
     print(opt)
 
