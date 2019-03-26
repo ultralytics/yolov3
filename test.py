@@ -16,8 +16,8 @@ def test(
         img_size=416,
         iou_thres=0.5,
         conf_thres=0.3,
-        nms_thres=0.45,
-        save_json=False,
+        nms_thres=0.5,
+        save_json=True,
         model=None
 ):
     device = torch_utils.select_device()
