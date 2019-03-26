@@ -352,7 +352,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
         # Filter out confidence scores below threshold
-        # class_prob, class_pred = F.softmax(pred[:, 5:], 1).max(1)
+        #class_prob, class_pred = F.softmax(pred[:, 5:], 1).max(1)
         class_prob, class_pred = torch.sigmoid(pred[:, 5:]).max(1)
         v = pred[:, 4] > conf_thres
         v = v.nonzero().squeeze()
@@ -391,9 +391,9 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
                 ind = list(range(len(dc)))
                 while len(ind):
-                    if len(dc) == 1:
-                        det_max.append(dc)
-                        break
+                    #if len(dc) == 1:
+                    #    det_max.append(dc)
+                    #    break
                     j = ind[0]
                     det_max.append(dc[j:j + 1])  # save highest conf detection
                     reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
