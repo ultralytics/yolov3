@@ -50,9 +50,8 @@ def test(
     model.eval()
     seen = 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
-    mP, mR, mAP, stats, AP, AP_class = 0.0, 0.0, 0.0, [], [], []
-    jdict, tdict = [], []
-    id = 0
+    mP, mR, mAP = 0.0, 0.0, 0.0
+    jdict, tdict, stats, AP, AP_class = [], [], [], [], []
     coco91class = coco80_to_coco91_class()
     for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader)):
         targets = targets.to(device)
@@ -93,13 +92,12 @@ def test(
                 #     box[:, [1, 3]] *= shapes[si][0]  # scale height
                 #     box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
                 #     for di, d in enumerate(labels):
-                #         id += 1
                 #         tdict.append({
                 #             'segmentation': [[]],
                 #             'iscrowd': 0,
                 #             'image_id': image_id,
                 #             'category_id': coco91class[int(d[0])],
-                #             'id': id,
+                #             'id': seen,
                 #             'bbox': [float3(x) for x in box[di]],
                 #             'area': float3(box[di][2:4].prod())
                 #         })
@@ -174,7 +172,7 @@ def test(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
-    parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
+    parser.add_argument('--batch-size', type=int, default=3, help='size of each image batch')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3.weights', help='path to weights file')

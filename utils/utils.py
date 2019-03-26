@@ -333,7 +333,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     Removes detections with lower object confidence score than 'conf_thres'
     Non-Maximum Suppression to further filter detections.
     Returns detections with shape:
-        (x1, y1, x2, y2, object_conf, class_score, class_pred)
+        (x1, y1, x2, y2, object_conf, class_conf, class)
     """
 
     output = [None] * len(prediction)
@@ -352,43 +352,33 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
         # Filter out confidence scores below threshold
-        class_prob, class_pred = pred[:, 5:].max(1)
-        v = pred[:, 4] > conf_thres
-        v = v.nonzero().squeeze()
-        if len(v.shape) == 0:
-            v = v.unsqueeze(0)
-
-        pred = pred[v]
-        class_prob = class_prob[v]
-        class_pred = class_pred[v]
+        pred = pred[pred[:, 4] > conf_thres]
 
         # If none are remaining => process next image
-        nP = pred.shape[0]
-        if not nP:
+        if len(pred) == 0:
             continue
 
-        # From (center x, center y, width, height) to (x1, y1, x2, y2)
+        # Select predicted classes
+        class_prob, class_pred = pred[:, 5:].max(1)
+
+        # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         pred[:, :4] = xywh2xyxy(pred[:, :4])
 
         # Detections ordered as (x1, y1, x2, y2, obj_conf, class_prob, class_pred)
         detections = torch.cat((pred[:, :5], class_prob.unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
-        # Iterate through all predicted classes
-        unique_labels = detections[:, -1].cpu().unique().to(prediction.device)
 
         # Get detections sorted by decreasing confidence scores
-        detections = detections[(-detections[:, 4] * detections[:, 5]).argsort()]
+        detections = detections[(-detections[:, 4]).argsort()]
 
+        # unique_classes = detections[:, -1].cpu().unique().to(prediction.device)
         det_max = []
         nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
-        for c in unique_labels:
-            # Get the detections with class c
+        for c in detections[:, -1].unique():
             dc = detections[detections[:, -1] == c]  # select class c
             dc = dc[:min(len(dc), 100)]  # limit to first 100 boxes: https://github.com/ultralytics/yolov3/issues/117
 
             # Non-maximum suppression
             if nms_style == 'OR':  # default
-                # Image      Total          P          R        mAP
-
                 ind = list(range(len(dc)))
                 while len(ind):
                     if len(dc) == 1:
@@ -415,8 +405,6 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     dc = dc[1:][iou < nms_thres]  # remove ious > threshold
 
             elif nms_style == 'MERGE':  # weighted mixture box
-                # Image      Total          P          R        mAP
-
                 while len(dc):
                     if len(dc) == 1:
                         det_max.append(dc)
@@ -429,7 +417,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     det_max.append(dc[:1])
                     dc = dc[iou < nms_thres]
 
-        if len(det_max) > 0:
+        if len(det_max):
             output[image_i] = torch.cat(det_max)
 
     return output
@@ -484,3 +472,4 @@ def plot_results(start=0):
             if i == 0:
                 plt.legend()
     fig.tight_layout()
+    fig.savefig('results.jpg', dpi=fig.dpi)

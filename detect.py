@@ -63,12 +63,9 @@ def detect(
             torch.onnx.export(model, img, 'weights/model.onnx', verbose=True)
             return
         pred = model(img)
-        pred = pred[pred[:, :, 4] > conf_thres]  # remove boxes < threshold
+        detections = non_max_suppression(pred.unsqueeze(0), conf_thres, nms_thres)[0]
 
-        if len(pred) > 0:
-            # Run NMS on predictions
-            detections = non_max_suppression(pred.unsqueeze(0), conf_thres, nms_thres)[0]
-
+        if len(detections) > 0:
             # Rescale boxes from 416 to true image size
             scale_coords(img_size, detections[:, :4], im0.shape).round()
 

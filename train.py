@@ -115,13 +115,13 @@ def train(
                 continue
 
             # Plot images with bounding boxes
-            plot_images = False
+            plot_images = True
             if plot_images:
                 fig = plt.figure(figsize=(10, 10))
                 for ip in range(batch_size):
-                    labels = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy() * img_size
+                    boxes = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy().T * img_size
                     plt.subplot(4, 4, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
-                    plt.plot(labels[:, [0, 2, 2, 0, 0]].T, labels[:, [1, 1, 3, 3, 1]].T, '.-')
+                    plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
                     plt.axis('off')
                 fig.tight_layout()
                 fig.savefig('batch_%g.jpg' % i, dpi=fig.dpi)
@@ -190,7 +190,7 @@ def train(
 
         # Calculate mAP
         with torch.no_grad():
-            P, R, mAP = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
+            P, R, mAP = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size, model=model)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
