@@ -51,17 +51,20 @@ def test(
     model.eval()
     seen = 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
-    mP, mR, mAP, jdict, stats, AP, AP_class = 0.0, 0.0, 0.0, [], [], [], []
+    mP, mR, mAP, stats, AP, AP_class = 0.0, 0.0, 0.0, [], [], []
+    jdict, tdict = [], []
+    id = 0
     coco91class = coco80_to_coco91_class()
-    for imgs, targets, paths, shapes in tqdm(dataloader):
+    for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader)):
         targets = targets.to(device)
         imgs = imgs.to(device)
 
         output = model(imgs)
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
 
-        # Compute average precision for each sample
+        # Per image
         for si, detections in enumerate(output):
+            image_id = int(Path(paths[si]).stem.split('_')[-1])
             labels = targets[targets[:, 0] == si, 1:]
             seen += 1
 
@@ -69,20 +72,38 @@ def test(
                 continue
 
             if save_json:
+                # add to json detections dictionary
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
                 box = detections[:, :4].clone()  # xyxy
                 scale_coords(img_size, box, shapes[si])  # to original shape
                 box = xyxy2xywh(box)  # xywh
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
-
-                # add to json dictionary
                 for di, d in enumerate(detections):
                     jdict.append({
-                        'image_id': int(Path(paths[si]).stem.split('_')[-1]),
+                        'image_id': image_id,
                         'category_id': coco91class[int(d[6])],
                         'bbox': [float3(x) for x in box[di]],
                         'score': float3(d[4] * d[5])
                     })
+
+                # if len(labels) > 0:
+                #     # add to json targets dictionary
+                #     # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], ...
+                #     box = labels[:, 1:].clone()
+                #     box[:, [0, 2]] *= shapes[si][1]  # scale width
+                #     box[:, [1, 3]] *= shapes[si][0]  # scale height
+                #     box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
+                #     for di, d in enumerate(labels):
+                #         id += 1
+                #         tdict.append({
+                #             'segmentation': [[]],
+                #             'iscrowd': 0,
+                #             'image_id': image_id,
+                #             'category_id': coco91class[int(d[0])],
+                #             'id': id,
+                #             'bbox': [float3(x) for x in box[di]],
+                #             'area': float3(box[di][2:4].prod())
+                #         })
 
             # If no labels add number of detections as incorrect
             correct = []
@@ -152,7 +173,7 @@ def test(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
-    parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
+    parser.add_argument('--batch-size', type=int, default=5, help='size of each image batch')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3.weights', help='path to weights file')
