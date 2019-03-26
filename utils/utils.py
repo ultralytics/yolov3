@@ -379,7 +379,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         detections = detections[(-detections[:, 4] * detections[:, 5]).argsort()]
 
         det_max = []
-        nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
+        nms_style = 'MERGE'  # 'OR' (default), 'AND', 'MERGE' (experimental)
         for c in unique_labels:
             # Get the detections with class c
             dc = detections[detections[:, -1] == c]
