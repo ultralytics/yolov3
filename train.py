@@ -115,7 +115,7 @@ def train(
                 continue
 
             # Plot images with bounding boxes
-            plot_images = True
+            plot_images = False
             if plot_images:
                 fig = plt.figure(figsize=(10, 10))
                 for ip in range(batch_size):

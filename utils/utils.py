@@ -336,6 +336,9 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         (x1, y1, x2, y2, object_conf, class_conf, class)
     """
 
+    min_width = 5  # (pixels) minimum box width
+    min_height = 5  # (pixels) minimum box height
+
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
         # Experiment: Prior class size rejection
@@ -351,8 +354,12 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         # shape_likelihood[:, c] =
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
+        # class_prob, class_pred = pred[:, 5:].max(1)
+        # pred[:, 4] *= class_prob
+
         # Filter out confidence scores below threshold
-        pred = pred[pred[:, 4] > conf_thres]
+        i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_width) & (pred[:, 3] > min_height)
+        pred = pred[i]
 
         # If none are remaining => process next image
         if len(pred) == 0:
