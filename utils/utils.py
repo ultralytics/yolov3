@@ -337,7 +337,6 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
 
     min_wh = 2  # (pixels) minimum box width and height
-    class_conf_thres = 0.01  # (pixels) minimum box height
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
@@ -358,7 +357,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         class_conf, class_pred = pred[:, 5:].max(1)
         pred[:, 4] *= class_conf
 
-        i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh) & (class_conf > class_conf_thres)
+        i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh)
         pred = pred[i]
 
         # If none are remaining => process next image

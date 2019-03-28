@@ -40,9 +40,10 @@ gsutil cp yolov3/weights/latest1gpu.pt gs://ultralytics
 
 # Copy latest.pt FROM bucket
 gsutil cp gs://ultralytics/latest.pt yolov3/weights/latest.pt
-wget https://storage.googleapis.com/ultralytics/latest.pt -O weights/latest.pt
+wget https://storage.googleapis.com/ultralytics/yolov3/latest_v1_0.pt -O weights/latest_v1_0.pt
+wget https://storage.googleapis.com/ultralytics/yolov3/best_v1_0.pt -O weights/best_v1_0.pt
 
 # Debug/Development
 git pull https://github.com/ultralytics/yolov3 map_update  # branch
-python3 test.py --save-json
+python3 test.py --save-json --weights weights/latest_v1_0.pt
 
