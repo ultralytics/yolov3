@@ -20,9 +20,9 @@ def test(
         save_json=False,
         model=None
 ):
-    device = torch_utils.select_device()
-
     if model is None:
+        device = torch_utils.select_device()
+
         # Initialize model
         model = Darknet(cfg, img_size).to(device)
 
@@ -34,6 +34,8 @@ def test(
 
         if torch.cuda.device_count() > 1:
             model = nn.DataParallel(model)
+    else:
+        device = model.device
 
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
