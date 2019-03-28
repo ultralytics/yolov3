@@ -356,7 +356,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
         # Filter out confidence scores below threshold
         class_conf, class_pred = pred[:, 5:].max(1)
-        pred[:, 4] *= class_conf
+        # pred[:, 4] *= class_conf
 
         i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh) & (class_conf > class_conf_thres)
         pred = pred[i]
@@ -375,7 +375,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         detections = torch.cat((pred[:, :5], class_conf.unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
 
         # Get detections sorted by decreasing confidence scores
-        # detections[:, 4] *= detections[:, 5]
+        detections[:, 4] *= detections[:, 5]
         detections = detections[(-detections[:, 4]).argsort()]
 
         det_max = []
@@ -418,7 +418,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     #     break
 
                     i = bbox_iou(dc[0], dc) > nms_thres  # iou with other boxes
-                    weights = dc[i, 4:5] * dc[i, 5:6]
+                    weights = dc[i, 4:5]
                     dc[0, :4] = (weights * dc[i, :4]).sum(0) / weights.sum()
                     det_max.append(dc[:1])
                     dc = dc[i == 0]
