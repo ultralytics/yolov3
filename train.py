@@ -190,7 +190,7 @@ def train(
 
         # Calculate mAP
         with torch.no_grad():
-            P, R, mAP = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size, model=model)
+            P, R, mAP = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, conf_thres=0.1, model=model)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
