@@ -413,9 +413,9 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
             elif nms_style == 'MERGE':  # weighted mixture box
                 while len(dc):
-                    # if len(dc) == 1:
-                    #     det_max.append(dc)
-                    #     break
+                    if len(dc) == 1:
+                        det_max.append(dc)
+                        break
 
                     i = bbox_iou(dc[0], dc) > nms_thres  # iou with other boxes
                     weights = dc[i, 4:5]
