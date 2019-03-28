@@ -336,10 +336,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         (x1, y1, x2, y2, object_conf, class_conf, class)
     """
 
-    min_width = 2  # (pixels) minimum box width
-    min_height = 2  # (pixels) minimum box height
-    class_conf_thres = 0.0  # (pixels) minimum box height
-
+    min_wh = 2  # (pixels) minimum box width and height
+    class_conf_thres = 0.10  # (pixels) minimum box height
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
@@ -356,11 +354,13 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         # shape_likelihood[:, c] =
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
-        # class_prob, class_pred = pred[:, 5:].max(1)
-        # pred[:, 4] *= class_prob
+        # class_conf, class_pred = pred[:, 5:].max(1)
+        # pred[:, 4] *= class_conf
 
         # Filter out confidence scores below threshold
-        i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_width) & (pred[:, 3] > min_height)
+        class_conf, class_pred = pred[:, 5:].max(1)
+
+        i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh) & (class_conf > class_conf_thres)
         pred = pred[i]
 
         # If none are remaining => process next image
@@ -368,13 +368,13 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             continue
 
         # Select predicted classes
-        class_prob, class_pred = pred[:, 5:].max(1)
+        class_conf, class_pred = pred[:, 5:].max(1)
 
         # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         pred[:, :4] = xywh2xyxy(pred[:, :4])
 
-        # Detections ordered as (x1, y1, x2, y2, obj_conf, class_prob, class_pred)
-        detections = torch.cat((pred[:, :5], class_prob.unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
+        # Detections ordered as (x1, y1, x2, y2, obj_conf, class_conf, class_pred)
+        detections = torch.cat((pred[:, :5], class_conf.unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
 
         # Get detections sorted by decreasing confidence scores
         detections[:, 4] *= detections[:, 5]
