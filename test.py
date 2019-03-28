@@ -11,13 +11,13 @@ from utils.utils import *
 def test(
         cfg,
         data_cfg,
-        weights,
+        weights=None,
         batch_size=16,
         img_size=416,
         iou_thres=0.5,
         conf_thres=0.3,
         nms_thres=0.5,
-        save_json=False,
+        save_json=True,
         model=None
 ):
     if model is None:
