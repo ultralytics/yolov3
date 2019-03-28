@@ -355,7 +355,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
         # class_conf, class_pred = pred[:, 5:].max(1)
-        # pred[:, 4] *= class_conf
+        pred[:, 4] *= class_conf
 
         # Filter out confidence scores below threshold
         class_conf, class_pred = pred[:, 5:].max(1)
@@ -377,7 +377,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         detections = torch.cat((pred[:, :5], class_conf.unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
 
         # Get detections sorted by decreasing confidence scores
-        detections[:, 4] *= detections[:, 5]
+        # detections[:, 4] *= detections[:, 5]
         detections = detections[(-detections[:, 4]).argsort()]
 
         det_max = []
