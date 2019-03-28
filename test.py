@@ -194,5 +194,5 @@ if __name__ == '__main__':
             opt.iou_thres,
             opt.conf_thres,
             opt.nms_thres,
-            True
+            opt.save_json
         )
