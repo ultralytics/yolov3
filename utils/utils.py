@@ -386,23 +386,23 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
             # Non-maximum suppression
             if nms_style == 'OR':  # default
-                ind = list(range(len(dc)))
-                while len(ind):
-                    if len(dc) == 1:
-                        det_max.append(dc)
+                # ind = list(range(len(dc)))
+                # while len(ind):
+                    # if len(dc) == 1:
+                    #     det_max.append(dc)
+                    #     break
+                    #
+                    # j = ind[0]
+                    # det_max.append(dc[j:j + 1])  # save highest conf detection
+                    # reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
+                    # [ind.pop(i) for i in reversed(reject)]
+
+                while dc.shape[0]:  # SLOWER METHOD
+                    det_max.append(dc[:1])  # save highest conf detection
+                    if len(dc) == 1:  # Stop if we're at the last detection
                         break
-
-                    j = ind[0]
-                    det_max.append(dc[j:j + 1])  # save highest conf detection
-                    reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
-                    [ind.pop(i) for i in reversed(reject)]
-
-                # while dc.shape[0]:  # SLOWER METHOD
-                #     det_max.append(dc[:1])  # save highest conf detection
-                #     if len(dc) == 1:  # Stop if we're at the last detection
-                #         break
-                #     iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
-                #     dc = dc[1:][iou < nms_thres]  # remove ious > threshold
+                    iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
+                    dc = dc[1:][iou < nms_thres]  # remove ious > threshold
 
             elif nms_style == 'AND':  # requires overlap, single boxes erased
                 while len(dc) > 1:
