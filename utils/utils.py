@@ -354,11 +354,9 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         # shape_likelihood[:, c] =
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
-        # class_conf, class_pred = pred[:, 5:].max(1)
-        pred[:, 4] *= class_conf
-
         # Filter out confidence scores below threshold
         class_conf, class_pred = pred[:, 5:].max(1)
+        pred[:, 4] *= class_conf
 
         i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh) & (class_conf > class_conf_thres)
         pred = pred[i]
