@@ -35,7 +35,7 @@ def test(
         if torch.cuda.device_count() > 1:
             model = nn.DataParallel(model)
     else:
-        device = model.device()
+        device = next(model.parameters()).device
 
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
