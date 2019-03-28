@@ -32,8 +32,8 @@ def test(
         else:  # darknet format
             _ = load_darknet_weights(model, weights)
 
-    if torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
+        if torch.cuda.device_count() > 1:
+            model = nn.DataParallel(model)
 
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
