@@ -194,7 +194,7 @@ def train(
 
         # Write epoch results
         with open('results.txt', 'a') as file:
-            file.write(s + '%11.3g' * 3 % (P, R, mAP, mAPj) + '\n')
+            file.write(s + '%11.3g' * 4 % (P, R, mAP, mAPj) + '\n')
 
 
 if __name__ == '__main__':
