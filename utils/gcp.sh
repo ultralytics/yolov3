@@ -42,8 +42,7 @@ gsutil cp yolov3/weights/latest1gpu.pt gs://ultralytics
 gsutil cp gs://ultralytics/latest.pt yolov3/weights/latest.pt
 wget https://storage.googleapis.com/ultralytics/latest.pt -O weights/latest.pt
 
-# Trade Studies
-sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
-cp -r weights yolov3
-cd yolov3 && python3 train.py --batch-size 16 --epochs 1
-sudo shutdown
+# Debug/Development
+git pull https://github.com/ultralytics/yolov3 map_update  # branch
+python3 test.py --save-json
+
