@@ -336,8 +336,10 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         (x1, y1, x2, y2, object_conf, class_conf, class)
     """
 
-    min_width = 5  # (pixels) minimum box width
-    min_height = 5  # (pixels) minimum box height
+    min_width = 2  # (pixels) minimum box width
+    min_height = 2  # (pixels) minimum box height
+    class_conf_thres = 0.0  # (pixels) minimum box height
+
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
@@ -401,9 +403,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     det_max.append(dc[:1])  # save highest conf detection
                     if len(dc) == 1:  # Stop if we're at the last detection
                         break
-                    # iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
-                    # dc = dc[1:][iou < nms_thres]  # remove ious > threshold
-                    dc = dc[bbox_iou(dc[0], dc) < nms_thres]  # remove ious > threshold
+                    iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
+                    dc = dc[1:][iou < nms_thres]  # remove ious > threshold
 
             elif nms_style == 'AND':  # requires overlap, single boxes erased
                 while len(dc) > 1:
