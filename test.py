@@ -17,7 +17,7 @@ def test(
         iou_thres=0.5,
         conf_thres=0.3,
         nms_thres=0.5,
-        save_json=False,
+        save_json=True,
         model=None
 ):
     if model is None:
@@ -52,7 +52,7 @@ def test(
     model.eval()
     seen = 0
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
-    mP, mR, mAP = 0.0, 0.0, 0.0
+    mP, mR, mAP, mAPj = 0.0, 0.0, 0.0, 0.0
     jdict, tdict, stats, AP, AP_class = [], [], [], [], []
     coco91class = coco80_to_coco91_class()
     for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader)):
@@ -167,10 +167,10 @@ def test(
         cocoEval.evaluate()
         cocoEval.accumulate()
         cocoEval.summarize()
-        mAP = cocoEval.stats[1]  # update mAP to pycocotools mAP
+        mAPj = cocoEval.stats[1]  # update mAP to pycocotools mAP
 
     # Return mAP
-    return mP, mR, mAP
+    return mP, mR, mAP, mAPj
 
 
 if __name__ == '__main__':

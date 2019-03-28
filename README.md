@@ -67,13 +67,16 @@ HS**V** Intensity | +/- 50%
 https://cloud.google.com/deep-learning-vm/  
 **Machine type:** n1-standard-8 (8 vCPUs, 30 GB memory)  
 **CPU platform:** Intel Skylake  
-**GPUs:** 1-4x P100 ($0.493/hr), 1-8x V100 ($0.803/hr)  
+**GPUs:** K80 ($0.198/hr), P4 ($0.279/hr), T4 ($0.353/hr), P100 ($0.493/hr), V100 ($0.803/hr)  
 **HDD:** 100 GB SSD  
 **Dataset:** COCO train 2014 
 
 GPUs | `batch_size` | batch time | epoch time | epoch cost
 --- |---| --- | --- | --- 
 <i></i> |  (images)  | (s/batch) |  |
+1 K80 | 16 | 1.43s  | 175min  | $0.58
+1 P4 | 8 | 0.51s  | 125min  | $0.58
+1 T4 | 16 | 0.78s  | 94min  | $0.55
 1 P100 | 16 | 0.39s  | 48min  | $0.39
 2 P100 | 32 | 0.48s | 29min | $0.47
 4 P100 | 64 | 0.65s | 20min | $0.65
