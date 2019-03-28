@@ -55,7 +55,7 @@ def test(
     mP, mR, mAP, mAPj = 0.0, 0.0, 0.0, 0.0
     jdict, tdict, stats, AP, AP_class = [], [], [], [], []
     coco91class = coco80_to_coco91_class()
-    for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader)):
+    for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc='Calculating mAP')):
         targets = targets.to(device)
         imgs = imgs.to(device)
 
