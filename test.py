@@ -167,6 +167,7 @@ def test(
         cocoEval.evaluate()
         cocoEval.accumulate()
         cocoEval.summarize()
+        mAP = cocoEval.stats[1]  # update mAP to pycocotools mAP
 
     # Return mAP
     return mP, mR, mAP
@@ -196,5 +197,5 @@ if __name__ == '__main__':
             opt.iou_thres,
             opt.conf_thres,
             opt.nms_thres,
-            opt.save_json
+            True
         )
