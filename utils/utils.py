@@ -462,10 +462,29 @@ def coco_only_people(path='../coco/labels/val2014/'):
             print(labels.shape[0], file)
 
 
-def plot_results(start=0):
+def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
+    # Compares the two methods for width-height anchor multiplication
+    # https://github.com/ultralytics/yolov3/issues/168
+    x = np.arange(-4.0, 4.0, .1)
+    ya = np.exp(x)
+    yb = (torch.sigmoid(torch.from_numpy(x)).numpy() * 2)
+
+    fig = plt.figure(figsize=(6, 3), dpi=150)
+    plt.plot(x, ya, '.-', label='yolo method')
+    plt.plot(x, yb ** 2, '.-', label='^2 power method')
+    plt.plot(x, yb ** 2.5, '.-', label='^2.5 power method')
+    plt.xlim(left=-4, right=4)
+    plt.ylim(bottom=0, top=6)
+    plt.xlabel('input')
+    plt.ylabel('output')
+    plt.legend()
+    fig.tight_layout()
+    fig.savefig('comparison.jpg', dpi=fig.dpi)
+
+
+def plot_results(start=0):  # from utils.utils import *; plot_results()
     # Plot YOLO training results file 'results.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
-    # from utils.utils import *; plot_results()
 
     fig = plt.figure(figsize=(14, 7))
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
