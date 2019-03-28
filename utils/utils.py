@@ -337,7 +337,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
 
     min_wh = 2  # (pixels) minimum box width and height
-    class_conf_thres = 0.0  # (pixels) minimum box height
+    class_conf_thres = 0.01  # (pixels) minimum box height
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
@@ -379,13 +379,14 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         detections = detections[(-detections[:, 4]).argsort()]
 
         det_max = []
-        nms_style = 'MERGE'  # 'OR' (default), 'AND', 'MERGE' (experimental)
+        nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
         for c in detections[:, -1].unique():
             dc = detections[detections[:, -1] == c]  # select class c
             dc = dc[:min(len(dc), 100)]  # limit to first 100 boxes: https://github.com/ultralytics/yolov3/issues/117
 
             # Non-maximum suppression
             if nms_style == 'OR':  # default
+                # METHOD1
                 # ind = list(range(len(dc)))
                 # while len(ind):
                     # j = ind[0]
@@ -393,7 +394,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     # reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
                     # [ind.pop(i) for i in reversed(reject)]
 
-                while dc.shape[0]:  # SLOWER METHOD
+                # METHOD2
+                while dc.shape[0]:
                     det_max.append(dc[:1])  # save highest conf detection
                     if len(dc) == 1:  # Stop if we're at the last detection
                         break
