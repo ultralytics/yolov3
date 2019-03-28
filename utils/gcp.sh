@@ -26,7 +26,7 @@ python3 train.py --resume
 python3 detect.py
 
 # Test
-python3 detect.py --save-json --conf-thres 0.001 --img-size 416
+python3 test.py --save-json
 
 # Git pull
 git pull https://github.com/ultralytics/yolov3  # master
