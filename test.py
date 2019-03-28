@@ -17,7 +17,7 @@ def test(
         iou_thres=0.5,
         conf_thres=0.3,
         nms_thres=0.5,
-        save_json=True,
+        save_json=False,
         model=None
 ):
     if model is None:
@@ -197,5 +197,5 @@ if __name__ == '__main__':
             opt.iou_thres,
             opt.conf_thres,
             opt.nms_thres,
-            True
+            opt.save_json
         )
