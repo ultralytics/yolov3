@@ -337,7 +337,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
 
     min_wh = 2  # (pixels) minimum box width and height
-    class_conf_thres = 0.10  # (pixels) minimum box height
+    class_conf_thres = 0.0  # (pixels) minimum box height
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
