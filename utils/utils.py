@@ -336,8 +336,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         (x1, y1, x2, y2, object_conf, class_conf, class)
     """
 
-    min_width = 10  # (pixels) minimum box width
-    min_height = 10  # (pixels) minimum box height
+    min_width = 5  # (pixels) minimum box width
+    min_height = 5  # (pixels) minimum box height
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
@@ -388,21 +388,22 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             if nms_style == 'OR':  # default
                 # ind = list(range(len(dc)))
                 # while len(ind):
-                    # if len(dc) == 1:
-                    #     det_max.append(dc)
-                    #     break
-                    #
-                    # j = ind[0]
-                    # det_max.append(dc[j:j + 1])  # save highest conf detection
-                    # reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
-                    # [ind.pop(i) for i in reversed(reject)]
+                # if len(dc) == 1:
+                #     det_max.append(dc)
+                #     break
+                #
+                # j = ind[0]
+                # det_max.append(dc[j:j + 1])  # save highest conf detection
+                # reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
+                # [ind.pop(i) for i in reversed(reject)]
 
                 while dc.shape[0]:  # SLOWER METHOD
                     det_max.append(dc[:1])  # save highest conf detection
                     if len(dc) == 1:  # Stop if we're at the last detection
                         break
-                    iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
-                    dc = dc[1:][iou < nms_thres]  # remove ious > threshold
+                    # iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
+                    # dc = dc[1:][iou < nms_thres]  # remove ious > threshold
+                    dc = dc[bbox_iou(dc[0], dc) < nms_thres]  # remove ious > threshold
 
             elif nms_style == 'AND':  # requires overlap, single boxes erased
                 while len(dc) > 1:
