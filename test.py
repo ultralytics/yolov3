@@ -150,7 +150,7 @@ def test(
     #         print('%15s: %-.4f' % (names[c], a))
 
     # Save JSON
-    if save_json:
+    if save_json and len(jdict):
         imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataset.img_files]
         with open('results.json', 'w') as file:
             json.dump(jdict, file)
