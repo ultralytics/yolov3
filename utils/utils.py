@@ -337,7 +337,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
 
     min_wh = 2  # (pixels) minimum box width and height
-    class_conf_thres = 0.0  # (pixels) minimum box height
+    class_conf_thres = 0.10  # (pixels) minimum box height
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
@@ -356,7 +356,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
         # Filter out confidence scores below threshold
         class_conf, class_pred = pred[:, 5:].max(1)
-        pred[:, 4] *= class_conf
+        # pred[:, 4] *= class_conf
 
         i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh) & (class_conf > class_conf_thres)
         pred = pred[i]
