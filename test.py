@@ -63,22 +63,22 @@ def test(
         output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
 
         # Per image
-        for si, detections in enumerate(output):
+        for si, pred in enumerate(output):
             image_id = int(Path(paths[si]).stem.split('_')[-1])
             labels = targets[targets[:, 0] == si, 1:]
             seen += 1
 
-            if detections is None:
+            if pred is None:
                 continue
 
             if save_json:
-                # add to json detections dictionary
+                # add to json pred dictionary
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
-                box = detections[:, :4].clone()  # xyxy
+                box = pred[:, :4].clone()  # xyxy
                 scale_coords(img_size, box, shapes[si])  # to original shape
                 box = xyxy2xywh(box)  # xywh
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
-                for di, d in enumerate(detections):
+                for di, d in enumerate(pred):
                     jdict.append({
                         'image_id': image_id,
                         'category_id': coco91class[int(d[6])],
@@ -104,7 +104,7 @@ def test(
                 #             'area': float3(box[di][2:4].prod())
                 #         })
 
-            # If no labels add number of detections as incorrect
+            # If no labels add number of pred as incorrect
             correct = []
             if len(labels) == 0:
                 continue
@@ -113,27 +113,43 @@ def test(
                 target_box = xywh2xyxy(labels[:, 1:5]) * img_size
                 target_cls = labels[:, 0]
 
-                detected = []
-                for *pred_box, _, _, cls_pred in detections:
-                    # Best iou, index between pred and targets
-                    iou, bi = bbox_iou(pred_box, target_box).max(0)
+                # detected = []
+                # for *pred_box, _, _, cls_pred in pred:
+                #     # Best iou, index between pred and targets
+                #     iou, bi = bbox_iou(pred_box, target_box).max(0)
+                #
+                #     # If iou > threshold and class is correct mark as correct
+                #     if iou > iou_thres and cls_pred == target_cls[bi] and bi not in detected:
+                #         correct.append(1)
+                #         detected.append(bi)
+                #     else:
+                #         correct.append(0)
 
-                    # If iou > threshold and class is correct mark as correct
-                    if iou > iou_thres and cls_pred == target_cls[bi] and bi not in detected:
-                        correct.append(1)
-                        detected.append(bi)
-                    else:
-                        correct.append(0)
+                for c in target_cls.unique():
+                    detected = []
+                    for *pred_box, conf, _, cls_pred in pred[pred[:, -1] == c]:
+                        # Best iou, index between pred and targets
+                        iou, bi = bbox_iou(pred_box, target_box).max(0)
+
+                        # If iou > threshold and class is correct mark as correct
+                        if iou > iou_thres and cls_pred == target_cls[bi] and bi not in detected:
+                            # correct.append(1)
+                            detected.append(bi)
+                            stats.append((1, conf.cpu().item(), cls_pred.cpu().item(), c.cpu().item()))
+                        else:
+                            # correct.append(0)
+                            stats.append((1, conf.cpu().item(), cls_pred.cpu().item(), c.cpu().item()))
 
             # Convert to Numpy
-            tp = np.array(correct)
-            conf = detections[:, 4].cpu().numpy()
-            pred_cls = detections[:, 6].cpu().numpy()
-            target_cls = target_cls.cpu().numpy()
-            stats.append((tp, conf, pred_cls, target_cls))
+            # tp = np.array(correct)
+            # conf = pred[:, 4].cpu().numpy()
+            # pred_cls = pred[:, 6].cpu().numpy()
+            # target_cls = target_cls.cpu().numpy()
+            # stats.append((tp, conf, pred_cls, target_cls))
 
     # Compute means
-    stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
+    # stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
+    stats_np = [np.stack(x, 0) for x in list(zip(*stats))]
     if len(stats_np):
         AP, AP_class, R, P = ap_per_class(*stats_np)
         mP, mR, mAP = P.mean(), R.mean(), AP.mean()
@@ -159,7 +175,7 @@ def test(
 
         # https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb
         cocoGt = COCO('../coco/annotations/instances_val2014.json')  # initialize COCO ground truth api
-        cocoDt = cocoGt.loadRes('results.json')  # initialize COCO detections api
+        cocoDt = cocoGt.loadRes('results.json')  # initialize COCO pred api
 
         cocoEval = COCOeval(cocoGt, cocoDt, 'bbox')
         cocoEval.params.imgIds = imgIds  # [:32]  # only evaluate these images
