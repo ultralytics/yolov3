@@ -170,7 +170,7 @@ def train(
             best_loss = mloss['total']
 
         # Save training results
-        save = True
+        save = False
         if save:
             # Save latest checkpoint
             checkpoint = {'epoch': epoch,
@@ -190,11 +190,11 @@ def train(
 
         # Calculate mAP
         with torch.no_grad():
-            P, R, mAP, mAPj = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model)
+            results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
-            file.write(s + '%11.3g' * 4 % (P, R, mAP, mAPj) + '\n')
+            file.write(s + '%11.3g' * 4 % results + '\n')
 
 
 if __name__ == '__main__':
