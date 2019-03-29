@@ -158,8 +158,8 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
             p.append(0)
         else:
             # Accumulate FPs and TPs
-            fpc = np.cumsum(1 - tp[i])
-            tpc = np.cumsum(tp[i])
+            fpc = (1 - tp[i]).cumsum()
+            tpc = (tp[i]).cumsum()
 
             # Recall
             recall_curve = tpc / (n_gt + 1e-16)
