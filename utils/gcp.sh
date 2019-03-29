@@ -45,4 +45,4 @@ wget https://storage.googleapis.com/ultralytics/yolov3/best_v1_0.pt -O weights/b
 
 # Debug/Development
 git pull https://github.com/ultralytics/yolov3 map_update  # branch
-python3 train.py
+python3 test.py --save-json
