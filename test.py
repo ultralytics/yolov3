@@ -104,52 +104,37 @@ def test(
                 #             'area': float3(box[di][2:4].prod())
                 #         })
 
-            # If no labels add number of pred as incorrect
+            # If no labels add number of detections as incorrect
             correct = []
+            detected = []
             if len(labels) == 0:
+                # correct.extend([0 for _ in range(len(detections))])
                 continue
             else:
                 # Extract target boxes as (x1, y1, x2, y2)
                 target_box = xywh2xyxy(labels[:, 1:5]) * img_size
                 target_cls = labels[:, 0]
 
-                # detected = []
-                # for *pred_box, _, _, cls_pred in pred:
-                #     # Best iou, index between pred and targets
-                #     iou, bi = bbox_iou(pred_box, target_box).max(0)
-                #
-                #     # If iou > threshold and class is correct mark as correct
-                #     if iou > iou_thres and cls_pred == target_cls[bi] and bi not in detected:
-                #         correct.append(1)
-                #         detected.append(bi)
-                #     else:
-                #         correct.append(0)
+                for *pred_box, _, _, cls_pred in pred:
+                    # Best iou, index between pred and targets
+                    iou, bi = bbox_iou(pred_box, target_box).max(0)
 
-                for c in target_cls.unique():
-                    detected = []
-                    for *pred_box, conf, _, cls_pred in pred[pred[:, -1] == c]:
-                        # Best iou, index between pred and targets
-                        iou, bi = bbox_iou(pred_box, target_box).max(0)
-
-                        # If iou > threshold and class is correct mark as correct
-                        if iou > iou_thres and cls_pred == target_cls[bi] and bi not in detected:
-                            # correct.append(1)
-                            detected.append(bi)
-                            stats.append((1, conf.cpu().item(), cls_pred.cpu().item(), c.cpu().item()))
-                        else:
-                            # correct.append(0)
-                            stats.append((1, conf.cpu().item(), cls_pred.cpu().item(), c.cpu().item()))
+                    # If iou > threshold and class is correct mark as correct
+                    if iou > iou_thres and cls_pred == target_cls[bi] and bi not in detected:
+                        correct.append(1)
+                        detected.append(bi)
+                    else:
+                        correct.append(0)
 
             # Convert to Numpy
-            # tp = np.array(correct)
-            # conf = pred[:, 4].cpu().numpy()
-            # pred_cls = pred[:, 6].cpu().numpy()
-            # target_cls = target_cls.cpu().numpy()
-            # stats.append((tp, conf, pred_cls, target_cls))
+            tp = np.array(correct)
+            conf = pred[:, 4].cpu().numpy()
+            pred_cls = pred[:, 6].cpu().numpy()
+            target_cls = target_cls.cpu().numpy()
+            stats.append((tp, conf, pred_cls, target_cls))
 
     # Compute means
-    # stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
-    stats_np = [np.stack(x, 0) for x in list(zip(*stats))]
+    stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
     if len(stats_np):
         AP, AP_class, R, P = ap_per_class(*stats_np)
         mP, mR, mAP = P.mean(), R.mean(), AP.mean()
@@ -161,7 +146,7 @@ def test(
     if len(stats_np):
         print('\nmAP Per Class:')
         names = load_classes(data_cfg['names'])
-        for a, c in zip(AP, AP_class):
+        for c, a in zip(AP_class, AP):
             print('%15s: %-.4f' % (names[c], a))
 
     # Save JSON
