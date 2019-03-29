@@ -417,8 +417,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     dc = dc[i == 0]
 
         if len(det_max):
-            det_max = torch.cat(det_max)
-            output[image_i] = det_max[(-det_max[:, 4]).argsort()]
+            det_max = torch.cat(det_max)  # concatenate
+            output[image_i] = det_max[(-det_max[:, 4]).argsort()]  # sort
 
     return output
 
