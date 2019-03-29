@@ -107,7 +107,6 @@ def test(
             # If no labels add number of detections as incorrect
             correct = []
             if len(labels) == 0:
-                # correct.extend([0 for _ in range(len(detections))])
                 continue
             else:
                 # Extract target boxes as (x1, y1, x2, y2)
