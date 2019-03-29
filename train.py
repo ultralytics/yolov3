@@ -19,7 +19,7 @@ def train(
         batch_size=16,
         accumulate=1,
         multi_scale=False,
-        freeze_backbone=True,
+        freeze_backbone=False,
         num_workers=4
 ):
     weights = 'weights' + os.sep

@@ -30,6 +30,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 # Tutorials
 
+* [GCP Quickstart](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart)
 * [Transfer Learning](https://github.com/ultralytics/yolov3/wiki/Example:-Transfer-Learning)
 * [Train Single Image](https://github.com/ultralytics/yolov3/wiki/Example:-Train-Single-Image)
 * [Train Single Class](https://github.com/ultralytics/yolov3/wiki/Example:-Train-Single-Class)
