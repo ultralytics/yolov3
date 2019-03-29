@@ -123,7 +123,7 @@ def scale_coords(img_size, coords, img0_shape):
     coords[:, :4] = torch.clamp(coords[:, :4], min=0)
     return coords
 
-#@profile
+
 def ap_per_class(tp, conf, pred_cls, target_cls):
     """ Compute the average precision, given the recall and precision curves.
     Source: https://github.com/rafaelpadilla/Object-Detection-Metrics.
@@ -147,8 +147,8 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
     ap, p, r = [], [], []
     for c in unique_classes:
         i = pred_cls == c
-        n_gt = sum(target_cls == c)  # Number of ground truth objects
-        n_p = sum(i)  # Number of predicted objects
+        n_gt = (target_cls == c).sum()  # Number of ground truth objects
+        n_p = i.sum()  # Number of predicted objects
 
         if n_p == 0 and n_gt == 0:
             continue
