@@ -142,12 +142,12 @@ def test(
     # Print P, R, mAP
     print(('%11s%11s' + '%11.3g' * 3) % (seen, len(dataset), mP, mR, mAP))
 
-    # # Print mAP per class
-    # if len(stats_np):
-    #     print('\nmAP Per Class:')
-    #     names = load_classes(data_cfg['names'])
-    #     for a, c in zip(AP, AP_class):
-    #         print('%15s: %-.4f' % (names[c], a))
+    # Print mAP per class
+    if len(stats_np):
+        print('\nmAP Per Class:')
+        names = load_classes(data_cfg['names'])
+        for a, c in zip(AP, AP_class):
+            print('%15s: %-.4f' % (names[c], a))
 
     # Save JSON
     if save_json and mAP and len(jdict):
