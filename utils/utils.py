@@ -365,22 +365,22 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             continue
 
         # Select predicted classes
-        class_conf, class_pred = class_conf[i], class_pred[i]
+        class_conf = class_conf[i].unsqueeze(1)
+        class_pred = class_pred[i].unsqueeze(1).float()
 
         # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         pred[:, :4] = xywh2xyxy(pred[:, :4])
 
-        # Detections ordered as (x1, y1, x2, y2, obj_conf, class_conf, class_pred)
-        detections = torch.cat((pred[:, :5], class_conf.unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
+        # Detections ordered as (x1y1x2y2, obj_conf, class_conf, class_pred)
+        pred = torch.cat((pred[:, :5], class_conf, class_pred), 1)
 
         # Get detections sorted by decreasing confidence scores
-        # detections[:, 4] *= detections[:, 5]
-        detections = detections[(-detections[:, 5]).argsort()]
+        pred = pred[(-pred[:, 4]).argsort()]
 
         det_max = []
         nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
-        for c in detections[:, -1].unique():
-            dc = detections[detections[:, -1] == c]  # select class c
+        for c in pred[:, -1].unique():
+            dc = pred[pred[:, -1] == c]  # select class c
             dc = dc[:min(len(dc), 100)]  # limit to first 100 boxes: https://github.com/ultralytics/yolov3/issues/117
 
             # Non-maximum suppression
@@ -388,10 +388,10 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                 # METHOD1
                 # ind = list(range(len(dc)))
                 # while len(ind):
-                    # j = ind[0]
-                    # det_max.append(dc[j:j + 1])  # save highest conf detection
-                    # reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
-                    # [ind.pop(i) for i in reversed(reject)]
+                # j = ind[0]
+                # det_max.append(dc[j:j + 1])  # save highest conf detection
+                # reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
+                # [ind.pop(i) for i in reversed(reject)]
 
                 # METHOD2
                 while dc.shape[0]:
@@ -490,6 +490,6 @@ def plot_results(start=0):  # from utils.utils import *; plot_results()
             if i == 0:
                 plt.legend()
             if i == 7:
-                plt.plot(x, results[i+1, x], marker='.', label=f)
+                plt.plot(x, results[i + 1, x], marker='.', label=f)
     fig.tight_layout()
     fig.savefig('results.jpg', dpi=fig.dpi)
