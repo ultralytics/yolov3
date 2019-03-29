@@ -354,8 +354,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
         # Filter out confidence scores below threshold
-        # class_conf, class_pred = pred[:, 5:].max(1)
-        # pred[:, 4] *= class_conf ** 2
+        class_conf, class_pred = pred[:, 5:].max(1)
+        pred[:, 4] *= class_conf
 
         i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh)
         pred = pred[i]
@@ -365,7 +365,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             continue
 
         # Select predicted classes
-        class_conf, class_pred = pred[:, 5:].max(1)
+        class_conf, class_pred = class_conf[i], class_pred[i]
 
         # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         pred[:, :4] = xywh2xyxy(pred[:, :4])
