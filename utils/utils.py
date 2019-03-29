@@ -482,7 +482,7 @@ def plot_results(start=0):  # from utils.utils import *; plot_results()
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
     for f in sorted(glob.glob('results*.txt')):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
-        x = range(1, results.shape[1])
+        x = range(0, results.shape[1])
         for i in range(8):
             plt.subplot(2, 4, i + 1)
             plt.plot(results[i, x[start:]], marker='.', label=f)
