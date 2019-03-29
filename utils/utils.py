@@ -355,7 +355,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
         # Filter out confidence scores below threshold
         class_conf, class_pred = pred[:, 5:].max(1)
-        pred[:, 4] *= class_conf
+        pred[:, 4] *= class_conf ** 2
 
         i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh)
         pred = pred[i]
