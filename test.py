@@ -15,7 +15,7 @@ def test(
         batch_size=16,
         img_size=416,
         iou_thres=0.5,
-        conf_thres=0.001,
+        conf_thres=0.01,
         nms_thres=0.5,
         save_json=True,
         model=None
