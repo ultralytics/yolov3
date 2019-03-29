@@ -169,6 +169,9 @@ def test(
         cocoEval.summarize()
         mAPj = cocoEval.stats[1]  # update mAP to pycocotools mAP
 
+    # F1 score = harmonic mean of precision and recall
+    # F1 = 2 * (mP * mR) / (mP + mR)
+
     # Return mAP
     return mP, mR, mAP, mAPj
 
