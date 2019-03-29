@@ -75,7 +75,7 @@ def detect(
             for *xyxy, conf, cls_conf, cls in detections:
                 if save_txt:  # Write to file
                     with open(save_path + '.txt', 'a') as file:
-                        file.write(('%g ' * 6 + '\n') % (*xyxy, cls, cls_conf * conf))
+                        file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
 
                 # Add bbox to the image
                 label = '%s %.2f' % (classes[int(cls)], conf)
