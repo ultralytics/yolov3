@@ -83,7 +83,7 @@ def test(
                         'image_id': image_id,
                         'category_id': coco91class[int(d[6])],
                         'bbox': [float3(x) for x in box[di]],
-                        'score': float3(d[4] * d[5])
+                        'score': float3(d[4])
                     })
 
                 # if len(labels) > 0:
