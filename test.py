@@ -40,7 +40,7 @@ def test(
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
     test_path = data_cfg['valid']
-    if (os.sep + 'coco' + os.sep) in test_path:  # COCO training likely
+    if (os.sep + 'coco' + os.sep) in test_path:  # COCO dataset probable
         save_json = True  # use pycocotools
 
     # Dataloader
