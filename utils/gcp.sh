@@ -44,5 +44,12 @@ wget https://storage.googleapis.com/ultralytics/yolov3/latest_v1_0.pt -O weights
 wget https://storage.googleapis.com/ultralytics/yolov3/best_v1_0.pt -O weights/best_v1_0.pt
 
 # Debug/Development
-git pull https://github.com/ultralytics/yolov3 map_update  # branch
-python3 test.py --save-json
+sudo rm -rf yolov3
+# git clone https://github.com/ultralytics/yolov3  # master
+git clone -b map_update --depth 1 https://github.com/ultralytics/yolov3 yolov3  # branch
+cp -r weights yolov3
+cp -r cocoapi/PythonAPI/pycocotools yolov3
+cd yolov3
+
+#git pull https://github.com/ultralytics/yolov3 map_update  # branch
+python3 test.py --img-size 320
