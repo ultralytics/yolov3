@@ -355,7 +355,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
         # Filter out confidence scores below threshold
         class_conf, class_pred = pred[:, 5:].max(1)
-        pred[:, 4] *= class_conf
+        # pred[:, 4] *= class_conf
 
         i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh)
         pred = pred[i]
@@ -370,7 +370,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
         # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         pred[:, :4] = xywh2xyxy(pred[:, :4])
-        # pred[:, 4] *= class_conf   # improves mAP from 0.549 to 0.551
+        pred[:, 4] *= class_conf   # improves mAP from 0.549 to 0.551
 
         # Detections ordered as (x1y1x2y2, obj_conf, class_conf, class_pred)
         pred = torch.cat((pred[:, :5], class_conf.unsqueeze(1), class_pred), 1)
