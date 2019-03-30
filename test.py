@@ -17,7 +17,7 @@ def test(
         iou_thres=0.5,
         conf_thres=0.1,
         nms_thres=0.5,
-        save_json=True,
+        save_json=False,
         model=None
 ):
     if model is None:
