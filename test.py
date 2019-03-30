@@ -118,18 +118,17 @@ def test(
                 target_cls = labels[:, 0]
 
                 for *pred_box, conf, cls_conf, cls_pred in pred:
-                    # Best iou, index between pred and targets
                     if cls_pred not in target_cls:
                         correct.append(0)
                         continue
 
-                    ic = (cls_pred == target_cls).nonzero().squeeze(1) # indices of same class targets
-                    iou, bi = bbox_iou(pred_box, target_box[ic]).max(0)
+                    # Best iou, index between pred and targets
+                    iou, bi = bbox_iou(pred_box, target_box).max(0)
 
                     # If iou > threshold and class is correct mark as correct
-                    if iou > iou_thres and ic[bi] not in detected:
+                    if iou > iou_thres and bi not in detected:
                         correct.append(1)
-                        detected.append(ic[bi])
+                        detected.append(bi)
                     else:
                         correct.append(0)
 
