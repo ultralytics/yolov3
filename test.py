@@ -117,7 +117,10 @@ def test(
 
                 for *pred_box, conf, cls_conf, cls_pred in pred:
                     # Best iou, index between pred and targets
-                    iou, bi = bbox_iou(pred_box, target_box).max(0)
+
+                    iou = bbox_iou(pred_box, target_box)
+                    iou[cls_pred != target_cls] = 0
+                    iou, bi = iou.max(0)
 
                     # If iou > threshold and class is correct mark as correct
                     if iou > iou_thres and cls_pred == target_cls[bi] and bi not in detected:
