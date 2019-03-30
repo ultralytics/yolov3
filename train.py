@@ -40,7 +40,7 @@ def train(
 
     # Optimizer
     lr0 = 0.001  # initial learning rate
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=.9, weight_decay=0.0005)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=0.9, weight_decay=0.0005)
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
@@ -119,9 +119,9 @@ def train(
             if plot_images:
                 fig = plt.figure(figsize=(10, 10))
                 for ip in range(batch_size):
-                    labels = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy() * img_size
+                    boxes = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy().T * img_size
                     plt.subplot(4, 4, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
-                    plt.plot(labels[:, [0, 2, 2, 0, 0]].T, labels[:, [1, 1, 3, 3, 1]].T, '.-')
+                    plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
                     plt.axis('off')
                 fig.tight_layout()
                 fig.savefig('batch_%g.jpg' % i, dpi=fig.dpi)
@@ -170,7 +170,7 @@ def train(
             best_loss = mloss['total']
 
         # Save training results
-        save = True
+        save = False
         if save:
             # Save latest checkpoint
             checkpoint = {'epoch': epoch,
@@ -190,11 +190,11 @@ def train(
 
         # Calculate mAP
         with torch.no_grad():
-            P, R, mAP = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size)
+            results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
-            file.write(s + '%11.3g' * 3 % (P, R, mAP) + '\n')
+            file.write(s + '%11.3g' * 3 % results + '\n')  # append P, R, mAP
 
 
 if __name__ == '__main__':

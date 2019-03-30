@@ -1,5 +1,7 @@
 import os
 
+import torch.nn.functional as F
+
 from utils.parse_config import *
 from utils.utils import *
 
@@ -158,6 +160,8 @@ class YOLOLayer(nn.Module):
             p[..., 2:4] = torch.exp(p[..., 2:4]) * self.anchor_wh  # wh yolo method
             # p[..., 2:4] = ((torch.sigmoid(p[..., 2:4]) * 2) ** 2) * self.anchor_wh  # wh power method
             p[..., 4] = torch.sigmoid(p[..., 4])  # p_conf
+            p[..., 5:] = torch.sigmoid(p[..., 5:])  # p_class
+            # p[..., 5:] = F.softmax(p[..., 5:], dim=4)  # p_class
             p[..., :4] *= self.stride
 
             # reshape from [1, 3, 13, 13, 85] to [1, 507, 85]

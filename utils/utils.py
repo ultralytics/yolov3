@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from utils import torch_utils
 
@@ -106,10 +105,10 @@ def xyxy2xywh(x):
 def xywh2xyxy(x):
     # Convert bounding box format from [x, y, w, h] to [x1, y1, x2, y2]
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
-    y[:, 0] = (x[:, 0] - x[:, 2] / 2)
-    y[:, 1] = (x[:, 1] - x[:, 3] / 2)
-    y[:, 2] = (x[:, 0] + x[:, 2] / 2)
-    y[:, 3] = (x[:, 1] + x[:, 3] / 2)
+    y[:, 0] = x[:, 0] - x[:, 2] / 2
+    y[:, 1] = x[:, 1] - x[:, 3] / 2
+    y[:, 2] = x[:, 0] + x[:, 2] / 2
+    y[:, 3] = x[:, 1] + x[:, 3] / 2
     return y
 
 
@@ -142,25 +141,25 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
     tp, conf, pred_cls = tp[i], conf[i], pred_cls[i]
 
     # Find unique classes
-    unique_classes = np.unique(np.concatenate((pred_cls, target_cls), 0))
+    unique_classes = np.unique(target_cls)
 
     # Create Precision-Recall curve and compute AP for each class
     ap, p, r = [], [], []
     for c in unique_classes:
         i = pred_cls == c
-        n_gt = sum(target_cls == c)  # Number of ground truth objects
-        n_p = sum(i)  # Number of predicted objects
+        n_gt = (target_cls == c).sum()  # Number of ground truth objects
+        n_p = i.sum()  # Number of predicted objects
 
-        if (n_p == 0) and (n_gt == 0):
+        if n_p == 0 and n_gt == 0:
             continue
-        elif (n_p == 0) or (n_gt == 0):
+        elif n_p == 0 or n_gt == 0:
             ap.append(0)
             r.append(0)
             p.append(0)
         else:
             # Accumulate FPs and TPs
-            fpc = np.cumsum(1 - tp[i])
-            tpc = np.cumsum(tp[i])
+            fpc = (1 - tp[i]).cumsum()
+            tpc = (tp[i]).cumsum()
 
             # Recall
             recall_curve = tpc / (n_gt + 1e-16)
@@ -328,15 +327,18 @@ def build_targets(model, targets):
     return txy, twh, tcls, indices
 
 
+# @profile
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
     """
     Removes detections with lower object confidence score than 'conf_thres'
     Non-Maximum Suppression to further filter detections.
     Returns detections with shape:
-        (x1, y1, x2, y2, object_conf, class_score, class_pred)
+        (x1, y1, x2, y2, object_conf, class_conf, class)
     """
 
-    output = [None for _ in range(len(prediction))]
+    min_wh = 2  # (pixels) minimum box width and height
+
+    output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
         # Experiment: Prior class size rejection
         # x, y, w, h = pred[:, 0], pred[:, 1], pred[:, 2], pred[:, 3]
@@ -352,56 +354,53 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
         #   multivariate_normal.pdf(x, mean=mat['class_mu'][c, :2], cov=mat['class_cov'][c, :2, :2])
 
         # Filter out confidence scores below threshold
-        class_prob, class_pred = torch.max(F.softmax(pred[:, 5:], 1), 1)
-        v = pred[:, 4] > conf_thres
-        v = v.nonzero().squeeze()
-        if len(v.shape) == 0:
-            v = v.unsqueeze(0)
+        class_conf, class_pred = pred[:, 5:].max(1)
+        # pred[:, 4] *= class_conf
 
-        pred = pred[v]
-        class_prob = class_prob[v]
-        class_pred = class_pred[v]
+        i = (pred[:, 4] > conf_thres) & (pred[:, 2] > min_wh) & (pred[:, 3] > min_wh)
+        pred = pred[i]
 
         # If none are remaining => process next image
-        nP = pred.shape[0]
-        if not nP:
+        if len(pred) == 0:
             continue
 
-        # From (center x, center y, width, height) to (x1, y1, x2, y2)
+        # Select predicted classes
+        class_conf = class_conf[i]
+        class_pred = class_pred[i].unsqueeze(1).float()
+
+        # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         pred[:, :4] = xywh2xyxy(pred[:, :4])
+        pred[:, 4] *= class_conf   # improves mAP from 0.549 to 0.551
 
-        # Detections ordered as (x1, y1, x2, y2, obj_conf, class_prob, class_pred)
-        detections = torch.cat((pred[:, :5], class_prob.float().unsqueeze(1), class_pred.float().unsqueeze(1)), 1)
-        # Iterate through all predicted classes
-        unique_labels = detections[:, -1].cpu().unique().to(prediction.device)
+        # Detections ordered as (x1y1x2y2, obj_conf, class_conf, class_pred)
+        pred = torch.cat((pred[:, :5], class_conf.unsqueeze(1), class_pred), 1)
 
-        nms_style = 'OR'  # 'OR' (default), 'AND', 'MERGE' (experimental)
-        for c in unique_labels:
-            # Get the detections with class c
-            dc = detections[detections[:, -1] == c]
-            # Sort the detections by maximum object confidence
-            _, conf_sort_index = torch.sort(dc[:, 4] * dc[:, 5], descending=True)
-            dc = dc[conf_sort_index]
+        # Get detections sorted by decreasing confidence scores
+        pred = pred[(-pred[:, 4]).argsort()]
+
+        det_max = []
+        nms_style = 'MERGE'  # 'OR' (default), 'AND', 'MERGE' (experimental)
+        for c in pred[:, -1].unique():
+            dc = pred[pred[:, -1] == c]  # select class c
             dc = dc[:min(len(dc), 100)]  # limit to first 100 boxes: https://github.com/ultralytics/yolov3/issues/117
 
             # Non-maximum suppression
-            det_max = []
-            ind = list(range(len(dc)))
             if nms_style == 'OR':  # default
-                while len(ind):
-                    j = ind[0]
-                    det_max.append(dc[j:j + 1])  # save highest conf detection
-                    reject = bbox_iou(dc[j], dc[ind]) > nms_thres
-                    [ind.pop(i) for i in reversed(reject.nonzero())]
-                # while dc.shape[0]:  # SLOWER METHOD
-                #     det_max.append(dc[:1])  # save highest conf detection
-                #     if len(dc) == 1:  # Stop if we're at the last detection
-                #         break
-                #     iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
-                #     dc = dc[1:][iou < nms_thres]  # remove ious > threshold
+                # METHOD1
+                # ind = list(range(len(dc)))
+                # while len(ind):
+                # j = ind[0]
+                # det_max.append(dc[j:j + 1])  # save highest conf detection
+                # reject = (bbox_iou(dc[j], dc[ind]) > nms_thres).nonzero()
+                # [ind.pop(i) for i in reversed(reject)]
 
-                # Image      Total          P          R        mAP
-                #  4964       5000      0.629      0.594      0.586
+                # METHOD2
+                while dc.shape[0]:
+                    det_max.append(dc[:1])  # save highest conf detection
+                    if len(dc) == 1:  # Stop if we're at the last detection
+                        break
+                    iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
+                    dc = dc[1:][iou < nms_thres]  # remove ious > threshold
 
             elif nms_style == 'AND':  # requires overlap, single boxes erased
                 while len(dc) > 1:
@@ -411,22 +410,16 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
                     dc = dc[1:][iou < nms_thres]  # remove ious > threshold
 
             elif nms_style == 'MERGE':  # weighted mixture box
-                while len(dc) > 0:
-                    iou = bbox_iou(dc[0], dc[0:])  # iou with other boxes
-                    i = iou > nms_thres
-
-                    weights = dc[i, 4:5] * dc[i, 5:6]
+                while len(dc):
+                    i = bbox_iou(dc[0], dc) > nms_thres  # iou with other boxes
+                    weights = dc[i, 4:5]
                     dc[0, :4] = (weights * dc[i, :4]).sum(0) / weights.sum()
                     det_max.append(dc[:1])
-                    dc = dc[iou < nms_thres]
+                    dc = dc[i == 0]
 
-                # Image      Total          P          R        mAP
-                #  4964       5000      0.633      0.598      0.589  # normal
-
-            if len(det_max) > 0:
-                det_max = torch.cat(det_max)
-                # Add max detections to outputs
-                output[image_i] = det_max if output[image_i] is None else torch.cat((output[image_i], det_max))
+        if len(det_max):
+            det_max = torch.cat(det_max)  # concatenate
+            output[image_i] = det_max[(-det_max[:, 4]).argsort()]  # sort
 
     return output
 
@@ -463,20 +456,42 @@ def coco_only_people(path='../coco/labels/val2014/'):
             print(labels.shape[0], file)
 
 
-def plot_results(start=0):
+def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
+    # Compares the two methods for width-height anchor multiplication
+    # https://github.com/ultralytics/yolov3/issues/168
+    x = np.arange(-4.0, 4.0, .1)
+    ya = np.exp(x)
+    yb = (torch.sigmoid(torch.from_numpy(x)).numpy() * 2)
+
+    fig = plt.figure(figsize=(6, 3), dpi=150)
+    plt.plot(x, ya, '.-', label='yolo method')
+    plt.plot(x, yb ** 2, '.-', label='^2 power method')
+    plt.plot(x, yb ** 2.5, '.-', label='^2.5 power method')
+    plt.xlim(left=-4, right=4)
+    plt.ylim(bottom=0, top=6)
+    plt.xlabel('input')
+    plt.ylabel('output')
+    plt.legend()
+    fig.tight_layout()
+    fig.savefig('comparison.jpg', dpi=fig.dpi)
+
+
+def plot_results(start=0):  # from utils.utils import *; plot_results()
     # Plot YOLO training results file 'results.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
-    # from utils.utils import *; plot_results()
 
     fig = plt.figure(figsize=(14, 7))
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
     for f in sorted(glob.glob('results*.txt')):
-        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
-        x = range(1, results.shape[1])
+        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11, 12]).T  # column 11 is mAP
+        x = range(start, results.shape[1])
         for i in range(8):
             plt.subplot(2, 4, i + 1)
-            plt.plot(results[i, x[start:]], marker='.', label=f)
+            plt.plot(x, results[i, x], marker='.', label=f)
             plt.title(s[i])
             if i == 0:
                 plt.legend()
+            if i == 7:
+                plt.plot(x, results[i + 1, x], marker='.', label=f)
     fig.tight_layout()
+    fig.savefig('results.jpg', dpi=fig.dpi)

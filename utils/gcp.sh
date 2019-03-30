@@ -10,8 +10,8 @@ sudo reboot now
 
 # Re-clone
 sudo rm -rf yolov3
-git clone https://github.com/ultralytics/yolov3  # master
-# git clone -b multi_gpu --depth 1 https://github.com/ultralytics/yolov3  # branch
+# git clone https://github.com/ultralytics/yolov3  # master
+git clone -b map_update --depth 1 https://github.com/ultralytics/yolov3 yolov3  # branch
 cp -r weights yolov3
 cp -r cocoapi/PythonAPI/pycocotools yolov3
 cd yolov3
@@ -26,11 +26,11 @@ python3 train.py --resume
 python3 detect.py
 
 # Test
-python3 detect.py --save-json --conf-thres 0.001 --img-size 416
+python3 test.py --save-json
 
 # Git pull
 git pull https://github.com/ultralytics/yolov3  # master
-git pull https://github.com/ultralytics/yolov3 multi_gpu  # branch
+git pull https://github.com/ultralytics/yolov3 map_update  # branch
 
 # Test Darknet training
 python3 test.py --weights ../darknet/backup/yolov3.backup
@@ -40,10 +40,16 @@ gsutil cp yolov3/weights/latest1gpu.pt gs://ultralytics
 
 # Copy latest.pt FROM bucket
 gsutil cp gs://ultralytics/latest.pt yolov3/weights/latest.pt
-wget https://storage.googleapis.com/ultralytics/latest.pt -O weights/latest.pt
+wget https://storage.googleapis.com/ultralytics/yolov3/latest_v1_0.pt -O weights/latest_v1_0.pt
+wget https://storage.googleapis.com/ultralytics/yolov3/best_v1_0.pt -O weights/best_v1_0.pt
 
-# Trade Studies
-sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
+# Debug/Development
+sudo rm -rf yolov3
+# git clone https://github.com/ultralytics/yolov3  # master
+git clone -b map_update --depth 1 https://github.com/ultralytics/yolov3 yolov3  # branch
 cp -r weights yolov3
-cd yolov3 && python3 train.py --batch-size 16 --epochs 1
-sudo shutdown
+cp -r cocoapi/PythonAPI/pycocotools yolov3
+cd yolov3
+
+#git pull https://github.com/ultralytics/yolov3 map_update  # branch
+python3 test.py --img-size 320
