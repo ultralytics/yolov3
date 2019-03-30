@@ -100,7 +100,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         assert len(self.img_files) > 0, 'No images found in %s' % path
         self.img_size = img_size
         self.augment = augment
-        self.label_files = [x.replace('images', 'labels').replace('.bmp', '.txt').replace('.jpg', '.txt')
+        self.label_files = [x.replace('images', 'labels').replace('.bmp', '.txt').replace('.jpg', '.txt').replace('.png', '.txt')
                             for x in self.img_files]
 
     def __len__(self):
