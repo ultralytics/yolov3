@@ -170,7 +170,6 @@ def train(
             best_loss = mloss['total']
 
         # Save training results
-        save = False
         if save:
             # Save latest checkpoint
             checkpoint = {'epoch': epoch,
