@@ -62,7 +62,7 @@ def detect(
         pred = model(img)
         detections = non_max_suppression(pred, conf_thres, nms_thres)[0]
 
-        if len(detections) > 0:
+        if detections is not None and len(detections) > 0:
             # Rescale boxes from 416 to true image size
             scale_coords(img_size, detections[:, :4], im0.shape).round()
 
