@@ -182,11 +182,11 @@ def train(
 
             # Save best checkpoint
             if best_loss == mloss['total']:
-                os.system('cp ' + latest + ' ' + best)
+                os.system('copy ' + latest + ' ' + best)
 
             # Save backup weights every 5 epochs (optional)
-            if epoch > 0 and epoch % 5 == 0:
-                os.system('cp ' + latest + ' ' + weights + 'backup%g.pt' % epoch)
+            #if epoch > 0 and epoch % 5 == 0:
+            #    os.system('copy' + latest + ' ' + weights + 'backup%g.pt' % epoch)
 
         # Calculate mAP
         with torch.no_grad():

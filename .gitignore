@@ -9,7 +9,6 @@
 *.TIF
 *.HEIC
 *.data
-*.cfg
 *.json
 data/*
 pycocotools/*
