@@ -249,7 +249,7 @@ def wh_iou(box1, box2):
 
 def compute_loss(p, targets):  # predictions, targets
     FT = torch.cuda.FloatTensor if p[0].is_cuda else torch.FloatTensor
-    loss, lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0]), FT([0])
+    lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0])
     txy, twh, tcls, indices = targets
     MSE = nn.MSELoss()
     CE = nn.CrossEntropyLoss()
@@ -267,13 +267,13 @@ def compute_loss(p, targets):  # predictions, targets
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
             tconf[b, a, gj, gi] = 1  # conf
 
-            lxy += k * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy
-            lwh += k * MSE(pi[..., 2:4], twh[i])  # wh
-            lcls += (k / 4) * CE(pi[..., 5:], tcls[i])
+            lxy += k * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
+            lwh += k * MSE(pi[..., 2:4], twh[i])  # wh loss
+            lcls += (k / 4) * CE(pi[..., 5:], tcls[i])  # class_conf loss
 
         # pos_weight = FT([gp[i] / min(gp) * 4.])
         # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 64) * BCE(pi0[..., 4], tconf)
+        lconf += (k * 64) * BCE(pi0[..., 4], tconf)  # obj_conf loss
     loss = lxy + lwh + lconf + lcls
 
     # Add to dictionary
@@ -300,7 +300,7 @@ def build_targets(model, targets):
         iou = [wh_iou(x, gwh) for x in anchor_vec]
         iou, a = torch.stack(iou, 0).max(0)  # best iou and anchor
 
-        # reject below threshold ious (OPTIONAL)
+        # reject below threshold ious (OPTIONAL, increases P, lowers R)
         reject = True
         if reject:
             j = iou > 0.01
@@ -309,7 +309,7 @@ def build_targets(model, targets):
             t = targets
 
         # Indices
-        b, c = t[:, 0:2].long().t()  # target image, class
+        b, c = t[:, :2].long().t()  # target image, class
         gxy = t[:, 2:4] * nG
         gi, gj = gxy.long().t()  # grid_i, grid_j
         indices.append((b, a, gj, gi))
@@ -370,7 +370,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
         # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         pred[:, :4] = xywh2xyxy(pred[:, :4])
-        pred[:, 4] *= class_conf   # improves mAP from 0.549 to 0.551
+        pred[:, 4] *= class_conf  # improves mAP from 0.549 to 0.551
 
         # Detections ordered as (x1y1x2y2, obj_conf, class_conf, class_pred)
         pred = torch.cat((pred[:, :5], class_conf.unsqueeze(1), class_pred), 1)
