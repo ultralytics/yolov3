@@ -30,6 +30,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 # Tutorials
 
+* [GCP Quickstart](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart)
 * [Transfer Learning](https://github.com/ultralytics/yolov3/wiki/Example:-Transfer-Learning)
 * [Train Single Image](https://github.com/ultralytics/yolov3/wiki/Example:-Train-Single-Image)
 * [Train Single Class](https://github.com/ultralytics/yolov3/wiki/Example:-Train-Single-Class)
@@ -67,13 +68,16 @@ HS**V** Intensity | +/- 50%
 https://cloud.google.com/deep-learning-vm/  
 **Machine type:** n1-standard-8 (8 vCPUs, 30 GB memory)  
 **CPU platform:** Intel Skylake  
-**GPUs:** 1-4x P100 ($0.493/hr), 1-8x V100 ($0.803/hr)  
+**GPUs:** K80 ($0.198/hr), P4 ($0.279/hr), T4 ($0.353/hr), P100 ($0.493/hr), V100 ($0.803/hr)  
 **HDD:** 100 GB SSD  
 **Dataset:** COCO train 2014 
 
 GPUs | `batch_size` | batch time | epoch time | epoch cost
 --- |---| --- | --- | --- 
 <i></i> |  (images)  | (s/batch) |  |
+1 K80 | 16 | 1.43s  | 175min  | $0.58
+1 P4 | 8 | 0.51s  | 125min  | $0.58
+1 T4 | 16 | 0.78s  | 94min  | $0.55
 1 P100 | 16 | 0.39s  | 48min  | $0.39
 2 P100 | 32 | 0.48s | 29min | $0.47
 4 P100 | 64 | 0.65s | 20min | $0.65
@@ -108,13 +112,32 @@ Run `detect.py` with `webcam=True` to show a live webcam feed.
 
 - Use `test.py --weights weights/yolov3.weights` to test the official YOLOv3 weights.
 - Use `test.py --weights weights/latest.pt` to test the latest training results.
-- Compare to official darknet results from https://arxiv.org/abs/1804.02767.
+- Compare to darknet published results https://arxiv.org/abs/1804.02767.
 
-<i></i> | ultralytics/yolov3 | darknet  
---- | ---| ---   
-YOLOv3-320 | 51.3 | 51.5  
-YOLOv3-416 | 54.9 | 55.3  
-YOLOv3-608 | 57.9 | 57.9  
+<!---
+%<i></i> | ultralytics/yolov3 fastest 5:52@416 (`pycocotools`) | darknet  
+--- | --- | ---  
+YOLOv3-320 | 51.9 (51.4) | 51.5  
+YOLOv3-416 | 55.0 (54.9) | 55.3  
+YOLOv3-608 | 57.5 (57.8) | 57.9  
+
+<i></i> | ultralytics/yolov3 MERGE 7:15@416 (`pycocotools`) | darknet  
+--- | --- | ---  
+YOLOv3-320 | 52.3 (51.7) | 51.5  
+YOLOv3-416 | 55.4 (55.3) | 55.3  
+YOLOv3-608 | 57.9 (58.1) | 57.9  
+
+<i></i> | ultralytics/yolov3 MERGE+earlier_pred4 8:34@416 (`pycocotools`) | darknet  
+--- | --- | ---  
+YOLOv3-320 | 52.3 (51.8) | 51.5  
+YOLOv3-416 | 55.5 (55.4) | 55.3  
+YOLOv3-608 | 57.9 (58.2) | 57.9  
+--->
+<i></i> | [ultralytics/yolov3](https://github.com/ultralytics/yolov3) with `pycocotools` | [darknet/yolov3](https://arxiv.org/abs/1804.02767) 
+--- | --- | ---  
+YOLOv3-320 | 51.8 | 51.5  
+YOLOv3-416 | 55.4 | 55.3  
+YOLOv3-608 | 58.2 | 57.9  
 
 ``` bash
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
@@ -123,34 +146,42 @@ sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd co
 cd yolov3
 
 python3 test.py --save-json --conf-thres 0.001 --img-size 416
-Namespace(batch_size=32, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.45, save_json=True, weights='weights/yolov3.weights')
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.308
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.549
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.310
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.141
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.334
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.454
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.267
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.403
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.428
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.237
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.464
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.585
+Namespace(batch_size=32, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3.weights')
+Using cuda _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', major=7, minor=0, total_memory=16130MB, multi_processor_count=80)
+      Image      Total          P          R        mAP
+Calculating mAP: 100%|█████████████████████████████████| 157/157 [08:34<00:00,  2.53s/it]
+       5000       5000     0.0896      0.756      0.555
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.312
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.554
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.317
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.145
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.343
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.452
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.268
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.411
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.435
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.244
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.477
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.587
  
 python3 test.py --save-json --conf-thres 0.001 --img-size 608 --batch-size 16
-Namespace(batch_size=16, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=608, iou_thres=0.5, nms_thres=0.45, save_json=True, weights='weights/yolov3.weights')
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.328
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.579
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.335
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.190
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.357
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.428
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.279
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.429
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.456
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.299
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.483
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.572
+Namespace(batch_size=16, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=608, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3.weights')
+Using cuda _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', major=7, minor=0, total_memory=16130MB, multi_processor_count=80)
+      Image      Total          P          R        mAP
+Calculating mAP: 100%|█████████████████████████████████| 313/313 [08:54<00:00,  1.55s/it]
+       5000       5000     0.0966      0.786      0.579
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.331
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.582
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.344
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.198
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.362
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.427
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.281
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.437
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.463
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.309
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.494
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.577
 ```
 
 # Contact
