@@ -477,13 +477,13 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
 
 
 def plot_results(start=0):  # from utils.utils import *; plot_results()
-    # Plot YOLO training results file 'results.txt'
+    # Plot training results files 'results*.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
 
     fig = plt.figure(figsize=(14, 7))
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
     for f in sorted(glob.glob('results*.txt')):
-        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11, 12]).T  # column 11 is mAP
+        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
         x = range(start, results.shape[1])
         for i in range(8):
             plt.subplot(2, 4, i + 1)
@@ -491,7 +491,5 @@ def plot_results(start=0):  # from utils.utils import *; plot_results()
             plt.title(s[i])
             if i == 0:
                 plt.legend()
-            if i == 7:
-                plt.plot(x, results[i + 1, x], marker='.', label=f)
     fig.tight_layout()
     fig.savefig('results.jpg', dpi=fig.dpi)
