@@ -163,14 +163,17 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
 
             # Recall
             recall_curve = tpc / (n_gt + 1e-16)
-            r.append(tpc[-1] / (n_gt + 1e-16))
+            r.append(recall_curve[-1])
 
             # Precision
             precision_curve = tpc / (tpc + fpc)
-            p.append(tpc[-1] / (tpc[-1] + fpc[-1]))
+            p.append(precision_curve[-1])
 
             # AP from recall-precision curve
             ap.append(compute_ap(recall_curve, precision_curve))
+
+            # Plot
+            # plt.plot(recall_curve, precision_curve)
 
     return np.array(ap), unique_classes.astype('int32'), np.array(r), np.array(p)
 

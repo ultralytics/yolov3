@@ -119,7 +119,7 @@ def train(
             plot_images = False
             if plot_images:
                 fig = plt.figure(figsize=(10, 10))
-                for ip in range(batch_size):
+                for ip in range(len(imgs)):
                     boxes = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy().T * img_size
                     plt.subplot(4, 4, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
                     plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
