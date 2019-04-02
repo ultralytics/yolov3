@@ -62,8 +62,8 @@ def train(
             cutoff = load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
 
     # Transfer learning (train only YOLO layers)
-    # for i, (name, p) in enumerate(model.named_parameters()):
-    #     p.requires_grad = True if (p.shape[0] == 255) else False
+    # for (name, p) in model.named_parameters():
+    #     p.requires_grad = True if p.shape[0] == 255 else False
 
     # Set scheduler (reduce lr at epoch 250)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[250], gamma=0.1, last_epoch=start_epoch - 1)
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')

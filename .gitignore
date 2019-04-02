@@ -8,17 +8,25 @@
 *.PNG
 *.TIF
 *.HEIC
+*.mp4
+*.mov
+*.MOV
+*.avi
 *.data
-*.cfg
 *.json
-data/*
-pycocotools/*
-!cfg/coco.data
+
+*.cfg
 !cfg/yolov3*.cfg
+
+data/*
 !data/samples/zidane.jpg
 !data/coco.names
 !data/coco_paper.names
+!data/coco.data
+!data/coco_1cls.data
+!data/coco_1img.data
 
+pycocotools/*
 results*.txt
 
 # MATLAB GitIgnore -----------------------------------------------------------------------------------------------------
