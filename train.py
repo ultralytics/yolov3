@@ -40,6 +40,8 @@ def train(
 
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
+    # for m in model.modules():
+    #     weights_init_normal(m)  # set weight distributions
 
     # Optimizer
     lr0 = 0.001  # initial learning rate
