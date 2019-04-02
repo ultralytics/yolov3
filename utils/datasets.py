@@ -26,13 +26,13 @@ class LoadImages:  # for inference
         elif os.path.isfile(path):
             files = [path]
 
-        # self.files = list(filter(lambda x: os.path.splitext(x)[1].lower() in img_formats, files))
         images = [x for x in files if os.path.splitext(x)[-1].lower() in img_formats]
         videos = [x for x in files if os.path.splitext(x)[-1].lower() in vid_formats]
+        nI, nV = len(images), len(videos)
+
         self.files = images + videos
-        self.nI, self.nV = len(images), len(videos)
-        self.nF = self.nI + self.nV  # number of files
-        self.video_flag = [False] * self.nI + [True] * self.nV
+        self.nF = nI + nV  # number of files
+        self.video_flag = [False] * nI + [True] * nV
         self.mode = 'images'
         if any(videos):
             self.new_video(videos[0])  # new video
@@ -50,6 +50,7 @@ class LoadImages:  # for inference
         path = self.files[self.count]
 
         if self.video_flag[self.count]:
+            # Read video
             self.mode = 'video'
             ret_val, img0 = self.cap.read()
             if not ret_val:
