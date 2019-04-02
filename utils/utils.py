@@ -163,14 +163,17 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
 
             # Recall
             recall_curve = tpc / (n_gt + 1e-16)
-            r.append(tpc[-1] / (n_gt + 1e-16))
+            r.append(recall_curve[-1])
 
             # Precision
             precision_curve = tpc / (tpc + fpc)
-            p.append(tpc[-1] / (tpc[-1] + fpc[-1]))
+            p.append(precision_curve[-1])
 
             # AP from recall-precision curve
             ap.append(compute_ap(recall_curve, precision_curve))
+
+            # Plot
+            # plt.plot(recall_curve, precision_curve)
 
     return np.array(ap), unique_classes.astype('int32'), np.array(r), np.array(p)
 
@@ -292,12 +295,11 @@ def build_targets(model, targets):
 
     txy, twh, tcls, indices = [], [], [], []
     for i, layer in enumerate(get_yolo_layers(model)):
-        nG = model.module_list[layer][0].nG  # grid size
-        anchor_vec = model.module_list[layer][0].anchor_vec
+        layer = model.module_list[layer][0]
 
         # iou of targets-anchors
-        gwh = targets[:, 4:6] * nG
-        iou = [wh_iou(x, gwh) for x in anchor_vec]
+        gwh = targets[:, 4:6] * layer.nG
+        iou = [wh_iou(x, gwh) for x in layer.anchor_vec]
         iou, a = torch.stack(iou, 0).max(0)  # best iou and anchor
 
         # reject below threshold ious (OPTIONAL, increases P, lowers R)
@@ -310,7 +312,7 @@ def build_targets(model, targets):
 
         # Indices
         b, c = t[:, :2].long().t()  # target image, class
-        gxy = t[:, 2:4] * nG
+        gxy = t[:, 2:4] * layer.nG
         gi, gj = gxy.long().t()  # grid_i, grid_j
         indices.append((b, a, gj, gi))
 
@@ -318,11 +320,12 @@ def build_targets(model, targets):
         txy.append(gxy - gxy.floor())
 
         # Width and height
-        twh.append(torch.log(gwh / anchor_vec[a]))  # yolo method
-        # twh.append(torch.sqrt(gwh / anchor_vec[a]) / 2)  # power method
+        twh.append(torch.log(gwh / layer.anchor_vec[a]))  # yolo method
+        # twh.append(torch.sqrt(gwh / layer.anchor_vec[a]) / 2)  # power method
 
         # Class
         tcls.append(c)
+        assert c.max() <= layer.nC, 'Target classes exceed model classes'
 
     return txy, twh, tcls, indices
 

@@ -35,7 +35,7 @@ def test(
         if torch.cuda.device_count() > 1:
             model = nn.DataParallel(model)
     else:
-        device = next(model.parameters()).device
+        device = next(model.parameters()).device  # get model device
 
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
@@ -66,16 +66,20 @@ def test(
 
         # Per image
         for si, pred in enumerate(output):
-            image_id = int(Path(paths[si]).stem.split('_')[-1])
             labels = targets[targets[:, 0] == si, 1:]
+            correct, detected = [], []
+            tcls = torch.Tensor()
             seen += 1
 
             if pred is None:
+                if len(labels):
+                    tcls = labels[:, 0].cpu()  # target classes
+                    stats.append((correct, torch.Tensor(), torch.Tensor(), tcls))
                 continue
 
-            if save_json:
-                # add to json pred dictionary
+            if save_json:  # add to json pred dictionary
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
+                image_id = int(Path(paths[si]).stem.split('_')[-1])
                 box = pred[:, :4].clone()  # xyxy
                 scale_coords(img_size, box, shapes[si])  # to original shape
                 box = xyxy2xywh(box)  # xywh
@@ -88,42 +92,18 @@ def test(
                         'score': float(d[4])
                     })
 
-                # if len(labels) > 0:
-                #     # add to json targets dictionary
-                #     # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], ...
-                #     box = labels[:, 1:].clone()
-                #     box[:, [0, 2]] *= shapes[si][1]  # scale width
-                #     box[:, [1, 3]] *= shapes[si][0]  # scale height
-                #     box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
-                #     for di, d in enumerate(labels):
-                #         tdict.append({
-                #             'segmentation': [[]],
-                #             'iscrowd': 0,
-                #             'image_id': image_id,
-                #             'category_id': coco91class[int(d[0])],
-                #             'id': seen,
-                #             'bbox': [float3(x) for x in box[di]],
-                #             'area': float3(box[di][2:4].prod())
-                #         })
-
-            # If no labels add number of detections as incorrect
-            correct = []
-            detected = []
-            if len(labels) == 0:
-                # correct.extend([0 for _ in range(len(detections))])
-                continue
-            else:
+            if len(labels):
                 # Extract target boxes as (x1, y1, x2, y2)
-                target_box = xywh2xyxy(labels[:, 1:5]) * img_size
-                target_cls = labels[:, 0]
+                tbox = xywh2xyxy(labels[:, 1:5]) * img_size  # target boxes
+                tcls = labels[:, 0]  # target classes
 
-                for *pred_box, conf, cls_conf, cls_pred in pred:
-                    if cls_pred not in target_cls:
+                for *pbox, pconf, pcls_conf, pcls in pred:
+                    if pcls not in tcls:
                         correct.append(0)
                         continue
 
                     # Best iou, index between pred and targets
-                    iou, bi = bbox_iou(pred_box, target_box).max(0)
+                    iou, bi = bbox_iou(pbox, tbox).max(0)
 
                     # If iou > threshold and class is correct mark as correct
                     if iou > iou_thres and bi not in detected:
@@ -131,13 +111,12 @@ def test(
                         detected.append(bi)
                     else:
                         correct.append(0)
+            else:
+                # If no labels add number of detections as incorrect
+                correct.extend([0] * len(pred))
 
-            # Convert to Numpy
-            tp = np.array(correct)
-            conf = pred[:, 4].cpu().numpy()
-            pred_cls = pred[:, 6].cpu().numpy()
-            target_cls = target_cls.cpu().numpy()
-            stats.append((tp, conf, pred_cls, target_cls))
+            # Append Statistics (correct, conf, pcls, tcls)
+            stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls.cpu()))
 
     # Compute means
     stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
@@ -186,7 +165,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3.weights', help='path to weights file')
     parser.add_argument('--iou-thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
     parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')

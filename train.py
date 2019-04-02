@@ -20,7 +20,9 @@ def train(
         accumulate=1,
         multi_scale=False,
         freeze_backbone=False,
-        num_workers=4
+        num_workers=4,
+        transfer=False  # Transfer learning (train only YOLO layers)
+
 ):
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
@@ -38,6 +40,8 @@ def train(
 
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
+    # for m in model.modules():
+    #     weights_init_normal(m)  # set weight distributions
 
     # Optimizer
     lr0 = 0.001  # initial learning rate
@@ -46,24 +50,32 @@ def train(
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_loss = float('inf')
+    yl = get_yolo_layers(model)  # yolo layers
+    nf = int(model.module_defs[yl[0] - 1]['filters'])  # yolo layer size (i.e. 255)
+
     if resume:  # Load previously saved PyTorch model
-        checkpoint = torch.load(latest, map_location=device)  # load checkpoint
-        model.load_state_dict(checkpoint['model'])
-        start_epoch = checkpoint['epoch'] + 1
-        if checkpoint['optimizer'] is not None:
-            optimizer.load_state_dict(checkpoint['optimizer'])
-            best_loss = checkpoint['best_loss']
-        del checkpoint  # current, saved
+        if transfer:  # Transfer learning
+            chkpt = torch.load(weights + 'yolov3.pt', map_location=device)
+            model.load_state_dict(
+                {k: v for k, v in chkpt['model'].items() if (int(k.split('.')[1]) + 1) not in yl}, strict=False)
+            for (name, p) in model.named_parameters():
+                p.requires_grad = True if p.shape[0] == nf else False
+
+        else:  # resume from latest.pt
+            chkpt = torch.load(latest, map_location=device)  # load checkpoint
+            model.load_state_dict(chkpt['model'])
+
+        start_epoch = chkpt['epoch'] + 1
+        if chkpt['optimizer'] is not None:
+            optimizer.load_state_dict(chkpt['optimizer'])
+            best_loss = chkpt['best_loss']
+        del chkpt
 
     else:  # Initialize model with backbone (optional)
-        if cfg.endswith('yolov3.cfg'):
-            cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
-        elif cfg.endswith('yolov3-tiny.cfg'):
+        if '-tiny.cfg' in cfg:
             cutoff = load_darknet_weights(model, weights + 'yolov3-tiny.conv.15')
-
-    # Transfer learning (train only YOLO layers)
-    # for i, (name, p) in enumerate(model.named_parameters()):
-    #     p.requires_grad = True if (p.shape[0] == 255) else False
+        else:
+            cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
 
     # Set scheduler (reduce lr at epoch 250)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[250], gamma=0.1, last_epoch=start_epoch - 1)
@@ -119,7 +131,7 @@ def train(
             plot_images = False
             if plot_images:
                 fig = plt.figure(figsize=(10, 10))
-                for ip in range(batch_size):
+                for ip in range(len(imgs)):
                     boxes = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy().T * img_size
                     plt.subplot(4, 4, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
                     plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
@@ -174,20 +186,22 @@ def train(
         save = True
         if save:
             # Save latest checkpoint
-            checkpoint = {'epoch': epoch,
-                          'best_loss': best_loss,
-                          'model': model.module.state_dict() if type(
-                              model) is nn.parallel.DistributedDataParallel else model.state_dict(),
-                          'optimizer': optimizer.state_dict()}
-            torch.save(checkpoint, latest)
+            chkpt = {'epoch': epoch,
+                     'best_loss': best_loss,
+                     'model': model.module.state_dict() if type(
+                         model) is nn.parallel.DistributedDataParallel else model.state_dict(),
+                     'optimizer': optimizer.state_dict()}
+            torch.save(chkpt, latest)
 
             # Save best checkpoint
             if best_loss == mloss['total']:
-                os.system('copy ' + latest + ' ' + best)
+                torch.save(chkpt, best)
 
-            # Save backup weights every 5 epochs (optional)
-            #if epoch > 0 and epoch % 5 == 0:
-            #    os.system('copy' + latest + ' ' + weights + 'backup%g.pt' % epoch)
+            # Save backup every 10 epochs (optional)
+            if epoch > 0 and epoch % 10 == 0:
+                torch.save(chkpt, weights + 'backup%g.pt' % epoch)
+
+            del chkpt
 
         # Calculate mAP
         with torch.no_grad():
@@ -204,10 +218,11 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='cfg/coco.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=32 * 13, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
+    parser.add_argument('--transfer', action='store_true', help='transfer learning flag')
     parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
     parser.add_argument('--dist-url', default='tcp://127.0.0.1:9999', type=str, help='distributed training init method')
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
@@ -222,7 +237,8 @@ if __name__ == '__main__':
         opt.cfg,
         opt.data_cfg,
         img_size=opt.img_size,
-        resume=opt.resume,
+        resume=opt.resume or opt.transfer,
+        transfer=opt.transfer,
         epochs=opt.epochs,
         batch_size=opt.batch_size,
         accumulate=opt.accumulate,
