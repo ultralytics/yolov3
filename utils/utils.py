@@ -321,7 +321,7 @@ def build_targets(model, targets):
 
         # Width and height
         twh.append(torch.log(gwh / layer.anchor_vec[a]))  # yolo method
-        # twh.append(torch.sqrt(gwh / anchor_vec[a]) / 2)  # power method
+        # twh.append(torch.sqrt(gwh / layer.anchor_vec[a]) / 2)  # power method
 
         # Class
         tcls.append(c)
