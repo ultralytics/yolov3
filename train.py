@@ -53,7 +53,7 @@ def train(
         if checkpoint['optimizer'] is not None:
             optimizer.load_state_dict(checkpoint['optimizer'])
             best_loss = checkpoint['best_loss']
-        del checkpoint  # current, saved
+        del checkpoint
 
     else:  # Initialize model with backbone (optional)
         if cfg.endswith('yolov3.cfg'):
@@ -180,6 +180,7 @@ def train(
                               model) is nn.parallel.DistributedDataParallel else model.state_dict(),
                           'optimizer': optimizer.state_dict()}
             torch.save(checkpoint, latest)
+            del checkpoint
 
             # Save best checkpoint
             if best_loss == mloss['total']:
