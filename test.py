@@ -89,10 +89,7 @@ def test(
                         'score': float(d[4])
                     })
 
-            # If no labels add number of detections as incorrect
-            if len(labels) == 0:
-                correct.extend([0] * len(pred))
-            else:
+            if len(labels):
                 # Extract target boxes as (x1, y1, x2, y2)
                 tbox = xywh2xyxy(labels[:, 1:5]) * img_size  # target boxes
                 tcls = labels[:, 0]  # target classes
@@ -111,6 +108,9 @@ def test(
                         detected.append(bi)
                     else:
                         correct.append(0)
+            else:
+                # If no labels add number of detections as incorrect
+                correct.extend([0] * len(pred))
 
             # Append Statistics (correct, conf, pcls, tcls)
             stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls.cpu()))
