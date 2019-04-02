@@ -53,7 +53,7 @@ def train(
 
     if resume:  # Load previously saved PyTorch model
         if transfer:  # Transfer learning
-            chkpt = torch.load(weights + 'yolov3-tiny.pt', map_location=device)
+            chkpt = torch.load(weights + 'yolov3.pt', map_location=device)
             model.load_state_dict(
                 {k: v for k, v in chkpt['model'].items() if (int(k.split('.')[1]) + 1) not in yl}, strict=False)
             for (name, p) in model.named_parameters():
