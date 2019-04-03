@@ -115,13 +115,13 @@ Run `detect.py` with `webcam=True` to show a live webcam feed.
 - Compare to darknet published results https://arxiv.org/abs/1804.02767.
 
 <!---
-%<i></i> | ultralytics/yolov3 fastest 5:52@416 (`pycocotools`) | darknet  
+%<i></i> | ultralytics/yolov3 OR-NMS 5:52@416 (`pycocotools`) | darknet  
 --- | --- | ---  
 YOLOv3-320 | 51.9 (51.4) | 51.5  
 YOLOv3-416 | 55.0 (54.9) | 55.3  
 YOLOv3-608 | 57.5 (57.8) | 57.9  
 
-<i></i> | ultralytics/yolov3 MERGE 7:15@416 (`pycocotools`) | darknet  
+<i></i> | ultralytics/yolov3 MERGE-NMS 7:15@416 (`pycocotools`) | darknet  
 --- | --- | ---  
 YOLOv3-320 | 52.3 (51.7) | 51.5  
 YOLOv3-416 | 55.4 (55.3) | 55.3  
@@ -133,36 +133,20 @@ YOLOv3-320 | 52.3 (51.8) | 51.5
 YOLOv3-416 | 55.5 (55.4) | 55.3  
 YOLOv3-608 | 57.9 (58.2) | 57.9  
 --->
-<i></i> | [ultralytics/yolov3](https://github.com/ultralytics/yolov3) with `pycocotools` | [darknet/yolov3](https://arxiv.org/abs/1804.02767) 
+<i></i> | [ultralytics/yolov3](https://github.com/ultralytics/yolov3) | [darknet](https://arxiv.org/abs/1804.02767) 
 --- | --- | ---  
-YOLOv3-320 | 51.8 | 51.5  
-YOLOv3-416 | 55.4 | 55.3  
-YOLOv3-608 | 58.2 | 57.9  
+`YOLOv3 320` | 51.8 | 51.5  
+`YOLOv3 416` | 55.4 | 55.3  
+`YOLOv3 608` | 58.2 | 57.9  
+`YOLOv3-spp 320` | 52.4 | -  
+`YOLOv3-spp 416` | 56.5 | -  
+`YOLOv3-spp 608` | 60.7 | 60.6  
 
 ``` bash
 sudo rm -rf yolov3 && git clone https://github.com/ultralytics/yolov3
 # bash yolov3/data/get_coco_dataset.sh
 sudo rm -rf cocoapi && git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
 cd yolov3
-
-python3 test.py --save-json --conf-thres 0.001 --img-size 416
-Namespace(batch_size=32, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3.weights')
-Using cuda _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', major=7, minor=0, total_memory=16130MB, multi_processor_count=80)
-      Image      Total          P          R        mAP
-Calculating mAP: 100%|█████████████████████████████████| 157/157 [08:34<00:00,  2.53s/it]
-       5000       5000     0.0896      0.756      0.555
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.312
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.554
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.317
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.145
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.343
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.452
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.268
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.411
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.435
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.244
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.477
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.587
  
 python3 test.py --save-json --conf-thres 0.001 --img-size 608 --batch-size 16
 Namespace(batch_size=16, cfg='cfg/yolov3.cfg', conf_thres=0.001, data_cfg='cfg/coco.data', img_size=608, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3.weights')
@@ -182,8 +166,31 @@ Calculating mAP: 100%|███████████████████�
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.309
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.494
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.577
+ 
+python3 test.py --weights weights/yolov3-spp.weights --cfg cfg/yolov3-spp.cfg --save-json --img-size 608 --batch-size 8
+Namespace(batch_size=8, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data_cfg='data/coco.data', img_size=608, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3-spp.weights')
+Using cuda _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', major=7, minor=0, total_memory=16130MB, multi_processor_count=80)
+       Image      Total          P          R        mAP
+Calculating mAP: 100%|█████████████████████████████████| 625/625 [07:01<00:00,  1.56it/s]
+       5000       5000       0.12       0.81      0.611
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.366
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.607
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.386
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.207
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.391
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.485
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.296
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.464
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.494
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.331
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.517
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.618
 ```
+
+# Citation
+
+[![DOI](https://zenodo.org/badge/146165888.svg)](https://zenodo.org/badge/latestdoi/146165888)
 
 # Contact
 
-For questions or comments please contact Glenn Jocher at glenn.jocher@ultralytics.com or visit us at https://contact.ultralytics.com.
+Issues should be raised directly in the repository. For additional questions or comments please email Glenn Jocher at glenn.jocher@ultralytics.com or visit us at https://contact.ultralytics.com/contact.
