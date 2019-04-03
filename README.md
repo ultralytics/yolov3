@@ -133,7 +133,7 @@ YOLOv3-320 | 52.3 (51.8) | 51.5
 YOLOv3-416 | 55.5 (55.4) | 55.3  
 YOLOv3-608 | 57.9 (58.2) | 57.9  
 --->
-<i></i> | [ultralytics/yolov3](https://github.com/ultralytics/yolov3) | [darknet/yolov3](https://arxiv.org/abs/1804.02767) 
+<i></i> | [ultralytics/yolov3](https://github.com/ultralytics/yolov3) | [darknet](https://arxiv.org/abs/1804.02767) 
 --- | --- | ---  
 `YOLOv3 320` | 51.8 | 51.5  
 `YOLOv3 416` | 55.4 | 55.3  
