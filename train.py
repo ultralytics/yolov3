@@ -76,7 +76,8 @@ def train(
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
 
     # Set scheduler (reduce lr at epoch 250)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[250], gamma=0.1, last_epoch=start_epoch - 1)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1,
+                                                     last_epoch=start_epoch - 1)
 
     # Dataset
     dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
@@ -216,7 +217,7 @@ def train(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', type=int, default=270, help='number of epochs')
+    parser.add_argument('--epochs', type=int, default=273, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
