@@ -188,7 +188,7 @@ def train(
         # Update best loss
         test_loss = results[4]
         if test_loss < best_loss:
-            best_loss = results[0]
+            best_loss = test_loss
 
         # Save training results
         save = True and not opt.nosave
