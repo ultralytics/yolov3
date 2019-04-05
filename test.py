@@ -54,7 +54,7 @@ def test(
     seen = 0
     model.eval()
     coco91class = coco80_to_coco91_class()
-    print('%15s' * 7 % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP', 'F1'))
+    print(('%20s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP', 'F1'))
     loss, p, r, f1, mp, mr, map, mf1 = 0., 0., 0., 0., 0., 0., 0., 0.
     jdict, stats, ap, ap_class = [], [], [], []
     for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc='Computing mAP')):
@@ -137,12 +137,13 @@ def test(
         mp, mr, map, mf1 = p.mean(), r.mean(), ap.mean(), f1.mean()
 
     # Print results
-    print(('%15s' + '%15.3g' * 6) % ('all', seen, nt.sum(), mp, mr, map, mf1), end='\n\n')
+    pf = ('%20s' + '%10.3g' * 6)  # print format
+    print(pf % ('all', seen, nt.sum(), mp, mr, map, mf1), end='\n\n')
 
     # Print results per class
     if nc > 1 and len(stats_np):
         for i, c in enumerate(ap_class):
-            print(('%15s' + '%15.3g' * 6) % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
+            print(pf % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
 
     # Save JSON
     if save_json and map and len(jdict):
@@ -172,7 +173,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco_10img.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
     parser.add_argument('--iou-thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
     parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
