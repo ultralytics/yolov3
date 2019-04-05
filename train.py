@@ -15,7 +15,7 @@ def train(
         data_cfg,
         img_size=416,
         resume=False,
-        epochs=270,
+        epochs=273,  # 500200 batches at bs 64, dataset length 117263
         batch_size=16,
         accumulate=1,
         multi_scale=False,
@@ -75,7 +75,7 @@ def train(
         else:
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
 
-    # Set scheduler (reduce lr at epoch 250)
+    # Set scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1,
                                                      last_epoch=start_epoch - 1)
 
