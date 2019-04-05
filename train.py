@@ -121,8 +121,8 @@ def train(
             imgs = imgs.to(device)
             targets = targets.to(device)
 
-            nT = len(targets)
-            if nT == 0:  # if no targets continue
+            nt = len(targets)
+            if nt == 0:  # if no targets continue
                 continue
 
             # Plot images with bounding boxes
@@ -167,7 +167,7 @@ def train(
             s = ('%8s%12s' + '%10.3g' * 7) % (
                 '%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, nB - 1),
                 mloss['xy'], mloss['wh'], mloss['conf'], mloss['cls'],
-                mloss['total'], nT, time.time() - t)
+                mloss['total'], nt, time.time() - t)
             t = time.time()
             print(s)
 
@@ -176,38 +176,42 @@ def train(
                 dataset.img_size = random.choice(range(10, 20)) * 32
                 print('multi_scale img_size = %g' % dataset.img_size)
 
-        # Update best loss
-        if mloss['total'] < best_loss:
-            best_loss = mloss['total']
-
-        # Save training results
-        save = True
-        if save:
-            # Save latest checkpoint
-            chkpt = {'epoch': epoch,
-                     'best_loss': best_loss,
-                     'model': model.module.state_dict() if type(
-                         model) is nn.parallel.DistributedDataParallel else model.state_dict(),
-                     'optimizer': optimizer.state_dict()}
-            torch.save(chkpt, latest)
-
-            # Save best checkpoint
-            if best_loss == mloss['total']:
-                torch.save(chkpt, best)
-
-            # Save backup every 10 epochs (optional)
-            if epoch > 0 and epoch % 10 == 0:
-                torch.save(chkpt, weights + 'backup%g.pt' % epoch)
-
-            del chkpt
-
         # Calculate mAP
         with torch.no_grad():
             results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
-            file.write(s + '%11.3g' * 3 % results + '\n')  # append P, R, mAP
+            file.write(s + '%11.3g' * 5 % results + '\n')  # P, R, mAP, F1, test_loss
+
+        # Update best loss
+        test_loss = results[4]
+        if test_loss < best_loss:
+            best_loss = results[0]
+
+        # Save training results
+        save = True and not opt.no_save
+        if save:
+            # Create checkpoint
+            chkpt = {'epoch': epoch,
+                     'best_loss': best_loss,
+                     'model': model.module.state_dict() if type(
+                         model) is nn.parallel.DistributedDataParallel else model.state_dict(),
+                     'optimizer': optimizer.state_dict()}
+
+            # Save latest checkpoint
+            torch.save(chkpt, latest)
+
+            # Save best checkpoint
+            if best_loss == test_loss:
+                torch.save(chkpt, best)
+
+            # Save backup every 10 epochs (optional)
+            if epoch > 0 and epoch % 10 == 0:
+                torch.save(chkpt, weights + 'backup%g.pt' % epoch)
+
+            # Delete checkpoint
+            del chkpt
 
 
 if __name__ == '__main__':
@@ -226,6 +230,7 @@ if __name__ == '__main__':
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
     parser.add_argument('--backend', default='nccl', type=str, help='distributed backend')
+    parser.add_argument('--no-save', action='store_false', help='transfer learning flag')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 

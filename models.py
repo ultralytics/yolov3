@@ -156,16 +156,16 @@ class YOLOLayer(nn.Module):
             return torch.cat((xy / nG, wh, p_conf, p_cls), 2).squeeze().t()
 
         else:  # inference
-            p[..., 0:2] = torch.sigmoid(p[..., 0:2]) + self.grid_xy  # xy
-            p[..., 2:4] = torch.exp(p[..., 2:4]) * self.anchor_wh  # wh yolo method
-            # p[..., 2:4] = ((torch.sigmoid(p[..., 2:4]) * 2) ** 2) * self.anchor_wh  # wh power method
-            p[..., 4] = torch.sigmoid(p[..., 4])  # p_conf
-            p[..., 5:] = torch.sigmoid(p[..., 5:])  # p_class
-            # p[..., 5:] = F.softmax(p[..., 5:], dim=4)  # p_class
-            p[..., :4] *= self.stride
+            io = p.clone()  # inference output
+            io[..., 0:2] = torch.sigmoid(io[..., 0:2]) + self.grid_xy  # xy
+            io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method
+            # io[..., 2:4] = ((torch.sigmoid(io[..., 2:4]) * 2) ** 2) * self.anchor_wh  # wh power method
+            io[..., 4:] = torch.sigmoid(io[..., 4:])  # p_conf, p_cls
+            # io[..., 5:] = F.softmax(io[..., 5:], dim=4)  # p_cls
+            io[..., :4] *= self.stride
 
             # reshape from [1, 3, 13, 13, 85] to [1, 507, 85]
-            return p.view(bs, -1, 5 + self.nC)
+            return io.view(bs, -1, 5 + self.nC), p
 
 
 class Darknet(nn.Module):
@@ -202,11 +202,14 @@ class Darknet(nn.Module):
                 output.append(x)
             layer_outputs.append(x)
 
-        if ONNX_EXPORT:
+        if self.training:
+            return output
+        elif ONNX_EXPORT:
             output = torch.cat(output, 1)  # cat 3 layers 85 x (507, 2028, 8112) to 85 x 10647
             return output[5:85].t(), output[:4].t()  # ONNX scores, boxes
         else:
-            return output if self.training else torch.cat(output, 1)
+            io, p = list(zip(*output))  # inference output, training output
+            return torch.cat(io, 1), p
 
 
 def get_yolo_layers(model):

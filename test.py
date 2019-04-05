@@ -39,32 +39,42 @@ def test(
 
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
-    test_path = data_cfg['valid']
-    # if (os.sep + 'coco' + os.sep) in test_path:  # COCO dataset probable
-    #     save_json = True  # use pycocotools
+    nc = int(data_cfg['classes'])  # number of classes
+    test_path = data_cfg['valid']  # path to test images
+    names = load_classes(data_cfg['names'])  # class names
 
     # Dataloader
     dataset = LoadImagesAndLabels(test_path, img_size=img_size)
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
-                            num_workers=4,
+                            num_workers=0,
                             pin_memory=False,
                             collate_fn=dataset.collate_fn)
 
-    model.eval()
     seen = 0
-    print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
-    mP, mR, mAP, mAPj = 0.0, 0.0, 0.0, 0.0
-    jdict, tdict, stats, AP, AP_class = [], [], [], [], []
+    model.eval()
     coco91class = coco80_to_coco91_class()
-    for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc='Calculating mAP')):
+    print('%15s' * 7 % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP', 'F1'))
+    loss, p, r, f1, mp, mr, map, mf1 = 0., 0., 0., 0., 0., 0., 0., 0.
+    jdict, stats, ap, ap_class = [], [], [], []
+    for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc='Computing mAP')):
         targets = targets.to(device)
         imgs = imgs.to(device)
 
-        output = model(imgs)
-        output = non_max_suppression(output, conf_thres=conf_thres, nms_thres=nms_thres)
+        # Run model
+        inf_out, train_out = model(imgs)  # inference and training outputs
 
-        # Per image
+        # Build targets
+        target_list = build_targets(model, targets)
+
+        # Compute loss
+        loss_i, _ = compute_loss(train_out, target_list)
+        loss += loss_i.item()
+
+        # Run NMS
+        output = non_max_suppression(inf_out, conf_thres=conf_thres, nms_thres=nms_thres)
+
+        # Statistics per image
         for si, pred in enumerate(output):
             labels = targets[targets[:, 0] == si, 1:]
             correct, detected = [], []
@@ -77,7 +87,8 @@ def test(
                     stats.append((correct, torch.Tensor(), torch.Tensor(), tcls))
                 continue
 
-            if save_json:  # add to json pred dictionary
+            # Append to pycocotools JSON dictionary
+            if save_json:
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
                 image_id = int(Path(paths[si]).stem.split('_')[-1])
                 box = pred[:, :4].clone()  # xyxy
@@ -118,24 +129,23 @@ def test(
             # Append Statistics (correct, conf, pcls, tcls)
             stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls.cpu()))
 
-    # Compute means
+    # Compute statistics
     stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
+    nt = np.bincount(stats_np[3].astype(np.int64), minlength=nc)  # number of targets per class
     if len(stats_np):
-        AP, AP_class, R, P = ap_per_class(*stats_np)
-        mP, mR, mAP = P.mean(), R.mean(), AP.mean()
+        p, r, ap, f1, ap_class = ap_per_class(*stats_np)
+        mp, mr, map, mf1 = p.mean(), r.mean(), ap.mean(), f1.mean()
 
-    # Print P, R, mAP
-    print(('%11s%11s' + '%11.3g' * 3) % (seen, len(dataset), mP, mR, mAP))
+    # Print results
+    print(('%15s' + '%15.3g' * 6) % ('all', seen, nt.sum(), mp, mr, map, mf1), end='\n\n')
 
-    # Print mAP per class
-    if len(stats_np):
-        print('\nmAP Per Class:')
-        names = load_classes(data_cfg['names'])
-        for c, a in zip(AP_class, AP):
-            print('%15s: %-.4f' % (names[c], a))
+    # Print results per class
+    if nc > 1 and len(stats_np):
+        for i, c in enumerate(ap_class):
+            print(('%15s' + '%15.3g' * 6) % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
 
     # Save JSON
-    if save_json and mAP and len(jdict):
+    if save_json and map and len(jdict):
         imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataset.img_files]
         with open('results.json', 'w') as file:
             json.dump(jdict, file)
@@ -152,13 +162,10 @@ def test(
         cocoEval.evaluate()
         cocoEval.accumulate()
         cocoEval.summarize()
-        mAP = cocoEval.stats[1]  # update mAP to pycocotools mAP
+        map = cocoEval.stats[1]  # update mAP to pycocotools mAP
 
-    # F1 score = harmonic mean of precision and recall
-    # F1 = 2 * (mP * mR) / (mP + mR)
-
-    # Return mAP
-    return mP, mR, mAP
+    # Return results
+    return mp, mr, map, mf1, loss
 
 
 if __name__ == '__main__':

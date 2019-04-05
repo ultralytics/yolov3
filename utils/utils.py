@@ -175,7 +175,11 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
             # Plot
             # plt.plot(recall_curve, precision_curve)
 
-    return np.array(ap), unique_classes.astype('int32'), np.array(r), np.array(p)
+    # Compute F1 score (harmonic mean of precision and recall)
+    p, r, ap = np.array(p), np.array(r), np.array(ap)
+    f1 = 2 * p * r / (p + r + 1e-16)
+
+    return p, r, ap, f1, unique_classes.astype('int32')
 
 
 def compute_ap(recall, precision):
@@ -484,12 +488,13 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
 
     fig = plt.figure(figsize=(14, 7))
-    s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Total Loss', 'Precision', 'Recall', 'mAP']
+    s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Train Loss', 'Precision', 'Recall', 'mAP', 'F1',
+         'Test Loss']
     for f in sorted(glob.glob('results*.txt')):
-        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11]).T  # column 11 is mAP
+        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11, 12, 13]).T
         x = range(start, stop if stop else results.shape[1])
-        for i in range(8):
-            plt.subplot(2, 4, i + 1)
+        for i in range(10):
+            plt.subplot(2, 5, i + 1)
             plt.plot(x, results[i, x], marker='.', label=f)
             plt.title(s[i])
             if i == 0:
