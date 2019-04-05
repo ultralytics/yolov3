@@ -23,8 +23,7 @@ data/*
 !data/coco.names
 !data/coco_paper.names
 !data/coco.data
-!data/coco_1cls.data
-!data/coco_1img.data
+!data/coco_1*.data
 
 pycocotools/*
 results*.txt
