@@ -190,7 +190,7 @@ def train(
             best_loss = results[0]
 
         # Save training results
-        save = True and not opt.no_save
+        save = True and not opt.nosave
         if save:
             # Create checkpoint
             chkpt = {'epoch': epoch,
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
     parser.add_argument('--backend', default='nccl', type=str, help='distributed backend')
-    parser.add_argument('--no-save', action='store_false', help='transfer learning flag')
+    parser.add_argument('--nosave', action='store_true', help='do not save training results')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
