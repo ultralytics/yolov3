@@ -137,7 +137,7 @@ def test(
         mp, mr, map, mf1 = p.mean(), r.mean(), ap.mean(), f1.mean()
 
     # Print results
-    pf = ('%20s' + '%10.3g' * 6)  # print format
+    pf = '%20s' + '%10.3g' * 6  # print format
     print(pf % ('all', seen, nt.sum(), mp, mr, map, mf1), end='\n\n')
 
     # Print results per class
