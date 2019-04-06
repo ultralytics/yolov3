@@ -3,12 +3,15 @@ import random
 from collections import defaultdict
 
 import cv2
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
 
 from utils import torch_utils
+
+matplotlib.rc('font', **{'family': 'normal', 'size': 11})
 
 # Set printoptions
 torch.set_printoptions(linewidth=1320, precision=5, profile='long')
@@ -286,8 +289,8 @@ def compute_loss(p, targets):  # predictions, targets
     # Add to dictionary
     d = defaultdict(float)
     losses = [loss.item(), lxy.item(), lwh.item(), lconf.item(), lcls.item()]
-    for name, x in zip(['total', 'xy', 'wh', 'conf', 'cls'], losses):
-        d[name] = x
+    for k, v in zip(['total', 'xy', 'wh', 'conf', 'cls'], losses):
+        d[k] = v
 
     return loss, d
 
@@ -325,7 +328,7 @@ def build_targets(model, targets):
 
         # Width and height
         twh.append(torch.log(gwh / layer.anchor_vec[a]))  # yolo method
-        # twh.append(torch.sqrt(gwh / layer.anchor_vec[a]) / 2)  # power method
+        # twh.append((gwh / layer.anchor_vec[a]) ** (1 / 3) / 2)  # power method
 
         # Class
         tcls.append(c)
@@ -468,7 +471,7 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
     # https://github.com/ultralytics/yolov3/issues/168
     x = np.arange(-4.0, 4.0, .1)
     ya = np.exp(x)
-    yb = (torch.sigmoid(torch.from_numpy(x)).numpy() * 2)
+    yb = torch.sigmoid(torch.from_numpy(x)).numpy() * 2
 
     fig = plt.figure(figsize=(6, 3), dpi=150)
     plt.plot(x, ya, '.-', label='yolo method')
@@ -495,7 +498,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
         x = range(start, stop if stop else results.shape[1])
         for i in range(10):
             plt.subplot(2, 5, i + 1)
-            plt.plot(x, results[i, x], marker='.', label=f)
+            plt.plot(x, results[i, x].clip(max=500), marker='.', label=f)
             plt.title(s[i])
             if i == 0:
                 plt.legend()
