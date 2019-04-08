@@ -11,7 +11,7 @@ import torch.nn as nn
 
 from utils import torch_utils
 
-matplotlib.rc('font', **{'family': 'normal', 'size': 11})
+matplotlib.rc('font', **{'family': 'normal', 'size': 12})
 
 # Set printoptions
 torch.set_printoptions(linewidth=1320, precision=5, profile='long')
