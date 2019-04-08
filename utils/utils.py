@@ -307,16 +307,20 @@ def build_targets(model, targets):
 
         # iou of targets-anchors
         gwh = targets[:, 4:6] * layer.nG
-        iou = [wh_iou(x, gwh) for x in layer.anchor_vec]
-        iou, a = torch.stack(iou, 0).max(0)  # best iou and anchor
+        if len(targets):
+            iou = [wh_iou(x, gwh) for x in layer.anchor_vec]
+            iou, a = torch.stack(iou, 0).max(0)  # best iou and anchor
 
-        # reject below threshold ious (OPTIONAL, increases P, lowers R)
-        reject = True
-        if reject:
-            j = iou > 0.10
-            t, a, gwh = targets[j], a[j], gwh[j]
+            # reject below threshold ious (OPTIONAL, increases P, lowers R)
+            reject = True
+            if reject:
+                j = iou > 0.10
+                t, a, gwh = targets[j], a[j], gwh[j]
+            else:
+                t = targets
         else:
             t = targets
+            a = 0
 
         # Indices
         b, c = t[:, :2].long().t()  # target image, class
