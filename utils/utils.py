@@ -487,6 +487,21 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
     fig.savefig('comparison.jpg', dpi=fig.dpi)
 
 
+def plot_images(imgs, targets, fname='images.jpg'):
+    fig = plt.figure(figsize=(10, 10))
+    img_size = imgs.shape[3]
+    bs = imgs.shape[0]  # batch size
+    sp = np.ceil(bs ** 0.5)  # subplots
+
+    for i in range(bs):
+        boxes = xywh2xyxy(targets[targets[:, 0] == i, 2:6]).numpy().T * img_size
+        plt.subplot(sp, sp, i + 1).imshow(imgs[i].numpy().transpose(1, 2, 0))
+        plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
+        plt.axis('off')
+    fig.tight_layout()
+    fig.savefig(fname, dpi=fig.dpi)
+
+
 def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
