@@ -48,8 +48,10 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 Each epoch trains on 120,000 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. Default training settings produce loss plots below, with **training speed of 0.6 s/batch on a 1080 Ti (18 epochs/day)** or 0.45 s/batch on a 2080 Ti.
 
+Here we see training results from `coco_1img.data`, `coco_10img.data` and `coco_100img.data`, 3 example files available in the `data/` folder, which train and test on the first 1, 10 and 100 images of the coco2014 trainval dataset.
+
 `from utils import utils; utils.plot_results()`
-![Alt](https://user-images.githubusercontent.com/26833433/53494085-3251aa00-3a9d-11e9-8af7-8c08cf40d70b.png "train.py results")
+![results](https://user-images.githubusercontent.com/26833433/55669383-df76c980-5876-11e9-9806-691bd507ee17.jpg)
 
 ## Image Augmentation
 
