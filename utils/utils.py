@@ -11,7 +11,7 @@ import torch.nn as nn
 
 from utils import torch_utils
 
-matplotlib.rc('font', **{'family': 'normal', 'size': 12})
+matplotlib.rc('font', **{'size': 12})
 
 # Set printoptions
 torch.set_printoptions(linewidth=1320, precision=5, profile='long')
@@ -278,7 +278,7 @@ def compute_loss(p, targets):  # predictions, targets
             tconf[b, a, gj, gi] = 1  # conf
 
             lxy += (k * 8) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
-            lwh += (k * 4) * MSE(torch.sigmoid(pi[..., 2:4]), twh[i])  # wh yolo loss
+            lwh += (k * 4) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
             # lwh += (k * 4) * MSE(torch.sigmoid(pi[..., 2:4]), twh[i])  # wh power loss
             lcls += (k * 1) * CE(pi[..., 5:], tcls[i])  # class_conf loss
 
