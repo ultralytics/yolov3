@@ -496,7 +496,7 @@ def plot_images(imgs, targets, fname='images.jpg'):
 
     for i in range(bs):
         boxes = xywh2xyxy(targets[targets[:, 0] == i, 2:6]).numpy().T * img_size
-        plt.subplot(sp, sp, i + 1).imshow(imgs[i].numpy().transpose(1, 2, 0))
+        plt.subplot(sp, sp, i + 1).imshow(imgs[i].cpu().numpy().transpose(1, 2, 0))
         plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
         plt.axis('off')
     fig.tight_layout()
