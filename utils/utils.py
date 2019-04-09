@@ -501,6 +501,7 @@ def plot_images(imgs, targets, fname='images.jpg'):
         plt.axis('off')
     fig.tight_layout()
     fig.savefig(fname, dpi=fig.dpi)
+    plt.close()
 
 
 def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
