@@ -488,6 +488,7 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
 
 
 def plot_images(imgs, targets, fname='images.jpg'):
+    # Plots training images overlaid with targets
     fig = plt.figure(figsize=(10, 10))
     img_size = imgs.shape[3]
     bs = imgs.shape[0]  # batch size
