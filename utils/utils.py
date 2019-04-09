@@ -319,13 +319,14 @@ def build_targets(model, targets):
 
         # Class
         tcls.append(c)
-        assert c.max() <= layer.nC, 'Target classes exceed model classes'
+        if c.shape[0]:
+            assert c.max() <= layer.nC, 'Target classes exceed model classes'
 
     return txy, twh, tcls, indices
 
 
 # @profile
-def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
+def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
     """
     Removes detections with lower object confidence score than 'conf_thres'
     Non-Maximum Suppression to further filter detections.
