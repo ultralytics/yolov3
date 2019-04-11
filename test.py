@@ -171,7 +171,7 @@ def test(
         map = cocoEval.stats[1]  # update mAP to pycocotools mAP
 
     # Return results
-    return mp, mr, map, mf1, loss
+    return mp, mr, map, mf1, loss / len(dataloader)
 
 
 if __name__ == '__main__':
