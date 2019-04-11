@@ -256,10 +256,11 @@ def compute_loss(p, targets):  # predictions, targets
     for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridx, gridy
         tconf = torch.zeros_like(pi0[..., 0])  # conf
+        nt = len(b)  # number of targets
 
         # Compute losses
-        k = 1  # nT / bs
-        if len(b) > 0:
+        k = 1  # nt / bs
+        if nt:
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
             tconf[b, a, gj, gi] = 1  # conf
 
