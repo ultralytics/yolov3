@@ -48,8 +48,7 @@ def train(
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_loss = float('inf')
-    yl = get_yolo_layers(model)  # yolo layers
-    nf = int(model.module_defs[yl[0] - 1]['filters'])  # yolo layer size (i.e. 255)
+    nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
 
     if resume:  # Load previously saved model
         if transfer:  # Transfer learning

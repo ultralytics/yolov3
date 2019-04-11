@@ -288,8 +288,8 @@ def build_targets(model, targets):
         model = model.module
 
     txy, twh, tcls, indices = [], [], [], []
-    for i, layer in enumerate(get_yolo_layers(model)):
-        layer = model.module_list[layer][0]
+    for i in model.yolo_layers:
+        layer = model.module_list[i][0]
 
         # iou of targets-anchors
         gwh = targets[:, 4:6] * layer.nG
@@ -523,7 +523,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
         x = range(start, min(stop, n) if stop else n)
         for i in range(10):
             plt.subplot(2, 5, i + 1)
-            plt.plot(x, results[i, x].clip(max=500), marker='.', label=f)
+            plt.plot(x, results[i, x].clip(max=500), marker='.', label=f.replace('.txt',''))
             plt.title(s[i])
             if i == 0:
                 plt.legend()

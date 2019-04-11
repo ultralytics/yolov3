@@ -178,6 +178,7 @@ class Darknet(nn.Module):
         self.module_defs[0]['cfg'] = cfg_path
         self.module_defs[0]['height'] = img_size
         self.hyperparams, self.module_list = create_modules(self.module_defs)
+        self.yolo_layers = get_yolo_layers(self)
 
     def forward(self, x, var=None):
         img_size = x.shape[-1]
