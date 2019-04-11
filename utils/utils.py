@@ -519,7 +519,8 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
          'Test Loss']
     for f in sorted(glob.glob('results*.txt')):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11, 12, 13]).T
-        x = range(start, stop if stop else results.shape[1])
+        n = results.shape[1]  # number of rows
+        x = range(start, min(stop, n) if stop else n)
         for i in range(10):
             plt.subplot(2, 5, i + 1)
             plt.plot(x, results[i, x].clip(max=500), marker='.', label=f)
