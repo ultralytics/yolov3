@@ -284,7 +284,7 @@ def compute_loss(p, targets):  # predictions, targets
 
 def build_targets(model, targets):
     # targets = [image, class, x, y, w, h]
-    if isinstance(model, nn.parallel.DistributedDataParallel):
+    if type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel):
         model = model.module
 
     txy, twh, tcls, indices = [], [], [], []
@@ -523,7 +523,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
         x = range(start, min(stop, n) if stop else n)
         for i in range(10):
             plt.subplot(2, 5, i + 1)
-            plt.plot(x, results[i, x].clip(max=500), marker='.', label=f.replace('.txt',''))
+            plt.plot(x, results[i, x].clip(max=500), marker='.', label=f.replace('.txt', ''))
             plt.title(s[i])
             if i == 0:
                 plt.legend()
