@@ -298,16 +298,18 @@ def compute_loss(p, targets):  # predictions, targets
 
 def build_targets(model, targets):
     # targets = [image, class, x, y, w, h]
-    if isinstance(model, nn.parallel.DistributedDataParallel):
+    if type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel):
         model = model.module
 
+    nt = len(targets)
     txy, twh, tcls, indices = [], [], [], []
-    for i, layer in enumerate(get_yolo_layers(model)):
-        layer = model.module_list[layer][0]
+    for i in model.yolo_layers:
+        layer = model.module_list[i][0]
 
         # iou of targets-anchors
+        t, a = targets, []
         gwh = targets[:, 4:6] * layer.nG
-        if len(targets):
+        if nt:
             iou = [wh_iou(x, gwh) for x in layer.anchor_vec]
             iou, a = torch.stack(iou, 0).max(0)  # best iou and anchor
 
@@ -316,11 +318,6 @@ def build_targets(model, targets):
             if reject:
                 j = iou > 0.10
                 t, a, gwh = targets[j], a[j], gwh[j]
-            else:
-                t = targets
-        else:
-            t = targets
-            a = 0
 
         # Indices
         b, c = t[:, :2].long().t()  # target image, class
@@ -332,14 +329,13 @@ def build_targets(model, targets):
         txy.append(gxy - gxy.floor())
 
         # Width and height
-        twh.append(torch.log(gwh / layer.anchor_vec[a]))  # yolo method
-        # twh.append((gwh / layer.anchor_vec[a]) ** (1 / 3) / 2)  # power method
+        twh.append(torch.log(gwh / layer.anchor_vec[a]))  # wh yolo method
+        # twh.append((gwh / layer.anchor_vec[a]) ** (1 / 3) / 2)  # wh power method
 
         # Class
         tcls.append(c)
-        assert c.max() <= layer.nC, 'Target classes exceed model classes'
-
-    return txy, twh, tcls, indices
+        if nt:
+            assert c.max() <= layer.nC, 'Target classes exceed model classes'
 
 
 # @profile
