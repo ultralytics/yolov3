@@ -48,12 +48,10 @@ def train(
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_loss = float('inf')
-    yl = get_yolo_layers(model)  # yolo layers
-    nf = int(model.module_defs[yl[0] - 1]['filters'])  # yolo layer size (i.e. 255)
-
+    nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
     if resume:  # Load previously saved model
         if transfer:  # Transfer learning
-            chkpt = torch.load(weights + 'yolov3-spp.pt', map_location=device)
+            chkpt = torch.load(weights + 'yolov3.pt', map_location=device)
             model.load_state_dict({k: v for k, v in chkpt['model'].items() if v.numel() > 1 and v.shape[0] != 255},
                                   strict=False)
             for p in model.parameters():
@@ -75,7 +73,7 @@ def train(
         else:
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
 
-    # Set scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
+    # Scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1,
                                                      last_epoch=start_epoch - 1)
 
@@ -104,6 +102,8 @@ def train(
     model_info(model)
     nB = len(dataloader)
     n_burnin = min(round(nB / 5 + 1), 1000)  # burn-in batches
+    os.remove('train_batch0.jpg') if os.path.exists('train_batch0.jpg') else None
+    os.remove('test_batch0.jpg') if os.path.exists('test_batch0.jpg') else None
     for epoch in range(start_epoch, epochs):
         model.train()
         print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
@@ -127,16 +127,8 @@ def train(
                 continue
 
             # Plot images with bounding boxes
-            plot_images = False
-            if plot_images:
-                fig = plt.figure(figsize=(10, 10))
-                for ip in range(len(imgs)):
-                    boxes = xywh2xyxy(targets[targets[:, 0] == ip, 2:6]).numpy().T * img_size
-                    plt.subplot(4, 4, ip + 1).imshow(imgs[ip].numpy().transpose(1, 2, 0))
-                    plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
-                    plt.axis('off')
-                fig.tight_layout()
-                fig.savefig('batch_%g.jpg' % i, dpi=fig.dpi)
+            if epoch == 0 and i == 0:
+                plot_images(imgs=imgs, targets=targets, fname='train_batch0.jpg')
 
             # SGD burn-in
             if epoch == 0 and i <= n_burnin:

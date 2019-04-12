@@ -61,6 +61,10 @@ def test(
         targets = targets.to(device)
         imgs = imgs.to(device)
 
+        # Plot images with bounding boxes
+        if batch_i == 0 and not os.path.exists('test_batch0.jpg'):
+            plot_images(imgs=imgs, targets=targets, fname='test_batch0.jpg')
+
         # Run model
         inf_out, train_out = model(imgs)  # inference and training outputs
 
@@ -77,14 +81,13 @@ def test(
         # Statistics per image
         for si, pred in enumerate(output):
             labels = targets[targets[:, 0] == si, 1:]
-            correct, detected = [], []
-            tcls = torch.Tensor()
+            nl = len(labels)
+            tcls = labels[:, 0].tolist() if nl else []  # target class
             seen += 1
 
             if pred is None:
-                if len(labels):
-                    tcls = labels[:, 0].cpu()  # target classes
-                    stats.append((correct, torch.Tensor(), torch.Tensor(), tcls))
+                if nl:
+                    stats.append(([], torch.Tensor(), torch.Tensor(), tcls))
                 continue
 
             # Append to pycocotools JSON dictionary
@@ -103,14 +106,21 @@ def test(
                         'score': float(d[4])
                     })
 
-            if len(labels):
-                # Extract target boxes as (x1, y1, x2, y2)
+            # Assign all predictions as incorrect
+            correct = [0] * len(pred)
+            if nl:
+                detected = []
                 tbox = xywh2xyxy(labels[:, 1:5]) * img_size  # target boxes
-                tcls = labels[:, 0]  # target classes
 
-                for *pbox, pconf, pcls_conf, pcls in pred:
-                    if pcls not in tcls:
-                        correct.append(0)
+                # Search for correct predictions
+                for i, (*pbox, pconf, pcls_conf, pcls) in enumerate(pred):
+
+                    # Break if all targets already located in image
+                    if len(detected) == nl:
+                        break
+
+                    # Continue if predicted class not among image classes
+                    if pcls.item() not in tcls:
                         continue
 
                     # Best iou, index between pred and targets
@@ -118,16 +128,11 @@ def test(
 
                     # If iou > threshold and class is correct mark as correct
                     if iou > iou_thres and bi not in detected:
-                        correct.append(1)
+                        correct[i] = 1
                         detected.append(bi)
-                    else:
-                        correct.append(0)
-            else:
-                # If no labels add number of detections as incorrect
-                correct.extend([0] * len(pred))
 
-            # Append Statistics (correct, conf, pcls, tcls)
-            stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls.cpu()))
+            # Append statistics (correct, conf, pcls, tcls)
+            stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls))
 
     # Compute statistics
     stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
@@ -166,7 +171,7 @@ def test(
         map = cocoEval.stats[1]  # update mAP to pycocotools mAP
 
     # Return results
-    return mp, mr, map, mf1, loss
+    return mp, mr, map, mf1, loss / len(dataloader)
 
 
 if __name__ == '__main__':

@@ -122,7 +122,7 @@ class LoadWebcam:  # for inference
         img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
-        return img_path, img, img0
+        return img_path, img, img0, None
 
     def __len__(self):
         return 0

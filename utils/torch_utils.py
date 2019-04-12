@@ -8,19 +8,21 @@ def init_seeds(seed=0):
 
 
 def select_device(force_cpu=False):
-    if force_cpu:
-        cuda = False
-        device = torch.device('cpu')
-    else:
-        cuda = torch.cuda.is_available()
-        device = torch.device('cuda:0' if cuda else 'cpu')
+    cuda = False if force_cpu else torch.cuda.is_available()
+    device = torch.device('cuda:0' if cuda else 'cpu')
 
-        if torch.cuda.device_count() > 1:
-            device = torch.device('cuda' if cuda else 'cpu')
-            print('Found %g GPUs' % torch.cuda.device_count())
-            # print('Multi-GPU Issue: https://github.com/ultralytics/yolov3/issues/21')
-            # torch.cuda.set_device(0)  # OPTIONAL: Set your GPU if multiple available
-            # print('Using ', torch.cuda.device_count(), ' GPUs')
+    if not cuda:
+        print('Using CPU')
+    if cuda:
+        c = 1024 ** 2  # bytes to MB
+        ng = torch.cuda.device_count()
+        x = [torch.cuda.get_device_properties(i) for i in range(ng)]
+        print("Using CUDA device0 _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
+              (x[0].name, x[0].total_memory / c))
+        if ng > 0:
+            # torch.cuda.set_device(0)  # OPTIONAL: Set GPU ID
+            for i in range(1, ng):
+                print("           device%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
+                      (i, x[i].name, x[i].total_memory / c))
 
-    print('Using %s %s\n' % (device.type, torch.cuda.get_device_properties(0) if cuda else ''))
     return device
