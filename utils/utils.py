@@ -326,7 +326,6 @@ def build_targets(model, targets):
     return txy, twh, tcls, indices
 
 
-# @profile
 def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
     """
     Removes detections with lower object confidence score than 'conf_thres'
@@ -383,6 +382,11 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
             dc = pred[pred[:, -1] == c]  # select class c
             dc = dc[:min(len(dc), 100)]  # limit to first 100 boxes: https://github.com/ultralytics/yolov3/issues/117
 
+            # No NMS required if only 1 prediction
+            if len(dc) == 1:
+                det_max.append(dc)
+                continue
+
             # Non-maximum suppression
             if nms_style == 'OR':  # default
                 # METHOD1
@@ -410,6 +414,9 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
 
             elif nms_style == 'MERGE':  # weighted mixture box
                 while len(dc):
+                    if len(dc) == 1:
+                        det_max.append(dc)
+                        break
                     i = bbox_iou(dc[0], dc) > nms_thres  # iou with other boxes
                     weights = dc[i, 4:5]
                     dc[0, :4] = (weights * dc[i, :4]).sum(0) / weights.sum()

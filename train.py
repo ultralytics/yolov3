@@ -49,7 +49,6 @@ def train(
     start_epoch = 0
     best_loss = float('inf')
     nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
-
     if resume:  # Load previously saved model
         if transfer:  # Transfer learning
             chkpt = torch.load(weights + 'yolov3.pt', map_location=device)
@@ -74,7 +73,7 @@ def train(
         else:
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
 
-    # Set scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
+    # Scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1,
                                                      last_epoch=start_epoch - 1)
 
