@@ -321,7 +321,7 @@ def build_targets(model, targets):
 
         # Class
         tcls.append(c)
-        if nt:
+        if c.shape[0]:
             assert c.max() <= layer.nC, 'Target classes exceed model classes'
 
     return txy, twh, tcls, indices

@@ -121,10 +121,9 @@ def train(
         for i, (imgs, targets, _, _) in enumerate(dataloader):
             imgs = imgs.to(device)
             targets = targets.to(device)
-
             nt = len(targets)
-            if nt == 0:  # if no targets continue
-                continue
+            # if nt == 0:  # if no targets continue
+            #     continue
 
             # Plot images with bounding boxes
             if epoch == 0 and i == 0:
