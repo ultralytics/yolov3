@@ -101,7 +101,7 @@ def train(
     mixed_precision = False
     if mixed_precision:
         from apex import amp
-        model, optimizer = amp.initialize(model, optimizer, opt_level='01')
+        model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
 
     # Start training
     t = time.time()
