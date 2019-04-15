@@ -93,7 +93,7 @@ def train(
                             batch_size=batch_size,
                             num_workers=num_workers,
                             shuffle=False,
-                            pin_memory=False,
+                            pin_memory=True,
                             collate_fn=dataset.collate_fn,
                             sampler=sampler)
 

@@ -48,7 +48,7 @@ def test(
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=4,
-                            pin_memory=False,
+                            pin_memory=True,
                             collate_fn=dataset.collate_fn)
 
     seen = 0
