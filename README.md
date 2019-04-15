@@ -16,16 +16,6 @@
   </tr>
 </table>
 
-
-
-    <a href="https://www.ultralytics.com" target="_blank">
-      <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="200"></a>
-      
-    <a href="https://itunes.apple.com/app/id1452689527" target="_blank">
-    <img src="https://user-images.githubusercontent.com/26833433/50044365-9b22ac00-0082-11e9-862f-e77aee7aa7b0.png" width="180"> </a> 
-
-
-
 # Introduction
 
 This directory contains python software and an iOS App developed by Ultralytics LLC, and **is freely available for redistribution under the GPL-3.0 license**. For more information please visit https://www.ultralytics.com.
