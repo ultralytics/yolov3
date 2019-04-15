@@ -1,19 +1,20 @@
 <table style="width:100%">
   <tr>
-    <th>v2.2<img src="https://user-images.githubusercontent.com/26833433/52743528-e6096300-2fe2-11e9-970c-5fee45769fab.jpg" width="400"></th>
-        <th>v3.0<img src="https://user-images.githubusercontent.com/26833433/54523854-227d0580-4979-11e9-9801-26a3be239875.jpg" width="400"></th>
-    <th>
-      <a href="https://www.ultralytics.com" target="_blank">
-      <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="200">
-      </a>
-  <p> 
+    <td>
+      <img src="https://user-images.githubusercontent.com/26833433/56132958-9e279d80-5f8b-11e9-8d23-c34dbb2a39e6.jpg">
+    </td>
+    <td align="center">
+    <a href="https://www.ultralytics.com" target="_blank">
+    <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="200"></a>
     <a href="https://itunes.apple.com/app/id1452689527" target="_blank">
-    <img src="https://user-images.githubusercontent.com/26833433/50044365-9b22ac00-0082-11e9-862f-e77aee7aa7b0.png" width="180"> 
-    </a> 
-  </p></th> 
+    <img src="https://user-images.githubusercontent.com/26833433/50044365-9b22ac00-0082-11e9-862f-e77aee7aa7b0.png" width="180"></a>
+      <img src="https://user-images.githubusercontent.com/26833433/56132957-9d8f0700-5f8b-11e9-9067-0d91364c57c0.jpg">
+    </td>
+    <td>
+      <img src="https://user-images.githubusercontent.com/26833433/56132991-b0094080-5f8b-11e9-89a1-62fb65b98d45.jpg">
+    </td>
   </tr>
 </table>
-
 
 # Introduction
 
