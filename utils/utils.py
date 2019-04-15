@@ -265,7 +265,7 @@ def compute_loss(p, targets):  # predictions, targets
 
             lxy += (k * 8) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
             lwh += (k * 1) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
-            # lwh += (k * 4) * MSE(torch.sigmoid(pi[..., 2:4]), twh[i])  # wh power loss
+            # lwh += (k * 1) * MSE(torch.sigmoid(pi[..., 2:4]), twh[i])  # wh power loss
             lcls += (k * 1) * CE(pi[..., 5:], tcls[i])  # class_conf loss
 
         # pos_weight = FT([gp[i] / min(gp) * 4.])
