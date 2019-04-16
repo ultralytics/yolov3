@@ -263,14 +263,14 @@ def compute_loss(p, targets):  # predictions, targets
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
             tconf[b, a, gj, gi] = 1  # conf
 
-            lxy += (k * 0.07934) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
-            lwh += (k * 0.01561) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
-            # lwh += (k * 0.01561) * MSE(torch.sigmoid(pi[..., 2:4]), twh[i])  # wh power loss
-            lcls += (k * 0.02094) * CE(pi[..., 5:], tcls[i])  # class_conf loss
+            lxy += (k * 0.07997) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
+            lwh += (k * 0.007867) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
+            # lwh += (k * 0.007867) * MSE(torch.sigmoid(pi[..., 2:4]), twh[i])  # wh power loss
+            lcls += (k * 0.02111) * CE(pi[..., 5:], tcls[i])  # class_conf loss
 
         # pos_weight = ft([gp[i] / min(gp) * 4.])
         # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 0.8841) * BCE(pi0[..., 4], tconf)  # obj_conf loss
+        lconf += (k * 0.8911) * BCE(pi0[..., 4], tconf)  # obj_conf loss
     loss = lxy + lwh + lconf + lcls
 
     return loss, torch.cat((lxy, lwh, lconf, lcls, loss)).detach()
