@@ -47,7 +47,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 **Resume Training:** Run `train.py --resume` resumes training from the latest checkpoint `weights/latest.pt`.
 
-Each epoch trains on 117,263 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. Default training settings produce loss plots below, with **training speed of 0.6 s/batch on a 1080 Ti (18 epochs/day)** or 0.45 s/batch on a 2080 Ti.
+Each epoch trains on 117,263 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. Default training settings produce loss plots below, with **training speed of 0.25 s/batch on a V100 GPU (almost 50 COCO epochs/day)**.
 
 Here we see training results from `coco_1img.data`, `coco_10img.data` and `coco_100img.data`, 3 example files available in the `data/` folder, which train and test on the first 1, 10 and 100 images of the coco2014 trainval dataset.
 
