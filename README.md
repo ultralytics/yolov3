@@ -52,7 +52,7 @@ Each epoch trains on 117,263 images from the train and validate COCO sets, and t
 Here we see training results from `coco_1img.data`, `coco_10img.data` and `coco_100img.data`, 3 example files available in the `data/` folder, which train and test on the first 1, 10 and 100 images of the coco2014 trainval dataset.
 
 `from utils import utils; utils.plot_results()`
-![results](https://user-images.githubusercontent.com/26833433/55669383-df76c980-5876-11e9-9806-691bd507ee17.jpg)
+![results](https://user-images.githubusercontent.com/26833433/56207787-ec9e7000-604f-11e9-94dd-e1fcc374270f.png)
 
 ## Image Augmentation
 
