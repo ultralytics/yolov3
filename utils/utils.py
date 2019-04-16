@@ -243,9 +243,10 @@ def wh_iou(box1, box2):
 
 
 def compute_loss(p, targets):  # predictions, targets
-    FT = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
-    lxy, lwh, lcls, lconf = FT([0]), FT([0]), FT([0]), FT([0])
+    ft = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
+    lxy, lwh, lcls, lconf = ft([0]), ft([0]), ft([0]), ft([0])
     txy, twh, tcls, indices = targets
+    bs = p[0].shape[0]  # batch size
     MSE = nn.MSELoss()
     CE = nn.CrossEntropyLoss()
     BCE = nn.BCEWithLogitsLoss()
@@ -255,22 +256,21 @@ def compute_loss(p, targets):  # predictions, targets
     for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridx, gridy
         tconf = torch.zeros_like(pi0[..., 0])  # conf
-        nt = len(b)  # number of targets
 
         # Compute losses
-        k = 1  # nt / bs
-        if nt:
+        k = 8.4875 * bs
+        if len(b):  # number of targets
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
             tconf[b, a, gj, gi] = 1  # conf
 
-            lxy += (k * 8) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
-            lwh += (k * 1) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
-            # lwh += (k * 1) * MSE(torch.sigmoid(pi[..., 2:4]), twh[i])  # wh power loss
-            lcls += (k * 1) * CE(pi[..., 5:], tcls[i])  # class_conf loss
+            lxy += (k * 0.07934) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
+            lwh += (k * 0.01561) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
+            # lwh += (k * 0.01561) * MSE(torch.sigmoid(pi[..., 2:4]), twh[i])  # wh power loss
+            lcls += (k * 0.02094) * CE(pi[..., 5:], tcls[i])  # class_conf loss
 
-        # pos_weight = FT([gp[i] / min(gp) * 4.])
+        # pos_weight = ft([gp[i] / min(gp) * 4.])
         # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 64) * BCE(pi0[..., 4], tconf)  # obj_conf loss
+        lconf += (k * 0.8841) * BCE(pi0[..., 4], tconf)  # obj_conf loss
     loss = lxy + lwh + lconf + lcls
 
     return loss, torch.cat((lxy, lwh, lconf, lcls, loss)).detach()

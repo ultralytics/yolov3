@@ -50,9 +50,18 @@ git clone https://github.com/ultralytics/yolov3  # master
 cp -r weights yolov3
 cp -r cocoapi/PythonAPI/pycocotools yolov3
 cd yolov3
-python3 test.py --save-json
 
-git pull https://github.com/ultralytics/yolov3
-python3 train.py --data-cfg data/coco_1img.data
+mv ../utils.py utils
+
+rm results*.txt  # WARNING: removes existing results
+python3 train.py --nosave --data data/coco_1img.data && mv results.txt resultsn_1img.txt
+python3 train.py --nosave --data data/coco_10img.data && mv results.txt resultsn_10img.txt
+python3 train.py --nosave --data data/coco_100img.data && mv results.txt resultsn_100img.txt
+python3 train.py --nosave --data data/coco_100img.data --transfer && mv results.txt resultsn_100imgTL.txt
+# python3 train.py --nosave --data data/coco_1000img.data && mv results.txt results_1000img.txt
+python3 -c "from utils import utils; utils.plot_results()"
+gsutil cp results*.txt gs://ultralytics
+gsutil cp results.png gs://ultralytics
+sudo shutdown
 
 
