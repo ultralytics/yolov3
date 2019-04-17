@@ -316,7 +316,7 @@ if __name__ == '__main__':
             # Write mutation results
             sr = '%11.3g' * 5 % results  # results string (P, R, mAP, F1, test_loss)
             sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyp string
-            print('Evolved hyperparams: %s\nEvolved fitness: %s\n' % (sh, sr))
+            print('Evolved hyperparams: %s\nEvolved fitness: %s' % (sh, sr))
             with open('evolve.txt', 'a') as f:
                 f.write(sr + sh + '\n')
 
