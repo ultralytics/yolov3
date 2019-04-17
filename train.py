@@ -302,13 +302,13 @@ if __name__ == '__main__':
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
             for k in hyp.keys():
-                x = (np.random.randn(1) * 0.3 + 1) ** 1.1  # plt.hist(x.ravel(), 100)
+                x = (np.random.randn(1) * 0.2 + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
 
             # Apply limits
             hyp['iou_t'] = np.clip(hyp['iou_t'], 0, 0.90)
-            hyp['momentum'] = np.clip(hyp['momentum'], 0, 0.98)
-            hyp['weight_decay'] = np.clip(hyp['weight_decay'], 0, 0.01)
+            hyp['momentum'] = 0.9  # np.clip(hyp['momentum'], 0, 0.98)
+            hyp['weight_decay'] = 0.0005  # np.clip(hyp['weight_decay'], 0, 0.01)
 
             # Normalize loss components (sum to 1)
             lcf = ['xy', 'wh', 'cls', 'conf']
