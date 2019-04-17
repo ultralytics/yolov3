@@ -1,5 +1,7 @@
 import argparse
 import time
+import importlib
+import math
 
 import torch.distributed as dist
 from torch.utils.data import DataLoader
@@ -21,14 +23,29 @@ def train(
         multi_scale=False,
         freeze_backbone=False,
         num_workers=4,
-        transfer=False  # Transfer learning (train only YOLO layers)
-
+        transfer=False,  # Transfer learning (train only YOLO layers)
+        plot_visdom=False
 ):
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
     best = weights + 'best.pt'
     device = torch_utils.select_device()
 
+    visdom = None
+    vis = None
+    iterationLossPlot = None
+    epochLossPlot = None
+    epochmAPPlot = None
+    epochF1Plot = None
+    
+    if plot_visdom:
+        visdom = importlib.import_module('visdom')
+        vis = visdom.Visdom(port = 8097, env='TennisApp')
+        iterationLossPlot = LineGraph(vis, lines = ["loss"], xlabel = "Iteration", ylabel = "Loss", title = "Last 50 Iterations - Total Loss", showlegend = False, display = 50)
+        epochLossPlot = LineGraph(vis, lines = ["loss"], xlabel = "Epoch", ylabel = "Loss", title = "Epoch - Total Loss")
+        epochmAPPlot = LineGraph(vis, lines = ["mAP"], xlabel = "Epoch", ylabel = "mAP", title = "Epoch - mAP")
+        epochF1Plot = LineGraph(vis, lines = ["F1"], xlabel = "Epoch", ylabel = "F1", title = "Epoch - F1")        
+    
     if multi_scale:
         img_size = 608  # initiate with maximum multi_scale size
         num_workers = 0  # bug https://github.com/ultralytics/yolov3/issues/174
@@ -47,6 +64,7 @@ def train(
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
+    iteration = 0
     best_loss = float('inf')
     nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
     if resume:  # Load previously saved model
@@ -112,7 +130,8 @@ def train(
     os.remove('test_batch0.jpg') if os.path.exists('test_batch0.jpg') else None
     for epoch in range(start_epoch, epochs):
         model.train()
-        print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
+        if not plot_visdom:
+            print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
 
         # Update scheduler
         scheduler.step()
@@ -170,17 +189,28 @@ def train(
                 '%g/%g' % (epoch, epochs - 1),
                 '%g/%g' % (i, nB - 1), *mloss, nt, time.time() - t)
             t = time.time()
-            print(s)
 
+            if plot_visdom:
+                iterationLossPlot.update("loss", x_value = int(iteration), y_value = float(mloss[4]))
+            else:
+                print(s)            
+            
             # Multi-Scale training (320 - 608 pixels) every 10 batches
             if multi_scale and (i + 1) % 10 == 0:
                 dataset.img_size = random.choice(range(10, 20)) * 32
                 print('multi_scale img_size = %g' % dataset.img_size)
 
+            iteration += 1
+                
         # Calculate mAP
         with torch.no_grad():
             results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model, conf_thres=0.1)
 
+        if plot_visdom:
+            epochmAPPlot.update("mAP", x_value = int(epoch), y_value = float(results[2]) if not math.isnan(float(results[2])) else 0)
+            epochF1Plot.update("F1", x_value = int(epoch), y_value = float(results[3]) if not math.isnan(float(results[3])) else 0)
+            epochLossPlot.update("loss", x_value = int(epoch), y_value = float(results[4]) if not math.isnan(float(results[4])) else 0)
+            
         # Write epoch results
         with open('results.txt', 'a') as file:
             file.write(s + '%11.3g' * 5 % results + '\n')  # P, R, mAP, F1, test_loss
@@ -232,6 +262,7 @@ if __name__ == '__main__':
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
     parser.add_argument('--backend', default='nccl', type=str, help='distributed backend')
     parser.add_argument('--nosave', action='store_true', help='do not save training results')
+    parser.add_argument('--visdom', action='store_true', help='Produce graphs using Visdom')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
@@ -247,5 +278,6 @@ if __name__ == '__main__':
         batch_size=opt.batch_size,
         accumulate=opt.accumulate,
         multi_scale=opt.multi_scale,
-        num_workers=opt.num_workers
+        num_workers=opt.num_workers,
+        plot_visdom=opt.visdom,
     )
