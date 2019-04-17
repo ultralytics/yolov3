@@ -263,6 +263,10 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
+    if opt.evolve:
+        opt.notest = True  # save time by only testing final epoch
+        opt.nosave = True  # do not save checkpoints
+
     # Train
     results = train(
         opt.cfg,
@@ -279,7 +283,6 @@ if __name__ == '__main__':
 
     # Evolve hyperparameters (optional)
     if opt.evolve:
-        opt.notest = True  # save time by only testing final epoch
         best_fitness = results[2]  # use mAP for fitness
 
         gen = 30  # generations to evolve
