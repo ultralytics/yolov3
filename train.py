@@ -36,8 +36,8 @@ def train(
         freeze_backbone=False,
         num_workers=4,
         transfer=False  # Transfer learning (train only YOLO layers)
-
 ):
+    init_seeds()
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
     best = weights + 'best.pt'
@@ -199,7 +199,8 @@ def train(
                 print('multi_scale img_size = %g' % dataset.img_size)
 
         # Calculate mAP
-        if not opt.nosave or epoch > 10:  # skip testing first 10 epochs if opt.nosave
+        opt.notest = opt.notest or (opt.nosave and epoch < 10)  # skip testing first 10 epochs if opt.nosave
+        if not opt.notest or epoch == epochs - 1:  # always test final epoch
             results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model, conf_thres=0.1)
 
         # Write epoch results
@@ -255,11 +256,13 @@ if __name__ == '__main__':
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
     parser.add_argument('--backend', default='nccl', type=str, help='distributed backend')
     parser.add_argument('--nosave', action='store_true', help='do not save training results')
+    parser.add_argument('--notest', action='store_true', help='only test final epoch')
+    parser.add_argument('--evolve', action='store_true', help='run hyperparameter evolution')
     parser.add_argument('--var', default=0, type=int, help='debug variable')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
-    init_seeds()
+    # Train
     results = train(
         opt.cfg,
         opt.data_cfg,
@@ -272,3 +275,54 @@ if __name__ == '__main__':
         multi_scale=opt.multi_scale,
         num_workers=opt.num_workers
     )
+
+    # Evolve hyperparameters (optional)
+    if opt.evolve:
+        opt.notest = True  # save time by only testing final epoch
+        best_fitness = results[2]  # use mAP for fitness
+
+        gen = 30  # generations to evolve
+        for _ in range(gen):
+
+            # Mutate hyperparameters
+            old_hyp = hyp.copy()
+            init_seeds(int(time.time()))
+            for k in hyp.keys():
+                x = (np.random.randn(1) * 0.3 + 1) ** 1.1  # plt.hist(x.ravel(), 100)
+                hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
+
+            # Normalize loss components (sum to 1)
+            lcf = ['xy', 'wh', 'cls', 'conf']
+            s = sum([v for k, v in hyp.items() if k in lcf])
+            for k in lcf:
+                hyp[k] /= s
+
+            # Determine mutation fitness
+            results = train(
+                opt.cfg,
+                opt.data_cfg,
+                img_size=opt.img_size,
+                resume=opt.resume or opt.transfer,
+                transfer=opt.transfer,
+                epochs=opt.epochs,
+                batch_size=opt.batch_size,
+                accumulate=opt.accumulate,
+                multi_scale=opt.multi_scale,
+                num_workers=opt.num_workers
+            )
+            mutation_fitness = results[2]
+
+            # Write mutation results
+            sr = '%11.3g' * 5 % results  # results string (P, R, mAP, F1, test_loss)
+            sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyp string
+            print('Evolved hyperparams: %s\nEvolved fitness: %s\n' % (sh, sr))
+            with open('evolve.txt', 'a') as f:
+                f.write(sr + sh + '\n')
+
+            # Update hyperparameters if fitness improved
+            if mutation_fitness > best_fitness:
+                # Fitness improved!
+                print('Fitness improved!')
+                best_fitness = mutation_fitness
+            else:
+                hyp = old_hyp.copy()  # reset hyp to
