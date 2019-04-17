@@ -89,9 +89,9 @@ def train(
     # Scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
     # lf = lambda x: 10 ** (-2 * x / epochs)  # exp ramp to lr0 * 1e-2
-    # lf = lambda x: 1 - 10 ** (-2 * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
-    # scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch - 1)
+    lf = lambda x: 1 - 10 ** (-2 * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
+    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch - 1)
 
     # y = []
     # for epoch in range(epochs):
