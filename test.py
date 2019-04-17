@@ -68,12 +68,10 @@ def test(
         # Run model
         inf_out, train_out = model(imgs)  # inference and training outputs
 
-        # Build targets
-        target_list = build_targets(model, targets)
-
         # Compute loss
-        loss_i, _ = compute_loss(train_out, target_list)
-        loss += loss_i.item()
+        if hasattr(model, 'hyp'):  # if model has loss hyperparameters
+            loss_i, _ = compute_loss(train_out, targets, model)
+            loss += loss_i.item()
 
         # Run NMS
         output = non_max_suppression(inf_out, conf_thres=conf_thres, nms_thres=nms_thres)

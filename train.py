@@ -4,12 +4,26 @@ import importlib
 import math
 
 import torch.distributed as dist
+import torch.optim as optim
 from torch.utils.data import DataLoader
 
 import test  # Import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
 from utils.utils import *
+
+# Initialize hyperparameters
+hyp = {'k': 8.4875,  # loss multiple
+       'xy': 0.079756,  # xy loss fraction
+       'wh': 0.010461,  # wh loss fraction
+       'cls': 0.02105,  # cls loss fraction
+       'conf': 0.88873,  # conf loss fraction
+       'iou_t': 0.1,  # iou target-anchor training threshold
+       'lr0': 0.001,  # initial learning rate
+       'lrf': -2.,  # final learning rate = lr0 * (10 ** lrf)
+       'momentum': 0.9,  # SGD momentum
+       'weight_decay': 0.0005,  # optimizer weight decay
+       }
 
 
 def train(
@@ -26,6 +40,7 @@ def train(
         transfer=False,  # Transfer learning (train only YOLO layers)
         plot_visdom=False
 ):
+    init_seeds()
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
     best = weights + 'best.pt'
@@ -59,8 +74,7 @@ def train(
     model = Darknet(cfg, img_size).to(device)
 
     # Optimizer
-    lr0 = 0.001  # initial learning rate
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr0, momentum=0.9, weight_decay=0.0005)
+    optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'])
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
@@ -92,8 +106,17 @@ def train(
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
 
     # Scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1,
-                                                     last_epoch=start_epoch - 1)
+    # lf = lambda x: 1 - x / epochs  # linear ramp to zero
+    # lf = lambda x: 10 ** (-2 * x / epochs)  # exp ramp to lr0 * 1e-2
+    lf = lambda x: 1 - 10 ** (-2 * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
+    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch - 1)
+
+    # y = []
+    # for epoch in range(epochs):
+    #     scheduler.step()
+    #     y.append(optimizer.param_groups[0]['lr'])
+    # plt.plot(y)
 
     # Dataset
     dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
@@ -109,8 +132,8 @@ def train(
     # Dataloader
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
-                            num_workers=num_workers,
-                            shuffle=False,
+                            num_workers=opt.num_workers,
+                            shuffle=True,
                             pin_memory=True,
                             collate_fn=dataset.collate_fn,
                             sampler=sampler)
@@ -123,9 +146,11 @@ def train(
 
     # Start training
     t = time.time()
+    model.hyp = hyp  # attach hyperparameters to model
     model_info(model)
-    nB = len(dataloader)
-    n_burnin = min(round(nB / 5 + 1), 1000)  # burn-in batches
+    nb = len(dataloader)
+    results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
+    n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
     os.remove('train_batch0.jpg') if os.path.exists('train_batch0.jpg') else None
     os.remove('test_batch0.jpg') if os.path.exists('test_batch0.jpg') else None
     for epoch in range(start_epoch, epochs):
@@ -142,7 +167,7 @@ def train(
                 if int(name.split('.')[1]) < cutoff:  # if layer < 75
                     p.requires_grad = False if epoch == 0 else True
 
-        mloss = torch.zeros(5).to(device) # mean losses
+        mloss = torch.zeros(5).to(device)  # mean losses
         for i, (imgs, targets, _, _) in enumerate(dataloader):
             imgs = imgs.to(device)
             targets = targets.to(device)
@@ -156,18 +181,15 @@ def train(
 
             # SGD burn-in
             if epoch == 0 and i <= n_burnin:
-                lr = lr0 * (i / n_burnin) ** 4
+                lr = hyp['lr0'] * (i / n_burnin) ** 4
                 for x in optimizer.param_groups:
                     x['lr'] = lr
 
             # Run model
             pred = model(imgs)
 
-            # Build targets
-            target_list = build_targets(model, targets)
-
             # Compute loss
-            loss, loss_items = compute_loss(pred, target_list)
+            loss, loss_items = compute_loss(pred, targets, model)
 
             # Compute gradient
             if mixed_precision:
@@ -177,7 +199,7 @@ def train(
                 loss.backward()
 
             # Accumulate gradient for x batches before optimizing
-            if (i + 1) % accumulate == 0 or (i + 1) == nB:
+            if (i + 1) % accumulate == 0 or (i + 1) == nb:
                 optimizer.step()
                 optimizer.zero_grad()
 
@@ -187,7 +209,7 @@ def train(
             # Print batch results
             s = ('%8s%12s' + '%10.3g' * 7) % (
                 '%g/%g' % (epoch, epochs - 1),
-                '%g/%g' % (i, nB - 1), *mloss, nt, time.time() - t)
+                '%g/%g' % (i, nb - 1), *mloss, nt, time.time() - t)
             t = time.time()
 
             if plot_visdom:
@@ -202,9 +224,11 @@ def train(
 
             iteration += 1
                 
-        # Calculate mAP
-        with torch.no_grad():
-            results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model, conf_thres=0.1)
+        # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
+        if not (opt.notest or (opt.nosave and epoch < 5)) or epoch == epochs - 1:
+            with torch.no_grad():
+                results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
+                                    conf_thres=0.1)
 
         if plot_visdom:
             epochmAPPlot.update("mAP", x_value = int(epoch), y_value = float(results[2]) if not math.isnan(float(results[2])) else 0)
@@ -244,6 +268,8 @@ def train(
             # Delete checkpoint
             del chkpt
 
+    return results
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -262,13 +288,19 @@ if __name__ == '__main__':
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
     parser.add_argument('--backend', default='nccl', type=str, help='distributed backend')
     parser.add_argument('--nosave', action='store_true', help='do not save training results')
+    parser.add_argument('--notest', action='store_true', help='only test final epoch')
+    parser.add_argument('--evolve', action='store_true', help='run hyperparameter evolution')
     parser.add_argument('--visdom', action='store_true', help='Produce graphs using Visdom')
+    parser.add_argument('--var', default=0, type=int, help='debug variable')
     opt = parser.parse_args()
     print(opt, end='\n\n')
 
-    init_seeds()
+    if opt.evolve:
+        opt.notest = True  # save time by only testing final epoch
+        opt.nosave = True  # do not save checkpoints
 
-    train(
+    # Train
+    results = train(
         opt.cfg,
         opt.data_cfg,
         img_size=opt.img_size,
@@ -281,3 +313,53 @@ if __name__ == '__main__':
         num_workers=opt.num_workers,
         plot_visdom=opt.visdom,
     )
+
+    # Evolve hyperparameters (optional)
+    if opt.evolve:
+        best_fitness = results[2]  # use mAP for fitness
+
+        gen = 30  # generations to evolve
+        for _ in range(gen):
+
+            # Mutate hyperparameters
+            old_hyp = hyp.copy()
+            init_seeds(int(time.time()))
+            for k in hyp.keys():
+                x = (np.random.randn(1) * 0.3 + 1) ** 1.1  # plt.hist(x.ravel(), 100)
+                hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
+
+            # Normalize loss components (sum to 1)
+            lcf = ['xy', 'wh', 'cls', 'conf']
+            s = sum([v for k, v in hyp.items() if k in lcf])
+            for k in lcf:
+                hyp[k] /= s
+
+            # Determine mutation fitness
+            results = train(
+                opt.cfg,
+                opt.data_cfg,
+                img_size=opt.img_size,
+                resume=opt.resume or opt.transfer,
+                transfer=opt.transfer,
+                epochs=opt.epochs,
+                batch_size=opt.batch_size,
+                accumulate=opt.accumulate,
+                multi_scale=opt.multi_scale,
+                num_workers=opt.num_workers
+            )
+            mutation_fitness = results[2]
+
+            # Write mutation results
+            sr = '%11.3g' * 5 % results  # results string (P, R, mAP, F1, test_loss)
+            sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyp string
+            print('Evolved hyperparams: %s\nEvolved fitness: %s' % (sh, sr))
+            with open('evolve.txt', 'a') as f:
+                f.write(sr + sh + '\n')
+
+            # Update hyperparameters if fitness improved
+            if mutation_fitness > best_fitness:
+                # Fitness improved!
+                print('Fitness improved!')
+                best_fitness = mutation_fitness
+            else:
+                hyp = old_hyp.copy()  # reset hyp to

@@ -242,35 +242,37 @@ def wh_iou(box1, box2):
     return inter_area / union_area  # iou
 
 
-def compute_loss(p, targets):  # predictions, targets
+def compute_loss(p, targets, model):  # predictions, targets, model
     ft = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
     lxy, lwh, lcls, lconf = ft([0]), ft([0]), ft([0]), ft([0])
-    txy, twh, tcls, indices = targets
+    txy, twh, tcls, indices = build_targets(model, targets)
+
+    # Define criteria
     MSE = nn.MSELoss()
     CE = nn.CrossEntropyLoss()
     BCE = nn.BCEWithLogitsLoss()
 
     # Compute losses
+    h = model.hyp  # hyperparameters
     bs = p[0].shape[0]  # batch size
-    # gp = [x.numel() for x in tconf]  # grid points
+    k = h['k'] * bs  # loss gain
     for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridx, gridy
         tconf = torch.zeros_like(pi0[..., 0])  # conf
 
         # Compute losses
-        k = 8.4875 * bs
         if len(b):  # number of targets
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
             tconf[b, a, gj, gi] = 1  # conf
+            # pi[..., 2:4] = torch.sigmoid(pi[..., 2:4])  # wh power loss (uncomment)
 
-            lxy += (k * 0.079756) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
-            lwh += (k * 0.010461) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
-            # lwh += (k * 0.010461) * MSE(torch.sigmoid(pi[..., 2:4]), twh[i])  # wh power loss
-            lcls += (k * 0.02105) * CE(pi[..., 5:], tcls[i])  # class_conf loss
+            lxy += (k * h['xy']) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
+            lwh += (k * h['wh']) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
+            lcls += (k * h['cls']) * CE(pi[..., 5:], tcls[i])  # class_conf loss
 
         # pos_weight = ft([gp[i] / min(gp) * 4.])
         # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        lconf += (k * 0.88873) * BCE(pi0[..., 4], tconf)  # obj_conf loss
+        lconf += (k * h['conf']) * BCE(pi0[..., 4], tconf)  # obj_conf loss
     loss = lxy + lwh + lconf + lcls
 
     return loss, torch.cat((lxy, lwh, lconf, lcls, loss)).detach()
@@ -296,7 +298,7 @@ def build_targets(model, targets):
             # reject below threshold ious (OPTIONAL, increases P, lowers R)
             reject = True
             if reject:
-                j = iou > 0.10
+                j = iou > model.hyp['iou_t']  # hyperparameter
                 t, a, gwh = targets[j], a[j], gwh[j]
 
         # Indices
@@ -520,7 +522,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     fig = plt.figure(figsize=(14, 7))
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Train Loss', 'Precision', 'Recall', 'mAP', 'F1',
          'Test Loss']
-    for f in sorted(glob.glob('results*.txt')):
+    for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11, 12, 13]).T
         n = results.shape[1]  # number of rows
         x = range(start, min(stop, n) if stop else n)

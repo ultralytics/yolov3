@@ -1,0 +1,16 @@
+../coco/images/train2014/COCO_train2014_000000000009.jpg
+../coco/images/train2014/COCO_train2014_000000000025.jpg
+../coco/images/train2014/COCO_train2014_000000000030.jpg
+../coco/images/train2014/COCO_train2014_000000000034.jpg
+../coco/images/train2014/COCO_train2014_000000000036.jpg
+../coco/images/train2014/COCO_train2014_000000000049.jpg
+../coco/images/train2014/COCO_train2014_000000000061.jpg
+../coco/images/train2014/COCO_train2014_000000000064.jpg
+../coco/images/train2014/COCO_train2014_000000000071.jpg
+../coco/images/train2014/COCO_train2014_000000000072.jpg
+../coco/images/train2014/COCO_train2014_000000000077.jpg
+../coco/images/train2014/COCO_train2014_000000000078.jpg
+../coco/images/train2014/COCO_train2014_000000000081.jpg
+../coco/images/train2014/COCO_train2014_000000000086.jpg
+../coco/images/train2014/COCO_train2014_000000000089.jpg
+../coco/images/train2014/COCO_train2014_000000000092.jpg
