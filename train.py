@@ -113,7 +113,7 @@ def train(
     # Dataloader
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
-                            num_workers=num_workers,
+                            num_workers=0,
                             shuffle=True,
                             pin_memory=True,
                             collate_fn=dataset.collate_fn,
@@ -198,8 +198,8 @@ def train(
                 dataset.img_size = random.choice(range(10, 20)) * 32
                 print('multi_scale img_size = %g' % dataset.img_size)
 
-        # Calculate mAP
-        if not (opt.notest or (opt.nosave and epoch < 2)) or epoch == epochs - 1:  # always test final epoch
+        # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
+        if not (opt.notest or (opt.nosave and epoch < 5)) or epoch == epochs - 1:
             with torch.no_grad():
                 results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
                                     conf_thres=0.1)
@@ -246,7 +246,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco_1img.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=416, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
