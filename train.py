@@ -300,7 +300,7 @@ if __name__ == '__main__':
 
             # Mutate hyperparameters
             old_hyp = hyp.copy()
-            init_seeds(int(time.time()))
+            init_seeds(seed=int(time.time()))
             for k in hyp.keys():
                 x = (np.random.randn(1) * 0.3 + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
