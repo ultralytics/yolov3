@@ -201,7 +201,9 @@ def train(
         # Calculate mAP
         opt.notest = opt.notest or (opt.nosave and epoch < 10)  # skip testing first 10 epochs if opt.nosave
         if not opt.notest or epoch == epochs - 1:  # always test final epoch
-            results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model, conf_thres=0.1)
+            with torch.no_grad():
+                results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
+                                    conf_thres=0.1)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
