@@ -68,11 +68,8 @@ def test(
         # Run model
         inf_out, train_out = model(imgs)  # inference and training outputs
 
-        # Build targets
-        target_list = build_targets(model, targets)
-
         # Compute loss
-        loss_i, _ = compute_loss(train_out, target_list)
+        loss_i, _ = compute_loss(train_out, targets, model)
         loss += loss_i.item()
 
         # Run NMS
