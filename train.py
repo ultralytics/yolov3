@@ -10,6 +10,19 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
+# Initialize hyperparameters
+hyp = {'k': 8.4875,  # loss multiple
+       'xy': 0.079756,  # xy loss fraction
+       'wh': 0.010461,  # wh loss fraction
+       'cls': 0.02105,  # cls loss fraction
+       'conf': 0.88873,  # conf loss fraction
+       'iou_t': 0.1,  # iou target-anchor training threshold
+       'lr0': 0.001,  # initial learning rate
+       'lrf': -2.,  # final learning rate = lr0 * (10 ** lrf)
+       'momentum': 0.9,  # SGD momentum
+       'weight_decay': 0.0005,  # optimizer weight decay
+       }
+
 
 def train(
         cfg,
@@ -41,19 +54,6 @@ def train(
 
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
-
-    # Initialize hyperparameters
-    hyp = {'k': 8.4875,  # loss multiple
-           'xy': 0.079756,  # xy loss fraction
-           'wh': 0.010461,  # wh loss fraction
-           'cls': 0.02105,  # cls loss fraction
-           'conf': 0.88873,  # conf loss fraction
-           'iou_t': 0.1,  # iou target-anchor training threshold
-           'lr0': 0.001,  # initial learning rate
-           'lrf': -2.,  # final learning rate = lr0 * (10 ** lrf)
-           'momentum': 0.9,  # SGD momentum
-           'weight_decay': 0.0005,  # optimizer weight decay
-           }
 
     # Optimizer
     optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'])
@@ -93,6 +93,12 @@ def train(
     # scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch - 1)
 
+    # y = []
+    # for epoch in range(epochs):
+    #     scheduler.step()
+    #     y.append(optimizer.param_groups[0]['lr'])
+    # plt.plot(y)
+
     # Dataset
     dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
 
@@ -124,6 +130,7 @@ def train(
     model.hyp = hyp  # attach hyperparameters to model
     model_info(model)
     nb = len(dataloader)
+    results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
     n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
     os.remove('train_batch0.jpg') if os.path.exists('train_batch0.jpg') else None
     os.remove('test_batch0.jpg') if os.path.exists('test_batch0.jpg') else None
@@ -192,12 +199,8 @@ def train(
                 print('multi_scale img_size = %g' % dataset.img_size)
 
         # Calculate mAP
-        if opt.nosave and epoch < 10:
-            results = (0, 0, 0, 0, 0)
-        else:
-            with torch.no_grad():
-                results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
-                                    conf_thres=0.1)
+        if not opt.nosave or epoch > 10:  # skip testing first 10 epochs if opt.nosave
+            results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model, conf_thres=0.1)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
@@ -232,6 +235,8 @@ def train(
             # Delete checkpoint
             del chkpt
 
+    return results
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -239,7 +244,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco_1img.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=416, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
@@ -255,8 +260,7 @@ if __name__ == '__main__':
     print(opt, end='\n\n')
 
     init_seeds()
-
-    train(
+    results = train(
         opt.cfg,
         opt.data_cfg,
         img_size=opt.img_size,
