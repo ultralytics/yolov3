@@ -285,6 +285,13 @@ if __name__ == '__main__':
     if opt.evolve:
         best_fitness = results[2]  # use mAP for fitness
 
+        # Write mutation results
+        sr = '%11.3g' * 5 % results  # results string (P, R, mAP, F1, test_loss)
+        sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyp string
+        print('Evolved hyperparams: %s\nEvolved fitness: %s' % (sh, sr))
+        with open('evolve.txt', 'a') as f:
+            f.write(sr + sh + '\n')
+
         gen = 30  # generations to evolve
         for _ in range(gen):
 
