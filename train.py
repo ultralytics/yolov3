@@ -178,7 +178,7 @@ def train(
                 print('multi_scale img_size = %g' % dataset.img_size)
 
         # Calculate mAP
-        if opt.nosave and epochs < 10:
+        if opt.nosave and epoch < 10:
             results = (0, 0, 0, 0, 0)
         else:
             with torch.no_grad():
