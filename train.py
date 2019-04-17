@@ -199,8 +199,7 @@ def train(
                 print('multi_scale img_size = %g' % dataset.img_size)
 
         # Calculate mAP
-        opt.notest = opt.notest or (opt.nosave and epoch < 10)  # skip testing first 10 epochs if opt.nosave
-        if not opt.notest or epoch == epochs - 1:  # always test final epoch
+        if not (opt.notest or (opt.nosave and epoch < 2)) or epoch == epochs - 1:  # always test final epoch
             with torch.no_grad():
                 results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
                                     conf_thres=0.1)
