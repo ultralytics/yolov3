@@ -11,18 +11,17 @@ from utils.datasets import *
 from utils.utils import *
 
 # Hyperparameters
-hyp = {'k': 7.789,  # loss multiple
-       'xy': 0.1966,  # xy loss fraction
-       'wh': 0.01144,  # wh loss fraction
-       'cls': 0.01746,  # cls loss fraction
-       'conf': 0.7745,  # conf loss fraction
-       'iou_t': 0.05732,  # iou target-anchor training threshold
-       'lr0': 0.001467,  # initial learning rate
-       'lrf': -3.904,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.9008,  # SGD momentum
-       'weight_decay': 0.0007289,  # optimizer weight decay
+hyp = {'k': 8.4875,  # loss multiple
+       'xy': 0.079756,  # xy loss fraction
+       'wh': 0.010461,  # wh loss fraction
+       'cls': 0.02105,  # cls loss fraction
+       'conf': 0.88873,  # conf loss fraction
+       'iou_t': 0.10,  # iou target-anchor training threshold
+       'lr0': 0.001,  # initial learning rate
+       'lrf': -4,  # final learning rate = lr0 * (10 ** lrf)
+       'momentum': 0.9,  # SGD momentum
+       'weight_decay': 0.0005,  # optimizer weight decay
        }
-
 
 def train(
         cfg,
@@ -93,11 +92,11 @@ def train(
     # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch - 1)
 
     # Plot lr schedule
-    # y = []
-    # for _ in range(epochs):
-    #     scheduler.step()
-    #     y.append(optimizer.param_groups[0]['lr'])
-    # plt.plot(y)
+    y = []
+    for _ in range(epochs):
+        scheduler.step()
+        y.append(optimizer.param_groups[0]['lr'])
+    plt.plot(y)
 
     # Dataset
     dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
