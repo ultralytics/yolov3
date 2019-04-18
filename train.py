@@ -301,14 +301,14 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.3, .3, .3, .3, .3, .3, .3, .3, .05, .3]
+            s = [.3, .3, .3, .3, .3, .3, .3, .3, .03, .3]
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
 
             # Apply limits
             hyp['iou_t'] = np.clip(hyp['iou_t'], 0, 0.90)
-            hyp['momentum'] = np.clip(hyp['momentum'], 0.7, 0.98)
+            hyp['momentum'] = np.clip(hyp['momentum'], 0.8, 0.95)
             hyp['weight_decay'] = np.clip(hyp['weight_decay'], 0, 0.01)
 
             # Normalize loss components (sum to 1)
