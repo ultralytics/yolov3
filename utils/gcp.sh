@@ -61,7 +61,9 @@ git clone https://github.com/ultralytics/yolov3  # master
 cp -r weights yolov3
 cp -r cocoapi/PythonAPI/pycocotools yolov3
 cd yolov3
-python3 train.py --evolve --data data/coco_100img.data --batch-size 8 --epochs 100
+python3 train.py --evolve --data data/coco_100img.data --batch-size 8 --epochs 100 --num-workers 2
+gsutil cp evolve.txt gs://ultralytics
+sudo shutdown
 
 
 
