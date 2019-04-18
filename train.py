@@ -190,6 +190,9 @@ def train(
 
             # Compute loss
             loss, loss_items = compute_loss(pred, targets, model)
+            if torch.isnan(loss):
+                print('WARNING: nan loss detected, ending training')
+                return results
 
             # Compute gradient
             if mixed_precision:
@@ -318,15 +321,27 @@ if __name__ == '__main__':
     if opt.evolve:
         best_fitness = results[2]  # use mAP for fitness
 
+        # Write mutation results
+        sr = '%11.3g' * 5 % results  # results string (P, R, mAP, F1, test_loss)
+        sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyp string
+        print('Evolved hyperparams: %s\nEvolved fitness: %s' % (sh, sr))
+        with open('evolve.txt', 'a') as f:
+            f.write(sr + sh + '\n')
+
         gen = 30  # generations to evolve
         for _ in range(gen):
 
             # Mutate hyperparameters
             old_hyp = hyp.copy()
-            init_seeds(int(time.time()))
+            init_seeds(seed=int(time.time()))
             for k in hyp.keys():
-                x = (np.random.randn(1) * 0.3 + 1) ** 1.1  # plt.hist(x.ravel(), 100)
+                x = (np.random.randn(1) * 0.2 + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
+
+            # Apply limits
+            hyp['iou_t'] = np.clip(hyp['iou_t'], 0, 0.90)
+            hyp['momentum'] = 0.9  # np.clip(hyp['momentum'], 0, 0.98)
+            hyp['weight_decay'] = 0.0005  # np.clip(hyp['weight_decay'], 0, 0.01)
 
             # Normalize loss components (sum to 1)
             lcf = ['xy', 'wh', 'cls', 'conf']

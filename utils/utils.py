@@ -280,6 +280,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
 
 def build_targets(model, targets):
     # targets = [image, class, x, y, w, h]
+    iou_thres = model.hyp['iou_t']  # hyperparameter
     if type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel):
         model = model.module
 
@@ -298,7 +299,7 @@ def build_targets(model, targets):
             # reject below threshold ious (OPTIONAL, increases P, lowers R)
             reject = True
             if reject:
-                j = iou > model.hyp['iou_t']  # hyperparameter
+                j = iou > iou_thres
                 t, a, gwh = targets[j], a[j], gwh[j]
 
         # Indices
