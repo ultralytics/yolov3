@@ -125,7 +125,7 @@ def test(
                     iou, bi = bbox_iou(pbox, tbox).max(0)
 
                     # If iou > threshold and class is correct mark as correct
-                    if iou > iou_thres and bi not in detected:  # and pcls == tcls[bi]
+                    if iou > iou_thres and bi not in detected and pcls == tcls[bi]:
                         correct[i] = 1
                         detected.append(bi)
 
