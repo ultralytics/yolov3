@@ -304,7 +304,7 @@ if __name__ == '__main__':
         # Write mutation results
         print_mutation(hyp, results)
 
-        gen = 30  # generations to evolve
+        gen = 50  # generations to evolve
         for _ in range(gen):
 
             # Mutate hyperparameters
