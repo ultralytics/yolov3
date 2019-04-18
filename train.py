@@ -243,6 +243,17 @@ def train(
     return results
 
 
+def print_mutation(hyp, results):
+    # Write mutation results
+    sl = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
+    sr = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
+    sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyperparam values
+    print('\n%s\n%s\nEvolved fitness: %s\n' % (sl, sh, sr))
+
+    with open('evolve.txt', 'a') as f:
+        f.write(sr + sh + '\n')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=273, help='number of epochs')
@@ -289,11 +300,7 @@ if __name__ == '__main__':
         best_fitness = results[2]  # use mAP for fitness
 
         # Write mutation results
-        sr = '%11.3g' * 5 % results  # results string (P, R, mAP, F1, test_loss)
-        sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyp string
-        print('Evolved hyperparams: %s\nEvolved fitness: %s' % (sh, sr))
-        with open('evolve.txt', 'a') as f:
-            f.write(sr + sh + '\n')
+        print_mutation(hyp, results)
 
         gen = 30  # generations to evolve
         for _ in range(gen):
@@ -333,11 +340,7 @@ if __name__ == '__main__':
             mutation_fitness = results[2]
 
             # Write mutation results
-            sr = '%11.3g' * 5 % results  # results string (P, R, mAP, F1, test_loss)
-            sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyp string
-            print('Evolved hyperparams: %s\nEvolved fitness: %s' % (sh, sr))
-            with open('evolve.txt', 'a') as f:
-                f.write(sr + sh + '\n')
+            print_mutation(hyp, results)
 
             # Update hyperparameters if fitness improved
             if mutation_fitness > best_fitness:
