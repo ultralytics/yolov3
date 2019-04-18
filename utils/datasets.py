@@ -142,8 +142,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             x.replace('images', 'labels').replace('.bmp', '.txt').replace('.jpg', '.txt').replace('.png', '.txt')
             for x in self.img_files]
 
-        if n < 200:  # preload all images into memory if possible
-            self.imgs = [cv2.imread(img_files[i]) for i in range(n)]
+        # if n < 200:  # preload all images into memory if possible
+        #    self.imgs = [cv2.imread(img_files[i]) for i in range(n)]
 
     def __len__(self):
         return len(self.img_files)
@@ -152,10 +152,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img_path = self.img_files[index]
         label_path = self.label_files[index]
 
-        if hasattr(self, 'imgs'):
-            img = self.imgs[index]  # BGR
-        else:
-            img = cv2.imread(img_path)  # BGR
+        # if hasattr(self, 'imgs'):
+        #    img = self.imgs[index]  # BGR
+        img = cv2.imread(img_path)  # BGR
         assert img is not None, 'File Not Found ' + img_path
 
         augment_hsv = True

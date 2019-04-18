@@ -18,7 +18,7 @@ hyp = {'k': 8.4875,  # loss multiple
        'conf': 0.88873,  # conf loss fraction
        'iou_t': 0.10,  # iou target-anchor training threshold
        'lr0': 0.001,  # initial learning rate
-       'lrf': -4,  # final learning rate = lr0 * (10 ** lrf)
+       'lrf': -5,  # final learning rate = lr0 * (10 ** lrf)
        'momentum': 0.9,  # SGD momentum
        'weight_decay': 0.0005,  # optimizer weight decay
        }
@@ -88,11 +88,14 @@ def train(
     # Scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
     # lf = lambda x: 10 ** (-2 * x / epochs)  # exp ramp to lr0 * 1e-2
-    lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
-    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
-    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch - 1)
+    # lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
+    # scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
+    scheduler = optim.lr_scheduler.MultiStepLR(optimizer,
+                                               milestones=[218, 245],
+                                               gamma=0.1,
+                                               last_epoch=start_epoch - 1)
 
-    # # Plot lr schedule
+    # Plot lr schedule
     # y = []
     # for _ in range(epochs):
     #     scheduler.step()
