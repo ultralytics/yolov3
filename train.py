@@ -250,7 +250,7 @@ def print_mutation(hyp, results):
     c = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
     print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
     with open('evolve.txt', 'a') as f:
-        f.write(c + a + '\n')
+        f.write(c + b + '\n')
 
 
 if __name__ == '__main__':
@@ -306,7 +306,7 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.3, .3, .3, .3, .3, .3, .3, .3, .03, .3]
+            s = [.2, .2, .2, .2, .2, .2, .2, .2, .02, .2]
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
