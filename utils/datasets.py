@@ -154,22 +154,17 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         if self.augment and augment_hsv:
             # SV augmentation by 50%
             fraction = 0.50  # must be < 1.0
-            img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            S = img_hsv[:, :, 1].astype(np.float32)
-            V = img_hsv[:, :, 2].astype(np.float32)
+            img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # hue, sat, val
+            S = img_hsv[:, :, 1].astype(np.float32)  # saturation
+            V = img_hsv[:, :, 2].astype(np.float32)  # value
 
             a = (random.random() * 2 - 1) * fraction + 1
+            b = (random.random() * 2 - 1) * fraction + 1
             S *= a
-            if a > 1:
-                np.clip(S, None, 255, out=S)
+            V *= b
 
-            a = (random.random() * 2 - 1) * fraction + 1
-            V *= a
-            if a > 1:
-                np.clip(V, None, 255, out=V)
-
-            img_hsv[:, :, 1] = S  # .astype(np.uint8)
-            img_hsv[:, :, 2] = V  # .astype(np.uint8)
+            img_hsv[:, :, 1] = S if a < 1 else S.clip(None, 255)
+            img_hsv[:, :, 2] = V if b < 1 else V.clip(None, 255)
             cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)
 
         h, w, _ = img.shape
