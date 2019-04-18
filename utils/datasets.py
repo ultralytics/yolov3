@@ -143,7 +143,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             for x in self.img_files]
 
         if n < 200:  # preload all images into memory if possible
-            self.imgs = (cv2.imread(img_files[i]) for i in range(n))
+            self.imgs = [cv2.imread(img_files[i]) for i in range(n)]
 
     def __len__(self):
         return len(self.img_files)
