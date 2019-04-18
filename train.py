@@ -120,6 +120,7 @@ def train(
                             sampler=sampler)
 
     # Mixed precision training https://github.com/NVIDIA/apex
+    # install help: https://github.com/NVIDIA/apex/issues/259
     mixed_precision = False
     if mixed_precision:
         from apex import amp
