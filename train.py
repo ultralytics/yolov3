@@ -11,14 +11,14 @@ from utils.datasets import *
 from utils.utils import *
 
 # Initialize hyperparameters
-hyp = {'k': 8.4875,  # loss multiple
-       'xy': 0.079756,  # xy loss fraction
-       'wh': 0.010461,  # wh loss fraction
-       'cls': 0.02105,  # cls loss fraction
-       'conf': 0.88873,  # conf loss fraction
-       'iou_t': 0.1,  # iou target-anchor training threshold
-       'lr0': 0.001,  # initial learning rate
-       'lrf': -2.,  # final learning rate = lr0 * (10 ** lrf)
+hyp = {'k': 6.927,  # loss multiple
+       'xy': 0.07556,  # xy loss fraction
+       'wh': 0.008074,  # wh loss fraction
+       'cls': 0.01113,  # cls loss fraction
+       'conf': 0.9052,  # conf loss fraction
+       'iou_t': 0.06154,  # iou target-anchor training threshold
+       'lr0': 0.001136,  # initial learning rate
+       'lrf': -2.52,  # final learning rate = lr0 * (10 ** lrf)
        'momentum': 0.9,  # SGD momentum
        'weight_decay': 0.0005,  # optimizer weight decay
        }
@@ -89,7 +89,7 @@ def train(
     # Scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
     # lf = lambda x: 10 ** (-2 * x / epochs)  # exp ramp to lr0 * 1e-2
-    lf = lambda x: 1 - 10 ** (-2 * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
+    lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
     scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
     # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch - 1)
 
@@ -347,12 +347,13 @@ if __name__ == '__main__':
             else:
                 hyp = old_hyp.copy()  # reset hyp to
 
-
-import numpy as np
-import matplotlib.pyplot as plt
-a = np.loadtxt('evolve.txt')
-x = a[:,3]
-fig = plt.figure(figsize=(14, 7))
-for i in range(1,10):
-    plt.subplot(2,5,i)
-    plt.plot(x,a[:,i+5],'.')
+            # # Plot results
+            # import numpy as np
+            # import matplotlib.pyplot as plt
+            #
+            # a = np.loadtxt('evolve.txt')
+            # x = a[:, 3]
+            # fig = plt.figure(figsize=(14, 7))
+            # for i in range(1, 10):
+            #     plt.subplot(2, 5, i)
+            #     plt.plot(x, a[:, i + 5], '.')
