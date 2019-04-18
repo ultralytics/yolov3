@@ -243,7 +243,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
         try:
             os.system('wget https://pjreddie.com/media/files/' + weights_file + ' -O ' + weights)
         except IOError:
-            print(weights + ' not found')
+            print(weights + ' not found. Try https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI')
 
     # Establish cutoffs
     if weights_file == 'darknet53.conv.74':
