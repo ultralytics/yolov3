@@ -520,7 +520,8 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
 
-    fig = plt.figure(figsize=(14, 7))
+    fig, ax = plt.subplots(2, 5, figsize=(14, 7))
+    ax = ax.ravel()
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Train Loss', 'Precision', 'Recall', 'mAP', 'F1',
          'Test Loss']
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
@@ -528,10 +529,8 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
         n = results.shape[1]  # number of rows
         x = range(start, min(stop, n) if stop else n)
         for i in range(10):
-            plt.subplot(2, 5, i + 1)
-            plt.plot(x, results[i, x], marker='.', label=f.replace('.txt', ''))
-            plt.title(s[i])
-            if i == 0:
-                plt.legend()
+            ax[i].plot(x, results[i, x], marker='.', label=f.replace('.txt', ''))
+            ax[i].set_title(s[i])
+    ax[0].legend()
     fig.tight_layout()
     fig.savefig('results.png', dpi=300)
