@@ -245,13 +245,12 @@ def train(
 
 def print_mutation(hyp, results):
     # Write mutation results
-    sl = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
-    sr = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
-    sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyperparam values
-    print('\n%s\n%s\nEvolved fitness: %s\n' % (sl, sh, sr))
-
+    a = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
+    b = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
+    c = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyperparam values
+    print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
     with open('evolve.txt', 'a') as f:
-        f.write(sr + sh + '\n')
+        f.write(a + b + '\n')
 
 
 if __name__ == '__main__':
