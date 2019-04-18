@@ -10,7 +10,7 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-# Initialize hyperparameters
+# Hyperparameters
 hyp = {'k': 6.927,  # loss multiple
        'xy': 0.07556,  # xy loss fraction
        'wh': 0.008074,  # wh loss fraction
@@ -34,7 +34,6 @@ def train(
         accumulate=1,
         multi_scale=False,
         freeze_backbone=False,
-        num_workers=4,
         transfer=False  # Transfer learning (train only YOLO layers)
 ):
     init_seeds()
@@ -45,7 +44,7 @@ def train(
 
     if multi_scale:
         img_size = 608  # initiate with maximum multi_scale size
-        num_workers = 0  # bug https://github.com/ultralytics/yolov3/issues/174
+        opt.num_workers = 0  # bug https://github.com/ultralytics/yolov3/issues/174
     else:
         torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
@@ -292,7 +291,6 @@ if __name__ == '__main__':
         batch_size=opt.batch_size,
         accumulate=opt.accumulate,
         multi_scale=opt.multi_scale,
-        num_workers=opt.num_workers
     )
 
     # Evolve hyperparameters (optional)
@@ -335,7 +333,6 @@ if __name__ == '__main__':
                 batch_size=opt.batch_size,
                 accumulate=opt.accumulate,
                 multi_scale=opt.multi_scale,
-                num_workers=opt.num_workers
             )
             mutation_fitness = results[2]
 
