@@ -11,16 +11,16 @@ from utils.datasets import *
 from utils.utils import *
 
 # Hyperparameters
-hyp = {'k': 7.104,  # loss multiple
-       'xy': 0.0928,  # xy loss fraction
-       'wh': 0.007779,  # wh loss fraction
-       'cls': 0.01283,  # cls loss fraction
-       'conf': 0.8866,  # conf loss fraction
-       'iou_t': 0.06478,  # iou target-anchor training threshold
-       'lr0': 0.001132,  # initial learning rate
-       'lrf': -2.607,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.9016,  # SGD momentum
-       'weight_decay': 0.000531,  # optimizer weight decay
+hyp = {'k': 8.481,  # loss multiple
+       'xy': 0.09538,  # xy loss fraction
+       'wh': 0.007906,  # wh loss fraction
+       'cls': 0.01151,  # cls loss fraction
+       'conf': 0.8852,  # conf loss fraction
+       'iou_t': 0.06687,  # iou target-anchor training threshold
+       'lr0': 0.001297,  # initial learning rate
+       'lrf': -2.333,  # final learning rate = lr0 * (10 ** lrf)
+       'momentum': 0.8926,  # SGD momentum
+       'weight_decay': 0.000639,  # optimizer weight decay
        }
 
 
