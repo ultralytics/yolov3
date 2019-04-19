@@ -9,7 +9,7 @@ git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make
 sudo reboot now
 
 # Re-clone
-sudo rm -rf yolov3
+rm -rf yolov3
 git clone https://github.com/ultralytics/yolov3  # master
 # git clone -b test --depth 1 https://github.com/ultralytics/yolov3 yolov3_test  # branch
 cp -r weights yolov3
@@ -54,17 +54,27 @@ gsutil cp results*.txt gs://ultralytics
 gsutil cp results.png gs://ultralytics
 sudo shutdown
 
+# Unit tests
+rm -rf yolov3
+git clone https://github.com/ultralytics/yolov3  # master
+cp -r weights yolov3  && cd yolov3
+python3 detecty.py  # detect
+python3 test.py --data data/coco_32img.data  # test
+python3 train.py --data data/coco_32img.data --epochs 3 --nosave  # train
+
 # Debug/Development
-sudo rm -rf yolov3
+rm -rf yolov3
 git clone https://github.com/ultralytics/yolov3  # master
 # git clone -b test --depth 1 https://github.com/ultralytics/yolov3 yolov3_test  # branch
-cp -r weights yolov3
 cp -r cocoapi/PythonAPI/pycocotools yolov3
-cd yolov3
-python3 train.py --evolve --data data/coco_100img.data --num-workers 2
+cp -r weights yolov3 && cd yolov3
+python3 train.py --nosave --data data/coco_100img.data --num-workers 2
 gsutil cp evolve.txt gs://ultralytics
 sudo shutdown
 
 
 
+
+gsutil cp results*.txt gs://ultralytics
+sudo shutdown now
 

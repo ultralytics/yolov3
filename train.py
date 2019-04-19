@@ -11,8 +11,7 @@ from utils.datasets import *
 from utils.utils import *
 
 # Hyperparameters
-# 0.852       0.94      0.924      0.883       1.33  # results
-# 8.52    0.06833    0.01524    0.01509     0.9013     0.1003   0.001325     -3.853     0.8948  0.0004053  # hyp
+# 0.852       0.94      0.924      0.883       1.33       8.52    0.06833    0.01524    0.01509     0.9013     0.1003   0.001325     -3.853     0.8948  0.0004053  # hyp
 hyp = {'k': 8.52,  # loss multiple
        'xy': 0.06833,  # xy loss fraction
        'wh': 0.01524,  # wh loss fraction
