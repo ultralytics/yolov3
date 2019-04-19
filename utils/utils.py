@@ -291,7 +291,7 @@ def build_targets(model, targets):
 
         # iou of targets-anchors
         t, a = targets, []
-        gwh = targets[:, 4:6] * layer.nG
+        gwh = targets[:, 4:6] * layer.ng
         if nt:
             iou = [wh_iou(x, gwh) for x in layer.anchor_vec]
             iou, a = torch.stack(iou, 0).max(0)  # best iou and anchor
@@ -304,7 +304,7 @@ def build_targets(model, targets):
 
         # Indices
         b, c = t[:, :2].long().t()  # target image, class
-        gxy = t[:, 2:4] * layer.nG
+        gxy = t[:, 2:4] * layer.ng
         gi, gj = gxy.long().t()  # grid_i, grid_j
         indices.append((b, a, gj, gi))
 
@@ -318,7 +318,7 @@ def build_targets(model, targets):
         # Class
         tcls.append(c)
         if c.shape[0]:
-            assert c.max() <= layer.nC, 'Target classes exceed model classes'
+            assert c.max() <= layer.nc, 'Target classes exceed model classes'
 
     return txy, twh, tcls, indices
 
@@ -442,12 +442,12 @@ def strip_optimizer_from_checkpoint(filename='weights/best.pt'):
 
 def coco_class_count(path='../coco/labels/train2014/'):
     # Histogram of occurrences per class
-    nC = 80  # number classes
-    x = np.zeros(nC, dtype='int32')
+    nc = 80  # number classes
+    x = np.zeros(nc, dtype='int32')
     files = sorted(glob.glob('%s/*.*' % path))
     for i, file in enumerate(files):
         labels = np.loadtxt(file, dtype=np.float32).reshape(-1, 5)
-        x += np.bincount(labels[:, 0].astype('int32'), minlength=nC)
+        x += np.bincount(labels[:, 0].astype('int32'), minlength=nc)
         print(i, len(files))
 
 

@@ -63,10 +63,10 @@ def create_modules(module_defs):
             anchors = [float(x) for x in module_def['anchors'].split(',')]
             anchors = [(anchors[i], anchors[i + 1]) for i in range(0, len(anchors), 2)]
             anchors = [anchors[i] for i in anchor_idxs]
-            nC = int(module_def['classes'])  # number of classes
+            nc = int(module_def['classes'])  # number of classes
             img_size = int(hyperparams['height'])
             # Define detection layer
-            yolo_layer = YOLOLayer(anchors, nC, img_size, yolo_layer_count, cfg=hyperparams['cfg'])
+            yolo_layer = YOLOLayer(anchors, nc, img_size, yolo_layer_count, cfg=hyperparams['cfg'])
             modules.add_module('yolo_%d' % i, yolo_layer)
             yolo_layer_count += 1
 
@@ -100,12 +100,12 @@ class Upsample(nn.Module):
 
 
 class YOLOLayer(nn.Module):
-    def __init__(self, anchors, nC, img_size, yolo_layer, cfg):
+    def __init__(self, anchors, nc, img_size, yolo_layer, cfg):
         super(YOLOLayer, self).__init__()
 
         self.anchors = torch.FloatTensor(anchors)
-        self.nA = len(anchors)  # number of anchors (3)
-        self.nC = nC  # number of classes (80)
+        self.na = len(anchors)  # number of anchors (3)
+        self.nc = nc  # number of classes (80)
         self.img_size = 0
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         create_grids(self, 32, 1, device=device)
@@ -115,35 +115,35 @@ class YOLOLayer(nn.Module):
             if cfg.endswith('yolov3-tiny.cfg'):
                 stride *= 2
 
-            nG = int(img_size / stride)  # number grid points
-            create_grids(self, img_size, nG)
+            ng = int(img_size / stride)  # number grid points
+            create_grids(self, img_size, ng)
 
     def forward(self, p, img_size, var=None):
         if ONNX_EXPORT:
-            bs, nG = 1, self.nG  # batch size, grid size
+            bs, ng = 1, self.ng  # batch size, grid size
         else:
-            bs, nG = p.shape[0], p.shape[-1]
+            bs, ng = p.shape[0], p.shape[-1]
             if self.img_size != img_size:
-                create_grids(self, img_size, nG, p.device)
+                create_grids(self, img_size, ng, p.device)
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
-        p = p.view(bs, self.nA, self.nC + 5, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
+        p = p.view(bs, self.na, self.nc + 5, ng, ng).permute(0, 1, 3, 4, 2).contiguous()  # prediction
 
         if self.training:
             return p
 
         elif ONNX_EXPORT:
-            grid_xy = self.grid_xy.repeat((1, self.nA, 1, 1, 1)).view((1, -1, 2))
-            anchor_wh = self.anchor_wh.repeat((1, 1, nG, nG, 1)).view((1, -1, 2)) / nG
+            grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view((1, -1, 2))
+            anchor_wh = self.anchor_wh.repeat((1, 1, ng, ng, 1)).view((1, -1, 2)) / ng
 
-            # p = p.view(-1, 5 + self.nC)
+            # p = p.view(-1, 5 + self.nc)
             # xy = torch.sigmoid(p[..., 0:2]) + grid_xy[0]  # x, y
             # wh = torch.exp(p[..., 2:4]) * anchor_wh[0]  # width, height
             # p_conf = torch.sigmoid(p[:, 4:5])  # Conf
             # p_cls = F.softmax(p[:, 5:85], 1) * p_conf  # SSD-like conf
-            # return torch.cat((xy / nG, wh, p_conf, p_cls), 1).t()
+            # return torch.cat((xy / ng, wh, p_conf, p_cls), 1).t()
 
-            p = p.view(1, -1, 5 + self.nC)
+            p = p.view(1, -1, 5 + self.nc)
             xy = torch.sigmoid(p[..., 0:2]) + grid_xy  # x, y
             wh = torch.exp(p[..., 2:4]) * anchor_wh  # width, height
             p_conf = torch.sigmoid(p[..., 4:5])  # Conf
@@ -153,7 +153,7 @@ class YOLOLayer(nn.Module):
             p_cls = torch.exp(p_cls).permute((2, 1, 0))
             p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute((2, 1, 0))  # F.softmax() equivalent
             p_cls = p_cls.permute(2, 1, 0)
-            return torch.cat((xy / nG, wh, p_conf, p_cls), 2).squeeze().t()
+            return torch.cat((xy / ng, wh, p_conf, p_cls), 2).squeeze().t()
 
         else:  # inference
             io = p.clone()  # inference output
@@ -165,7 +165,7 @@ class YOLOLayer(nn.Module):
             io[..., :4] *= self.stride
 
             # reshape from [1, 3, 13, 13, 85] to [1, 507, 85]
-            return io.view(bs, -1, 5 + self.nC), p
+            return io.view(bs, -1, 5 + self.nc), p
 
 
 class Darknet(nn.Module):
@@ -218,19 +218,19 @@ def get_yolo_layers(model):
     return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
 
 
-def create_grids(self, img_size, nG, device='cpu'):
+def create_grids(self, img_size, ng, device='cpu'):
     self.img_size = img_size
-    self.stride = img_size / nG
+    self.stride = img_size / ng
 
     # build xy offsets
-    grid_x = torch.arange(nG).repeat((nG, 1)).view((1, 1, nG, nG)).float()
+    grid_x = torch.arange(ng).repeat((ng, 1)).view((1, 1, ng, ng)).float()
     grid_y = grid_x.permute(0, 1, 3, 2)
     self.grid_xy = torch.stack((grid_x, grid_y), 4).to(device)
 
     # build wh gains
     self.anchor_vec = self.anchors.to(device) / self.stride
-    self.anchor_wh = self.anchor_vec.view(1, self.nA, 1, 1, 2).to(device)
-    self.nG = torch.FloatTensor([nG]).to(device)
+    self.anchor_wh = self.anchor_vec.view(1, self.na, 1, 1, 2).to(device)
+    self.ng = torch.FloatTensor([ng]).to(device)
 
 
 def load_darknet_weights(self, weights, cutoff=-1):
