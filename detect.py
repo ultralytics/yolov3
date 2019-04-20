@@ -34,21 +34,8 @@ def detect(
     else:  # darknet format
         _ = load_darknet_weights(model, weights)
 
-    # Fuse batchnorm
-    fuse = True
-    if fuse:
-        fused_list = nn.ModuleList()
-        for a in list(model.children())[0]:
-            for i, b in enumerate(a):
-                if isinstance(b, nn.modules.batchnorm.BatchNorm2d):
-                    # fuse this bn layer with the previous conv2d layer
-                    conv = a[i - 1]
-                    fused = torch_utils.fuse_conv_and_bn(conv, b)
-                    a = nn.Sequential(fused, *list(a.children())[i + 1:])
-                    break
-            fused_list.append(a)
-        model.module_list = fused_list
-        #model_info(model)  # yolov3-spp reduced from 225 to 152 layers
+    # Fuse Conv2d + BatchNorm2d layers
+    model.fuse()
 
     model.to(device).eval()
 
