@@ -55,11 +55,13 @@ def detect(
         t = time.time()
         save_path = str(Path(output) / Path(path).name)
 
+        if ONNX_EXPORT:
+            img = torch.zeros((1, 3, 416, 416))
+            torch.onnx.export(model, img, 'weights/export.onnx', verbose=True)
+            return
+
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
-        if ONNX_EXPORT:
-            torch.onnx.export(model, img, 'weights/model.onnx', verbose=True)
-            return
         pred, _ = model(img)
         detections = non_max_suppression(pred, conf_thres, nms_thres)[0]
 
