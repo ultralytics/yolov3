@@ -131,16 +131,17 @@ class YOLOLayer(nn.Module):
             return p
 
         elif ONNX_EXPORT:
-            ngu = self.ng.view((1, 1, 2))
+            # Constants CAN NOT BE BROADCAST, ensure correct shape!
+            ngu = self.ng.repeat((1, self.na * self.nx * self.ny, 1))
             grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view((1, -1, 2))
-            anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view((1, -1, 2)) / self.nx
+            anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view((1, -1, 2)) / ngu
 
             # p = p.view(-1, 5 + self.nc)
             # xy = torch.sigmoid(p[..., 0:2]) + grid_xy[0]  # x, y
             # wh = torch.exp(p[..., 2:4]) * anchor_wh[0]  # width, height
             # p_conf = torch.sigmoid(p[:, 4:5])  # Conf
             # p_cls = F.softmax(p[:, 5:85], 1) * p_conf  # SSD-like conf
-            # return torch.cat((xy / ng, wh, p_conf, p_cls), 1).t()
+            # return torch.cat((xy / ngu[0], wh, p_conf, p_cls), 1).t()
 
             p = p.view(1, -1, 5 + self.nc)
             xy = torch.sigmoid(p[..., 0:2]) + grid_xy  # x, y
@@ -152,7 +153,7 @@ class YOLOLayer(nn.Module):
             p_cls = torch.exp(p_cls).permute((2, 1, 0))
             p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute((2, 1, 0))  # F.softmax() equivalent
             p_cls = p_cls.permute(2, 1, 0)
-            return torch.cat((xy / self.nx, wh, p_conf, p_cls), 2).squeeze().t()
+            return torch.cat((xy / ngu, wh, p_conf, p_cls), 2).squeeze().t()
 
         else:  # inference
             io = p.clone()  # inference output
