@@ -102,13 +102,13 @@ def xywh2xyxy(x):
 
 def scale_coords(img1_shape, coords, img0_shape):
     # Rescale coords1 (xyxy) from img1_shape to img0_shape
-    gain = max(img1_shape[1:3]) / max(img0_shape[:2])  # gain  = old / new
-    pad_x = (img1_shape[2] - img0_shape[1] * gain) / 2  # width padding
-    pad_y = (img1_shape[1] - img0_shape[0] * gain) / 2  # height padding
+    gain = img1_shape / max(img0_shape[:2])  # gain  = old / new
+    pad_x = np.mod(img1_shape - img0_shape[1] * gain, 32) / 2  # width padding
+    pad_y = np.mod(img1_shape - img0_shape[0] * gain, 32) / 2  # height padding
     coords[:, [0, 2]] -= pad_x
     coords[:, [1, 3]] -= pad_y
     coords[:, :4] /= gain
-    coords[:, :4] = torch.clamp(coords[:, :4], min=0)
+    coords[:, :4] = coords[:, :4].clamp(min=0)
     return coords
 
 
