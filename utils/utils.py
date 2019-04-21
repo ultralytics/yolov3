@@ -100,11 +100,11 @@ def xywh2xyxy(x):
     return y
 
 
-def scale_coords(img_size, coords, img0_shape):
-    # Rescale x1, y1, x2, y2 from 416 to image size
-    gain = float(img_size) / max(img0_shape)  # gain  = old / new
-    pad_x = (img_size - img0_shape[1] * gain) / 2  # width padding
-    pad_y = (img_size - img0_shape[0] * gain) / 2  # height padding
+def scale_coords(img1_shape, coords, img0_shape):
+    # Rescale coords1 (xyxy) from img1_shape to img0_shape
+    gain = max(img1_shape[1:3]) / max(img0_shape[:2])  # gain  = old / new
+    pad_x = (img1_shape[2] - img0_shape[1] * gain) / 2  # width padding
+    pad_y = (img1_shape[1] - img0_shape[0] * gain) / 2  # height padding
     coords[:, [0, 2]] -= pad_x
     coords[:, [1, 3]] -= pad_y
     coords[:, :4] /= gain

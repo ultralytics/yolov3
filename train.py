@@ -11,18 +11,32 @@ from utils.datasets import *
 from utils.utils import *
 
 # Hyperparameters
-# 0.852       0.94      0.924      0.883       1.33       8.52    0.06833    0.01524    0.01509     0.9013     0.1003   0.001325     -3.853     0.8948  0.0004053  # hyp
-hyp = {'k': 8.52,  # loss multiple
-       'xy': 0.06833,  # xy loss fraction
-       'wh': 0.01524,  # wh loss fraction
-       'cls': 0.01509,  # cls loss fraction
-       'conf': 0.9013,  # conf loss fraction
-       'iou_t': 0.1003,  # iou target-anchor training threshold
-       'lr0': 0.001325,  # initial learning rate
-       'lrf': -3.853,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.8948,  # SGD momentum
-       'weight_decay': 0.0004053,  # optimizer weight decay
+# 0.861      0.956      0.936      0.897       1.51      10.39     0.1367    0.01057    0.01181     0.8409     0.1287   0.001028     -3.441     0.9127  0.0004841
+hyp = {'k': 10.39,  # loss multiple
+       'xy': 0.1367,  # xy loss fraction
+       'wh': 0.01057,  # wh loss fraction
+       'cls': 0.01181,  # cls loss fraction
+       'conf': 0.8409,  # conf loss fraction
+       'iou_t': 0.1287,  # iou target-anchor training threshold
+       'lr0': 0.001028,  # initial learning rate
+       'lrf': -3.441,  # final learning rate = lr0 * (10 ** lrf)
+       'momentum': 0.9127,  # SGD momentum
+       'weight_decay': 0.0004841,  # optimizer weight decay
        }
+
+
+# 0.856       0.95      0.935      0.887        1.3      8.488     0.1081    0.01351    0.01351     0.8649        0.1      0.001         -3        0.9     0.0005
+# hyp = {'k': 8.4875,  # loss multiple
+#        'xy': 0.108108,  # xy loss fraction
+#        'wh': 0.013514,  # wh loss fraction
+#        'cls': 0.013514,  # cls loss fraction
+#        'conf': 0.86486,  # conf loss fraction
+#        'iou_t': 0.1,  # iou target-anchor training threshold
+#        'lr0': 0.001,  # initial learning rate
+#        'lrf': -3.,  # final learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.9,  # SGD momentum
+#        'weight_decay': 0.0005,  # optimizer weight decay
+#        }
 
 
 def train(
@@ -89,12 +103,9 @@ def train(
     # Scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
     # lf = lambda x: 10 ** (-2 * x / epochs)  # exp ramp to lr0 * 1e-2
-    # lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
-    # scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer,
-                                               milestones=[218, 245],
-                                               gamma=0.1,
-                                               last_epoch=start_epoch - 1)
+    lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
+    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer,milestones=[218, 245],gamma=0.1,last_epoch=start_epoch - 1)
 
     # Plot lr schedule
     # y = []
@@ -311,7 +322,7 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.2, .2, .2, .2, .2, .2, .2, .2, .02, .2]
+            s = [.2, .2, .2, .2, .2, .3, .2, .2, .02, .3]
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
