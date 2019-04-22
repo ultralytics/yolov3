@@ -106,7 +106,8 @@ class YOLOLayer(nn.Module):
         self.anchors = torch.Tensor(anchors)
         self.na = len(anchors)  # number of anchors (3)
         self.nc = nc  # number of classes (80)
-        self.img_size = 0
+        self.nx = 0  # initialize number of x gridpoints
+        self.ny = 0  # initialize number of y gridpoints
 
         if ONNX_EXPORT:  # grids must be computed in __init__
             stride = [32, 16, 8][yolo_layer]  # stride of this layer
@@ -121,7 +122,7 @@ class YOLOLayer(nn.Module):
             bs = 1  # batch size
         else:
             bs, nx, ny = p.shape[0], p.shape[-2], p.shape[-1]
-            if self.img_size != img_size:
+            if (self.nx, self.ny) != (nx, ny):
                 create_grids(self, img_size, (nx, ny), p.device)
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)

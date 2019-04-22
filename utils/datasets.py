@@ -75,6 +75,7 @@ class LoadImages:  # for inference
 
         # Padded resize
         img, _, _, _ = letterbox_rect(img0, height=self.height)
+        print('%gx%g ' % img.shape[:2], end='')  # print image size
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
