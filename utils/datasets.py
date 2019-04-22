@@ -74,7 +74,7 @@ class LoadImages:  # for inference
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
-        img, _, _, _ = letterbox(img0, height=self.height)
+        img, _, _, _ = letterbox_rect(img0, height=self.height)
         print('%gx%g ' % img.shape[:2], end='')  # print image size
 
         # Normalize RGB

@@ -182,7 +182,7 @@ class Darknet(nn.Module):
         self.yolo_layers = get_yolo_layers(self)
 
     def forward(self, x, var=None):
-        img_size = x.shape[-1]
+        img_size = max(x.shape[-2:])
         layer_outputs = []
         output = []
 
