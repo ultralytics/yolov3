@@ -74,7 +74,8 @@ class LoadImages:  # for inference
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
-        img, _, _, _ = letterbox(img0, height=self.height)
+        img, _, _, _ = letterbox_rect(img0, height=self.height)
+        print('%gx%g ' % img.shape[:2], end='')  # print image size
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
@@ -131,14 +132,19 @@ class LoadWebcam:  # for inference
 class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=416, augment=False):
         with open(path, 'r') as file:
-            self.img_files = file.read().splitlines()
-            self.img_files = list(filter(lambda x: len(x) > 0, self.img_files))
-        assert len(self.img_files) > 0, 'No images found in %s' % path
+            img_files = file.read().splitlines()
+            self.img_files = list(filter(lambda x: len(x) > 0, img_files))
+
+        n = len(self.img_files)
+        assert n > 0, 'No images found in %s' % path
         self.img_size = img_size
         self.augment = augment
         self.label_files = [
             x.replace('images', 'labels').replace('.bmp', '.txt').replace('.jpg', '.txt').replace('.png', '.txt')
             for x in self.img_files]
+
+        # if n < 200:  # preload all images into memory if possible
+        #    self.imgs = [cv2.imread(img_files[i]) for i in range(n)]
 
     def __len__(self):
         return len(self.img_files)
@@ -147,6 +153,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img_path = self.img_files[index]
         label_path = self.label_files[index]
 
+        # if hasattr(self, 'imgs'):
+        #    img = self.imgs[index]  # BGR
         img = cv2.imread(img_path)  # BGR
         assert img is not None, 'File Not Found ' + img_path
 
@@ -154,22 +162,17 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         if self.augment and augment_hsv:
             # SV augmentation by 50%
             fraction = 0.50  # must be < 1.0
-            img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            S = img_hsv[:, :, 1].astype(np.float32)
-            V = img_hsv[:, :, 2].astype(np.float32)
+            img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # hue, sat, val
+            S = img_hsv[:, :, 1].astype(np.float32)  # saturation
+            V = img_hsv[:, :, 2].astype(np.float32)  # value
 
             a = (random.random() * 2 - 1) * fraction + 1
+            b = (random.random() * 2 - 1) * fraction + 1
             S *= a
-            if a > 1:
-                np.clip(S, None, 255, out=S)
+            V *= b
 
-            a = (random.random() * 2 - 1) * fraction + 1
-            V *= a
-            if a > 1:
-                np.clip(V, None, 255, out=V)
-
-            img_hsv[:, :, 1] = S  # .astype(np.uint8)
-            img_hsv[:, :, 2] = V  # .astype(np.uint8)
+            img_hsv[:, :, 1] = S if a < 1 else S.clip(None, 255)
+            img_hsv[:, :, 2] = V if b < 1 else V.clip(None, 255)
             cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)
 
         h, w, _ = img.shape
@@ -237,11 +240,29 @@ def letterbox(img, height=416, color=(127.5, 127.5, 127.5)):
     # Resize a rectangular image to a padded square
     shape = img.shape[:2]  # shape = [height, width]
     ratio = float(height) / max(shape)  # ratio  = old / new
-    new_shape = (round(shape[1] * ratio), round(shape[0] * ratio))
+    new_shape = (round(shape[1] * ratio), round(shape[0] * ratio))  # new_shape = [width, height]
+
     dw = (height - new_shape[0]) / 2  # width padding
     dh = (height - new_shape[1]) / 2  # height padding
+
     top, bottom = round(dh - 0.1), round(dh + 0.1)
     left, right = round(dw - 0.1), round(dw + 0.1)
+    img = cv2.resize(img, new_shape, interpolation=cv2.INTER_AREA)  # resized, no border
+    img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # padded square
+    return img, ratio, dw, dh
+
+
+def letterbox_rect(img, height=416, color=(127.5, 127.5, 127.5)):
+    # Resize a rectangular image to a 32 pixel multiple rectangle
+    shape = img.shape[:2]  # shape = [height, width]
+    ratio = float(height) / max(shape)  # ratio  = old / new
+    new_shape = (round(shape[1] * ratio), round(shape[0] * ratio))  # new_shape = [width, height]
+
+    dw = np.mod(height - new_shape[0], 32) / 2  # width padding
+    dh = np.mod(height - new_shape[1], 32) / 2  # height padding
+
+    top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
+    left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
     img = cv2.resize(img, new_shape, interpolation=cv2.INTER_AREA)  # resized, no border
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # padded square
     return img, ratio, dw, dh

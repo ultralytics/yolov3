@@ -12,18 +12,33 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-# Initialize hyperparameters
-hyp = {'k': 8.4875,  # loss multiple
-       'xy': 0.079756,  # xy loss fraction
-       'wh': 0.010461,  # wh loss fraction
-       'cls': 0.02105,  # cls loss fraction
-       'conf': 0.88873,  # conf loss fraction
-       'iou_t': 0.1,  # iou target-anchor training threshold
-       'lr0': 0.001,  # initial learning rate
-       'lrf': -2.,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.9,  # SGD momentum
-       'weight_decay': 0.0005,  # optimizer weight decay
+# Hyperparameters
+# 0.861      0.956      0.936      0.897       1.51      10.39     0.1367    0.01057    0.01181     0.8409     0.1287   0.001028     -3.441     0.9127  0.0004841
+hyp = {'k': 10.39,  # loss multiple
+       'xy': 0.1367,  # xy loss fraction
+       'wh': 0.01057,  # wh loss fraction
+       'cls': 0.01181,  # cls loss fraction
+       'conf': 0.8409,  # conf loss fraction
+       'iou_t': 0.1287,  # iou target-anchor training threshold
+       'lr0': 0.001028,  # initial learning rate
+       'lrf': -3.441,  # final learning rate = lr0 * (10 ** lrf)
+       'momentum': 0.9127,  # SGD momentum
+       'weight_decay': 0.0004841,  # optimizer weight decay
        }
+
+
+# 0.856       0.95      0.935      0.887        1.3      8.488     0.1081    0.01351    0.01351     0.8649        0.1      0.001         -3        0.9     0.0005
+# hyp = {'k': 8.4875,  # loss multiple
+#        'xy': 0.108108,  # xy loss fraction
+#        'wh': 0.013514,  # wh loss fraction
+#        'cls': 0.013514,  # cls loss fraction
+#        'conf': 0.86486,  # conf loss fraction
+#        'iou_t': 0.1,  # iou target-anchor training threshold
+#        'lr0': 0.001,  # initial learning rate
+#        'lrf': -3.,  # final learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.9,  # SGD momentum
+#        'weight_decay': 0.0005,  # optimizer weight decay
+#        }
 
 
 def train(
@@ -36,7 +51,6 @@ def train(
         accumulate=1,
         multi_scale=False,
         freeze_backbone=False,
-        num_workers=4,
         transfer=False,  # Transfer learning (train only YOLO layers)
         plot_visdom=False
 ):
@@ -63,7 +77,7 @@ def train(
     
     if multi_scale:
         img_size = 608  # initiate with maximum multi_scale size
-        num_workers = 0  # bug https://github.com/ultralytics/yolov3/issues/174
+        opt.num_workers = 0  # bug https://github.com/ultralytics/yolov3/issues/174
     else:
         torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
@@ -108,12 +122,13 @@ def train(
     # Scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
     # lf = lambda x: 10 ** (-2 * x / epochs)  # exp ramp to lr0 * 1e-2
-    lf = lambda x: 1 - 10 ** (-2 * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
+    lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
     scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
-    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch - 1)
+    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer,milestones=[218, 245],gamma=0.1,last_epoch=start_epoch - 1)
 
+    # Plot lr schedule
     # y = []
-    # for epoch in range(epochs):
+    # for _ in range(epochs):
     #     scheduler.step()
     #     y.append(optimizer.param_groups[0]['lr'])
     # plt.plot(y)
@@ -139,6 +154,7 @@ def train(
                             sampler=sampler)
 
     # Mixed precision training https://github.com/NVIDIA/apex
+    # install help: https://github.com/NVIDIA/apex/issues/259
     mixed_precision = False
     if mixed_precision:
         from apex import amp
@@ -274,6 +290,16 @@ def train(
     return results
 
 
+def print_mutation(hyp, results):
+    # Write mutation results
+    a = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
+    b = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyperparam values
+    c = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
+    print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
+    with open('evolve.txt', 'a') as f:
+        f.write(c + b + '\n')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=273, help='number of epochs')
@@ -313,8 +339,7 @@ if __name__ == '__main__':
         batch_size=opt.batch_size,
         accumulate=opt.accumulate,
         multi_scale=opt.multi_scale,
-        num_workers=opt.num_workers,
-        plot_visdom=opt.visdom,
+        plot_visdom=opt.visdom
     )
 
     # Evolve hyperparameters (optional)
@@ -322,26 +347,23 @@ if __name__ == '__main__':
         best_fitness = results[2]  # use mAP for fitness
 
         # Write mutation results
-        sr = '%11.3g' * 5 % results  # results string (P, R, mAP, F1, test_loss)
-        sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyp string
-        print('Evolved hyperparams: %s\nEvolved fitness: %s' % (sh, sr))
-        with open('evolve.txt', 'a') as f:
-            f.write(sr + sh + '\n')
+        print_mutation(hyp, results)
 
-        gen = 30  # generations to evolve
+        gen = 50  # generations to evolve
         for _ in range(gen):
 
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            for k in hyp.keys():
-                x = (np.random.randn(1) * 0.2 + 1) ** 1.1  # plt.hist(x.ravel(), 100)
+            s = [.2, .2, .2, .2, .2, .3, .2, .2, .02, .3]
+            for i, k in enumerate(hyp.keys()):
+                x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
 
             # Apply limits
             hyp['iou_t'] = np.clip(hyp['iou_t'], 0, 0.90)
-            hyp['momentum'] = 0.9  # np.clip(hyp['momentum'], 0, 0.98)
-            hyp['weight_decay'] = 0.0005  # np.clip(hyp['weight_decay'], 0, 0.01)
+            hyp['momentum'] = np.clip(hyp['momentum'], 0.8, 0.95)
+            hyp['weight_decay'] = np.clip(hyp['weight_decay'], 0, 0.01)
 
             # Normalize loss components (sum to 1)
             lcf = ['xy', 'wh', 'cls', 'conf']
@@ -360,16 +382,11 @@ if __name__ == '__main__':
                 batch_size=opt.batch_size,
                 accumulate=opt.accumulate,
                 multi_scale=opt.multi_scale,
-                num_workers=opt.num_workers
             )
             mutation_fitness = results[2]
 
             # Write mutation results
-            sr = '%11.3g' * 5 % results  # results string (P, R, mAP, F1, test_loss)
-            sh = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyp string
-            print('Evolved hyperparams: %s\nEvolved fitness: %s' % (sh, sr))
-            with open('evolve.txt', 'a') as f:
-                f.write(sr + sh + '\n')
+            print_mutation(hyp, results)
 
             # Update hyperparameters if fitness improved
             if mutation_fitness > best_fitness:
@@ -378,3 +395,14 @@ if __name__ == '__main__':
                 best_fitness = mutation_fitness
             else:
                 hyp = old_hyp.copy()  # reset hyp to
+
+            # # Plot results
+            # import numpy as np
+            # import matplotlib.pyplot as plt
+            #
+            # a = np.loadtxt('evolve.txt')
+            # x = a[:, 3]
+            # fig = plt.figure(figsize=(14, 7))
+            # for i in range(1, 10):
+            #     plt.subplot(2, 5, i)
+            #     plt.plot(x, a[:, i + 5], '.')

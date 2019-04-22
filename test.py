@@ -125,7 +125,7 @@ def test(
                     iou, bi = bbox_iou(pbox, tbox).max(0)
 
                     # If iou > threshold and class is correct mark as correct
-                    if iou > iou_thres and bi not in detected:
+                    if iou > iou_thres and bi not in detected:  # and pcls == tcls[bi]:
                         correct[i] = 1
                         detected.append(bi)
 
@@ -133,10 +133,10 @@ def test(
             stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls))
 
     # Compute statistics
-    stats_np = [np.concatenate(x, 0) for x in list(zip(*stats))]
-    if len(stats_np):
-        nt = np.bincount(stats_np[3].astype(np.int64), minlength=nc)  # number of targets per class
-        p, r, ap, f1, ap_class = ap_per_class(*stats_np)
+    stats = [np.concatenate(x, 0) for x in list(zip(*stats))]  # to numpy
+    if len(stats):
+        nt = np.bincount(stats[3].astype(np.int64), minlength=nc)  # number of targets per class
+        p, r, ap, f1, ap_class = ap_per_class(*stats)
         mp, mr, map, mf1 = p.mean(), r.mean(), ap.mean(), f1.mean()
 
         # Print results

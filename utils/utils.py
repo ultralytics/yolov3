@@ -100,15 +100,15 @@ def xywh2xyxy(x):
     return y
 
 
-def scale_coords(img_size, coords, img0_shape):
-    # Rescale x1, y1, x2, y2 from 416 to image size
-    gain = float(img_size) / max(img0_shape)  # gain  = old / new
-    pad_x = (img_size - img0_shape[1] * gain) / 2  # width padding
-    pad_y = (img_size - img0_shape[0] * gain) / 2  # height padding
+def scale_coords(img1_shape, coords, img0_shape):
+    # Rescale coords1 (xyxy) from img1_shape to img0_shape
+    gain = img1_shape / max(img0_shape[:2])  # gain  = old / new
+    pad_x = np.mod(img1_shape - img0_shape[1] * gain, 32) / 2  # width padding
+    pad_y = np.mod(img1_shape - img0_shape[0] * gain, 32) / 2  # height padding
     coords[:, [0, 2]] -= pad_x
     coords[:, [1, 3]] -= pad_y
     coords[:, :4] /= gain
-    coords[:, :4] = torch.clamp(coords[:, :4], min=0)
+    coords[:, :4] = coords[:, :4].clamp(min=0)
     return coords
 
 
@@ -291,7 +291,7 @@ def build_targets(model, targets):
 
         # iou of targets-anchors
         t, a = targets, []
-        gwh = targets[:, 4:6] * layer.nG
+        gwh = targets[:, 4:6] * layer.ng
         if nt:
             iou = [wh_iou(x, gwh) for x in layer.anchor_vec]
             iou, a = torch.stack(iou, 0).max(0)  # best iou and anchor
@@ -304,7 +304,7 @@ def build_targets(model, targets):
 
         # Indices
         b, c = t[:, :2].long().t()  # target image, class
-        gxy = t[:, 2:4] * layer.nG
+        gxy = t[:, 2:4] * layer.ng
         gi, gj = gxy.long().t()  # grid_i, grid_j
         indices.append((b, a, gj, gi))
 
@@ -318,7 +318,7 @@ def build_targets(model, targets):
         # Class
         tcls.append(c)
         if c.shape[0]:
-            assert c.max() <= layer.nC, 'Target classes exceed model classes'
+            assert c.max() <= layer.nc, 'Target classes exceed model classes'
 
     return txy, twh, tcls, indices
 
@@ -442,12 +442,12 @@ def strip_optimizer_from_checkpoint(filename='weights/best.pt'):
 
 def coco_class_count(path='../coco/labels/train2014/'):
     # Histogram of occurrences per class
-    nC = 80  # number classes
-    x = np.zeros(nC, dtype='int32')
+    nc = 80  # number classes
+    x = np.zeros(nc, dtype='int32')
     files = sorted(glob.glob('%s/*.*' % path))
     for i, file in enumerate(files):
         labels = np.loadtxt(file, dtype=np.float32).reshape(-1, 5)
-        x += np.bincount(labels[:, 0].astype('int32'), minlength=nC)
+        x += np.bincount(labels[:, 0].astype('int32'), minlength=nc)
         print(i, len(files))
 
 
@@ -520,7 +520,8 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
 
-    fig = plt.figure(figsize=(14, 7))
+    fig, ax = plt.subplots(2, 5, figsize=(14, 7))
+    ax = ax.ravel()
     s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Train Loss', 'Precision', 'Recall', 'mAP', 'F1',
          'Test Loss']
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
@@ -528,10 +529,8 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
         n = results.shape[1]  # number of rows
         x = range(start, min(stop, n) if stop else n)
         for i in range(10):
-            plt.subplot(2, 5, i + 1)
-            plt.plot(x, results[i, x], marker='.', label=f.replace('.txt', ''))
-            plt.title(s[i])
-            if i == 0:
-                plt.legend()
+            ax[i].plot(x, results[i, x], marker='.', label=f.replace('.txt', ''))
+            ax[i].set_title(s[i])
+    ax[0].legend()
     fig.tight_layout()
     fig.savefig('results.png', dpi=300)

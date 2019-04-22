@@ -63,10 +63,10 @@ def create_modules(module_defs):
             anchors = [float(x) for x in module_def['anchors'].split(',')]
             anchors = [(anchors[i], anchors[i + 1]) for i in range(0, len(anchors), 2)]
             anchors = [anchors[i] for i in anchor_idxs]
-            nC = int(module_def['classes'])  # number of classes
-            img_size = int(hyperparams['height'])
+            nc = int(module_def['classes'])  # number of classes
+            img_size = hyperparams['height']
             # Define detection layer
-            yolo_layer = YOLOLayer(anchors, nC, img_size, yolo_layer_count, cfg=hyperparams['cfg'])
+            yolo_layer = YOLOLayer(anchors, nc, img_size, yolo_layer_count, cfg=hyperparams['cfg'])
             modules.add_module('yolo_%d' % i, yolo_layer)
             yolo_layer_count += 1
 
@@ -100,50 +100,51 @@ class Upsample(nn.Module):
 
 
 class YOLOLayer(nn.Module):
-    def __init__(self, anchors, nC, img_size, yolo_layer, cfg):
+    def __init__(self, anchors, nc, img_size, yolo_layer, cfg):
         super(YOLOLayer, self).__init__()
 
-        self.anchors = torch.FloatTensor(anchors)
-        self.nA = len(anchors)  # number of anchors (3)
-        self.nC = nC  # number of classes (80)
-        self.img_size = 0
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        create_grids(self, 32, 1, device=device)
+        self.anchors = torch.Tensor(anchors)
+        self.na = len(anchors)  # number of anchors (3)
+        self.nc = nc  # number of classes (80)
+        self.nx = 0  # initialize number of x gridpoints
+        self.ny = 0  # initialize number of y gridpoints
 
         if ONNX_EXPORT:  # grids must be computed in __init__
             stride = [32, 16, 8][yolo_layer]  # stride of this layer
             if cfg.endswith('yolov3-tiny.cfg'):
                 stride *= 2
 
-            nG = int(img_size / stride)  # number grid points
-            create_grids(self, img_size, nG)
+            ng = (int(img_size[0] / stride), int(img_size[1] / stride))  # number grid points
+            create_grids(self, max(img_size), ng)
 
     def forward(self, p, img_size, var=None):
         if ONNX_EXPORT:
-            bs, nG = 1, self.nG  # batch size, grid size
+            bs = 1  # batch size
         else:
-            bs, nG = p.shape[0], p.shape[-1]
-            if self.img_size != img_size:
-                create_grids(self, img_size, nG, p.device)
+            bs, nx, ny = p.shape[0], p.shape[-2], p.shape[-1]
+            if (self.nx, self.ny) != (nx, ny):
+                create_grids(self, img_size, (nx, ny), p.device)
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
-        p = p.view(bs, self.nA, self.nC + 5, nG, nG).permute(0, 1, 3, 4, 2).contiguous()  # prediction
+        p = p.view(bs, self.na, self.nc + 5, self.nx, self.ny).permute(0, 1, 3, 4, 2).contiguous()  # prediction
 
         if self.training:
             return p
 
         elif ONNX_EXPORT:
-            grid_xy = self.grid_xy.repeat((1, self.nA, 1, 1, 1)).view((1, -1, 2))
-            anchor_wh = self.anchor_wh.repeat((1, 1, nG, nG, 1)).view((1, -1, 2)) / nG
+            # Constants CAN NOT BE BROADCAST, ensure correct shape!
+            ngu = self.ng.repeat((1, self.na * self.nx * self.ny, 1))
+            grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view((1, -1, 2))
+            anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view((1, -1, 2)) / ngu
 
-            # p = p.view(-1, 5 + self.nC)
+            # p = p.view(-1, 5 + self.nc)
             # xy = torch.sigmoid(p[..., 0:2]) + grid_xy[0]  # x, y
             # wh = torch.exp(p[..., 2:4]) * anchor_wh[0]  # width, height
             # p_conf = torch.sigmoid(p[:, 4:5])  # Conf
             # p_cls = F.softmax(p[:, 5:85], 1) * p_conf  # SSD-like conf
-            # return torch.cat((xy / nG, wh, p_conf, p_cls), 1).t()
+            # return torch.cat((xy / ngu[0], wh, p_conf, p_cls), 1).t()
 
-            p = p.view(1, -1, 5 + self.nC)
+            p = p.view(1, -1, 5 + self.nc)
             xy = torch.sigmoid(p[..., 0:2]) + grid_xy  # x, y
             wh = torch.exp(p[..., 2:4]) * anchor_wh  # width, height
             p_conf = torch.sigmoid(p[..., 4:5])  # Conf
@@ -153,7 +154,7 @@ class YOLOLayer(nn.Module):
             p_cls = torch.exp(p_cls).permute((2, 1, 0))
             p_cls = p_cls / p_cls.sum(0).unsqueeze(0) * p_conf.permute((2, 1, 0))  # F.softmax() equivalent
             p_cls = p_cls.permute(2, 1, 0)
-            return torch.cat((xy / nG, wh, p_conf, p_cls), 2).squeeze().t()
+            return torch.cat((xy / ngu, wh, p_conf, p_cls), 2).squeeze().t()
 
         else:  # inference
             io = p.clone()  # inference output
@@ -165,7 +166,7 @@ class YOLOLayer(nn.Module):
             io[..., :4] *= self.stride
 
             # reshape from [1, 3, 13, 13, 85] to [1, 507, 85]
-            return io.view(bs, -1, 5 + self.nC), p
+            return io.view(bs, -1, 5 + self.nc), p
 
 
 class Darknet(nn.Module):
@@ -212,25 +213,42 @@ class Darknet(nn.Module):
             io, p = list(zip(*output))  # inference output, training output
             return torch.cat(io, 1), p
 
+    def fuse(self):
+        # Fuse Conv2d + BatchNorm2d layers throughout model
+        fused_list = nn.ModuleList()
+        for a in list(self.children())[0]:
+            for i, b in enumerate(a):
+                if isinstance(b, nn.modules.batchnorm.BatchNorm2d):
+                    # fuse this bn layer with the previous conv2d layer
+                    conv = a[i - 1]
+                    fused = torch_utils.fuse_conv_and_bn(conv, b)
+                    a = nn.Sequential(fused, *list(a.children())[i + 1:])
+                    break
+            fused_list.append(a)
+        self.module_list = fused_list
+        # model_info(self)  # yolov3-spp reduced from 225 to 152 layers
+
 
 def get_yolo_layers(model):
     a = [module_def['type'] == 'yolo' for module_def in model.module_defs]
     return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
 
 
-def create_grids(self, img_size, nG, device='cpu'):
+def create_grids(self, img_size, ng, device='cpu'):
+    nx, ny = ng  # x and y grid size
     self.img_size = img_size
-    self.stride = img_size / nG
+    self.stride = img_size / max(ng)
 
     # build xy offsets
-    grid_x = torch.arange(nG).repeat((nG, 1)).view((1, 1, nG, nG)).float()
-    grid_y = grid_x.permute(0, 1, 3, 2)
-    self.grid_xy = torch.stack((grid_x, grid_y), 4).to(device)
+    yv, xv = torch.meshgrid([torch.arange(nx), torch.arange(ny)])
+    self.grid_xy = torch.stack((xv, yv), 2).to(device).float().view((1, 1, nx, ny, 2))
 
     # build wh gains
     self.anchor_vec = self.anchors.to(device) / self.stride
-    self.anchor_wh = self.anchor_vec.view(1, self.nA, 1, 1, 2).to(device)
-    self.nG = torch.FloatTensor([nG]).to(device)
+    self.anchor_wh = self.anchor_vec.view(1, self.na, 1, 1, 2).to(device)
+    self.ng = torch.Tensor(ng).to(device)
+    self.nx = nx
+    self.ny = ny
 
 
 def load_darknet_weights(self, weights, cutoff=-1):
@@ -243,7 +261,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
         try:
             os.system('wget https://pjreddie.com/media/files/' + weights_file + ' -O ' + weights)
         except IOError:
-            print(weights + ' not found')
+            print(weights + ' not found.\nTry https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI')
 
     # Establish cutoffs
     if weights_file == 'darknet53.conv.74':
