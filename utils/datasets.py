@@ -74,7 +74,7 @@ class LoadImages:  # for inference
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
-        img, _, _, _ = letterbox_rect(img0, height=self.height)
+        img, _, _, _ = letterbox(img0, height=self.height)
         print('%gx%g ' % img.shape[:2], end='')  # print image size
 
         # Normalize RGB
@@ -176,7 +176,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)
 
         h, w, _ = img.shape
-        img, ratio, padw, padh = letterbox(img, height=self.img_size)
+        img, ratio, padw, padh = letterbox(img, height=self.img_size, mode='square')
 
         # Load labels
         labels = []
@@ -236,30 +236,19 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         return torch.stack(img, 0), torch.cat(label, 0), path, hw
 
 
-def letterbox(img, height=416, color=(127.5, 127.5, 127.5)):
-    # Resize a rectangular image to a padded square
-    shape = img.shape[:2]  # shape = [height, width]
-    ratio = float(height) / max(shape)  # ratio  = old / new
-    new_shape = (round(shape[1] * ratio), round(shape[0] * ratio))  # new_shape = [width, height]
-
-    dw = (height - new_shape[0]) / 2  # width padding
-    dh = (height - new_shape[1]) / 2  # height padding
-
-    top, bottom = round(dh - 0.1), round(dh + 0.1)
-    left, right = round(dw - 0.1), round(dw + 0.1)
-    img = cv2.resize(img, new_shape, interpolation=cv2.INTER_AREA)  # resized, no border
-    img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # padded square
-    return img, ratio, dw, dh
-
-
-def letterbox_rect(img, height=416, color=(127.5, 127.5, 127.5)):
+def letterbox(img, height=416, color=(127.5, 127.5, 127.5), mode='rect'):
     # Resize a rectangular image to a 32 pixel multiple rectangle
     shape = img.shape[:2]  # shape = [height, width]
     ratio = float(height) / max(shape)  # ratio  = old / new
     new_shape = (round(shape[1] * ratio), round(shape[0] * ratio))  # new_shape = [width, height]
 
-    dw = np.mod(height - new_shape[0], 32) / 2  # width padding
-    dh = np.mod(height - new_shape[1], 32) / 2  # height padding
+    # Select padding https://github.com/ultralytics/yolov3/issues/232
+    if mode is 'rect':  # rectangle
+        dw = np.mod(height - new_shape[0], 32) / 2  # width padding
+        dh = np.mod(height - new_shape[1], 32) / 2  # height padding
+    else:  # square
+        dw = (height - new_shape[0]) / 2  # width padding
+        dh = (height - new_shape[1]) / 2  # height padding
 
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
