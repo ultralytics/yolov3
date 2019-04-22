@@ -63,19 +63,19 @@ def detect(
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
         pred, _ = model(img)
-        detections = non_max_suppression(pred, conf_thres, nms_thres)[0]
+        det = non_max_suppression(pred, conf_thres, nms_thres)[0]
 
-        if detections is not None and len(detections) > 0:
+        if det is not None and len(det) > 0:
             # Rescale boxes from 416 to true image size
-            detections[:, :4] = scale_coords(img_size, detections[:, :4], im0.shape).round()
+            det[:, :4] = scale_coords(img.shape, det[:, :4], im0.shape).round()
 
             # Print results to screen
-            for c in detections[:, -1].unique():
-                n = (detections[:, -1] == c).sum()
+            for c in det[:, -1].unique():
+                n = (det[:, -1] == c).sum()
                 print('%g %ss' % (n, classes[int(c)]), end=', ')
 
             # Draw bounding boxes and labels of detections
-            for *xyxy, conf, cls_conf, cls in detections:
+            for *xyxy, conf, cls_conf, cls in det:
                 if save_txt:  # Write to file
                     with open(save_path + '.txt', 'a') as file:
                         file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
