@@ -26,7 +26,11 @@ def detect(
     os.makedirs(output)  # make new output folder
 
     # Initialize model
-    model = Darknet(cfg, img_size)
+    if ONNX_EXPORT:
+        s = (416, 416)  # onnx model image size
+        model = Darknet(cfg, s)
+    else:
+        model = Darknet(cfg, img_size)
 
     # Load weights
     if weights.endswith('.pt'):  # pytorch format
@@ -37,7 +41,13 @@ def detect(
     # Fuse Conv2d + BatchNorm2d layers
     model.fuse()
 
+    # Eval mode
     model.to(device).eval()
+
+    if ONNX_EXPORT:
+        img = torch.zeros((1, 3, s[0], s[1]))
+        torch.onnx.export(model, img, 'weights/export.onnx', verbose=True)
+        return
 
     # Set Dataloader
     vid_path, vid_writer = None, None
@@ -54,11 +64,6 @@ def detect(
     for i, (path, img, im0, vid_cap) in enumerate(dataloader):
         t = time.time()
         save_path = str(Path(output) / Path(path).name)
-
-        if ONNX_EXPORT:
-            img = torch.zeros((1, 3, 416, 416))
-            torch.onnx.export(model, img, 'weights/export.onnx', verbose=True)
-            return
 
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
