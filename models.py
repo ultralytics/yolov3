@@ -121,12 +121,12 @@ class YOLOLayer(nn.Module):
         if ONNX_EXPORT:
             bs = 1  # batch size
         else:
-            bs, nx, ny = p.shape[0], p.shape[-2], p.shape[-1]
-            if (self.nx, self.ny) != (nx, ny):
-                create_grids(self, img_size, (nx, ny), p.device)
+            bs, ny, nx = p.shape[0], p.shape[-2], p.shape[-1]
+            if (self.ny, self.nx) != (ny, nx):
+                create_grids(self, img_size, (ny, nx), p.device)
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
-        p = p.view(bs, self.na, self.nc + 5, self.nx, self.ny).permute(0, 1, 3, 4, 2).contiguous()  # prediction
+        p = p.view(bs, self.na, self.nc + 5, self.ny, self.nx).permute(0, 1, 3, 4, 2).contiguous()  # prediction
 
         if self.training:
             return p
@@ -235,13 +235,13 @@ def get_yolo_layers(model):
 
 
 def create_grids(self, img_size, ng, device='cpu'):
-    nx, ny = ng  # x and y grid size
+    ny, nx = ng  # x and y grid size
     self.img_size = img_size
     self.stride = img_size / max(ng)
 
     # build xy offsets
-    yv, xv = torch.meshgrid([torch.arange(nx), torch.arange(ny)])
-    self.grid_xy = torch.stack((xv, yv), 2).to(device).float().view((1, 1, nx, ny, 2))
+    yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+    self.grid_xy = torch.stack((xv, yv), 2).to(device).float().view((1, 1, ny, nx, 2))
 
     # build wh gains
     self.anchor_vec = self.anchors.to(device) / self.stride

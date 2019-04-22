@@ -67,7 +67,7 @@ def detect(
 
         if detections is not None and len(detections) > 0:
             # Rescale boxes from 416 to true image size
-            scale_coords(img_size, detections[:, :4], im0.shape).round()
+            detections[:, :4] = scale_coords(img_size, detections[:, :4], im0.shape).round()
 
             # Print results to screen
             for c in detections[:, -1].unique():
