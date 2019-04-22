@@ -70,7 +70,7 @@ def train(
     
     if plot_visdom:
         visdom = importlib.import_module('visdom')
-        vis = visdom.Visdom(port = 8097, env='TennisApp')
+        vis = visdom.Visdom(port = 8097)
         iterationLossPlot = LineGraph(vis, lines = ["loss"], xlabel = "Iteration", ylabel = "Loss", title = "Last 50 Iterations - Total Loss", showlegend = False, display = 50)
         epochLossPlot = LineGraph(vis, lines = ["loss"], xlabel = "Epoch", ylabel = "Loss", title = "Epoch - Total Loss")
         epochmAPPlot = LineGraph(vis, lines = ["mAP"], xlabel = "Epoch", ylabel = "mAP", title = "Epoch - mAP")
