@@ -72,7 +72,7 @@ def detect(
 
         if det is not None and len(det) > 0:
             # Rescale boxes from 416 to true image size
-            det[:, :4] = scale_coords(img.shape, det[:, :4], im0.shape).round()
+            det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
             # Print results to screen
             for c in det[:, -1].unique():
