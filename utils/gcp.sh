@@ -12,8 +12,8 @@ sudo reboot now
 rm -rf yolov3
 git clone https://github.com/ultralytics/yolov3  # master
 # git clone -b test --depth 1 https://github.com/ultralytics/yolov3 yolov3_test  # branch
-cp -r weights yolov3
 cp -r cocoapi/PythonAPI/pycocotools yolov3
+cp -r weights yolov3
 cd yolov3
 
 # Train
@@ -55,8 +55,6 @@ gsutil cp results.png gs://ultralytics
 sudo shutdown
 
 # Reproduce mAP
-cp -r cocoapi/PythonAPI/pycocotools yolov3
-cp -r weights yolov3  && cd yolov3
 python3 test.py --save-json --img-size 608  --batch-size 16
 python3 test.py --save-json --img-size 416
 python3 test.py --save-json --img-size 320
