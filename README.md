@@ -195,6 +195,20 @@ Computing mAP: 100%|████████████████████
 
 ```
 
+# Conversion to/from Darknet
+
+```bash
+git clone https://github.com/ultralytics/yolov3 && cd yolov3
+
+# convert darknet cfg/weights to pytorch model
+python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.weights')"
+Success: converted 'weights/yolov3-spp.weights' to 'converted.pt'
+
+# convert cfg/pytorch model to darknet weights
+python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.pt')"
+Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
+```
+
 # Citation
 
 [![DOI](https://zenodo.org/badge/146165888.svg)](https://zenodo.org/badge/latestdoi/146165888)
