@@ -54,13 +54,22 @@ gsutil cp results*.txt gs://ultralytics
 gsutil cp results.png gs://ultralytics
 sudo shutdown
 
+# Reproduce mAP
+cp -r cocoapi/PythonAPI/pycocotools yolov3
+cp -r weights yolov3  && cd yolov3
+python3 test.py --save-json --img-size 608  --batch-size 16
+python3 test.py --save-json --img-size 416
+python3 test.py --save-json --img-size 320
+sudo shutdown
+
 # Unit tests
 rm -rf yolov3
 git clone https://github.com/ultralytics/yolov3  # master
+cp -r cocoapi/PythonAPI/pycocotools yolov3
 cp -r weights yolov3  && cd yolov3
 python3 detect.py  # detect
 python3 test.py --data data/coco_32img.data  # test
-python3 train.py --data data/coco_32img.data --epochs 5 --nosave  # train
+python3 train.py --data data/coco_32img.data --epochs 50 --nosave  # train
 
 # Debug/Development
 rm -rf yolov3
@@ -71,3 +80,6 @@ cp -r weights yolov3 && cd yolov3
 python3 train.py --evolve --data data/coco_100img.data --num-workers 2  --epochs 30
 gsutil cp evolve.txt gs://ultralytics
 sudo shutdown
+
+
+
