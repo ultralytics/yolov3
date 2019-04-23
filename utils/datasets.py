@@ -131,8 +131,8 @@ class LoadWebcam:  # for inference
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=416, augment=False):
-        with open(path, 'r') as file:
-            img_files = file.read().splitlines()
+        with open(path, 'r') as f:
+            img_files = f.read().splitlines()
             self.img_files = list(filter(lambda x: len(x) > 0, img_files))
 
         n = len(self.img_files)
@@ -142,6 +142,18 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.label_files = [
             x.replace('images', 'labels').replace('.bmp', '.txt').replace('.jpg', '.txt').replace('.png', '.txt')
             for x in self.img_files]
+
+        # sort dataset by aspect ratio for rectangular training
+        self.rectangle = False
+        if self.rectangle:
+            from PIL import Image
+
+            s = np.array([Image.open(f).size for f in tqdm(self.img_files, desc='Reading image shapes')])
+            ar = s[:, 1] / s[:, 0]  # aspect ratio
+            i = ar.argsort()
+            self.img_files = [self.img_files[i] for i in i]
+            self.label_files = [self.label_files[i] for i in i]
+            self.ar = ar[i]
 
         # if n < 200:  # preload all images into memory if possible
         #    self.imgs = [cv2.imread(img_files[i]) for i in range(n)]
@@ -246,7 +258,7 @@ def letterbox(img, height=416, color=(127.5, 127.5, 127.5), mode='rect'):
     if mode is 'rect':  # rectangle
         dw = np.mod(height - new_shape[0], 32) / 2  # width padding
         dh = np.mod(height - new_shape[1], 32) / 2  # height padding
-    else:  # square
+    elif mode is 'square':  # square
         dw = (height - new_shape[0]) / 2  # width padding
         dh = (height - new_shape[1]) / 2  # height padding
 
