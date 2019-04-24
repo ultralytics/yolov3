@@ -6,7 +6,7 @@ git clone https://github.com/ultralytics/yolov3
 bash yolov3/weights/download_yolov3_weights.sh && cp -r weights yolov3
 bash yolov3/data/get_coco_dataset.sh
 git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
-sudo reboot now
+sudo shutdown
 
 # Re-clone
 rm -rf yolov3
@@ -67,7 +67,7 @@ cp -r cocoapi/PythonAPI/pycocotools yolov3
 cp -r weights yolov3  && cd yolov3
 python3 detect.py  # detect
 python3 test.py --data data/coco_32img.data  # test
-python3 train.py --data data/coco_32img.data --epochs 50 --nosave  # train
+python3 train.py --data data/coco_32img.data --epochs 4 --nosave  # train
 
 # Debug/Development
 rm -rf yolov3
