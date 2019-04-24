@@ -351,7 +351,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
         pred[:, 4] *= class_conf
 
         # Select only suitable predictions
-        i = (pred[:, 4] > conf_thres) & (pred[:, 2:4] > min_wh).all(1) & (torch.isnan(pred).any(1) == 0)
+        i = (pred[:, 4] > conf_thres) & (pred[:, 2:4] > min_wh).all(1) & torch.isfinite(pred).all(1)
         pred = pred[i]
 
         # If none are remaining => process next image
@@ -376,12 +376,12 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
         nms_style = 'MERGE'  # 'OR' (default), 'AND', 'MERGE' (experimental)
         for c in pred[:, -1].unique():
             dc = pred[pred[:, -1] == c]  # select class c
-            dc = dc[:min(len(dc), 100)]  # limit to first 100 boxes: https://github.com/ultralytics/yolov3/issues/117
-
-            # No NMS required if only 1 prediction
-            if len(dc) == 1:
-                det_max.append(dc)
+            n = len(dc)
+            if n == 1:
+                det_max.append(dc)  # No NMS required if only 1 prediction
                 continue
+            elif n > 100:
+                dc = dc[:100]  # limit to first 100 boxes: https://github.com/ultralytics/yolov3/issues/117
 
             # Non-maximum suppression
             if nms_style == 'OR':  # default

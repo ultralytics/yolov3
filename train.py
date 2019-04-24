@@ -120,19 +120,23 @@ def train(
         else:
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
 
-    # Scheduler (reduce lr at epochs 218, 245, i.e. batches 400k, 450k)
+    # Scheduler https://github.com/ultralytics/yolov3/issues/238
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
-    # lf = lambda x: 10 ** (-2 * x / epochs)  # exp ramp to lr0 * 1e-2
-    lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inv exp ramp to lr0 * 1e-2
+    # lf = lambda x: 10 ** (hyp['lrf'] * x / epochs)  # exp ramp
+    lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inverse exp ramp
     scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
-    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer,milestones=[218, 245],gamma=0.1,last_epoch=start_epoch - 1)
+    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch-1)
 
-    # Plot lr schedule
+    # # Plot lr schedule
     # y = []
     # for _ in range(epochs):
     #     scheduler.step()
     #     y.append(optimizer.param_groups[0]['lr'])
-    # plt.plot(y)
+    # plt.plot(y, label='LambdaLR')
+    # plt.xlabel('epoch')
+    # plt.xlabel('LR')
+    # plt.tight_layout()
+    # plt.savefig('LR.png', dpi=300)
 
     # Dataset
     dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
@@ -186,8 +190,6 @@ def train(
             imgs = imgs.to(device)
             targets = targets.to(device)
             nt = len(targets)
-            # if nt == 0:  # if no targets continue
-            #     continue
 
             # Plot images with bounding boxes
             if epoch == 0 and i == 0:
@@ -358,15 +360,16 @@ if __name__ == '__main__':
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
 
-            # Apply limits
-            hyp['iou_t'] = np.clip(hyp['iou_t'], 0, 0.90)
-            hyp['momentum'] = np.clip(hyp['momentum'], 0.8, 0.95)
-            hyp['weight_decay'] = np.clip(hyp['weight_decay'], 0, 0.01)
+            # Clip to limits
+            keys = ['iou_t', 'momentum', 'weight_decay']
+            limits = [(0, 0.90), (0.80, 0.95), (0, 0.01)]
+            for k, v in zip(keys, limits):
+                hyp[k] = np.clip(hyp[k], v[0], v[1])
 
             # Normalize loss components (sum to 1)
-            lcf = ['xy', 'wh', 'cls', 'conf']
-            s = sum([v for k, v in hyp.items() if k in lcf])
-            for k in lcf:
+            keys = ['xy', 'wh', 'cls', 'conf']
+            s = sum([v for k, v in hyp.items() if k in keys])
+            for k in keys:
                 hyp[k] /= s
 
             # Determine mutation fitness
