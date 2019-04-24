@@ -119,7 +119,7 @@ def train(
     # plt.savefig('LR.png', dpi=300)
 
     # Dataset
-    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
+    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True)
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:
@@ -131,7 +131,7 @@ def train(
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=opt.num_workers,
-                            shuffle=True,
+                            shuffle=False,
                             pin_memory=True,
                             collate_fn=dataset.collate_fn)
 
