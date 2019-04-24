@@ -65,9 +65,9 @@ rm -rf yolov3
 git clone https://github.com/ultralytics/yolov3  # master
 cp -r cocoapi/PythonAPI/pycocotools yolov3
 cp -r weights yolov3 && cd yolov3
-python3 detect.py  # detect
-python3 test.py --data data/coco_32img.data  # test
-python3 train.py --data data/coco_32img.data --epochs 4 --nosave  # train
+python3 detect.py  # detect 2 persons, 1 tie
+python3 test.py --data data/coco_32img.data  # test mAP = 0.78
+python3 train.py --data data/coco_32img.data --epochs 4 --nosave  # train 4 epochs
 
 # Debug/Development
 rm -rf yolov3
