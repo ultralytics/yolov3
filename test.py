@@ -54,7 +54,6 @@ def test(
     seen = 0
     model.eval()
     coco91class = coco80_to_coco91_class()
-    print(('%20s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP', 'F1'))
     loss, p, r, f1, mp, mr, map, mf1 = 0., 0., 0., 0., 0., 0., 0., 0.
     jdict, stats, ap, ap_class = [], [], [], []
     for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc='[{}] Computing mAP'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))):
@@ -133,6 +132,7 @@ def test(
             stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls))
 
     # Compute statistics
+    print(('%20s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP', 'F1'))
     stats = [np.concatenate(x, 0) for x in list(zip(*stats))]  # to numpy
     if len(stats):
         nt = np.bincount(stats[3].astype(np.int64), minlength=nc)  # number of targets per class
