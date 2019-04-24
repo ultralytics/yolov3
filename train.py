@@ -326,15 +326,16 @@ if __name__ == '__main__':
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
 
-            # Apply limits
-            hyp['iou_t'] = np.clip(hyp['iou_t'], 0, 0.90)
-            hyp['momentum'] = np.clip(hyp['momentum'], 0.8, 0.95)
-            hyp['weight_decay'] = np.clip(hyp['weight_decay'], 0, 0.01)
+            # Clip to limits
+            keys = ['iou_t', 'momentum', 'weight_decay']
+            limits = [(0, 0.90), (0.80, 0.95), (0, 0.01)]
+            for k, v in zip(keys, limits):
+                hyp[k] = np.clip(hyp[k], v[0], v[1])
 
             # Normalize loss components (sum to 1)
-            lcf = ['xy', 'wh', 'cls', 'conf']
-            s = sum([v for k, v in hyp.items() if k in lcf])
-            for k in lcf:
+            keys = ['xy', 'wh', 'cls', 'conf']
+            s = sum([v for k, v in hyp.items() if k in keys])
+            for k in keys:
                 hyp[k] /= s
 
             # Determine mutation fitness
