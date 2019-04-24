@@ -351,7 +351,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
         pred[:, 4] *= class_conf
 
         # Select only suitable predictions
-        i = (pred[:, 4] > conf_thres) & (pred[:, 2:4] > min_wh).all(1) & (torch.isnan(pred).any(1) == 0)
+        i = (pred[:, 4] > conf_thres) & (pred[:, 2:4] > min_wh).all(1) & torch.isfinite(pred).all(1)
         pred = pred[i]
 
         # If none are remaining => process next image
