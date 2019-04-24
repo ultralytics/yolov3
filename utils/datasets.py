@@ -144,7 +144,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             for x in self.img_files]
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
-        self.train_rectangular = True
+        self.train_rectangular = False
         if self.train_rectangular:
             bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
             nb = bi[-1] + 1  # number of batches
