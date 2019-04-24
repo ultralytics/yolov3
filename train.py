@@ -102,10 +102,10 @@ def train(
 
     # Scheduler https://github.com/ultralytics/yolov3/issues/238
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
-    # lf = lambda x: 10 ** (hyp['lrf'] * x / epochs)  # exp ramp to lr0 * hyp['lrf']
-    lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inv exp ramp to lr0 * hyp['lrf']
+    # lf = lambda x: 10 ** (hyp['lrf'] * x / epochs)  # exp ramp
+    lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inverse exp ramp
     scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
-    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch - 1)
+    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[218, 245], gamma=0.1, last_epoch=start_epoch-1)
 
     # # Plot lr schedule
     # y = []
