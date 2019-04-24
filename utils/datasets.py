@@ -144,14 +144,15 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             for x in self.img_files]
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
-        self.train_rectangular = False
+        self.train_rectangular = True
         if self.train_rectangular:
             bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
-            nb = bi[-1]  # number of batches
+            nb = bi[-1] + 1  # number of batches
             from PIL import Image
 
             # Read image aspect ratios
-            s = np.array([Image.open(f).size for f in tqdm(self.img_files, desc='Reading image shapes')])
+            iter = tqdm(self.img_files, desc='Reading image shapes') if n > 100 else self.img_files
+            s = np.array([Image.open(f).size for f in iter])
             ar = s[:, 1] / s[:, 0]  # aspect ratio
 
             # Sort by aspect ratio
