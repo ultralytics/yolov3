@@ -1,3 +1,7 @@
+# Introduction
+
+This directory contains PyTorch YOLOv3 software and an iOS App developed by Ultralytics LLC, and **is freely available for redistribution under the GPL-3.0 license**. For more information please visit https://www.ultralytics.com.
+
 <table style="width:100%">
   <tr>
     <td>
@@ -15,10 +19,6 @@
     </td>
   </tr>
 </table>
-
-# Introduction
-
-This directory contains python software and an iOS App developed by Ultralytics LLC, and **is freely available for redistribution under the GPL-3.0 license**. For more information please visit https://www.ultralytics.com.
 
 # Description
 
