@@ -111,6 +111,7 @@ def detect(
 
     if save_images and platform == 'darwin':  # macos
         os.system('open ' + output + ' ' + save_path)
+        print('Results saved to %s' % os.getcwd() + os.sep + output)
 
 
 if __name__ == '__main__':
