@@ -255,7 +255,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     bs = p[0].shape[0]  # batch size
     k = h['k'] * bs  # loss gain
     for i, pi0 in enumerate(p):  # layer i predictions, i
-        b, a, gj, gi = indices[i]  # image, anchor, gridx, gridy
+        b, a, gj, gi = indices[i]  # image, anchor, gridy, gridx
         tconf = torch.zeros_like(pi0[..., 0])  # conf
 
         # Compute losses
@@ -302,8 +302,8 @@ def build_targets(model, targets):
 
         # Indices
         b, c = t[:, :2].long().t()  # target image, class
-        gxy = t[:, 2:4] * layer.ng
-        gi, gj = gxy.long().t()  # grid_i, grid_j
+        gxy = t[:, 2:4] * layer.ng  # grid x, y
+        gi, gj = gxy.long().t()  # grid x, y indices
         indices.append((b, a, gj, gi))
 
         # XY coordinates
