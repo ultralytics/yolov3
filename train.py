@@ -232,7 +232,7 @@ def train(
             best_loss = test_loss
 
         # Save training results
-        save = True and not opt.nosave
+        save = (not opt.nosave) or (epoch == epochs - 1)
         if save:
             # Create checkpoint
             chkpt = {'epoch': epoch,
@@ -279,7 +279,7 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=416, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--transfer', action='store_true', help='transfer learning flag')
-    parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
+    parser.add_argument('--num-workers', type=int, default=2, help='number of Pytorch DataLoader workers')
     parser.add_argument('--dist-url', default='tcp://127.0.0.1:9999', type=str, help='distributed training init method')
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
