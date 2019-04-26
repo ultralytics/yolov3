@@ -143,7 +143,7 @@ def train(
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
 
     # Start training
-    t = time.time()
+    t, t0 = time.time(), time.time()
     model.hyp = hyp  # attach hyperparameters to model
     model_info(model)
     nb = len(dataloader)
@@ -255,6 +255,8 @@ def train(
             # Delete checkpoint
             del chkpt
 
+    dt = (time.time() - t0) / 3600
+    print('%g epochs completed in %.3f hours.' % (epoch - start_epoch, dt))
     return results
 
 
