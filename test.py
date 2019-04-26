@@ -113,8 +113,8 @@ def test(
 
                 # target boxes
                 tbox = xywh2xyxy(labels[:, 1:5])
-                tbox[[0, 2]] *= width
-                tbox[[1, 3]] *= height
+                tbox[:, [0, 2]] *= width
+                tbox[:, [1, 3]] *= height
 
                 # Search for correct predictions
                 for i, (*pbox, pconf, pcls_conf, pcls) in enumerate(pred):
