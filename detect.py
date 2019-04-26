@@ -109,9 +109,10 @@ def detect(
             else:
                 cv2.imwrite(save_path, im0)
 
-    if save_images and platform == 'darwin':  # macos
-        os.system('open ' + output + ' ' + save_path)
+    if save_images:
         print('Results saved to %s' % os.getcwd() + os.sep + output)
+        if platform == 'darwin':  # macos
+            os.system('open ' + output + ' ' + save_path)
 
 
 if __name__ == '__main__':
