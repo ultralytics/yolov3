@@ -237,6 +237,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         if nL:
             # convert xyxy to xywh
             labels[:, 1:5] = xyxy2xywh(labels[:, 1:5])
+
+            # Normalize coordinates 0 - 1
             labels[:, [2, 4]] /= img.shape[0]  # height
             labels[:, [1, 3]] /= img.shape[1]  # width
 
