@@ -49,6 +49,15 @@ def model_info(model):
     print('Model Summary: %g layers, %g parameters, %g gradients' % (i + 1, n_p, n_g))
 
 
+def labels_to_class_weights(labels):
+    # Get class weights (inverse frequency) from training labels
+    labels = np.concatenate(labels, 0)  # labels.shape = (866643, 5) for COCO
+    classes = labels[:, 0].astype(np.int)
+    weights = 1 / (np.bincount(classes) + 1e-6)  # number of targets per class
+    weights /= weights.sum()
+    return torch.Tensor(weights)
+
+
 def coco_class_weights():  # frequency of each class in coco train2014
     weights = 1 / torch.FloatTensor(
         [187437, 4955, 30920, 6033, 3838, 4332, 3160, 7051, 7677, 9167, 1316, 1372, 833, 6757, 7355, 3302, 3776, 4671,
@@ -247,7 +256,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
 
     # Define criteria
     MSE = nn.MSELoss()
-    CE = nn.CrossEntropyLoss()
+    CE = nn.CrossEntropyLoss(weight=model.class_weights)
     BCE = nn.BCEWithLogitsLoss()
 
     # Compute losses

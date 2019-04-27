@@ -145,6 +145,7 @@ def train(
     # Start training
     t, t0 = time.time(), time.time()
     model.hyp = hyp  # attach hyperparameters to model
+    model.class_weights = labels_to_class_weights(dataset.labels).to(device)  # attach class weights
     model_info(model)
     nb = len(dataloader)
     results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss

@@ -174,8 +174,19 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             self.batch_shapes = np.ceil(np.array(shapes) * img_size / 32.).astype(np.int) * 32
             self.batch = bi  # batch index of image
 
+        # Preload images
         # if n < 200:  # preload all images into memory if possible
         #    self.imgs = [cv2.imread(img_files[i]) for i in range(n)]
+
+        # Preload labels (required for weighted CE training)
+        self.labels = [np.array([])] * n
+        iter = tqdm(self.label_files, desc='Reading labels') if n > 5000 else self.label_files
+        for i, file in enumerate(iter):
+            try:
+                with open(file, 'r') as f:
+                    self.labels[i] = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+            except:  # missing label file
+                pass
 
     def __len__(self):
         return len(self.img_files)
@@ -217,10 +228,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         # Load labels
         labels = []
         if os.path.isfile(label_path):
-            with open(label_path, 'r') as file:
-                lines = file.read().splitlines()
-
-            x = np.array([x.split() for x in lines], dtype=np.float32)
+            # with open(label_path, 'r') as f:
+            #     x = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+            x = self.labels[index]
             if x.size > 0:
                 # Normalized xywh to pixel xyxy format
                 labels = x.copy()
