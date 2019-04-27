@@ -180,7 +180,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Preload labels (required for weighted CE training)
         self.labels = [np.array([])] * n
-        iter = tqdm(self.label_files, desc='Reading labels') if n > 5000 else self.label_files
+        iter = tqdm(self.label_files, desc='Reading labels') if n > 1000 else self.label_files
         for i, file in enumerate(iter):
             try:
                 with open(file, 'r') as f:
