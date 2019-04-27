@@ -66,7 +66,7 @@ def train(
     # Configure run
     data_cfg = parse_data_cfg(data_cfg)
     train_path = data_cfg['train']
-    nc = data_cfg['classes']  # number of classes
+    nc = int(data_cfg['classes'])  # number of classes
 
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
