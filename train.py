@@ -64,7 +64,9 @@ def train(
         torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
     # Configure run
-    train_path = parse_data_cfg(data_cfg)['train']
+    data_cfg = parse_data_cfg(data_cfg)
+    train_path = data_cfg['train']
+    nc = data_cfg['classes']  # number of classes
 
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
@@ -145,7 +147,7 @@ def train(
     # Start training
     t, t0 = time.time(), time.time()
     model.hyp = hyp  # attach hyperparameters to model
-    model.class_weights = labels_to_class_weights(dataset.labels).to(device)  # attach class weights
+    model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
     model_info(model)
     nb = len(dataloader)
     results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
