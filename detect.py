@@ -94,20 +94,21 @@ def detect(
         if webcam:  # Show live webcam
             cv2.imshow(weights, im0)
 
-        if save_images:  # Save generated image with detections
-            if dataloader.mode == 'video':
+        if save_images:  # Save image with detections
+            if dataloader.mode == 'images':
+                cv2.imwrite(save_path, im0)
+            else:
                 if vid_path != save_path:  # new video
                     vid_path = save_path
                     if isinstance(vid_writer, cv2.VideoWriter):
                         vid_writer.release()  # release previous video writer
+
+                    codec = int(vid_cap.get(cv2.CAP_PROP_FOURCC))
+                    fps = vid_cap.get(cv2.CAP_PROP_FPS)
                     width = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                     height = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'avc1'), fps, (width, height))
+                    vid_writer = cv2.VideoWriter(save_path, codec, fps, (width, height))
                 vid_writer.write(im0)
-
-            else:
-                cv2.imwrite(save_path, im0)
 
     if save_images:
         print('Results saved to %s' % os.getcwd() + os.sep + output)
