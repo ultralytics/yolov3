@@ -75,6 +75,7 @@ def detect(
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
             # Print results to screen
+            print('%gx%g ' % img.shape[2:], end='')  # print image size
             for c in det[:, -1].unique():
                 n = (det[:, -1] == c).sum()
                 print('%g %ss' % (n, classes[int(c)]), end=', ')
