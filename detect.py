@@ -27,7 +27,7 @@ def detect(
 
     # Initialize model
     if ONNX_EXPORT:
-        s = (416, 416)  # onnx model image size
+        s = (416, 416)  # onnx model image size (height, width)
         model = Darknet(cfg, s)
     else:
         model = Darknet(cfg, img_size)
