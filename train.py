@@ -83,7 +83,9 @@ def train(
         torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
     # Configure run
-    train_path = parse_data_cfg(data_cfg)['train']
+    data_dict = parse_data_cfg(data_cfg)
+    train_path = data_dict['train']
+    nc = int(data_dict['classes'])  # number of classes
 
     # Initialize model
     model = Darknet(cfg, img_size).to(device)
@@ -139,7 +141,7 @@ def train(
     # plt.savefig('LR.png', dpi=300)
 
     # Dataset
-    dataset = LoadImagesAndLabels(train_path, img_size=img_size, augment=True)
+    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True)
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:
@@ -151,7 +153,7 @@ def train(
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=opt.num_workers,
-                            shuffle=True,
+                            shuffle=False,  # disable rectangular training if True
                             pin_memory=True,
                             collate_fn=dataset.collate_fn)
 
@@ -163,8 +165,9 @@ def train(
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
 
     # Start training
-    t = time.time()
+    t, t0 = time.time(), time.time()
     model.hyp = hyp  # attach hyperparameters to model
+    model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
     model_info(model)
     nb = len(dataloader)
     results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
@@ -264,7 +267,7 @@ def train(
             best_loss = test_loss
 
         # Save training results
-        save = True and not opt.nosave
+        save = (not opt.nosave) or (epoch == epochs - 1)
         if save:
             # Create checkpoint
             chkpt = {'epoch': epoch,
@@ -287,6 +290,8 @@ def train(
             # Delete checkpoint
             del chkpt
 
+    dt = (time.time() - t0) / 3600
+    print('%g epochs completed in %.3f hours.' % (epoch - start_epoch, dt))
     return results
 
 
@@ -311,7 +316,7 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=416, help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--transfer', action='store_true', help='transfer learning flag')
-    parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
+    parser.add_argument('--num-workers', type=int, default=2, help='number of Pytorch DataLoader workers')
     parser.add_argument('--dist-url', default='tcp://127.0.0.1:9999', type=str, help='distributed training init method')
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')

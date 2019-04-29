@@ -44,7 +44,7 @@ def test(
     names = load_classes(data_cfg['names'])  # class names
 
     # Dataloader
-    dataset = LoadImagesAndLabels(test_path, img_size=img_size)
+    dataset = LoadImagesAndLabels(test_path, img_size, batch_size)
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=4,
@@ -59,6 +59,7 @@ def test(
     for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc='[{}] Computing mAP'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))):
         targets = targets.to(device)
         imgs = imgs.to(device)
+        _, _, height, width = imgs.shape  # batch size, channels, height, width
 
         # Plot images with bounding boxes
         if batch_i == 0 and not os.path.exists('test_batch0.jpg'):
@@ -107,7 +108,12 @@ def test(
             correct = [0] * len(pred)
             if nl:
                 detected = []
-                tbox = xywh2xyxy(labels[:, 1:5]) * img_size  # target boxes
+                tcls_tensor = labels[:, 0]
+
+                # target boxes
+                tbox = xywh2xyxy(labels[:, 1:5])
+                tbox[:, [0, 2]] *= width
+                tbox[:, [1, 3]] *= height
 
                 # Search for correct predictions
                 for i, (*pbox, pconf, pcls_conf, pcls) in enumerate(pred):
@@ -121,12 +127,13 @@ def test(
                         continue
 
                     # Best iou, index between pred and targets
-                    iou, bi = bbox_iou(pbox, tbox).max(0)
+                    m = (pcls == tcls_tensor).nonzero().view(-1)
+                    iou, bi = bbox_iou(pbox, tbox[m]).max(0)
 
                     # If iou > threshold and class is correct mark as correct
-                    if iou > iou_thres and bi not in detected:  # and pcls == tcls[bi]:
+                    if iou > iou_thres and m[bi] not in detected:  # and pcls == tcls[bi]:
                         correct[i] = 1
-                        detected.append(bi)
+                        detected.append(m[bi])
 
             # Append statistics (correct, conf, pcls, tcls)
             stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls))
@@ -174,7 +181,7 @@ def test(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
-    parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
+    parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')

@@ -49,6 +49,17 @@ def model_info(model):
     print('Model Summary: %g layers, %g parameters, %g gradients' % (i + 1, n_p, n_g))
 
 
+def labels_to_class_weights(labels, nc=80):
+    # Get class weights (inverse frequency) from training labels
+    labels = np.concatenate(labels, 0)  # labels.shape = (866643, 5) for COCO
+    classes = labels[:, 0].astype(np.int)  # labels = [class xywh]
+    weights = np.bincount(classes, minlength=nc)  # occurences per class
+    weights[weights == 0] = 1  # replace empty bins with 1
+    weights = 1 / weights  # number of targets per class
+    weights /= weights.sum()  # normalize
+    return torch.Tensor(weights)
+
+
 def coco_class_weights():  # frequency of each class in coco train2014
     weights = 1 / torch.FloatTensor(
         [187437, 4955, 30920, 6033, 3838, 4332, 3160, 7051, 7677, 9167, 1316, 1372, 833, 6757, 7355, 3302, 3776, 4671,
@@ -247,7 +258,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
 
     # Define criteria
     MSE = nn.MSELoss()
-    CE = nn.CrossEntropyLoss()
+    CE = nn.CrossEntropyLoss()  # (weight=model.class_weights)
     BCE = nn.BCEWithLogitsLoss()
 
     # Compute losses
@@ -255,7 +266,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     bs = p[0].shape[0]  # batch size
     k = h['k'] * bs  # loss gain
     for i, pi0 in enumerate(p):  # layer i predictions, i
-        b, a, gj, gi = indices[i]  # image, anchor, gridx, gridy
+        b, a, gj, gi = indices[i]  # image, anchor, gridy, gridx
         tconf = torch.zeros_like(pi0[..., 0])  # conf
 
         # Compute losses
@@ -302,8 +313,8 @@ def build_targets(model, targets):
 
         # Indices
         b, c = t[:, :2].long().t()  # target image, class
-        gxy = t[:, 2:4] * layer.ng
-        gi, gj = gxy.long().t()  # grid_i, grid_j
+        gxy = t[:, 2:4] * layer.ng  # grid x, y
+        gi, gj = gxy.long().t()  # grid x, y indices
         indices.append((b, a, gj, gi))
 
         # XY coordinates
@@ -500,13 +511,14 @@ def plot_images(imgs, targets, fname='images.jpg'):
     targets = targets.cpu().numpy()
 
     fig = plt.figure(figsize=(10, 10))
-    img_size = imgs.shape[3]
-    bs = imgs.shape[0]  # batch size
-    sp = np.ceil(bs ** 0.5)  # subplots
+    bs, _, h, w = imgs.shape  # batch size, _, height, width
+    ns = np.ceil(bs ** 0.5)  # number of subplots
 
     for i in range(bs):
-        boxes = xywh2xyxy(targets[targets[:, 0] == i, 2:6]).T * img_size
-        plt.subplot(sp, sp, i + 1).imshow(imgs[i].transpose(1, 2, 0))
+        boxes = xywh2xyxy(targets[targets[:, 0] == i, 2:6]).T
+        boxes[[0, 2]] *= w
+        boxes[[1, 3]] *= h
+        plt.subplot(ns, ns, i + 1).imshow(imgs[i].transpose(1, 2, 0))
         plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
         plt.axis('off')
     fig.tight_layout()
@@ -514,7 +526,7 @@ def plot_images(imgs, targets, fname='images.jpg'):
     plt.close()
 
 
-def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
+def plot_results(start=1, stop=0):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
 
@@ -529,6 +541,6 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
         for i in range(10):
             ax[i].plot(x, results[i, x], marker='.', label=f.replace('.txt', ''))
             ax[i].set_title(s[i])
-    ax[0].legend()
     fig.tight_layout()
+    ax[4].legend()
     fig.savefig('results.png', dpi=300)
