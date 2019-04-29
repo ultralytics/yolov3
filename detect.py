@@ -11,7 +11,7 @@ def detect(
         cfg,
         data_cfg,
         weights,
-        images,
+        images='data/samples',  # input folder
         output='output',  # output folder
         img_size=416,
         conf_thres=0.5,
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
     parser.add_argument('--images', type=str, default='data/samples', help='path to images')
-    parser.add_argument('--img-size', type=int, default=416, help='size of each image dimension')
+    parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
     opt = parser.parse_args()
@@ -133,7 +133,7 @@ if __name__ == '__main__':
             opt.cfg,
             opt.data_cfg,
             opt.weights,
-            opt.images,
+            images=opt.images,
             img_size=opt.img_size,
             conf_thres=opt.conf_thres,
             nms_thres=opt.nms_thres
