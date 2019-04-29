@@ -75,7 +75,6 @@ class LoadImages:  # for inference
 
         # Padded resize
         img, _, _, _ = letterbox(img0, new_shape=self.height)
-        print('%gx%g ' % img.shape[:2], end='')  # print image size
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
@@ -114,6 +113,7 @@ class LoadWebcam:  # for inference
         assert ret_val, 'Webcam Error'
         img_path = 'webcam_%g.jpg' % self.count
         img0 = cv2.flip(img0, 1)  # flip left-right
+        print('webcam %g: ' % self.count, end='')
 
         # Padded resize
         img, _, _, _ = letterbox(img0, new_shape=self.height)
