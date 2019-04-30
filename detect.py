@@ -5,7 +5,9 @@ from sys import platform
 from models import *
 from utils.datasets import *
 from utils.utils import *
-
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg')
 
 def detect(
         cfg,
@@ -17,8 +19,9 @@ def detect(
         conf_thres=0.5,
         nms_thres=0.5,
         save_txt=False,
-        save_images=True,
-        webcam=False
+        save_images=False,
+        webcam=False,
+        webservice=False
 ):
     device = torch_utils.select_device()
     if os.path.exists(output):
@@ -54,6 +57,10 @@ def detect(
     if webcam:
         save_images = False
         dataloader = LoadWebcam(img_size=img_size)
+        fig = None
+    elif webservice:
+        dataloader = LoadService(img_size=img_size) # Other options?
+        fig = None
     else:
         dataloader = LoadImages(images, img_size=img_size)
 
@@ -91,8 +98,15 @@ def detect(
 
         print('Done. (%.3fs)' % (time.time() - t))
 
-        if webcam:  # Show live webcam
-            cv2.imshow(weights, im0)
+        if webcam or webservice:  # Show live webcam
+
+            if fig is None:
+                fig = plt.figure()
+                ax = fig.gca()
+                fig.show()
+
+            ax.imshow(im0)
+            fig.canvas.draw()
 
         if save_images:  # Save generated image with detections
             if dataloader.mode == 'video':
@@ -135,5 +149,6 @@ if __name__ == '__main__':
             opt.images,
             img_size=opt.img_size,
             conf_thres=opt.conf_thres,
-            nms_thres=opt.nms_thres
+            nms_thres=opt.nms_thres,
+            webservice=True
         )

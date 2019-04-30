@@ -18,20 +18,100 @@
 
 # Introduction
 
+This fork of [Ultralytics YoloV3](https://github.com/ultralytics/yolov3) Contains a client/server setup for their object detection application.
+
+
 This directory contains PyTorch YOLOv3 software and an iOS App developed by Ultralytics LLC, and **is freely available for redistribution under the GPL-3.0 license**. For more information please visit https://www.ultralytics.com.
 
 # Description
 
-The https://github.com/ultralytics/yolov3 repo contains inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. Training is done on the COCO dataset by default: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO:** https://pjreddie.com/darknet/yolo/.
+The  repo contains inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. Training is done on the COCO dataset by default: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO:** https://pjreddie.com/darknet/yolo/.
 
-# Requirements
 
-Python 3.7 or later with the following `pip3 install -U -r requirements.txt` packages:
+# Instructions to run the detection service
 
-- `numpy`
-- `torch >= 1.0.0`
-- `opencv-python`
-- `tqdm`
+### Instructions for Mac Users
+
+Install https://www.xquartz.org/
+make sure you have xauth: `which xauth`
+
+### Connect to your EC2 Instance
+ 
+Start an Amazon P3 instance using amazon Deep Learning AMI (Ubuntu) Version 22.0 (ami-060865e8b5914b4c4).
+You may need to request a limit increase for this class of ec2 instance.
+
+SSH (connect) to the instance adding `-Y` to trust X11 forwarding (opening the GUI window) and -L to tunnel the local 8089 port that we send video through ssh to port 8089 on the server. to the ssh args: `ssh -Y -i ~/.ssh/DavesKey.pem -L 8089:localhost:8089 ubuntu@34.200.247.40` works for the ip address on my instance (yours will be different and have a different pem key!)
+You should see `Warning: untrusted X11 forwarding setup failed: xauth key data not generated` if X11 is working properly.
+
+### Setup
+
+Use Python 3.6 with PyTorch using from `source activate pytorch_p36`
+
+Install all the updated packages
+`conda install numpy opencv matplotlib tqdm && conda install pytorch torchvision -c pytorch`
+
+Clone the fork of yolov3 `git clone https://github.com/pvd-data-science/yolov3.git`
+
+Get the weights:
+`cd yolov3/weights` and then `wget -c https://pjreddie.com/media/files/yolov3.weights`
+`cd ..` to get back to the yolov3 directory.
+
+### Run the detection program!
+
+`python3 detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.weights`
+
+You should see output like this:
+```
+$ python3 detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.weights
+Namespace(cfg='cfg/yolov3.cfg', conf_thres=0.5, data_cfg='data/coco.data', images='data/samples', img_size=416, nms_thres=0.5, weights='weights/yolov3.weights')
+Using CUDA device0 _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', total_memory=16130MB)
+Socket bind complete
+Listening for conenction
+```
+Once you see listening for connection, start the client to send video!
+(checkout the repo on your laptop and make sure you have Python OpenCV installed)
+`python3 client.py`
+
+
+On the server side you should see:
+```
+debug1: Connection to port 8089 forwarding to localhost port 8089 requested.
+debug1: channel 3: new [direct-tcpip]
+Connection accepted!
+IMG SHAPE: (3, 256, 416)
+1 persons, 2 tvs, Done. (0.225s)
+debug1: client_input_channel_open: ctype x11 rchan 4 win 65536 max 16384
+debug1: client_request_x11: request from 127.0.0.1 46296
+debug1: x11_connect_display: $DISPLAY is launchd
+debug1: channel 4: new [x11]
+debug1: confirm x11
+IMG SHAPE: (3, 256, 416)
+1 persons, 2 tvs, Done. (0.017s)
+IMG SHAPE: (3, 256, 416)
+1 persons, 2 tvs, Done. (0.017s)
+IMG SHAPE: (3, 256, 416)
+1 persons, 2 tvs, Done. (0.017s)
+IMG SHAPE: (3, 256, 416)
+1 persons, 2 tvs, Done. (0.017s)
+IMG SHAPE: (3, 256, 416)
+1 persons, 1 tvs, Done. (0.016s)
+```
+
+And on the client side you will see:
+```
+$ python3 client.py
+Sent frame!!!
+Sent frame!!!
+Sent frame!!!
+Sent frame!!!
+Sent frame!!!
+Sent frame!!!
+Sent frame!!!
+Sent frame!!!
+Sent frame!!!
+Sent frame!!!
+```
+
 
 # Tutorials
 

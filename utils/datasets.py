@@ -4,6 +4,8 @@ import os
 import random
 import shutil
 from pathlib import Path
+import socket
+import io
 
 import cv2
 import numpy as np
@@ -127,6 +129,62 @@ class LoadWebcam:  # for inference
 
     def __len__(self):
         return 0
+
+
+class LoadService:  # for inference
+    def __init__(self, img_size=416, source_height=720, source_width=1280, port=8089, host=''):
+        self.height = source_height
+        self.width = source_width
+        self.img_size = img_size
+        self.count = 0
+        self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.socket.bind((host,port))
+        print('Socket bind complete')
+
+        # Timeout or something after 60 seconds
+        self.socket.listen(60)
+        print("Listening for conenction")
+
+        self.conn, self.addr=self.socket.accept()
+        print("Connection accepted!")
+
+        self.msg_len = source_height * source_width * 3
+        self.buffer = io.BytesIO(bytearray(self.msg_len))
+
+    def __iter__(self):
+        self.count = -1
+        return self
+
+    def __next__(self):
+        self.count += 1
+        self.buffer.seek(0)
+        while self.buffer.tell() < self.msg_len:
+            chunk = self.conn.recv(4096)  # 2764800 / 4096 == 675
+            if chunk == b'':
+                raise RuntimeError("socket connection broken")
+            self.buffer.write(chunk)
+
+        img0 = np.frombuffer(self.buffer.getvalue(), dtype=np.uint8).reshape(self.height, self.width, 3)
+
+        img_path = 'webservice_%g.jpg' % self.count
+        img0 = cv2.flip(img0, 1)  # flip left-right
+
+        # Padded resize
+        img, _, _, _ = letterbox(img0, new_shape=self.img_size)
+
+        # Normalize RGB
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
+        img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+
+        print("IMG SHAPE: {}".format(img.shape))
+
+        return img_path, img, img0, None
+
+    def __len__(self):
+        return 0
+
+
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
