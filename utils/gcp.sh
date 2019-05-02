@@ -55,7 +55,7 @@ gsutil cp results.png gs://ultralytics
 sudo shutdown
 
 # Reproduce mAP
-python3 test.py --save-json --img-size 608  --batch-size 16
+python3 test.py --save-json --img-size 608
 python3 test.py --save-json --img-size 416
 python3 test.py --save-json --img-size 320
 sudo shutdown

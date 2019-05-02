@@ -431,7 +431,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
                     dc = dc[i == 0]
 
             elif nms_style == 'SOFT':  # soft-NMS https://arxiv.org/abs/1704.04503
-                sigma = nms_thres  # soft-nms sigma parameter
+                sigma = 0.5  # soft-nms sigma parameter
                 while len(dc):
                     if len(dc) == 1:
                         det_max.append(dc)
