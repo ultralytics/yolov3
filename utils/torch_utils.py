@@ -25,6 +25,7 @@ def select_device(force_cpu=False):
                 print("           device%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
                       (i, x[i].name, x[i].total_memory / c))
 
+    print('')  # skip a line
     return device
 
 
