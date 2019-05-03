@@ -179,7 +179,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         #    self.imgs = [cv2.imread(img_files[i]) for i in range(n)]
 
         # Preload labels (required for weighted CE training)
-        self.labels = [np.array([])] * n
+        self.labels = [np.zeros((0, 5))] * n
         iter = tqdm(self.label_files, desc='Reading labels') if n > 1000 else self.label_files
         for i, file in enumerate(iter):
             try:
