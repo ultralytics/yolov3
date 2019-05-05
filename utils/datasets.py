@@ -130,7 +130,7 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
             self.img_files = list(filter(lambda x: len(x) > 0, img_files))
