@@ -104,11 +104,10 @@ def detect(
                     if isinstance(vid_writer, cv2.VideoWriter):
                         vid_writer.release()  # release previous video writer
 
-                    codec = int(vid_cap.get(cv2.CAP_PROP_FOURCC))
                     fps = vid_cap.get(cv2.CAP_PROP_FPS)
                     width = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                     height = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    vid_writer = cv2.VideoWriter(save_path, codec, fps, (width, height))
+                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
                 vid_writer.write(im0)
 
     if save_images:
