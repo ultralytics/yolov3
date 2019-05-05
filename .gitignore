@@ -26,6 +26,10 @@ data/*
 !data/coco.data
 !data/coco_*.data
 !data/coco_*.txt
+!data/coco_*.txt
+!data/trainvalno5k.shapes
+!data/5k.shapes
+
 
 pycocotools/*
 results*.txt
