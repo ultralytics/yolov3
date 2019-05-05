@@ -155,6 +155,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             if os.path.exists(sp):  # read existing shapefile
                 with open(sp, 'r') as f:
                     s = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+                assert len(s) == n, 'Shapefile out of sync, please delete %s and rerun' % sp
             else:  # no shapefile, so read shape using PIL and write shapefile for next time (faster)
                 s = np.array([Image.open(f).size for f in tqdm(self.img_files, desc='Reading image shapes')])
                 np.savetxt(sp, s, fmt='%g')
