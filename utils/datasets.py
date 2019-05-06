@@ -368,14 +368,14 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
         y = xy[:, [1, 3, 5, 7]]
         xy = np.concatenate((x.min(1), y.min(1), x.max(1), y.max(1))).reshape(4, n).T
 
-        # apply angle-based reduction of bounding boxes
-        radians = a * math.pi / 180
-        reduction = max(abs(math.sin(radians)), abs(math.cos(radians))) ** 0.5
-        x = (xy[:, 2] + xy[:, 0]) / 2
-        y = (xy[:, 3] + xy[:, 1]) / 2
-        w = (xy[:, 2] - xy[:, 0]) * reduction
-        h = (xy[:, 3] - xy[:, 1]) * reduction
-        xy = np.concatenate((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).reshape(4, n).T
+        # # apply angle-based reduction of bounding boxes
+        # radians = a * math.pi / 180
+        # reduction = max(abs(math.sin(radians)), abs(math.cos(radians))) ** 0.5
+        # x = (xy[:, 2] + xy[:, 0]) / 2
+        # y = (xy[:, 3] + xy[:, 1]) / 2
+        # w = (xy[:, 2] - xy[:, 0]) * reduction
+        # h = (xy[:, 3] - xy[:, 1]) * reduction
+        # xy = np.concatenate((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).reshape(4, n).T
 
         # reject warped points outside of image
         xy[:, [0, 2]] = xy[:, [0, 2]].clip(0, width)
@@ -384,7 +384,7 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
         h = xy[:, 3] - xy[:, 1]
         area = w * h
         ar = np.maximum(w / (h + 1e-16), h / (w + 1e-16))
-        i = (w > 4) & (h > 4) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
+        i = (w > 2) & (h > 2) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
 
         targets = targets[i]
         targets[:, 1:5] = xy[i]
