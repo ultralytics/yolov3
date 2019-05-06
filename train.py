@@ -242,7 +242,7 @@ def train(
             # Multi-Scale training (320 - 608 pixels) every 10 batches
             if multi_scale and (i + 1) % 10 == 0:
                 dataset.img_size = random.choice(range(10, 20)) * 32
-                print('multi_scale img_size = %g' % dataset.img_size)
+                #print('multi_scale img_size = %g' % dataset.img_size)
 
             iteration += 1
                 
