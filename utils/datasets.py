@@ -130,7 +130,7 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
             self.img_files = list(filter(lambda x: len(x) > 0, img_files))
@@ -144,18 +144,24 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             for x in self.img_files]
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
-        self.train_rectangular = False
-        if self.train_rectangular:
+        self.pad_rectangular = rect
+        if self.pad_rectangular:
+            from PIL import Image
             bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
             nb = bi[-1] + 1  # number of batches
-            from PIL import Image
 
-            # Read image aspect ratios
-            iter = tqdm(self.img_files, desc='Reading image shapes') if n > 100 else self.img_files
-            s = np.array([Image.open(f).size for f in iter])
-            ar = s[:, 1] / s[:, 0]  # aspect ratio
+            # Read image shapes
+            sp = 'data' + os.sep + path.replace('.txt', '.shapes').split(os.sep)[-1]  # shapefile path
+            if os.path.exists(sp):  # read existing shapefile
+                with open(sp, 'r') as f:
+                    s = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+                assert len(s) == n, 'Shapefile out of sync, please delete %s and rerun' % sp
+            else:  # no shapefile, so read shape using PIL and write shapefile for next time (faster)
+                s = np.array([Image.open(f).size for f in tqdm(self.img_files, desc='Reading image shapes')])
+                np.savetxt(sp, s, fmt='%g')
 
             # Sort by aspect ratio
+            ar = s[:, 1] / s[:, 0]  # aspect ratio
             i = ar.argsort()
             ar = ar[i]
             self.img_files = [self.img_files[i] for i in i]
@@ -185,8 +191,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             try:
                 with open(file, 'r') as f:
                     self.labels[i] = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
-            except:  # missing label file
-                pass
+            except:
+                pass  # missing label file
 
     def __len__(self):
         return len(self.img_files)
@@ -195,7 +201,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img_path = self.img_files[index]
         label_path = self.label_files[index]
 
-        # if hasattr(self, 'imgs'):
+        # if hasattr(self, 'imgs'):  # preloaded
         #    img = self.imgs[index]  # BGR
         img = cv2.imread(img_path)  # BGR
         assert img is not None, 'File Not Found ' + img_path
@@ -219,7 +225,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Letterbox
         h, w, _ = img.shape
-        if self.train_rectangular:
+        if self.pad_rectangular:
             new_shape = self.batch_shapes[self.batch[index]]
             img, ratio, padw, padh = letterbox(img, new_shape=new_shape, mode='rect')
         else:

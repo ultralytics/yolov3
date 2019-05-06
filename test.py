@@ -191,7 +191,7 @@ if __name__ == '__main__':
     parser.add_argument('--save-json', action='store_true', help='save a cocoapi-compatible JSON results file')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     opt = parser.parse_args()
-    print(opt, end='\n\n')
+    print(opt)
 
     with torch.no_grad():
         mAP = test(

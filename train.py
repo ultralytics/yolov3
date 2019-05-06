@@ -327,7 +327,7 @@ if __name__ == '__main__':
     parser.add_argument('--visdom', action='store_true', help='Produce graphs using Visdom')
     parser.add_argument('--var', default=0, type=int, help='debug variable')
     opt = parser.parse_args()
-    print(opt, end='\n\n')
+    print(opt)
 
     if opt.evolve:
         opt.notest = True  # save time by only testing final epoch
