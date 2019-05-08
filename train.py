@@ -324,14 +324,14 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.2, .2, .2, .2, .3, .2, .2, .02, .3]
+            s = [.2, .2, .2, .2, .3, .2, .2, .03, .3]
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
 
             # Clip to limits
             keys = ['iou_t', 'momentum', 'weight_decay']
-            limits = [(0, 0.90), (0.80, 0.95), (0, 0.01)]
+            limits = [(0, 0.90), (0.75, 0.95), (0, 0.01)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
