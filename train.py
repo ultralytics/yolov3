@@ -360,17 +360,17 @@ if __name__ == '__main__':
             else:
                 hyp = old_hyp.copy()  # reset hyp to
 
-            # Plot results
-            import numpy as np
-            import matplotlib.pyplot as plt
-            a = np.loadtxt('evolve_1000val.txt')
-            x = a[:, 2] * a[:, 3]  # metric = mAP * F1
-            weights = (x - x.min()) ** 2
-            fig = plt.figure(figsize=(14, 7))
-            for i in range(len(hyp)):
-                y = a[:, i + 5]
-                mu = (y * weights).sum() / weights.sum()
-                plt.subplot(2, 5, i+1)
-                plt.plot(x.max(), mu, 'o')
-                plt.plot(x, y, '.')
-                print(list(hyp.keys())[i],'%.4g' % mu)
+            # # Plot results
+            # import numpy as np
+            # import matplotlib.pyplot as plt
+            # a = np.loadtxt('evolve_1000val.txt')
+            # x = a[:, 2] * a[:, 3]  # metric = mAP * F1
+            # weights = (x - x.min()) ** 2
+            # fig = plt.figure(figsize=(14, 7))
+            # for i in range(len(hyp)):
+            #     y = a[:, i + 5]
+            #     mu = (y * weights).sum() / weights.sum()
+            #     plt.subplot(2, 5, i+1)
+            #     plt.plot(x.max(), mu, 'o')
+            #     plt.plot(x, y, '.')
+            #     print(list(hyp.keys())[i],'%.4g' % mu)

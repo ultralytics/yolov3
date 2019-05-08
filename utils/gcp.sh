@@ -45,10 +45,10 @@ wget https://storage.googleapis.com/ultralytics/yolov3/best_v1_0.pt -O weights/b
 
 # Reproduce tutorials
 rm results*.txt  # WARNING: removes existing results
-python3 train.py --nosave --data data/coco_1img.data && mv results.txt results3_1img.txt
-python3 train.py --nosave --data data/coco_10img.data && mv results.txt results3_10img.txt
-python3 train.py --nosave --data data/coco_100img.data && mv results.txt results4_100img.txt
-python3 train.py --nosave --data data/coco_100img.data --transfer && mv results.txt results3_100imgTL.txt
+python3 train.py --nosave --data data/coco_1img.data && mv results.txt results0r_1img.txt
+python3 train.py --nosave --data data/coco_10img.data && mv results.txt results0r_10img.txt
+python3 train.py --nosave --data data/coco_100img.data && mv results.txt results0r_100img.txt
+#python3 train.py --nosave --data data/coco_100img.data --transfer && mv results.txt results3_100imgTL.txt
 python3 -c "from utils import utils; utils.plot_results()"
 gsutil cp results*.txt gs://ultralytics
 gsutil cp results.png gs://ultralytics
@@ -75,7 +75,7 @@ git clone https://github.com/ultralytics/yolov3  # master
 # git clone -b test --depth 1 https://github.com/ultralytics/yolov3 yolov3_test  # branch
 cp -r cocoapi/PythonAPI/pycocotools yolov3
 cp -r weights yolov3 && cd yolov3
-python3 train.py --evolve --data data/coco_100img.data --num-workers 2  --epochs 30
+python3 train.py --evolve --data data/coco_1k5k.data --epochs 30 --img-size 320
 gsutil cp evolve.txt gs://ultralytics
 sudo shutdown
 
