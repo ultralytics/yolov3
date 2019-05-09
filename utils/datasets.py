@@ -139,9 +139,11 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         assert n > 0, 'No images found in %s' % path
         self.img_size = img_size
         self.augment = augment
-        self.label_files = [
-            x.replace('images', 'labels').replace('.bmp', '.txt').replace('.jpg', '.txt').replace('.png', '.txt')
-            for x in self.img_files]
+        self.label_files = [x.replace('images', 'labels').
+                                replace('.jpeg', '.txt').
+                                replace('.jpg', '.txt').
+                                replace('.bmp', '.txt').
+                                replace('.png', '.txt') for x in self.img_files]
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         self.pad_rectangular = rect
