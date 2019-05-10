@@ -265,7 +265,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     # Compute losses
     h = model.hyp  # hyperparameters
     bs = p[0].shape[0]  # batch size
-    k = h['k'] * bs  # loss gain
+    k = bs  # loss gain
     for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridy, gridx
         tconf = torch.zeros_like(pi0[..., 0])  # conf
