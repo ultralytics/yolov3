@@ -130,7 +130,7 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weighting=False):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weights=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
             self.img_files = list(filter(lambda x: len(x) > 0, img_files))
@@ -146,8 +146,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                                 replace('.bmp', '.txt').
                                 replace('.png', '.txt') for x in self.img_files]
 
-        self.image_weighting = image_weighting
-        self.rect = False if image_weighting else rect
+        self.image_weights = image_weights
+        self.rect = False if image_weights else rect
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         if self.rect:
@@ -203,8 +203,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         return len(self.img_files)
 
     def __getitem__(self, index):
-        if self.image_weighting:
-            index = random.choices(range(self.n), weights=self.image_weights, k=1)[0]  # random weighted index
+        if self.image_weights:
+            index = self.indices[index]
 
         img_path = self.img_files[index]
         label_path = self.label_files[index]

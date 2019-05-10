@@ -167,7 +167,8 @@ def train(
                     p.requires_grad = False if epoch == 0 else True
 
         # Update image weights (optional)
-        dataset.image_weights = labels_to_image_weights(dataset.labels, nc=nc, class_weights=1 - maps)
+        image_weights = labels_to_image_weights(dataset.labels, nc=nc, class_weights=1 - maps)
+        dataset.indices = random.choices(range(dataset.n), weights=image_weights, k=dataset.n)  # random weighted index
 
         mloss = torch.zeros(5).to(device)  # mean losses
         for i, (imgs, targets, _, _) in enumerate(dataloader):
@@ -281,12 +282,12 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco_32img.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--transfer', action='store_true', help='transfer learning flag')
-    parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
+    parser.add_argument('--num-workers', type=int, default=0, help='number of Pytorch DataLoader workers')
     parser.add_argument('--dist-url', default='tcp://127.0.0.1:9999', type=str, help='distributed training init method')
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
