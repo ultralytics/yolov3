@@ -130,12 +130,13 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weighting=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
             self.img_files = list(filter(lambda x: len(x) > 0, img_files))
 
         n = len(self.img_files)
+        self.n = n
         assert n > 0, 'No images found in %s' % path
         self.img_size = img_size
         self.augment = augment
@@ -145,9 +146,11 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                                 replace('.bmp', '.txt').
                                 replace('.png', '.txt') for x in self.img_files]
 
+        self.image_weighting = image_weighting
+        self.rect = False if image_weighting else rect
+
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
-        self.pad_rectangular = rect
-        if self.pad_rectangular:
+        if self.rect:
             from PIL import Image
             bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
             nb = bi[-1] + 1  # number of batches
@@ -200,6 +203,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         return len(self.img_files)
 
     def __getitem__(self, index):
+        if self.image_weighting:
+            index = random.choices(range(self.n), weights=self.image_weights, k=1)[0]  # random weighted index
+
         img_path = self.img_files[index]
         label_path = self.label_files[index]
 
@@ -230,7 +236,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Letterbox
         h, w, _ = img.shape
-        if self.pad_rectangular:
+        if self.rect:
             new_shape = self.batch_shapes[self.batch[index]]
             img, ratio, padw, padh = letterbox(img, new_shape=new_shape, mode='rect')
         else:
@@ -389,7 +395,7 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
         h = xy[:, 3] - xy[:, 1]
         area = w * h
         ar = np.maximum(w / (h + 1e-16), h / (w + 1e-16))
-        i = (w > 2) & (h > 2) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
+        i = (w > 4) & (h > 4) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
 
         targets = targets[i]
         targets[:, 1:5] = xy[i]

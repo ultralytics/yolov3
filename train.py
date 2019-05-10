@@ -23,6 +23,7 @@ hyp = {'xy': 0.5,  # xy loss gain
        'weight_decay': 0.0005,  # optimizer weight decay
        }
 
+
 # Original
 # hyp = {'xy': 0.5,  # xy loss gain
 #        'wh': 0.0625,  # wh loss gain
@@ -34,7 +35,6 @@ hyp = {'xy': 0.5,  # xy loss gain
 #        'momentum': 0.9,  # SGD momentum
 #        'weight_decay': 0.0005,  # optimizer weight decay
 #        }
-
 
 
 def train(
@@ -119,7 +119,7 @@ def train(
     # plt.savefig('LR.png', dpi=300)
 
     # Dataset
-    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True)
+    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True, image_weighting=False)
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:
@@ -147,6 +147,7 @@ def train(
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
     model_info(model)
     nb = len(dataloader)
+    maps = np.zeros(nc)  # mAP per class
     results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
     n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
     for f in glob.glob('train_batch*.jpg') + glob.glob('test_batch*.jpg'):
@@ -164,6 +165,9 @@ def train(
             for name, p in model.named_parameters():
                 if int(name.split('.')[1]) < cutoff:  # if layer < 75
                     p.requires_grad = False if epoch == 0 else True
+
+        # Update image weights (optional)
+        dataset.image_weights = labels_to_image_weights(dataset.labels, nc=nc, class_weights=1 - maps)
 
         mloss = torch.zeros(5).to(device)  # mean losses
         for i, (imgs, targets, _, _) in enumerate(dataloader):
@@ -218,10 +222,10 @@ def train(
                 print('multi_scale img_size = %g' % dataset.img_size)
 
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
-        if not (opt.notest or (opt.nosave and epoch < 5)) or epoch == epochs - 1:
+        if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:
             with torch.no_grad():
-                results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
-                                    conf_thres=0.1)
+                results, maps = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
+                                          conf_thres=0.1)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
