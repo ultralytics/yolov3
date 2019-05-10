@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from utils import torch_utils
+from . import torch_utils
 
 matplotlib.rc('font', **{'size': 12})
 
