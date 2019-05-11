@@ -10,21 +10,19 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-# Hyperparameters
-# Evolved with python3 train.py --evolve --data data/coco_1k5k.data --epochs 50 --img-size 320
-hyp = {'xy': 0.5,  # xy loss gain
-       'wh': 0.0625,  # wh loss gain
-       'cls': 0.0625,  # cls loss gain
-       'conf': 4,  # conf loss gain
-       'iou_t': 0.1,  # iou target-anchor training threshold
-       'lr0': 0.001,  # initial learning rate
+# Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.204      0.302      0.175      0.234 (square smart)
+hyp = {'xy': 0.167,  # xy loss gain
+       'wh': 0.09339,  # wh loss gain
+       'cls': 0.03868,  # cls loss gain
+       'conf': 4.546,  # conf loss gain
+       'iou_t': 0.2454,  # iou target-anchor training threshold
+       'lr0': 0.000198,  # initial learning rate
        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.9,  # SGD momentum
-       'weight_decay': 0.0005,  # optimizer weight decay
-       }
+       'momentum': 0.95,  # SGD momentum
+       'weight_decay': 0.0007838}  # optimizer weight decay
 
 
-# Original
+# Hyperparameters: Original, Metrics: 0.172      0.304      0.156      0.205 (square)
 # hyp = {'xy': 0.5,  # xy loss gain
 #        'wh': 0.0625,  # wh loss gain
 #        'cls': 0.0625,  # cls loss gain
@@ -33,8 +31,29 @@ hyp = {'xy': 0.5,  # xy loss gain
 #        'lr0': 0.001,  # initial learning rate
 #        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
 #        'momentum': 0.9,  # SGD momentum
-#        'weight_decay': 0.0005,  # optimizer weight decay
-#        }
+#        'weight_decay': 0.0005}  # optimizer weight decay
+
+# Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.225      0.251      0.145      0.218 (rect)
+# hyp = {'xy': 0.4499,  # xy loss gain
+#        'wh': 0.05121,  # wh loss gain
+#        'cls': 0.04207,  # cls loss gain
+#        'conf': 2.853,  # conf loss gain
+#        'iou_t': 0.2487,  # iou target-anchor training threshold
+#        'lr0': 0.0005301,  # initial learning rate
+#        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.8823,  # SGD momentum
+#        'weight_decay': 0.0004149}  # optimizer weight decay
+
+# Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.178      0.313      0.167      0.212 (square)
+# hyp = {'xy': 0.4664,  # xy loss gain
+#        'wh': 0.08437,  # wh loss gain
+#        'cls': 0.05145,  # cls loss gain
+#        'conf': 4.244,  # conf loss gain
+#        'iou_t': 0.09121,  # iou target-anchor training threshold
+#        'lr0': 0.0004938,  # initial learning rate
+#        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.9025,  # SGD momentum
+#        'weight_decay': 0.0005417}  # optimizer weight decay
 
 
 def train(
@@ -119,7 +138,7 @@ def train(
     # plt.savefig('LR.png', dpi=300)
 
     # Dataset
-    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True, image_weights=False)
+    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True, rect=True, image_weights=True)
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:
@@ -330,14 +349,14 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.2, .2, .2, .2, .3, .2, .2, .03, .3]
+            s = [.3, .3, .3, .3, .3, .3, .3, .03, .3]
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
 
             # Clip to limits
-            keys = ['iou_t', 'momentum', 'weight_decay']
-            limits = [(0, 0.90), (0.75, 0.95), (0, 0.01)]
+            keys = ['lr0', 'iou_t', 'momentum', 'weight_decay']
+            limits = [(1e-4, 1e-2), (0, 0.90), (0.70, 0.99), (0, 0.01)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
