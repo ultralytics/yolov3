@@ -547,7 +547,7 @@ def plot_images(imgs, targets, fname='images.jpg'):
     plt.close()
 
 
-def plot_results(start=1, stop=0):  # from utils.utils import *; plot_results()
+def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
 

@@ -140,14 +140,13 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         assert n > 0, 'No images found in %s' % path
         self.img_size = img_size
         self.augment = augment
+        self.image_weights = image_weights
+        self.rect = False if image_weights else rect
         self.label_files = [x.replace('images', 'labels').
                                 replace('.jpeg', '.txt').
                                 replace('.jpg', '.txt').
                                 replace('.bmp', '.txt').
                                 replace('.png', '.txt') for x in self.img_files]
-
-        self.image_weights = image_weights
-        self.rect = False if image_weights else rect
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         if self.rect:
@@ -187,7 +186,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Preload images
         if n < 1001:  # preload all images into memory if possible
-            self.imgs = [cv2.imread(self.img_files[i]) for i in range(n)]
+            self.imgs = [cv2.imread(self.img_files[i]) for i in tqdm(range(n), desc='Reading images')]
 
         # Preload labels (required for weighted CE training)
         self.labels = [np.zeros((0, 5))] * n
