@@ -176,7 +176,7 @@ def test(
         map = cocoEval.stats[1]  # update mAP to pycocotools mAP
 
     # Return results
-    maps = np.zeros(nc)
+    maps = np.zeros(nc) + map
     for i, c in enumerate(ap_class):
         maps[c] = ap[i]
     return (mp, mr, map, mf1, loss / len(dataloader)), maps
