@@ -9,12 +9,11 @@ git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make
 sudo shutdown
 
 # Re-clone
-rm -rf yolov3
+rm -rf yolov3  # Warning: remove existing
 git clone https://github.com/ultralytics/yolov3  # master
 # git clone -b test --depth 1 https://github.com/ultralytics/yolov3 test  # branch
 cp -r cocoapi/PythonAPI/pycocotools yolov3
-cp -r weights yolov3
-cd yolov3
+cp -r weights yolov3 && cd yolov3
 
 # Train
 python3 train.py
@@ -61,23 +60,16 @@ python3 test.py --save-json --img-size 320
 sudo shutdown
 
 # Unit tests
-rm -rf yolov3
-git clone https://github.com/ultralytics/yolov3  # master
-cp -r cocoapi/PythonAPI/pycocotools yolov3
-cp -r weights yolov3 && cd yolov3
 python3 detect.py  # detect 2 persons, 1 tie
 python3 test.py --data data/coco_32img.data  # test mAP = 0.78
 python3 train.py --data data/coco_32img.data --epochs 4 --nosave  # train 4 epochs
 
+# AlexyAB Darknet
+./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp-sm2.cfg darknet53.conv.74 # train
+./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp.cfg backup/yolov3-spp_last.weights  # resume
+python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/backup yolov3-spp_3000.weights  # test
+
 # Debug/Development
-rm -rf yolov3
-git clone https://github.com/ultralytics/yolov3  # master
-# git clone -b test --depth 1 https://github.com/ultralytics/yolov3 yolov3_test  # branch
-cp -r cocoapi/PythonAPI/pycocotools yolov3
-cp -r weights yolov3 && cd yolov3
 python3 train.py --evolve --data data/coco_1k5k.data --epochs 30 --img-size 320
 gsutil cp evolve.txt gs://ultralytics
 sudo shutdown
-
-
-
