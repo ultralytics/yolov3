@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from utils import torch_utils
+from . import torch_utils
 
 matplotlib.rc('font', **{'size': 12})
 
@@ -31,9 +31,9 @@ def init_seeds(seed=0):
 
 
 def load_classes(path):
-    # Loads class labels at 'path'
-    fp = open(path, 'r')
-    names = fp.read().split('\n')
+    # Loads *.names file at 'path'
+    with open(path, 'r') as f:
+        names = f.read().split('\n')
     return list(filter(None, names))  # filter removes empty strings (such as last line)
 
 
@@ -59,6 +59,15 @@ def labels_to_class_weights(labels, nc=80):
     weights = 1 / weights  # number of targets per class
     weights /= weights.sum()  # normalize
     return torch.Tensor(weights)
+
+
+def labels_to_image_weights(labels, nc=80, class_weights=np.ones(80)):
+    # Produces image weights based on class mAPs
+    n = len(labels)
+    class_counts = np.array([np.bincount(labels[i][:, 0].astype(np.int), minlength=nc) for i in range(n)])
+    image_weights = (class_weights.reshape(1, nc) * class_counts).sum(1)
+    # index = random.choices(range(n), weights=image_weights, k=1)  # weight image sample
+    return image_weights
 
 
 def coco_class_weights():  # frequency of each class in coco train2014
@@ -538,7 +547,7 @@ def plot_images(imgs, targets, fname='images.jpg'):
     plt.close()
 
 
-def plot_results(start=1, stop=0):  # from utils.utils import *; plot_results()
+def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
 

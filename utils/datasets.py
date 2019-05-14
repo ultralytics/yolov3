@@ -130,15 +130,18 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weights=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
             self.img_files = list(filter(lambda x: len(x) > 0, img_files))
 
         n = len(self.img_files)
+        self.n = n
         assert n > 0, 'No images found in %s' % path
         self.img_size = img_size
         self.augment = augment
+        self.image_weights = image_weights
+        self.rect = False if image_weights else rect
         self.label_files = [x.replace('images', 'labels').
                                 replace('.jpeg', '.txt').
                                 replace('.jpg', '.txt').
@@ -146,8 +149,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                                 replace('.png', '.txt') for x in self.img_files]
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
-        self.pad_rectangular = rect
-        if self.pad_rectangular:
+        if self.rect:
             from PIL import Image
             bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
             nb = bi[-1] + 1  # number of batches
@@ -184,7 +186,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Preload images
         if n < 1001:  # preload all images into memory if possible
-            self.imgs = [cv2.imread(self.img_files[i]) for i in range(n)]
+            self.imgs = [cv2.imread(self.img_files[i]) for i in tqdm(range(n), desc='Reading images')]
 
         # Preload labels (required for weighted CE training)
         self.labels = [np.zeros((0, 5))] * n
@@ -200,6 +202,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         return len(self.img_files)
 
     def __getitem__(self, index):
+        if self.image_weights:
+            index = self.indices[index]
+
         img_path = self.img_files[index]
         label_path = self.label_files[index]
 
@@ -230,7 +235,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Letterbox
         h, w, _ = img.shape
-        if self.pad_rectangular:
+        if self.rect:
             new_shape = self.batch_shapes[self.batch[index]]
             img, ratio, padw, padh = letterbox(img, new_shape=new_shape, mode='rect')
         else:
@@ -389,7 +394,7 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
         h = xy[:, 3] - xy[:, 1]
         area = w * h
         ar = np.maximum(w / (h + 1e-16), h / (w + 1e-16))
-        i = (w > 2) & (h > 2) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
+        i = (w > 4) & (h > 4) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
 
         targets = targets[i]
         targets[:, 1:5] = xy[i]

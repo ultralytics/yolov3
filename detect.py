@@ -27,7 +27,7 @@ def detect(
 
     # Initialize model
     if ONNX_EXPORT:
-        s = (416, 416)  # onnx model image size (height, width)
+        s = (192, 320)  # onnx model image size (height, width)
         model = Darknet(cfg, s)
     else:
         model = Darknet(cfg, img_size)
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
-    parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
+    parser.add_argument('--weights', type=str, default='weights/supermarket2_yolov3-spp-sm2_3000_v0.weights', help='path to weights file')
     parser.add_argument('--images', type=str, default='data/samples', help='path to images')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
