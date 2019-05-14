@@ -31,9 +31,9 @@ def init_seeds(seed=0):
 
 
 def load_classes(path):
-    # Loads class labels at 'path'
-    fp = open(path, 'r')
-    names = fp.read().split('\n')
+    # Loads *.names file at 'path'
+    with open(path, 'r') as f:
+        names = f.read().split('\n')
     return list(filter(None, names))  # filter removes empty strings (such as last line)
 
 
