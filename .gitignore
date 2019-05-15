@@ -29,7 +29,7 @@ data/*
 !data/coco_*.txt
 !data/trainvalno5k.shapes
 !data/5k.shapes
-
+!data/5k.txt
 
 pycocotools/*
 results*.txt

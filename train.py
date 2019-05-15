@@ -10,33 +10,50 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-# Hyperparameters
-# 0.861      0.956      0.936      0.897       1.51      10.39     0.1367    0.01057    0.01181     0.8409     0.1287   0.001028     -3.441     0.9127  0.0004841
-hyp = {'k': 10.39,  # loss multiple
-       'xy': 0.1367,  # xy loss fraction
-       'wh': 0.01057,  # wh loss fraction
-       'cls': 0.01181,  # cls loss fraction
-       'conf': 0.8409,  # conf loss fraction
-       'iou_t': 0.1287,  # iou target-anchor training threshold
-       'lr0': 0.001028,  # initial learning rate
-       'lrf': -3.441,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.9127,  # SGD momentum
-       'weight_decay': 0.0004841,  # optimizer weight decay
-       }
+# Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.204      0.302      0.175      0.234 (square smart)
+hyp = {'xy': 0.167,  # xy loss gain
+       'wh': 0.09339,  # wh loss gain
+       'cls': 0.03868,  # cls loss gain
+       'conf': 4.546,  # conf loss gain
+       'iou_t': 0.2454,  # iou target-anchor training threshold
+       'lr0': 0.000198,  # initial learning rate
+       'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
+       'momentum': 0.95,  # SGD momentum
+       'weight_decay': 0.0007838}  # optimizer weight decay
 
 
-# 0.856       0.95      0.935      0.887        1.3      8.488     0.1081    0.01351    0.01351     0.8649        0.1      0.001         -3        0.9     0.0005
-# hyp = {'k': 8.4875,  # loss multiple
-#        'xy': 0.108108,  # xy loss fraction
-#        'wh': 0.013514,  # wh loss fraction
-#        'cls': 0.013514,  # cls loss fraction
-#        'conf': 0.86486,  # conf loss fraction
+# Hyperparameters: Original, Metrics: 0.172      0.304      0.156      0.205 (square)
+# hyp = {'xy': 0.5,  # xy loss gain
+#        'wh': 0.0625,  # wh loss gain
+#        'cls': 0.0625,  # cls loss gain
+#        'conf': 4,  # conf loss gain
 #        'iou_t': 0.1,  # iou target-anchor training threshold
 #        'lr0': 0.001,  # initial learning rate
-#        'lrf': -3.,  # final learning rate = lr0 * (10 ** lrf)
+#        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
 #        'momentum': 0.9,  # SGD momentum
-#        'weight_decay': 0.0005,  # optimizer weight decay
-#        }
+#        'weight_decay': 0.0005}  # optimizer weight decay
+
+# Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.225      0.251      0.145      0.218 (rect)
+# hyp = {'xy': 0.4499,  # xy loss gain
+#        'wh': 0.05121,  # wh loss gain
+#        'cls': 0.04207,  # cls loss gain
+#        'conf': 2.853,  # conf loss gain
+#        'iou_t': 0.2487,  # iou target-anchor training threshold
+#        'lr0': 0.0005301,  # initial learning rate
+#        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.8823,  # SGD momentum
+#        'weight_decay': 0.0004149}  # optimizer weight decay
+
+# Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.178      0.313      0.167      0.212 (square)
+# hyp = {'xy': 0.4664,  # xy loss gain
+#        'wh': 0.08437,  # wh loss gain
+#        'cls': 0.05145,  # cls loss gain
+#        'conf': 4.244,  # conf loss gain
+#        'iou_t': 0.09121,  # iou target-anchor training threshold
+#        'lr0': 0.0004938,  # initial learning rate
+#        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.9025,  # SGD momentum
+#        'weight_decay': 0.0005417}  # optimizer weight decay
 
 
 def train(
@@ -121,7 +138,7 @@ def train(
     # plt.savefig('LR.png', dpi=300)
 
     # Dataset
-    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True)
+    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True, rect=False, image_weights=True)
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:
@@ -145,15 +162,16 @@ def train(
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
 
     # Start training
-    t, t0 = time.time(), time.time()
     model.hyp = hyp  # attach hyperparameters to model
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
     model_info(model)
     nb = len(dataloader)
+    maps = np.zeros(nc)  # mAP per class
     results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
     n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
-    os.remove('train_batch0.jpg') if os.path.exists('train_batch0.jpg') else None
-    os.remove('test_batch0.jpg') if os.path.exists('test_batch0.jpg') else None
+    for f in glob.glob('train_batch*.jpg') + glob.glob('test_batch*.jpg'):
+        os.remove(f)
+    t, t0 = time.time(), time.time()
     for epoch in range(start_epoch, epochs):
         model.train()
         print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
@@ -166,6 +184,11 @@ def train(
             for name, p in model.named_parameters():
                 if int(name.split('.')[1]) < cutoff:  # if layer < 75
                     p.requires_grad = False if epoch == 0 else True
+
+        # Update image weights (optional)
+        w = model.class_weights.cpu().numpy() * (1 - maps)  # class weights
+        image_weights = labels_to_image_weights(dataset.labels, nc=nc, class_weights=w)
+        dataset.indices = random.choices(range(dataset.n), weights=image_weights, k=dataset.n)  # random weighted index
 
         mloss = torch.zeros(5).to(device)  # mean losses
         for i, (imgs, targets, _, _) in enumerate(dataloader):
@@ -220,10 +243,10 @@ def train(
                 print('multi_scale img_size = %g' % dataset.img_size)
 
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
-        if not (opt.notest or (opt.nosave and epoch < 5)) or epoch == epochs - 1:
+        if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:
             with torch.no_grad():
-                results = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
-                                    conf_thres=0.1)
+                results, maps = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
+                                          conf_thres=0.1)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
@@ -284,7 +307,7 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--transfer', action='store_true', help='transfer learning flag')
-    parser.add_argument('--num-workers', type=int, default=2, help='number of Pytorch DataLoader workers')
+    parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
     parser.add_argument('--dist-url', default='tcp://127.0.0.1:9999', type=str, help='distributed training init method')
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
@@ -326,22 +349,16 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.2, .2, .2, .2, .2, .3, .2, .2, .02, .3]
+            s = [.3, .3, .3, .3, .3, .3, .3, .03, .3]
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
 
             # Clip to limits
-            keys = ['iou_t', 'momentum', 'weight_decay']
-            limits = [(0, 0.90), (0.80, 0.95), (0, 0.01)]
+            keys = ['lr0', 'iou_t', 'momentum', 'weight_decay']
+            limits = [(1e-4, 1e-2), (0, 0.90), (0.70, 0.99), (0, 0.01)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
-
-            # Normalize loss components (sum to 1)
-            keys = ['xy', 'wh', 'cls', 'conf']
-            s = sum([v for k, v in hyp.items() if k in keys])
-            for k in keys:
-                hyp[k] /= s
 
             # Determine mutation fitness
             results = train(
@@ -371,10 +388,14 @@ if __name__ == '__main__':
             # # Plot results
             # import numpy as np
             # import matplotlib.pyplot as plt
-            #
-            # a = np.loadtxt('evolve.txt')
-            # x = a[:, 3]
+            # a = np.loadtxt('evolve_1000val.txt')
+            # x = a[:, 2] * a[:, 3]  # metric = mAP * F1
+            # weights = (x - x.min()) ** 2
             # fig = plt.figure(figsize=(14, 7))
-            # for i in range(1, 10):
-            #     plt.subplot(2, 5, i)
-            #     plt.plot(x, a[:, i + 5], '.')
+            # for i in range(len(hyp)):
+            #     y = a[:, i + 5]
+            #     mu = (y * weights).sum() / weights.sum()
+            #     plt.subplot(2, 5, i+1)
+            #     plt.plot(x.max(), mu, 'o')
+            #     plt.plot(x, y, '.')
+            #     print(list(hyp.keys())[i],'%.4g' % mu)

@@ -130,31 +130,36 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=False):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weights=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
             self.img_files = list(filter(lambda x: len(x) > 0, img_files))
 
         n = len(self.img_files)
+        self.n = n
         assert n > 0, 'No images found in %s' % path
         self.img_size = img_size
         self.augment = augment
-        self.label_files = [
-            x.replace('images', 'labels').replace('.bmp', '.txt').replace('.jpg', '.txt').replace('.png', '.txt')
-            for x in self.img_files]
+        self.image_weights = image_weights
+        self.rect = False if image_weights else rect
+        self.label_files = [x.replace('images', 'labels').
+                                replace('.jpeg', '.txt').
+                                replace('.jpg', '.txt').
+                                replace('.bmp', '.txt').
+                                replace('.png', '.txt') for x in self.img_files]
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
-        self.pad_rectangular = rect
-        if self.pad_rectangular:
+        if self.rect:
+            from PIL import Image
             bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
             nb = bi[-1] + 1  # number of batches
-            from PIL import Image
 
             # Read image shapes
             sp = 'data' + os.sep + path.replace('.txt', '.shapes').split(os.sep)[-1]  # shapefile path
             if os.path.exists(sp):  # read existing shapefile
                 with open(sp, 'r') as f:
                     s = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+                assert len(s) == n, 'Shapefile out of sync, please delete %s and rerun' % sp
             else:  # no shapefile, so read shape using PIL and write shapefile for next time (faster)
                 s = np.array([Image.open(f).size for f in tqdm(self.img_files, desc='Reading image shapes')])
                 np.savetxt(sp, s, fmt='%g')
@@ -180,8 +185,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             self.batch = bi  # batch index of image
 
         # Preload images
-        # if n < 200:  # preload all images into memory if possible
-        #    self.imgs = [cv2.imread(img_files[i]) for i in range(n)]
+        if n < 1001:  # preload all images into memory if possible
+            self.imgs = [cv2.imread(self.img_files[i]) for i in tqdm(range(n), desc='Reading images')]
 
         # Preload labels (required for weighted CE training)
         self.labels = [np.zeros((0, 5))] * n
@@ -197,14 +202,20 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         return len(self.img_files)
 
     def __getitem__(self, index):
+        if self.image_weights:
+            index = self.indices[index]
+
         img_path = self.img_files[index]
         label_path = self.label_files[index]
 
-        # if hasattr(self, 'imgs'):  # preloaded
-        #    img = self.imgs[index]  # BGR
-        img = cv2.imread(img_path)  # BGR
+        # Load image
+        if hasattr(self, 'imgs'):  # preloaded
+            img = self.imgs[index]
+        else:
+            img = cv2.imread(img_path)  # BGR
         assert img is not None, 'File Not Found ' + img_path
 
+        # Augment colorspace
         augment_hsv = True
         if self.augment and augment_hsv:
             # SV augmentation by 50%
@@ -224,7 +235,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Letterbox
         h, w, _ = img.shape
-        if self.pad_rectangular:
+        if self.rect:
             new_shape = self.batch_shapes[self.batch[index]]
             img, ratio, padw, padh = letterbox(img, new_shape=new_shape, mode='rect')
         else:
@@ -314,7 +325,7 @@ def letterbox(img, new_shape=416, color=(127.5, 127.5, 127.5), mode='auto'):
 
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-    img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_AREA)  # resized, no border
+    img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)  # resized, no border
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # padded square
     return img, ratio, dw, dh
 
@@ -367,14 +378,14 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
         y = xy[:, [1, 3, 5, 7]]
         xy = np.concatenate((x.min(1), y.min(1), x.max(1), y.max(1))).reshape(4, n).T
 
-        # apply angle-based reduction of bounding boxes
-        radians = a * math.pi / 180
-        reduction = max(abs(math.sin(radians)), abs(math.cos(radians))) ** 0.5
-        x = (xy[:, 2] + xy[:, 0]) / 2
-        y = (xy[:, 3] + xy[:, 1]) / 2
-        w = (xy[:, 2] - xy[:, 0]) * reduction
-        h = (xy[:, 3] - xy[:, 1]) * reduction
-        xy = np.concatenate((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).reshape(4, n).T
+        # # apply angle-based reduction of bounding boxes
+        # radians = a * math.pi / 180
+        # reduction = max(abs(math.sin(radians)), abs(math.cos(radians))) ** 0.5
+        # x = (xy[:, 2] + xy[:, 0]) / 2
+        # y = (xy[:, 3] + xy[:, 1]) / 2
+        # w = (xy[:, 2] - xy[:, 0]) * reduction
+        # h = (xy[:, 3] - xy[:, 1]) * reduction
+        # xy = np.concatenate((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).reshape(4, n).T
 
         # reject warped points outside of image
         xy[:, [0, 2]] = xy[:, [0, 2]].clip(0, width)
