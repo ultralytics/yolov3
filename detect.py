@@ -13,6 +13,7 @@ def detect(
         weights,
         images='data/samples',  # input folder
         output='output',  # output folder
+        fourcc='mp4v',
         img_size=416,
         conf_thres=0.5,
         nms_thres=0.5,
@@ -104,11 +105,10 @@ def detect(
                     if isinstance(vid_writer, cv2.VideoWriter):
                         vid_writer.release()  # release previous video writer
 
-                    codec = int(vid_cap.get(cv2.CAP_PROP_FOURCC))
                     fps = vid_cap.get(cv2.CAP_PROP_FPS)
                     width = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                     height = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    vid_writer = cv2.VideoWriter(save_path, codec, fps, (width, height))
+                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*fourcc), fps, (width, height))
                 vid_writer.write(im0)
 
     if save_images:
@@ -126,6 +126,8 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
+    parser.add_argument('--fourcc', type=str, default='mp4v', help='specifies the fourcc code for output video encoding (make sure ffmpeg supports specified fourcc codec)')
+    parser.add_argument('--output', type=str, default='output',help='specifies the output path for images and videos')
     opt = parser.parse_args()
     print(opt)
 
@@ -137,5 +139,7 @@ if __name__ == '__main__':
             images=opt.images,
             img_size=opt.img_size,
             conf_thres=opt.conf_thres,
-            nms_thres=opt.nms_thres
+            nms_thres=opt.nms_thres,
+            fourcc=opt.fourcc,
+            output=opt.output
         )
