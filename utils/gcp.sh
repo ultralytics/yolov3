@@ -61,8 +61,10 @@ sudo shutdown
 
 # Unit tests
 python3 detect.py  # detect 2 persons, 1 tie
-python3 test.py --data data/coco_32img.data  # test mAP = 0.78
-python3 train.py --data data/coco_32img.data --epochs 4 --nosave  # train 4 epochs
+python3 test.py --data data/coco_32img.data  # test mAP = 0.8
+python3 train.py --data data/coco_32img.data --epochs 5 --nosave  # train 5 epochs
+python3 train.py --data data/coco_1cls.data --epochs 5 --nosave  # train 5 epochs
+python3 train.py --data data/coco_1img.data --epochs 5 --nosave  # train 5 epochs
 
 # AlexyAB Darknet
 ./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp-sm2.cfg darknet53.conv.74 # train
