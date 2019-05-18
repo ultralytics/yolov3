@@ -138,7 +138,7 @@ def train(
     # plt.savefig('LR.png', dpi=300)
 
     # Dataset
-    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True, rect=False, image_weights=True)
+    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=False, rect=False, image_weights=False)
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:
