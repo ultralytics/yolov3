@@ -71,7 +71,7 @@ rm -rf darknet && git clone https://github.com/AlexeyAB/darknet
 wget -c https://pjreddie.com/media/files/darknet53.conv.74
 ./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp-sm2.cfg darknet53.conv.74 # train
 ./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp.cfg backup/yolov3-spp_last.weights  # resume
-python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/backup yolov3-spp_3000.weights  # test
+python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/backup/yolov3-spp-sm2_3000.weights  # test
 
 # Debug/Development
 python3 train.py --evolve --data data/coco_1k5k.data --epochs 30 --img-size 320
