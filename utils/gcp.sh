@@ -67,6 +67,7 @@ python3 train.py --data data/coco_1cls.data --epochs 5 --nosave  # train 5 epoch
 python3 train.py --data data/coco_1img.data --epochs 5 --nosave  # train 5 epochs
 
 # AlexyAB Darknet
+gsutil cp -r gs://sm4/supermarket2 .
 rm -rf darknet && git clone https://github.com/AlexeyAB/darknet
 wget -c https://pjreddie.com/media/files/darknet53.conv.74
 ./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp-sm2.cfg darknet53.conv.74 # train
