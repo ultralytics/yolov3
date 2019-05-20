@@ -70,7 +70,7 @@ python3 train.py --data data/coco_1img.data --epochs 5 --nosave  # train 5 epoch
 gsutil cp -r gs://sm4/supermarket2 .  # dataset from bucket
 rm -rf darknet && git clone https://github.com/AlexeyAB/darknet && cd darknet && wget -c https://pjreddie.com/media/files/darknet53.conv.74
 ./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp-sm2.cfg darknet53.conv.74 # train
-./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp.cfg backup/yolov3-spp_last.weights  # resume
+./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp-sm2.cfg backup/yolov3-spp-sm2_last.weights  # resume
 python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/backup/yolov3-spp-sm2_3000.weights  # test
 gsutil cp -r backup/*.weights gs://sm4/weights  # weights to bucket
 
