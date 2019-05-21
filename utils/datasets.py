@@ -195,7 +195,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             try:
                 with open(file, 'r') as f:
                     self.labels[i] = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+                    assert self.labels[i].shape[1] == 5, 'corrupted labels file: %s' % file
             except:
+                print('Warning: missing labels for %s' % self.img_files[i])
                 pass  # missing label file
 
     def __len__(self):
