@@ -185,7 +185,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             self.batch = bi  # batch index of image
 
         # Preload images
-        if cache & n < 1001:  # preload all images into memory if possible
+        if cache and (n < 1001):  # preload all images into memory if possible
             self.imgs = [cv2.imread(self.img_files[i]) for i in tqdm(range(n), desc='Reading images')]
 
         # Preload labels (required for weighted CE training)
