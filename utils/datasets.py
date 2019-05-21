@@ -194,11 +194,14 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         for i, file in enumerate(iter):
             try:
                 with open(file, 'r') as f:
-                    self.labels[i] = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
-                    assert self.labels[i].shape[1] == 5, 'corrupted labels file: %s' % file
+                    l = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+                    if l.shape[0]:
+                        assert l.shape[1] == 5, '> 5 label columns: %s' % file
+                        assert (l >= 0).all(), 'negative labels: %s' % file
+                        assert (l[:, 1:] <= 1).all(), 'non-normalized or out of bounds coordinate labels: %s' % file
+                        self.labels[i] = l
             except:
-                print('Warning: missing labels for %s' % self.img_files[i])
-                pass  # missing label file
+                print('Warning: missing labels for %s' % self.img_files[i])  # missing label file
         assert len(np.concatenate(self.labels, 0)) > 0, 'No labels found. Incorrect label paths provided.'
 
     def __len__(self):
