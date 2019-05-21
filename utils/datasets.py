@@ -130,7 +130,7 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weights=False):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weights=False, cache=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
             self.img_files = list(filter(lambda x: len(x) > 0, img_files))
@@ -185,7 +185,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             self.batch = bi  # batch index of image
 
         # Preload images
-        if n < 1001:  # preload all images into memory if possible
+        if cache & n < 1001:  # preload all images into memory if possible
             self.imgs = [cv2.imread(self.img_files[i]) for i in tqdm(range(n), desc='Reading images')]
 
         # Preload labels (required for weighted CE training)
