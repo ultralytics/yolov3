@@ -148,7 +148,7 @@ def test(
 
     # Print results
     pf = '%20s' + '%10.3g' * 6  # print format
-    print(pf % ('all', seen, nt.sum(), mp, mr, map, mf1), end='\n\n')
+    print(pf % ('all', seen, nt.sum(), mp, mr, map, mf1))
 
     # Print results per class
     if nc > 1 and len(stats):

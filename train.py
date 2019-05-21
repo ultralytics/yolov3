@@ -75,7 +75,7 @@ def train(
     device = torch_utils.select_device()
 
     if multi_scale:
-        img_size = 608  # initiate with maximum multi_scale size
+        img_size = round((img_size / 32) * 1.5) * 32  # initiate with maximum multi_scale size
         opt.num_workers = 0  # bug https://github.com/ultralytics/yolov3/issues/174
     else:
         torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
@@ -138,7 +138,13 @@ def train(
     # plt.savefig('LR.png', dpi=300)
 
     # Dataset
-    dataset = LoadImagesAndLabels(train_path, img_size, batch_size, augment=True, rect=False, cache=True)
+    dataset = LoadImagesAndLabels(train_path,
+                                  img_size,
+                                  batch_size,
+                                  augment=True,
+                                  rect=False,
+                                  cache=True,
+                                  multi_scale=multi_scale)
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:
