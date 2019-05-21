@@ -199,6 +199,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             except:
                 print('Warning: missing labels for %s' % self.img_files[i])
                 pass  # missing label file
+        assert len(np.concatenate(self.labels, 0)) > 0, 'No labels found. Check label paths.'
 
     def __len__(self):
         return len(self.img_files)

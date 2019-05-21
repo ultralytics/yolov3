@@ -174,7 +174,7 @@ def train(
     t, t0 = time.time(), time.time()
     for epoch in range(start_epoch, epochs):
         model.train()
-        print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
+        print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'targets', 'time'))
 
         # Update scheduler
         scheduler.step()
