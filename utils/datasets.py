@@ -227,9 +227,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img = self.imgs[index]
         if img is None:
             img = cv2.imread(img_path)  # BGR
+            assert img is not None, 'File Not Found ' + img_path
             if self.n < 1001:
                 self.imgs[index] = img  # cache image into memory
-        assert img is not None, 'File Not Found ' + img_path
 
         # Augment colorspace
         augment_hsv = True
