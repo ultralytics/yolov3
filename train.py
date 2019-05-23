@@ -168,7 +168,7 @@ def train(
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
 
     # Remove old results
-    for f in glob.glob('train_batch*.jpg') + glob.glob('test_batch*.jpg') + 'results.txt':
+    for f in glob.glob('train_batch*.jpg') + glob.glob('test_batch*.jpg') + ['results.txt']:
         os.remove(f)
 
     # Start training
