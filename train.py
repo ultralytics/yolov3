@@ -11,15 +11,15 @@ from utils.datasets import *
 from utils.utils import *
 
 # Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.204      0.302      0.175      0.234 (square smart)
-hyp = {'xy': 0.167,  # xy loss gain
-       'wh': 0.09339,  # wh loss gain
-       'cls': 0.03868,  # cls loss gain
-       'conf': 4.546,  # conf loss gain
-       'iou_t': 0.2454,  # iou target-anchor training threshold
-       'lr0': 0.000198,  # initial learning rate
-       'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.95,  # SGD momentum
-       'weight_decay': 0.0007838}  # optimizer weight decay
+hyp = {'xy': 0.2,  # xy loss gain
+       'wh': 0.1,  # wh loss gain
+       'cls': 0.04,  # cls loss gain
+       'conf': 4.5,  # conf loss gain
+       'iou_t': 0.5,  # iou target-anchor training threshold
+       'lr0': 0.001,  # initial learning rate
+       'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
+       'momentum': 0.90,  # SGD momentum
+       'weight_decay': 0.0005}  # optimizer weight decay
 
 
 # Hyperparameters: Original, Metrics: 0.172      0.304      0.156      0.205 (square)
@@ -310,7 +310,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='data/coco_32img.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
-    parser.add_argument('--img-size', type=int, default=320, help='inference size (pixels)')
+    parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--transfer', action='store_true', help='transfer learning flag')
     parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
