@@ -55,7 +55,6 @@ hyp = {'xy': 0.2,  # xy loss gain
 #        'momentum': 0.9025,  # SGD momentum
 #        'weight_decay': 0.0005417}  # optimizer weight decay
 
-
 def train(
         cfg,
         data_cfg,
@@ -143,7 +142,6 @@ def train(
                                   batch_size,
                                   augment=True,
                                   rect=False,
-                                  cache=True,
                                   multi_scale=multi_scale)
 
     # Initialize distributed training
@@ -168,7 +166,7 @@ def train(
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
 
     # Remove old results
-    for f in glob.glob('train_batch*.jpg') + glob.glob('test_batch*.jpg') + ['results.txt']:
+    for f in glob.glob('*_batch*.jpg') + glob.glob('results.txt'):
         os.remove(f)
 
     # Start training
@@ -307,7 +305,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=1, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='data/coco_32img.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
