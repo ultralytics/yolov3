@@ -204,7 +204,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                         assert (l[:, 1:] <= 1).all(), 'non-normalized or out of bounds coordinate labels: %s' % file
                         self.labels[i] = l
             except:
-                print('Warning: missing labels for %s' % self.img_files[i])  # missing label file
+                pass  # print('Warning: missing labels for %s' % self.img_files[i])  # missing label file
         assert len(np.concatenate(self.labels, 0)) > 0, 'No labels found. Incorrect label paths provided.'
 
     def __len__(self):
