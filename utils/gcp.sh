@@ -69,11 +69,12 @@ python3 train.py --data data/coco_1img.data --epochs 5 --nosave  # train 5 epoch
 # AlexyAB Darknet
 gsutil cp -r gs://sm4/supermarket2 .  # dataset from bucket
 rm -rf darknet && git clone https://github.com/AlexeyAB/darknet && cd darknet && wget -c https://pjreddie.com/media/files/darknet53.conv.74  # sudo apt install libopencv-dev && make
-./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp-sm2-1cls.cfg darknet53.conv.74 -map -dont_show # train
+./darknet detector train ../supermarket2/supermarket2.data ../yolov3-spp-sm2-1cls.cfg darknet53.conv.74 -map -dont_show # train spp
+./darknet detector train ../supermarket2/supermarket2.data ../yolov3-tiny-sm2-1cls.cfg yolov3-tiny.conv.15 -map -dont_show # train tiny
 ./darknet detector train ../supermarket2/supermarket2.data cfg/yolov3-spp-sm2-1cls.cfg backup/yolov3-spp-sm2-1cls_last.weights  # resume
 python3 train.py --data ../supermarket2/supermarket2.data --cfg cfg/yolov3-spp-sm2-1cls.cfg --epochs 100 --num-workers 8 --img-size 320 --evolve  # train ultralytics
 python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/backup/yolov3-spp-sm2-1cls_5000.weights --cfg cfg/yolov3-spp-sm2-1cls.cfg  # test
-gsutil cp -r backup/*.weights gs://sm4/weights  # weights to bucket
+gsutil cp -r backup/*.weights gs://sm6/weights  # weights to bucket
 
 # Debug/Development
 python3 train.py --evolve --data data/coco_1k5k.data --epochs 30 --img-size 320
