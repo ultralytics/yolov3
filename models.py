@@ -146,7 +146,7 @@ class YOLOLayer(nn.Module):
             xy = torch.sigmoid(p[..., 0:2]) + grid_xy  # x, y
             wh = torch.exp(p[..., 2:4]) * anchor_wh  # width, height
             p_conf = torch.sigmoid(p[..., 4:5])  # Conf
-            p_cls = p[..., 5:85]
+            p_cls = p[..., 5:5 + self.nc]
             # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
             # p_cls = F.softmax(p_cls, 2) * p_conf  # SSD-like conf
             p_cls = torch.exp(p_cls).permute((2, 1, 0))
@@ -212,8 +212,8 @@ class Darknet(nn.Module):
             return output
         elif ONNX_EXPORT:
             output = torch.cat(output, 1)  # cat 3 layers 85 x (507, 2028, 8112) to 85 x 10647
-            print(output.shape)
-            return output[5:85].t(), output[:4].t()  # ONNX scores, boxes
+            nc = self.module_list[self.yolo_layers[0]][0].nc  # number of classes
+            return output[5:5 + nc].t(), output[:4].t()  # ONNX scores, boxes
         else:
             io, p = list(zip(*output))  # inference output, training output
             return torch.cat(io, 1), p
