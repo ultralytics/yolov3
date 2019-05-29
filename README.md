@@ -46,7 +46,6 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 A jupyter notebook with training, detection and testing examples is available at: 
 https://colab.research.google.com/drive/1G8T-VFxQkjDe4idzN8F-hbIBqkkkQnxw
 
-
 # Training
 
 **Start Training:** `python3 train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`.
