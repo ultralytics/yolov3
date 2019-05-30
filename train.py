@@ -287,7 +287,7 @@ def train(
             del chkpt
 
     dt = (time.time() - t0) / 3600
-    print('%g epochs completed in %.3f hours.' % (epoch - start_epoch, dt))
+    print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, dt))
     return results
 
 
