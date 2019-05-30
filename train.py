@@ -303,7 +303,7 @@ def print_mutation(hyp, results):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', type=int, default=273, help='number of epochs')
+    parser.add_argument('--epochs', type=int, default=68, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--accumulate', type=int, default=4, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
