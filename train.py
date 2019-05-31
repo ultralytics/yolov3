@@ -61,7 +61,7 @@ def train(
         data_cfg,
         img_size=416,
         resume=False,
-        epochs=68,  # 500200 batches at bs 4, dataset length 117263
+        epochs=100,  # 500200 batches at bs 4, 117263 images = 68 epochs
         batch_size=16,
         accumulate=4,  # effective bs = 64 = batch_size * accumulate
         multi_scale=False,
