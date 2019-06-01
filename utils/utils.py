@@ -599,6 +599,25 @@ def plot_images(imgs, targets, fname='images.jpg'):
     plt.close()
 
 
+def plot_test_txt():  # from test import *; plot_test()
+    # Plot test.txt histograms
+    x = np.loadtxt('test.txt', dtype=np.float32)
+    box = xyxy2xywh(x[:, :4])
+    cx, cy = box[:, 0], box[:, 1]
+
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    ax.hist2d(cx, cy, bins=600, cmax=10, cmin=0)
+    ax.set_aspect('equal')
+    fig.tight_layout()
+    plt.savefig('hist2d.jpg', dpi=300)
+
+    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+    ax[0].hist(cx, bins=600)
+    ax[1].hist(cy, bins=600)
+    fig.tight_layout()
+    plt.savefig('hist1d.jpg', dpi=300)
+
+
 def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
     # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')

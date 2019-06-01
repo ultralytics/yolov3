@@ -89,6 +89,10 @@ def test(
                     stats.append(([], torch.Tensor(), torch.Tensor(), tcls))
                 continue
 
+            # Append to text file
+            # with open('test.txt', 'a') as file:
+            #    [file.write('%11.5g' * 7 % tuple(x) + '\n') for x in pred]
+
             # Append to pycocotools JSON dictionary
             if save_json:
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
