@@ -12,7 +12,7 @@ from utils.datasets import *
 from utils.utils import *
 
 # Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.204      0.302      0.175      0.234 (square smart)
-hyp = {'xy': 0.2,  # xy loss gain  (giou is about 0.02)
+hyp = {'xy': 0.1,  # xy loss gain  (giou is about 0.02)
        'wh': 0.1,  # wh loss gain
        'cls': 0.04,  # cls loss gain
        'conf': 4.5,  # conf loss gain
@@ -356,7 +356,7 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.3, .3, .3, .3, .3, .3, .3, .03, .3]
+            s = [.3, .3, .3, .3, .3, .3, .3, .03, .3]  # xy, wh, cls, conf, iou_t, lr0, lrf, weight_decay
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
