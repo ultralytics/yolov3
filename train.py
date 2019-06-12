@@ -244,7 +244,9 @@ def train(
 
             # Multi-Scale training (320 - 608 pixels) every 10 batches
             if multi_scale and (i + 1) % 10 == 0:
-                dataset.img_size = random.choice(range(10, 20)) * 32
+                min_size = round(img_size / 32 / 1.5)
+                max_size = round(img_size / 32 * 1.5)
+                dataset.img_size = random.choice(range(min_size, max_size + 1)) * 32
                 print('multi_scale img_size = %g' % dataset.img_size)
 
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
