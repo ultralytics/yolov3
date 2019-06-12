@@ -371,7 +371,7 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
     S[1, 0] = math.tan((random.random() * (shear[1] - shear[0]) + shear[0]) * math.pi / 180)  # y shear (deg)
 
     M = S @ T @ R  # Combined rotation matrix. ORDER IS IMPORTANT HERE!!
-    imw = cv2.warpPerspective(img, M, dsize=(width, height), flags=cv2.INTER_LINEAR,
+    imw = cv2.warpAffine(img, M[:2], dsize=(width, height), flags=cv2.INTER_LINEAR,
                               borderValue=borderValue)  # BGR order borderValue
 
     # Return warped points also
