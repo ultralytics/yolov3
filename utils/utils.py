@@ -543,7 +543,6 @@ def kmeans_targets(path='./data/coco_64img.txt'):  # from utils.utils import *; 
 
 
 # Plotting functions ---------------------------------------------------------------------------------------------------
-
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):
     # Plots one bounding box on image img
     tl = line_thickness or round(0.002 * max(img.shape[0:2])) + 1  # line thickness
