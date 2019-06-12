@@ -230,7 +230,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         augment_hsv = True
         if self.augment and augment_hsv:
             # SV augmentation by 50%
-            fraction = 0.50  # must be < 1.0
+            fraction = 0.25  # must be < 1.0
             img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # hue, sat, val
             S = img_hsv[:, :, 1].astype(np.float32)  # saturation
             V = img_hsv[:, :, 2].astype(np.float32)  # value
