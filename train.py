@@ -156,7 +156,7 @@ def train(
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=opt.num_workers,
-                            shuffle=False,  # disable rectangular training if True
+                            shuffle=True,  # disable rectangular training if True
                             pin_memory=True,
                             collate_fn=dataset.collate_fn)
 
