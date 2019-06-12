@@ -207,7 +207,7 @@ def train(
             if opt.multi_scale:
                 if (i + 1 + nb * epoch) % 10 == 0:  #  adjust (67% - 150%) every 10 batches
                     img_size = random.choice(range(img_size_min, img_size_max + 1)) * 32
-                    print('multi_scale img_size = %g' % img_size)
+                    print('img_size = %g' % img_size)
                 scale_factor = img_size / max(imgs.shape[-2:])
                 imgs = F.interpolate(imgs, scale_factor=scale_factor, mode='bilinear', align_corners=False)
 
