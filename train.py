@@ -307,8 +307,8 @@ def print_mutation(hyp, results):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=68, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=8, help='size of each image batch')
-    parser.add_argument('--accumulate', type=int, default=8, help='accumulate gradient x batches before optimizing')
+    parser.add_argument('--batch-size', type=int, default=8, help='batch size')
+    parser.add_argument('--accumulate', type=int, default=8, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='data/coco_64img.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
