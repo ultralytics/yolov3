@@ -242,7 +242,7 @@ def train(
             t = time.time()
             print(s)
 
-            # Multi-Scale training (320 - 608 pixels) every 10 batches
+            # Multi-Scale training (67% - 150%) every 10 batches
             if multi_scale and (i + 1) % 10 == 0:
                 min_size = round(img_size / 32 / 1.5)
                 max_size = round(img_size / 32 * 1.5)
