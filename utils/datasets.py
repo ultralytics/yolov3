@@ -269,7 +269,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Augment image and labels
         if self.augment:
-            img, labels = random_affine(img, labels, degrees=(-5, 5), translate=(0.10, 0.10), scale=(0.90, 1.10))
+            img, labels = random_affine(img, labels, degrees=(-5, 5), translate=(0.0, 0.0), scale=(1.0, 1.0))
 
         nL = len(labels)  # number of labels
         if nL:
