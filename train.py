@@ -259,7 +259,7 @@ def train(
         if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:
             with torch.no_grad():
                 results, maps = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
-                                          conf_thres=0.001)
+                                          conf_thres=0.1)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
