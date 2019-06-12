@@ -130,8 +130,7 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weights=False,
-                 multi_scale=False):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weights=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
             self.img_files = list(filter(lambda x: len(x) > 0, img_files))
@@ -152,11 +151,6 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                                 replace('.jpg', '.txt').
                                 replace('.bmp', '.txt').
                                 replace('.png', '.txt') for x in self.img_files]
-
-        multi_scale = False
-        if multi_scale:
-            s = img_size / 32
-            self.multi_scale = ((np.linspace(0.5, 1.5, nb) * s).round().astype(np.int) * 32)
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         if self.rect:
@@ -256,7 +250,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             shape = self.batch_shapes[self.batch[index]]
             img, ratio, padw, padh = letterbox(img, new_shape=shape, mode='rect')
         else:
-            shape = int(self.multi_scale[self.batch[index]]) if hasattr(self, 'multi_scale') else self.img_size
+            shape = self.img_size
             img, ratio, padw, padh = letterbox(img, new_shape=shape, mode='square')
 
         # Load labels

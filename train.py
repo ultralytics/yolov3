@@ -64,7 +64,6 @@ def train(
         epochs=100,  # 500200 batches at bs 4, 117263 images = 68 epochs
         batch_size=16,
         accumulate=4,  # effective bs = 64 = batch_size * accumulate
-        multi_scale=True,
         freeze_backbone=False,
         transfer=False  # Transfer learning (train only YOLO layers)
 ):
@@ -73,12 +72,13 @@ def train(
     latest = weights + 'latest.pt'
     best = weights + 'best.pt'
     device = torch_utils.select_device()
-    torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
+    torch.backends.cudnn.benchmark = True  # possibly unsuitable for multiscale
+    img_size_test = img_size  # image size for testing
 
-    if multi_scale:
-        min_size = round(img_size / 32 / 1.5)
-        max_size = round(img_size / 32 * 1.5)
-        img_size = max_size * 32  # initiate with maximum multi_scale size
+    if opt.multi_scale:
+        img_size_min = round(img_size / 32 / 1.5)
+        img_size_max = round(img_size / 32 * 1.5)
+        img_size = img_size_max * 32  # initiate with maximum multi_scale size
         # opt.num_workers = 0  # bug https://github.com/ultralytics/yolov3/issues/174
 
     # Configure run
@@ -87,7 +87,7 @@ def train(
     nc = int(data_dict['classes'])  # number of classes
 
     # Initialize model
-    model = Darknet(cfg, img_size).to(device)
+    model = Darknet(cfg).to(device)
 
     # Optimizer
     optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'])
@@ -144,8 +144,7 @@ def train(
                                   img_size,
                                   batch_size,
                                   augment=True,
-                                  rect=False,
-                                  multi_scale=multi_scale)
+                                  rect=False)
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:
@@ -204,6 +203,14 @@ def train(
             imgs = imgs.to(device)
             targets = targets.to(device)
 
+            # Multi-Scale training
+            if opt.multi_scale:
+                if (i + 1 + nb * epoch) % 10 == 0:  #  adjust (67% - 150%) every 10 batches
+                    img_size = random.choice(range(img_size_min, img_size_max + 1)) * 32
+                    print('multi_scale img_size = %g' % img_size)
+                scale_factor = img_size / max(imgs.shape[-2:])
+                imgs = F.interpolate(imgs, scale_factor=scale_factor, mode='bilinear', align_corners=False)
+
             # Plot images with bounding boxes
             if epoch == 0 and i == 0:
                 plot_images(imgs=imgs, targets=targets, fname='train_batch0.jpg')
@@ -243,22 +250,10 @@ def train(
             t = time.time()
             print(s)
 
-            # Multi-Scale training (67% - 150%) every 10 batches
-            if multi_scale and (i + 1) % 10 == 0:
-                dataset.img_size = random.choice(range(min_size, max_size + 1)) * 32
-                dataloader = DataLoader(dataset,
-                                        batch_size=batch_size,
-                                        num_workers=opt.num_workers,
-                                        shuffle=True,  # disable rectangular training if True
-                                        pin_memory=True,
-                                        collate_fn=dataset.collate_fn)
-
-                print('multi_scale img_size = %g' % dataset.img_size)
-
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
         if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:
             with torch.no_grad():
-                results, maps = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size, model=model,
+                results, maps = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size_test, model=model,
                                           conf_thres=0.1)
 
         # Write epoch results
@@ -316,7 +311,7 @@ if __name__ == '__main__':
     parser.add_argument('--accumulate', type=int, default=4, help='accumulate gradient x batches before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='data/coco_64img.data', help='coco.data file path')
-    parser.add_argument('--multi-scale', action='store_true', help='random image sizes per batch 320 - 608')
+    parser.add_argument('--multi-scale', action='store_false', help='random image sizes per batch 320 - 608')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--transfer', action='store_true', help='transfer learning flag')
@@ -346,7 +341,6 @@ if __name__ == '__main__':
         epochs=opt.epochs,
         batch_size=opt.batch_size,
         accumulate=opt.accumulate,
-        multi_scale=opt.multi_scale,
     )
 
     # Evolve hyperparameters (optional)
@@ -383,7 +377,6 @@ if __name__ == '__main__':
                 epochs=opt.epochs,
                 batch_size=opt.batch_size,
                 accumulate=opt.accumulate,
-                multi_scale=opt.multi_scale,
             )
             mutation_fitness = results[2]
 
