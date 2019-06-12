@@ -79,7 +79,6 @@ def train(
         img_size_min = round(img_size / 32 / 1.5)
         img_size_max = round(img_size / 32 * 1.5)
         img_size = img_size_max * 32  # initiate with maximum multi_scale size
-        # opt.num_workers = 0  # bug https://github.com/ultralytics/yolov3/issues/174
 
     # Configure run
     data_dict = parse_data_cfg(data_cfg)
