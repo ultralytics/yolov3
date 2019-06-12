@@ -64,7 +64,7 @@ def train(
         epochs=100,  # 500200 batches at bs 4, 117263 images = 68 epochs
         batch_size=16,
         accumulate=4,  # effective bs = 64 = batch_size * accumulate
-        multi_scale=False,
+        multi_scale=True,
         freeze_backbone=False,
         transfer=False  # Transfer learning (train only YOLO layers)
 ):
@@ -73,12 +73,13 @@ def train(
     latest = weights + 'latest.pt'
     best = weights + 'best.pt'
     device = torch_utils.select_device()
+    torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
     if multi_scale:
-        img_size = round((img_size / 32) * 1.5) * 32  # initiate with maximum multi_scale size
+        min_size = round(img_size / 32 / 1.5)
+        max_size = round(img_size / 32 * 1.5)
+        img_size = max_size * 32  # initiate with maximum multi_scale size
         # opt.num_workers = 0  # bug https://github.com/ultralytics/yolov3/issues/174
-    else:
-        torch.backends.cudnn.benchmark = True  # unsuitable for multiscale
 
     # Configure run
     data_dict = parse_data_cfg(data_cfg)
@@ -244,10 +245,7 @@ def train(
 
             # Multi-Scale training (67% - 150%) every 10 batches
             if multi_scale and (i + 1) % 10 == 0:
-                min_size = round(img_size / 32 / 1.5)
-                max_size = round(img_size / 32 * 1.5)
                 dataset.img_size = random.choice(range(min_size, max_size + 1)) * 32
-
                 dataloader = DataLoader(dataset,
                                         batch_size=batch_size,
                                         num_workers=opt.num_workers,

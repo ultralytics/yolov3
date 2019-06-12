@@ -153,6 +153,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                                 replace('.bmp', '.txt').
                                 replace('.png', '.txt') for x in self.img_files]
 
+        multi_scale = False
         if multi_scale:
             s = img_size / 32
             self.multi_scale = ((np.linspace(0.5, 1.5, nb) * s).round().astype(np.int) * 32)
