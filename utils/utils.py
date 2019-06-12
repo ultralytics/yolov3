@@ -274,6 +274,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     ft = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
     lxy, lwh, lcls, lconf, lgiou = ft([0]), ft([0]), ft([0]), ft([0]), ft([0])
     txy, twh, tcls, tbox, indices, anchor_vec = build_targets(model, targets)
+    h = model.hyp  # hyperparameters
 
     # Define criteria
     MSE = nn.MSELoss()
@@ -281,7 +282,6 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     BCE = nn.BCEWithLogitsLoss()
 
     # Compute losses
-    h = model.hyp  # hyperparameters
     bs = p[0].shape[0]  # batch size
     k = bs  # loss gain
     for i, pi0 in enumerate(p):  # layer i predictions, i
@@ -303,8 +303,6 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             lwh += (k * h['wh']) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
             lcls += (k * h['cls']) * CE(pi[..., 5:], tcls[i])  # class_conf loss
 
-        # pos_weight = ft([gp[i] / min(gp) * 4.])
-        # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
         lconf += (k * h['conf']) * BCE(pi0[..., 4], tconf)  # obj_conf loss
     loss = lxy + lwh + lconf + lcls
 
