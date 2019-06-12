@@ -12,7 +12,7 @@ from utils.datasets import *
 from utils.utils import *
 
 # Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.204      0.302      0.175      0.234 (square smart)
-hyp = {'xy': 0.2,  # xy loss gain
+hyp = {'xy': 0.2,  # xy loss gain  (giou is about 0.02)
        'wh': 0.1,  # wh loss gain
        'cls': 0.04,  # cls loss gain
        'conf': 4.5,  # conf loss gain
