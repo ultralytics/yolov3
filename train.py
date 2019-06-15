@@ -228,7 +228,7 @@ def train(
             pred = model(imgs)
 
             # Compute loss
-            loss, loss_items = compute_loss(pred, targets, model)
+            loss, loss_items = compute_loss(pred, targets, model, giou_loss=False)
             if torch.isnan(loss):
                 print('WARNING: nan loss detected, ending training')
                 return results
