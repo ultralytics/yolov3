@@ -228,7 +228,7 @@ def train(
             pred = model(imgs)
 
             # Compute loss
-            loss, loss_items = compute_loss(pred, targets, model, giou_loss=False)
+            loss, loss_items = compute_loss(pred, targets, model, giou_loss=opt.giou)
             if torch.isnan(loss):
                 print('WARNING: nan loss detected, ending training')
                 return results
@@ -325,6 +325,7 @@ if __name__ == '__main__':
     parser.add_argument('--backend', default='nccl', type=str, help='distributed backend')
     parser.add_argument('--nosave', action='store_true', help='do not save training results')
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
+    parser.add_argument('--giou', action='store_true', help='use GIoU loss instead of xy, wh loss')
     parser.add_argument('--evolve', action='store_true', help='run hyperparameter evolution')
     parser.add_argument('--var', default=0, type=int, help='debug variable')
     opt = parser.parse_args()
