@@ -12,11 +12,13 @@ from utils.datasets import *
 from utils.utils import *
 
 # Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.204      0.302      0.175      0.234 (square smart)
-hyp = {'xy': 0.1,  # xy loss gain  (giou is about 0.02)
-       'wh': 0.1,  # wh loss gain
-       'cls': 0.04,  # cls loss gain
-       'conf': 4.5,  # conf loss gain
-       'iou_t': 0.5,  # iou target-anchor training threshold
+hyp = {'giou': .035,  # giou loss gain
+       'xy': 0.20,  # xy loss gain
+       'wh': 0.10,  # wh loss gain
+       'cls': 0.035,  # cls loss gain
+       'conf': 1.61,  # conf loss gain
+       'conf_bpw': 3.53,  # conf BCELoss positive_weight
+       'iou_t': 0.29,  # iou target-anchor training threshold
        'lr0': 0.001,  # initial learning rate
        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
        'momentum': 0.90,  # SGD momentum
