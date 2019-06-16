@@ -122,6 +122,10 @@ def train(
         else:
             cutoff = load_darknet_weights(model, weights + 'darknet53.conv.74')
 
+        # Remove old results
+        for f in glob.glob('*_batch*.jpg') + glob.glob('results.txt'):
+            os.remove(f)
+
     # Scheduler https://github.com/ultralytics/yolov3/issues/238
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
     # lf = lambda x: 10 ** (hyp['lrf'] * x / epochs)  # exp ramp
@@ -169,10 +173,6 @@ def train(
     if mixed_precision:
         from apex import amp
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
-
-    # Remove old results
-    for f in glob.glob('*_batch*.jpg') + glob.glob('results.txt'):
-        os.remove(f)
 
     # Start training
     model.hyp = hyp  # attach hyperparameters to model
