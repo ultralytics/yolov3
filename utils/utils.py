@@ -11,6 +11,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from . import torch_utils
+from . import parse_config
 
 matplotlib.rc('font', **{'size': 12})
 
@@ -487,6 +488,14 @@ def strip_optimizer_from_checkpoint(filename='weights/best.pt'):
     a = torch.load(filename, map_location='cpu')
     a['optimizer'] = []
     torch.save(a, filename.replace('.pt', '_lite.pt'))
+
+
+def extract_bounding_boxes(data_cfg='data/coco_64img.data'):  # from utils.utils import *; extract_bounding_boxes()
+    # Extract bounding boxes into a new classification dataset
+    data_dict = parse_config.parse_data_cfg(data_cfg)
+    train_path = data_dict['train']
+    nc = int(data_dict['classes'])  # number of classes
+
 
 
 def coco_class_count(path='../coco/labels/train2014/'):
