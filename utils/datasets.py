@@ -11,7 +11,7 @@ import torch
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from utils.utils import xyxy2xywh
+from utils.utils import xyxy2xywh, xywh2xyxy
 
 
 class LoadImages:  # for inference
@@ -188,7 +188,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         # Preload labels (required for weighted CE training)
         self.imgs = [None] * n
         self.labels = [np.zeros((0, 5))] * n
-        iter = tqdm(self.label_files, desc='Reading labels') if n > 1000 else self.label_files
+        iter = tqdm(self.label_files, desc='Reading labels') if n > 10 else self.label_files
+        extract_bounding_boxes = False
         for i, file in enumerate(iter):
             try:
                 with open(file, 'r') as f:
@@ -198,6 +199,23 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                         assert (l >= 0).all(), 'negative labels: %s' % file
                         assert (l[:, 1:] <= 1).all(), 'non-normalized or out of bounds coordinate labels: %s' % file
                         self.labels[i] = l
+
+                        # Extract object detection boxes for a second stage classifier
+                        if extract_bounding_boxes:
+                            p = Path(self.img_files[i])
+                            img = cv2.imread(str(p))
+                            h, w, _ = img.shape
+                            for j, x in enumerate(l):
+                                f = '%s%sclassification%s%g_%g_%s' % (p.parent.parent, os.sep, os.sep, x[0], j, p.name)
+                                if not os.path.exists(Path(f).parent):
+                                    os.makedirs(Path(f).parent)  # make new output folder
+                                box = xywh2xyxy(x[1:].reshape(-1, 4)).ravel()
+                                box = np.clip(box, 0, 1)  # clip boxes outside of image
+                                result = cv2.imwrite(f, img[int(box[1] * h):int(box[3] * h),
+                                                        int(box[0] * w):int(box[2] * w)])
+                                if not result:
+                                    print('stop')
+
             except:
                 pass  # print('Warning: missing labels for %s' % self.img_files[i])  # missing label file
         assert len(np.concatenate(self.labels, 0)) > 0, 'No labels found. Incorrect label paths provided.'
@@ -372,7 +390,7 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
 
     M = S @ T @ R  # Combined rotation matrix. ORDER IS IMPORTANT HERE!!
     imw = cv2.warpAffine(img, M[:2], dsize=(width, height), flags=cv2.INTER_LINEAR,
-                              borderValue=borderValue)  # BGR order borderValue
+                         borderValue=borderValue)  # BGR order borderValue
 
     # Return warped points also
     if len(targets) > 0:
