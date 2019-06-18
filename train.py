@@ -313,7 +313,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=8, help='batch size')
     parser.add_argument('--accumulate', type=int, default=8, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='../supermarket2/supermarket2.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco_64img.data', help='coco.data file path')
     parser.add_argument('--single-scale', action='store_true', help='train at fixed size (no multi-scale)')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
