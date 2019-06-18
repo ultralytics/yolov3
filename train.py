@@ -367,7 +367,7 @@ if __name__ == '__main__':
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay']
-            limits = [(1e-4, 1e-2), (0, 0.90), (0.70, 0.99), (0, 0.01)]
+            limits = [(1e-4, 1e-2), (0, 0.00), (0.70, 0.99), (0, 0.01)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
