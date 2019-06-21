@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from . import torch_utils
 
-matplotlib.rc('font', **{'size': 12})
+matplotlib.rc('font', **{'size': 11})
 
 # Set printoptions
 torch.set_printoptions(linewidth=1320, precision=5, profile='long')
