@@ -73,7 +73,7 @@ rm -rf darknet && git clone https://github.com/AlexeyAB/darknet && cd darknet &&
 ./darknet detector train ../supermarket2/supermarket2.data ../yolo_v3_spp_pan_scale.cfg darknet53.conv.74 -map -dont_show # train spp
 ./darknet detector train ../yolov3/data/coco.data ../yolov3-spp.cfg darknet53.conv.74 -map -dont_show # train spp coco
 
-./darknet detector train ../supermarket2/supermarket2.data ../yolov3-spp-sm2-1cls-scalexy_variable.cfg darknet53.conv.74 -map -dont_show # train spp
+./darknet detector train data/coco.data ../yolov3-spp.cfg darknet53.conv.74 -map -dont_show # train spp
 gsutil cp -r backup/*5000.weights gs://sm6/weights
 sudo shutdown
 
@@ -95,6 +95,6 @@ python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/ba
 
 
 # Debug/Development
-python3 train.py --data data/coco.data --epochs 1 --img-size 320 --single-scale --batch-size 16 --accumulate 4 --giou --evolve
+python3 train.py --data data/coco.data --img-size 416 --batch-size 8 --accumulate 8
 gsutil cp evolve.txt gs://ultralytics
 sudo shutdown
