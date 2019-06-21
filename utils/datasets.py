@@ -269,7 +269,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             img, ratiow, ratioh, padw, padh = letterbox(img, new_shape=shape, mode='rect')
         else:
             shape = self.img_size
-            img, ratiow, ratioh, padw, padh = letterbox(img, new_shape=shape, mode='scaleFill')
+            img, ratiow, ratioh, padw, padh = letterbox(img, new_shape=shape, mode='square')
 
         # Load labels
         labels = []

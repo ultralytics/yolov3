@@ -95,6 +95,8 @@ python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/ba
 
 
 # Debug/Development
-python3 train.py --data data/coco.data --img-size 416 --batch-size 8 --accumulate 8
+python3 train.py --data data/coco.data --img-size 320 --single-scale --batch-size 32 --accumulate 2 --epochs 1
+python3 test.py --weights weights/latest.pt --cfg cfg/yolov3-spp.cfg --img-size 320
+
 gsutil cp evolve.txt gs://ultralytics
 sudo shutdown
