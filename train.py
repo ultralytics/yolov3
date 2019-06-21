@@ -208,7 +208,7 @@ def train(
 
             # Multi-Scale training
             if multi_scale:
-                if (i + 1 + nb * epoch) % 10 == 0:  #  adjust (67% - 150%) every 10 batches
+                if ((i + 1) / accumulate + nb * epoch) % 10 == 0:  #  adjust (67% - 150%) every 10 batches
                     img_size = random.choice(range(img_size_min, img_size_max + 1)) * 32
                     print('img_size = %g' % img_size)
                 scale_factor = img_size / max(imgs.shape[-2:])
@@ -360,7 +360,7 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.5, .5, .5, .5, .5, .5, .5, .5, .5, .05, .5]  # xy, wh, cls, conf, iou_t, lr0, lrf, momentum, weight_decay
+            s = [.4, .4, .4, .4, .4, .4, .4, .4, .4, .04, .4]  # fractional sigmas
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
