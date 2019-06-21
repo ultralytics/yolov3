@@ -253,6 +253,10 @@ def train(
             t = time.time()
             print(s)
 
+        # Report time
+        dt = (time.time() - t0) / 3600
+        print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, dt))
+
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
         if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:
             with torch.no_grad():
@@ -292,8 +296,6 @@ def train(
             # Delete checkpoint
             del chkpt
 
-    dt = (time.time() - t0) / 3600
-    print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, dt))
     return results
 
 
@@ -313,7 +315,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=8, help='batch size')
     parser.add_argument('--accumulate', type=int, default=8, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='data/coco_64img.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco_1000img.data', help='coco.data file path')
     parser.add_argument('--single-scale', action='store_true', help='train at fixed size (no multi-scale)')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
