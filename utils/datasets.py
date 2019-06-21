@@ -266,10 +266,10 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         h, w, _ = img.shape
         if self.rect:
             shape = self.batch_shapes[self.batch[index]]
-            img, ratio, padw, padh = letterbox(img, new_shape=shape, mode='rect')
+            img, ratiow, ratioh, padw, padh = letterbox(img, new_shape=shape, mode='rect')
         else:
             shape = self.img_size
-            img, ratio, padw, padh = letterbox(img, new_shape=shape, mode='square')
+            img, ratiow, ratioh, padw, padh = letterbox(img, new_shape=shape, mode='scaleFill')
 
         # Load labels
         labels = []
@@ -280,10 +280,10 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             if x.size > 0:
                 # Normalized xywh to pixel xyxy format
                 labels = x.copy()
-                labels[:, 1] = ratio * w * (x[:, 1] - x[:, 3] / 2) + padw
-                labels[:, 2] = ratio * h * (x[:, 2] - x[:, 4] / 2) + padh
-                labels[:, 3] = ratio * w * (x[:, 1] + x[:, 3] / 2) + padw
-                labels[:, 4] = ratio * h * (x[:, 2] + x[:, 4] / 2) + padh
+                labels[:, 1] = ratiow * w * (x[:, 1] - x[:, 3] / 2) + padw
+                labels[:, 2] = ratioh * h * (x[:, 2] - x[:, 4] / 2) + padh
+                labels[:, 3] = ratiow * w * (x[:, 1] + x[:, 3] / 2) + padw
+                labels[:, 4] = ratioh * h * (x[:, 2] + x[:, 4] / 2) + padh
 
         # Augment image and labels
         if self.augment:
@@ -340,6 +340,7 @@ def letterbox(img, new_shape=416, color=(127.5, 127.5, 127.5), mode='auto'):
         ratio = float(new_shape) / max(shape)
     else:
         ratio = max(new_shape) / max(shape)  # ratio  = new / old
+    ratiow, ratioh = ratio, ratio
     new_unpad = (int(round(shape[1] * ratio)), int(round(shape[0] * ratio)))
 
     # Compute padding https://github.com/ultralytics/yolov3/issues/232
@@ -352,12 +353,16 @@ def letterbox(img, new_shape=416, color=(127.5, 127.5, 127.5), mode='auto'):
     elif mode is 'rect':  # square
         dw = (new_shape[1] - new_unpad[0]) / 2  # width padding
         dh = (new_shape[0] - new_unpad[1]) / 2  # height padding
+    elif mode is 'scaleFill':
+        dw, dh = 0.0, 0.0
+        new_unpad = (new_shape, new_shape)
+        ratiow, ratioh = new_shape/shape[1], new_shape/shape[0]
 
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
     img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)  # resized, no border
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # padded square
-    return img, ratio, dw, dh
+    return img, ratiow, ratioh, dw, dh
 
 
 def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-2, 2),
