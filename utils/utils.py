@@ -303,6 +303,10 @@ def compute_loss(p, targets, model, giou_loss=False):  # predictions, targets, m
                 lwh += (k * h['wh']) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
             lcls += (k * h['cls']) * CE(pi[..., 5:], tcls[i])  # class_conf loss
 
+            # # Append to text file
+            # with open('targets.txt', 'a') as file:
+            #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
+
         lconf += (k * h['conf']) * BCE(pi0[..., 4], tconf)  # obj_conf loss
     loss = lxy + lwh + lconf + lcls
 
@@ -613,7 +617,7 @@ def plot_images(imgs, targets, fname='images.jpg'):
     plt.close()
 
 
-def plot_test_txt():  # from test import *; plot_test()
+def plot_test_txt():  # from utils.utils import *; plot_test()
     # Plot test.txt histograms
     x = np.loadtxt('test.txt', dtype=np.float32)
     box = xyxy2xywh(x[:, :4])
@@ -630,6 +634,22 @@ def plot_test_txt():  # from test import *; plot_test()
     ax[1].hist(cy, bins=600)
     fig.tight_layout()
     plt.savefig('hist1d.jpg', dpi=300)
+
+
+def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
+    # Plot test.txt histograms
+    x = np.loadtxt('targets.txt', dtype=np.float32)
+    x = x.T
+
+    s = ['x targets','y targets','width targets','height targets']
+    fig, ax = plt.subplots(2, 2, figsize=(8, 8))
+    ax = ax.ravel()
+    for i in range(4):
+        ax[i].hist(x[i], bins=100, label='%.3g +/- %.3g' % (x[i].mean(), x[i].std()))
+        ax[i].legend()
+        ax[i].set_title(s[i])
+    fig.tight_layout()
+    plt.savefig('targets.jpg', dpi=300)
 
 
 def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
