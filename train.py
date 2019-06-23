@@ -25,39 +25,6 @@ hyp = {'giou': .035,  # giou loss gain
        'weight_decay': 0.0005}  # optimizer weight decay
 
 
-# Hyperparameters: Original, Metrics: 0.172      0.304      0.156      0.205 (square)
-# hyp = {'xy': 0.5,  # xy loss gain
-#        'wh': 0.0625,  # wh loss gain
-#        'cls': 0.0625,  # cls loss gain
-#        'conf': 4,  # conf loss gain
-#        'iou_t': 0.1,  # iou target-anchor training threshold
-#        'lr0': 0.001,  # initial learning rate
-#        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
-#        'momentum': 0.9,  # SGD momentum
-#        'weight_decay': 0.0005}  # optimizer weight decay
-
-# Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.225      0.251      0.145      0.218 (rect)
-# hyp = {'xy': 0.4499,  # xy loss gain
-#        'wh': 0.05121,  # wh loss gain
-#        'cls': 0.04207,  # cls loss gain
-#        'conf': 2.853,  # conf loss gain
-#        'iou_t': 0.2487,  # iou target-anchor training threshold
-#        'lr0': 0.0005301,  # initial learning rate
-#        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
-#        'momentum': 0.8823,  # SGD momentum
-#        'weight_decay': 0.0004149}  # optimizer weight decay
-
-# Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.178      0.313      0.167      0.212 (square)
-# hyp = {'xy': 0.4664,  # xy loss gain
-#        'wh': 0.08437,  # wh loss gain
-#        'cls': 0.05145,  # cls loss gain
-#        'conf': 4.244,  # conf loss gain
-#        'iou_t': 0.09121,  # iou target-anchor training threshold
-#        'lr0': 0.0004938,  # initial learning rate
-#        'lrf': -5.,  # final learning rate = lr0 * (10 ** lrf)
-#        'momentum': 0.9025,  # SGD momentum
-#        'weight_decay': 0.0005417}  # optimizer weight decay
-
 def train(
         cfg,
         data_cfg,
@@ -312,7 +279,7 @@ def print_mutation(hyp, results):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', type=int, default=68, help='number of epochs')
+    parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=8, help='batch size')
     parser.add_argument('--accumulate', type=int, default=8, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')

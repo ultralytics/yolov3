@@ -641,7 +641,7 @@ def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
     x = np.loadtxt('targets.txt', dtype=np.float32)
     x = x.T
 
-    s = ['x targets','y targets','width targets','height targets']
+    s = ['x targets', 'y targets', 'width targets', 'height targets']
     fig, ax = plt.subplots(2, 2, figsize=(8, 8))
     ax = ax.ravel()
     for i in range(4):
