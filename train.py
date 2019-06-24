@@ -292,7 +292,7 @@ if __name__ == '__main__':
     parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
     parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
     parser.add_argument('--backend', default='nccl', type=str, help='distributed backend')
-    parser.add_argument('--nosave', action='store_true', help='do not save training results')
+    parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     parser.add_argument('--giou', action='store_true', help='use GIoU loss instead of xy, wh loss')
     parser.add_argument('--evolve', action='store_true', help='run hyperparameter evolution')
@@ -301,8 +301,8 @@ if __name__ == '__main__':
     print(opt)
 
     if opt.evolve:
-        opt.notest = True  # save time by only testing final epoch
-        opt.nosave = True  # do not save checkpoints
+        opt.notest = True  # only test final epoch
+        opt.nosave = True  # only save final checkpoint
 
     # Train
     results = train(
