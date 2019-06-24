@@ -5,6 +5,8 @@ def init_seeds(seed=0):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.benchmark = True  # set False for reproducible resuls
+    # torch.backends.cudnn.deterministic = True  # https://pytorch.org/docs/stable/notes/randomness.html
 
 
 def select_device(force_cpu=False):
