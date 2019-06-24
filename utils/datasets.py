@@ -74,7 +74,7 @@ class LoadImages:  # for inference
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
-        img, _, _, _ = letterbox(img0, new_shape=self.height)
+        img, *_ = letterbox(img0, new_shape=self.height)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
@@ -116,7 +116,7 @@ class LoadWebcam:  # for inference
         print('webcam %g: ' % self.count, end='')
 
         # Padded resize
-        img, _, _, _ = letterbox(img0, new_shape=self.height)
+        img, *_ = letterbox(img0, new_shape=self.height)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
@@ -356,7 +356,7 @@ def letterbox(img, new_shape=416, color=(127.5, 127.5, 127.5), mode='auto'):
     elif mode is 'scaleFill':
         dw, dh = 0.0, 0.0
         new_unpad = (new_shape, new_shape)
-        ratiow, ratioh = new_shape/shape[1], new_shape/shape[0]
+        ratiow, ratioh = new_shape / shape[1], new_shape / shape[0]
 
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
