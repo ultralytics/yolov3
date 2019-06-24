@@ -22,6 +22,7 @@ def detect(
         webcam=False
 ):
     device = torch_utils.select_device()
+    torch.backends.cudnn.benchmark = False  # set False for reproducible results
     if os.path.exists(output):
         shutil.rmtree(output)  # delete output folder
     os.makedirs(output)  # make new output folder
