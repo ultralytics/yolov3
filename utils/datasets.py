@@ -187,38 +187,41 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Preload labels (required for weighted CE training)
         self.imgs = [None] * n
-        self.labels = [np.zeros((0, 5))] * n
-        iter = tqdm(self.label_files, desc='Reading labels') if n > 10 else self.label_files
-        extract_bounding_boxes = False
-        for i, file in enumerate(iter):
-            try:
-                with open(file, 'r') as f:
-                    l = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
-                    if l.shape[0]:
-                        assert l.shape[1] == 5, '> 5 label columns: %s' % file
-                        assert (l >= 0).all(), 'negative labels: %s' % file
-                        assert (l[:, 1:] <= 1).all(), 'non-normalized or out of bounds coordinate labels: %s' % file
-                        self.labels[i] = l
+        self.labels = [None] * n
+        preload_labels = False
+        if preload_labels:
+            self.labels = [np.zeros((0, 5))] * n
+            iter = tqdm(self.label_files, desc='Reading labels') if n > 10 else self.label_files
+            extract_bounding_boxes = False
+            for i, file in enumerate(iter):
+                try:
+                    with open(file, 'r') as f:
+                        l = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+                        if l.shape[0]:
+                            assert l.shape[1] == 5, '> 5 label columns: %s' % file
+                            assert (l >= 0).all(), 'negative labels: %s' % file
+                            assert (l[:, 1:] <= 1).all(), 'non-normalized or out of bounds coordinate labels: %s' % file
+                            self.labels[i] = l
 
-                        # Extract object detection boxes for a second stage classifier
-                        if extract_bounding_boxes:
-                            p = Path(self.img_files[i])
-                            img = cv2.imread(str(p))
-                            h, w, _ = img.shape
-                            for j, x in enumerate(l):
-                                f = '%s%sclassification%s%g_%g_%s' % (p.parent.parent, os.sep, os.sep, x[0], j, p.name)
-                                if not os.path.exists(Path(f).parent):
-                                    os.makedirs(Path(f).parent)  # make new output folder
-                                box = xywh2xyxy(x[1:].reshape(-1, 4)).ravel()
-                                box = np.clip(box, 0, 1)  # clip boxes outside of image
-                                result = cv2.imwrite(f, img[int(box[1] * h):int(box[3] * h),
-                                                        int(box[0] * w):int(box[2] * w)])
-                                if not result:
-                                    print('stop')
-
-            except:
-                pass  # print('Warning: missing labels for %s' % self.img_files[i])  # missing label file
-        assert len(np.concatenate(self.labels, 0)) > 0, 'No labels found. Incorrect label paths provided.'
+                            # Extract object detection boxes for a second stage classifier
+                            if extract_bounding_boxes:
+                                p = Path(self.img_files[i])
+                                img = cv2.imread(str(p))
+                                h, w, _ = img.shape
+                                for j, x in enumerate(l):
+                                    f = '%s%sclassification%s%g_%g_%s' % (
+                                        p.parent.parent, os.sep, os.sep, x[0], j, p.name)
+                                    if not os.path.exists(Path(f).parent):
+                                        os.makedirs(Path(f).parent)  # make new output folder
+                                    box = xywh2xyxy(x[1:].reshape(-1, 4)).ravel()
+                                    box = np.clip(box, 0, 1)  # clip boxes outside of image
+                                    result = cv2.imwrite(f, img[int(box[1] * h):int(box[3] * h),
+                                                            int(box[0] * w):int(box[2] * w)])
+                                    if not result:
+                                        print('stop')
+                except:
+                    pass  # print('Warning: missing labels for %s' % self.img_files[i])  # missing label file
+            assert len(np.concatenate(self.labels, 0)) > 0, 'No labels found. Incorrect label paths provided.'
 
     def __len__(self):
         return len(self.img_files)
@@ -274,9 +277,12 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         # Load labels
         labels = []
         if os.path.isfile(label_path):
-            # with open(label_path, 'r') as f:
-            #     x = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
             x = self.labels[index]
+            if x is None:  # labels not preloaded
+                with open(label_path, 'r') as f:
+                    x = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+                    self.labels[index] = x  # save for next time
+
             if x.size > 0:
                 # Normalized xywh to pixel xyxy format
                 labels = x.copy()
