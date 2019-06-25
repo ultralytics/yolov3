@@ -93,10 +93,8 @@ python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/ba
 
 
 
-
-
 # Debug/Development
-python3 train.py --data data/coco.data --img-size 320 --single-scale --batch-size 64 --accumulate 1 --epochs 1 --evolve
+python3 train.py --data data/coco.data --img-size 320 --single-scale --batch-size 64 --accumulate 1 --epochs 1 --evolve --giou
 python3 test.py --weights weights/latest.pt --cfg cfg/yolov3-spp.cfg --img-size 320
 
 gsutil cp evolve.txt gs://ultralytics

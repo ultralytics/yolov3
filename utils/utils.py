@@ -291,7 +291,7 @@ def compute_loss(p, targets, model, giou_loss=False):  # predictions, targets, m
         # Compute losses
         if len(b):  # number of targets
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
-            tconf[b, a, gj, gi] = 1  # conf
+            tconf[b, a, gj, gi] = 1.0  # conf
             # pi[..., 2:4] = torch.sigmoid(pi[..., 2:4])  # wh power loss (uncomment)
 
             if giou_loss:
