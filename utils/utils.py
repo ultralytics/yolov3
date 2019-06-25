@@ -279,7 +279,8 @@ def compute_loss(p, targets, model, giou_loss=False):  # predictions, targets, m
     # Define criteria
     MSE = nn.MSELoss()
     CE = nn.CrossEntropyLoss()  # (weight=model.class_weights)
-    BCE = nn.BCEWithLogitsLoss(pos_weight=ft([h['conf_bpw']]))
+    BCEcls = nn.BCEWithLogitsLoss(pos_weight=ft([h['cls_pw']]))
+    BCEconf = nn.BCEWithLogitsLoss(pos_weight=ft([h['conf_pw']]))
 
     # Compute losses
     bs = p[0].shape[0]  # batch size
@@ -301,13 +302,17 @@ def compute_loss(p, targets, model, giou_loss=False):  # predictions, targets, m
             else:
                 lxy += (k * h['xy']) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
                 lwh += (k * h['wh']) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
+
+            # tclsm = torch.zeros_like(pi[..., 5:])
+            # tclsm[range(len(b)), tcls[i]] = 1.0
+            # lcls += (k * h['cls']) * BCEcls(pi[..., 5:], tclsm)  # class_conf loss
             lcls += (k * h['cls']) * CE(pi[..., 5:], tcls[i])  # class_conf loss
 
             # # Append to text file
             # with open('targets.txt', 'a') as file:
             #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
 
-        lconf += (k * h['conf']) * BCE(pi0[..., 4], tconf)  # obj_conf loss
+        lconf += (k * h['conf']) * BCEconf(pi0[..., 4], tconf)  # obj_conf loss
     loss = lxy + lwh + lconf + lcls
 
     return loss, torch.cat((lxy, lwh, lconf, lcls, loss)).detach()

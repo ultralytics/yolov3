@@ -11,18 +11,32 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-# Hyperparameters: train.py --evolve --epochs 2 --img-size 320, Metrics: 0.204      0.302      0.175      0.234 (square smart)
+# Hyperparameters: train.py --data data/coco.data --img-size 320 --single-scale --batch-size 64 --accumulate 1 --epochs 1 --evolve     0.087      0.281      0.109      0.121
 hyp = {'giou': .035,  # giou loss gain
        'xy': 0.20,  # xy loss gain
        'wh': 0.10,  # wh loss gain
        'cls': 0.035,  # cls loss gain
+       'cls_pw': 79.0,  # cls BCELoss positive_weight
        'conf': 1.61,  # conf loss gain
-       'conf_bpw': 3.53,  # conf BCELoss positive_weight
+       'conf_pw': 3.53,  # conf BCELoss positive_weight
        'iou_t': 0.29,  # iou target-anchor training threshold
        'lr0': 0.001,  # initial learning rate
        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
        'momentum': 0.90,  # SGD momentum
        'weight_decay': 0.0005}  # optimizer weight decay
+
+# hyp = {'giou': 1.0,  # giou loss gain
+#        'xy': 1.0,  # xy loss gain
+#        'wh': 1.0,  # wh loss gain
+#        'cls': 1.0,  # cls loss gain
+#        'cls_pw': 79.0,  # cls BCELoss positive_weight
+#        'conf': 1.0,  # conf loss gain
+#        'conf_pw': 6.0,  # conf BCELoss positive_weight
+#        'iou_t': 0.29,  # iou target-anchor training threshold
+#        'lr0': 0.001,  # initial learning rate
+#        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.90,  # SGD momentum
+#        'weight_decay': 0.0005}  # optimizer weight decay
 
 
 def train(
@@ -329,7 +343,7 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.4, .4, .4, .4, .4, .4, .4, .4 * 0, .4 * 0, .04 * 0, .4 * 0]  # fractional sigmas
+            s = [.4, .4, .4, .4, .4, .4, .4, .4, .4 * 0, .4 * 0, .04 * 0, .4 * 0]  # fractional sigmas
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
                 hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
