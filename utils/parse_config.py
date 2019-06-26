@@ -9,8 +9,6 @@ def parse_model_cfg(path):
         if line.startswith('['):  # This marks the start of a new block
             module_defs.append({})
             module_defs[-1]['type'] = line[1:-1].rstrip()
-            if module_defs[-1]['type'] == 'convolutional':
-                module_defs[-1]['batch_normalize'] = 0
         else:
             key, value = line.split("=")
             value = value.strip()

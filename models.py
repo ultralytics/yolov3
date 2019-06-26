@@ -20,7 +20,7 @@ def create_modules(module_defs):
         modules = nn.Sequential()
 
         if module_def['type'] == 'convolutional':
-            bn = int(module_def['batch_normalize'])
+            bn = int(module_def['batch_normalize']) if 'batch_normalize' in module_def else 0
             filters = int(module_def['filters'])
             kernel_size = int(module_def['size'])
             pad = (kernel_size - 1) // 2 if int(module_def['pad']) else 0
