@@ -285,7 +285,8 @@ def load_darknet_weights(self, weights, cutoff=-1):
     for i, (module_def, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
         if module_def['type'] == 'convolutional':
             conv_layer = module[0]
-            if module_def['batch_normalize']:
+            bn = int(module_def['batch_normalize']) if 'batch_normalize' in module_def else 0
+            if bn:
                 # Load BN bias, weights, running mean and running variance
                 bn_layer = module[1]
                 num_b = bn_layer.bias.numel()  # Number of biases
