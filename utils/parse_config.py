@@ -10,7 +10,7 @@ def parse_model_cfg(path):
             module_defs.append({})
             module_defs[-1]['type'] = line[1:-1].rstrip()
             if module_defs[-1]['type'] == 'convolutional':
-                module_defs[-1]['batch_normalize'] = 0
+                module_defs[-1]['batch_normalize'] = 0  # pre-populate with zeros (may be overwritten later)
         else:
             key, value = line.split("=")
             value = value.strip()
