@@ -148,12 +148,13 @@ def train(
                             collate_fn=dataset.collate_fn)
 
     # Mixed precision training https://github.com/NVIDIA/apex
-    try:
-        from apex import amp
-        model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
-        mixed_precision = True
-    except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/259
-        mixed_precision = False
+    mixed_precision = True
+    if mixed_precision:
+        try:
+            from apex import amp
+            model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
+        except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/259
+            mixed_precision = False
 
     # Start training
     model.hyp = hyp  # attach hyperparameters to model
@@ -343,10 +344,10 @@ if __name__ == '__main__':
             # Mutate hyperparameters
             old_hyp = hyp.copy()
             init_seeds(seed=int(time.time()))
-            s = [.4, .4, .4, .4, .4, .4, .4, .4, .4 * 0, .4 * 0, .04 * 0, .4 * 0]  # fractional sigmas
+            s = [.2, .2, .2, .2, .2, .2, .2, .2, .2 * 0, .2 * 0, .05 * 0, .2 * 0]  # fractional sigmas
             for i, k in enumerate(hyp.keys()):
-                x = (np.random.randn(1) * s[i] + 1) ** 1.1  # plt.hist(x.ravel(), 100)
-                hyp[k] = hyp[k] * float(x)  # vary by about 30% 1sigma
+                x = (np.random.randn(1) * s[i] + 1) ** 3.0  # plt.hist(x.ravel(), 300)
+                hyp[k] *= float(x)  # vary by about 30% 1sigma
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay']
