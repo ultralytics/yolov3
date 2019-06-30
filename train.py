@@ -11,27 +11,30 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-# Hyperparameters: train.py --data data/coco.data --img-size 320 --single-scale --batch-size 64 --accumulate 1 --epochs 1 --evolve     0.087      0.281      0.109      0.121
-hyp = {'giou': .035,  # giou loss gain
-       'xy': 0.20,  # xy loss gain
-       'wh': 0.10,  # wh loss gain
-       'cls': 0.035,  # cls loss gain
-       'cls_pw': 79.0,  # cls BCELoss positive_weight
-       'conf': 1.61,  # conf loss gain
-       'conf_pw': 3.53,  # conf BCELoss positive_weight
-       'iou_t': 0.29,  # iou target-anchor training threshold
+#      0.149      0.241      0.126      0.156       6.85      1.008      1.421    0.07989      16.94      6.215      10.61      4.272      0.251      0.001         -4        0.9     0.0005   320 64-1 giou
+hyp = {'giou': 1.008,  # giou loss gain
+       'xy': 1.421,  # xy loss gain
+       'wh': 0.07989,  # wh loss gain
+       'cls': 16.94,  # cls loss gain
+       'cls_pw': 6.215,  # cls BCELoss positive_weight
+       'conf': 10.61,  # conf loss gain
+       'conf_pw': 4.272,  # conf BCELoss positive_weight
+       'iou_t': 0.251,  # iou target-anchor training threshold
        'lr0': 0.001,  # initial learning rate
        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
        'momentum': 0.90,  # SGD momentum
        'weight_decay': 0.0005}  # optimizer weight decay
 
-# hyp = {'giou': 1.0,  # giou loss gain
-#        'xy': 1.0,  # xy loss gain
-#        'wh': 1.0,  # wh loss gain
-#        'cls': 1.0,  # cls loss gain
+
+#     0.0945      0.279      0.114      0.131         25      0.035        0.2        0.1      0.035         79       1.61       3.53       0.29      0.001         -4        0.9     0.0005   320 64-1
+#     0.112       0.265      0.111      0.144       12.6      0.035        0.2        0.1      0.035         79       1.61       3.53       0.29      0.001         -4        0.9     0.0005   320 32-2
+# hyp = {'giou': .035,  # giou loss gain
+#        'xy': 0.20,  # xy loss gain
+#        'wh': 0.10,  # wh loss gain
+#        'cls': 0.035,  # cls loss gain
 #        'cls_pw': 79.0,  # cls BCELoss positive_weight
-#        'conf': 1.0,  # conf loss gain
-#        'conf_pw': 6.0,  # conf BCELoss positive_weight
+#        'conf': 1.61,  # conf loss gain
+#        'conf_pw': 3.53,  # conf BCELoss positive_weight
 #        'iou_t': 0.29,  # iou target-anchor training threshold
 #        'lr0': 0.001,  # initial learning rate
 #        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
@@ -167,7 +170,8 @@ def train(
     t, t0 = time.time(), time.time()
     for epoch in range(start_epoch, epochs):
         model.train()
-        print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'targets', 'time'))
+        print(('\n%8s%12s' + '%10s' * 7) %
+              ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'targets', 'img_size'))
 
         # Update scheduler
         scheduler.step()
@@ -184,15 +188,16 @@ def train(
         # dataset.indices = random.choices(range(dataset.n), weights=image_weights, k=dataset.n)  # random weighted index
 
         mloss = torch.zeros(5).to(device)  # mean losses
-        for i, (imgs, targets, _, _) in enumerate(dataloader):
+        pbar = tqdm(enumerate(dataloader), total=nb)  # progress bar
+        for i, (imgs, targets, _, _) in pbar:
             imgs = imgs.to(device)
             targets = targets.to(device)
 
             # Multi-Scale training
             if multi_scale:
-                if (i + 1 + nb * epoch) / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
+                if (i + nb * epoch) / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
                     img_size = random.choice(range(img_size_min, img_size_max + 1)) * 32
-                    print('img_size = %g' % img_size)
+                    # print('img_size = %g' % img_size)
                 scale_factor = img_size / max(imgs.shape[-2:])
                 imgs = F.interpolate(imgs, scale_factor=scale_factor, mode='bilinear', align_corners=False)
 
@@ -229,11 +234,11 @@ def train(
 
             # Print batch results
             mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
+            # s = ('%8s%12s' + '%10.3g' * 7) % ('%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, nb - 1), *mloss, len(targets), time.time() - t)
             s = ('%8s%12s' + '%10.3g' * 7) % (
-                '%g/%g' % (epoch, epochs - 1),
-                '%g/%g' % (i, nb - 1), *mloss, len(targets), time.time() - t)
+                '%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, nb - 1), *mloss, len(targets), img_size)
             t = time.time()
-            print(s)
+            pbar.set_description(s)  # print(s)
 
         # Report time
         dt = (time.time() - t0) / 3600
