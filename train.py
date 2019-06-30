@@ -351,7 +351,7 @@ if __name__ == '__main__':
             init_seeds(seed=int(time.time()))
             s = [.2, .2, .2, .2, .2, .2, .2, .2, .2 * 0, .2 * 0, .05 * 0, .2 * 0]  # fractional sigmas
             for i, k in enumerate(hyp.keys()):
-                x = (np.random.randn(1) * s[i] + 1) ** 3.0  # plt.hist(x.ravel(), 300)
+                x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                 hyp[k] *= float(x)  # vary by about 30% 1sigma
 
             # Clip to limits
