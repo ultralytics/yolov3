@@ -47,9 +47,9 @@ def train(
         data_cfg,
         img_size=416,
         resume=False,
-        epochs=100,  # 500200 batches at bs 4, 117263 images = 68 epochs
-        batch_size=16,
-        accumulate=4,  # effective bs = 64 = batch_size * accumulate
+        epochs=100,  # 500200 batches at bs 16, 117263 images = 273 epochs
+        batch_size=8,
+        accumulate=8,  # effective bs = batch_size * accumulate = 8 * 8 = 64
         freeze_backbone=False,
         transfer=False  # Transfer learning (train only YOLO layers)
 ):
