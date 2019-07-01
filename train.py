@@ -321,7 +321,7 @@ if __name__ == '__main__':
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     parser.add_argument('--giou', action='store_true', help='use GIoU loss instead of xy, wh loss')
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
-    parser.add_argument('--cloud_evolve', action='store_true', help='evolve hyperparameters from a cloud source')
+    parser.add_argument('--cloud-evolve', action='store_true', help='evolve hyperparameters from a cloud source')
     parser.add_argument('--var', default=0, type=int, help='debug variable')
     opt = parser.parse_args()
     print(opt)
