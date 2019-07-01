@@ -11,6 +11,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from . import torch_utils
+from . import google_utils
 
 matplotlib.rc('font', **{'size': 11})
 

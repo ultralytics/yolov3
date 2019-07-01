@@ -10,6 +10,7 @@ import test  # import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
 from utils.utils import *
+from utils.google_utils import *
 
 #      0.149      0.241      0.126      0.156       6.85      1.008      1.421    0.07989      16.94      6.215      10.61      4.272      0.251      0.001         -4        0.9     0.0005   320 64-1 giou
 hyp = {'giou': 1.008,  # giou loss gain
@@ -297,6 +298,21 @@ def print_mutation(hyp, results):
     with open('evolve.txt', 'a') as f:
         f.write(c + b + '\n')
 
+    cloud_evolve = False
+    if cloud_evolve:
+        # download cloud_evolve.txt
+        cloud_file = 'https://storage.googleapis.com/yolov4/cloud_evolve.txt'
+        local_file = cloud_file.replace('https://', '')
+        name = Path(local_file).name
+        download_blob(bucket_name='yolov4', source_blob_name=name, destination_file_name=local_file)
+
+        # add result to local cloud_evolve.txt
+        with open(local_file, 'a') as f:
+            f.write(c + b + '\n')
+
+        # upload cloud_evolve.txt
+        upload_blob(bucket_name='yolov4', source_file_name=local_file, destination_blob_name=name)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -304,7 +320,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=8, help='batch size')
     parser.add_argument('--accumulate', type=int, default=8, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='data/coco_64img.data', help='coco.data file path')
+    parser.add_argument('--data-cfg', type=str, default='data/coco_16img.data', help='coco.data file path')
     parser.add_argument('--single-scale', action='store_true', help='train at fixed size (no multi-scale)')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
