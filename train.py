@@ -46,12 +46,10 @@ def train(
         cfg,
         data_cfg,
         img_size=416,
-        resume=False,
         epochs=100,  # 500200 batches at bs 16, 117263 images = 273 epochs
         batch_size=8,
         accumulate=8,  # effective bs = batch_size * accumulate = 8 * 8 = 64
         freeze_backbone=False,
-        transfer=False  # Transfer learning (train only YOLO layers)
 ):
     init_seeds()
     weights = 'weights' + os.sep
@@ -81,8 +79,8 @@ def train(
     start_epoch = 0
     best_loss = float('inf')
     nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
-    if resume:  # Load previously saved model
-        if transfer:  # Transfer learning
+    if opt.resume or opt.transfer:  # Load previously saved model
+        if opt.transfer:  # Transfer learning
             chkpt = torch.load(weights + 'yolov3-spp.pt', map_location=device)
             model.load_state_dict({k: v for k, v in chkpt['model'].items() if v.numel() > 1 and v.shape[0] != 255},
                                   strict=False)
@@ -138,7 +136,11 @@ def train(
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:
-        dist.init_process_group(backend=opt.backend, init_method=opt.dist_url, world_size=opt.world_size, rank=opt.rank)
+        dist.init_process_group(backend='nccl',  # 'distributed backend'
+                                init_method='tcp://127.0.0.1:9999',  # distributed training init method
+                                world_size=1,  # number of nodes for distributed training
+                                rank=0)  # distributed training node rank
+
         model = torch.nn.parallel.DistributedDataParallel(model)
         # sampler = torch.utils.data.distributed.DistributedSampler(dataset)
 
@@ -308,10 +310,6 @@ if __name__ == '__main__':
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--transfer', action='store_true', help='transfer learning flag')
     parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
-    parser.add_argument('--dist-url', default='tcp://127.0.0.1:9999', type=str, help='distributed training init method')
-    parser.add_argument('--rank', default=0, type=int, help='distributed training node rank')
-    parser.add_argument('--world-size', default=1, type=int, help='number of nodes for distributed training')
-    parser.add_argument('--backend', default='nccl', type=str, help='distributed backend')
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     parser.add_argument('--giou', action='store_true', help='use GIoU loss instead of xy, wh loss')
@@ -325,16 +323,12 @@ if __name__ == '__main__':
         opt.nosave = True  # only save final checkpoint
 
     # Train
-    results = train(
-        opt.cfg,
-        opt.data_cfg,
-        img_size=opt.img_size,
-        resume=opt.resume or opt.transfer,
-        transfer=opt.transfer,
-        epochs=opt.epochs,
-        batch_size=opt.batch_size,
-        accumulate=opt.accumulate,
-    )
+    results = train(opt.cfg,
+                    opt.data_cfg,
+                    img_size=opt.img_size,
+                    epochs=opt.epochs,
+                    batch_size=opt.batch_size,
+                    accumulate=opt.accumulate)
 
     # Evolve hyperparameters (optional)
     if opt.evolve:
@@ -361,16 +355,12 @@ if __name__ == '__main__':
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
             # Determine mutation fitness
-            results = train(
-                opt.cfg,
-                opt.data_cfg,
-                img_size=opt.img_size,
-                resume=opt.resume or opt.transfer,
-                transfer=opt.transfer,
-                epochs=opt.epochs,
-                batch_size=opt.batch_size,
-                accumulate=opt.accumulate,
-            )
+            results = train(opt.cfg,
+                            opt.data_cfg,
+                            img_size=opt.img_size,
+                            epochs=opt.epochs,
+                            batch_size=opt.batch_size,
+                            accumulate=opt.accumulate)
             mutation_fitness = results[2]
 
             # Write mutation results
@@ -378,7 +368,6 @@ if __name__ == '__main__':
 
             # Update hyperparameters if fitness improved
             if mutation_fitness > best_fitness:
-                # Fitness improved!
                 print('Fitness improved!')
                 best_fitness = mutation_fitness
             else:
