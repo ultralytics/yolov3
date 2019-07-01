@@ -10,7 +10,6 @@ import test  # import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
 from utils.utils import *
-from utils.google_utils import *
 
 #      0.149      0.241      0.126      0.156       6.85      1.008      1.421    0.07989      16.94      6.215      10.61      4.272      0.251      0.001         -4        0.9     0.0005   320 64-1 giou
 hyp = {'giou': 1.008,  # giou loss gain
@@ -304,14 +303,14 @@ def print_mutation(hyp, results):
         cloud_file = 'https://storage.googleapis.com/yolov4/cloud_evolve.txt'
         local_file = cloud_file.replace('https://', '')
         name = Path(local_file).name
-        download_blob(bucket_name='yolov4', source_blob_name=name, destination_file_name=local_file)
+        google_utils.download_blob(bucket_name='yolov4', source_blob_name=name, destination_file_name=local_file)
 
         # add result to local cloud_evolve.txt
         with open(local_file, 'a') as f:
             f.write(c + b + '\n')
 
         # upload cloud_evolve.txt
-        upload_blob(bucket_name='yolov4', source_file_name=local_file, destination_blob_name=name)
+        google_utils.upload_blob(bucket_name='yolov4', source_file_name=local_file, destination_blob_name=name)
 
 
 if __name__ == '__main__':
