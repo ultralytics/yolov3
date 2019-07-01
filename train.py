@@ -307,7 +307,7 @@ def print_mutation(hyp, results):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', type=int, default=1, help='number of epochs')
+    parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
     parser.add_argument('--batch-size', type=int, default=8, help='batch size')
     parser.add_argument('--accumulate', type=int, default=8, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
@@ -320,8 +320,8 @@ if __name__ == '__main__':
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     parser.add_argument('--giou', action='store_true', help='use GIoU loss instead of xy, wh loss')
-    parser.add_argument('--evolve', action='store_true', help='run hyperparameter evolution')
-    parser.add_argument('--cloud_evolve', action='store_true', help='--evolve from a central source')
+    parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
+    parser.add_argument('--cloud_evolve', action='store_true', help='evolve hyperparameters from a cloud source')
     parser.add_argument('--var', default=0, type=int, help='debug variable')
     opt = parser.parse_args()
     print(opt)
@@ -347,7 +347,7 @@ if __name__ == '__main__':
         for _ in range(gen):
             # Get best hyperparamters
             x = np.loadtxt('evolve.txt', ndmin=2)
-            x = x[x[:, 2].argmax()]  # select best mAP for fitness (col 2)
+            x = x[x[:, 2].argmax()]  # select best mAP as genetic fitness (col 2)
             for i, k in enumerate(hyp.keys()):
                 hyp[k] = x[i + 5]
 
@@ -356,7 +356,7 @@ if __name__ == '__main__':
             s = [.2, .2, .2, .2, .2, .2, .2, .2, .2 * 0, .2 * 0, .05 * 0, .2 * 0]  # fractional sigmas
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
-                hyp[k] *= float(x)  # vary by about 30% 1sigma
+                hyp[k] *= float(x)  # vary by 20% 1sigma
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay']
