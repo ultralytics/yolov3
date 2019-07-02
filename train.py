@@ -258,7 +258,7 @@ def train(
 
         # Update best map
         test_map = results[2]
-        if test_map < best_map:
+        if test_map > best_map:
             best_map = test_map
 
         # Save training results
