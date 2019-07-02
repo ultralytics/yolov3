@@ -77,7 +77,7 @@ def train(
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
-    best_loss = float('inf')
+    best_map = 0.
     nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
     if opt.resume or opt.transfer:  # Load previously saved model
         if opt.transfer:  # Transfer learning
@@ -256,17 +256,17 @@ def train(
         with open('results.txt', 'a') as file:
             file.write(s + '%11.3g' * 5 % results + '\n')  # P, R, mAP, F1, test_loss
 
-        # Update best loss
-        test_loss = results[4]
-        if test_loss < best_loss:
-            best_loss = test_loss
+        # Update best map
+        test_map = results[2]
+        if test_map > best_map:
+            best_map = test_map
 
         # Save training results
         save = (not opt.nosave) or (epoch == epochs - 1)
         if save:
             # Create checkpoint
             chkpt = {'epoch': epoch,
-                     'best_loss': best_loss,
+                     'best_map': best_map,
                      'model': model.module.state_dict() if type(
                          model) is nn.parallel.DistributedDataParallel else model.state_dict(),
                      'optimizer': optimizer.state_dict()}
