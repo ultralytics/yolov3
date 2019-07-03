@@ -45,8 +45,7 @@ def create_modules(module_defs):
             modules.add_module('maxpool_%d' % i, maxpool)
 
         elif module_def['type'] == 'upsample':
-            # upsample = nn.Upsample(scale_factor=int(module_def['stride']), mode='nearest')  # WARNING: deprecated
-            upsample = Upsample(scale_factor=int(module_def['stride']))
+            upsample = nn.Upsample(scale_factor=int(module_def['stride']), mode='nearest')
             modules.add_module('upsample_%d' % i, upsample)
 
         elif module_def['type'] == 'route':
@@ -85,18 +84,6 @@ class EmptyLayer(nn.Module):
 
     def forward(self, x):
         return x
-
-
-class Upsample(nn.Module):
-    # Custom Upsample layer (nn.Upsample gives deprecated warning message)
-
-    def __init__(self, scale_factor=1, mode='nearest'):
-        super(Upsample, self).__init__()
-        self.scale_factor = scale_factor
-        self.mode = mode
-
-    def forward(self, x):
-        return F.interpolate(x, scale_factor=self.scale_factor, mode=self.mode)
 
 
 class YOLOLayer(nn.Module):
