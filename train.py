@@ -128,7 +128,7 @@ def train(
     # plt.savefig('LR.png', dpi=300)
 
     # Dataset
-    rectangular_training = False
+    rectangular_training = True
     dataset = LoadImagesAndLabels(train_path,
                                   img_size,
                                   batch_size,
@@ -196,7 +196,7 @@ def train(
             imgs = imgs.to(device)
             targets = targets.to(device)
 
-            # Multi-Scale training
+            # Multi-Scale training TODO: short-side to 32-multiple https://github.com/ultralytics/yolov3/issues/358
             if multi_scale:
                 if (i + nb * epoch) / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
                     img_size = random.choice(range(img_size_min, img_size_max + 1)) * 32
