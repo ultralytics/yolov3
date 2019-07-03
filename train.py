@@ -128,7 +128,7 @@ def train(
     # plt.savefig('LR.png', dpi=300)
 
     # Dataset
-    rectangular_training = True
+    rectangular_training = False
     dataset = LoadImagesAndLabels(train_path,
                                   img_size,
                                   batch_size,
