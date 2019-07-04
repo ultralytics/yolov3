@@ -14,8 +14,8 @@ from utils.utils import *
 #      0.149      0.241      0.126      0.156       6.85      1.008      1.421    0.07989      16.94      6.215      10.61      4.272      0.251      0.001         -4        0.9     0.0005   320 64-1 giou
 #      0.111       0.27      0.132      0.131       3.96      1.276     0.3156     0.1425      21.21      6.224      11.59       8.83      0.376      0.001         -4        0.9     0.0005
 hyp = {'giou': 1.008,  # giou loss gain
-       'xy': 1.421,  # xy loss gain
-       'wh': 0.07989,  # wh loss gain
+       'xy': 4.062,  # xy loss gain
+       'wh': 0.1845,  # wh loss gain
        'cls': 16.94,  # cls loss gain
        'cls_pw': 6.215,  # cls BCELoss positive_weight
        'conf': 10.61,  # conf loss gain
