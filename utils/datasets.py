@@ -13,12 +13,13 @@ from tqdm import tqdm
 
 from utils.utils import xyxy2xywh, xywh2xyxy
 
+img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif']
+vid_formats = ['.mov', '.avi', '.mp4']
+
 
 class LoadImages:  # for inference
     def __init__(self, path, img_size=416):
         self.height = img_size
-        img_formats = ['.jpg', '.jpeg', '.png', '.tif']
-        vid_formats = ['.mov', '.avi', '.mp4']
 
         files = []
         if os.path.isdir(path):
@@ -146,11 +147,11 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.augment = augment
         self.image_weights = image_weights
         self.rect = False if image_weights else rect
-        self.label_files = [x.replace('images', 'labels').
-                                replace('.jpeg', '.txt').
-                                replace('.jpg', '.txt').
-                                replace('.bmp', '.txt').
-                                replace('.png', '.txt') for x in self.img_files]
+
+        # Define labels
+        self.label_files = [x.replace('images', 'labels') for x in self.img_files]
+        for f in img_formats:
+            self.label_files = [x.replace(f, '.txt') for x in self.label_files]
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         if self.rect:
@@ -169,9 +170,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             # Sort by aspect ratio
             ar = s[:, 1] / s[:, 0]  # aspect ratio
             i = ar.argsort()
-            ar = ar[i]
             self.img_files = [self.img_files[i] for i in i]
             self.label_files = [self.label_files[i] for i in i]
+            ar = ar[i]
 
             # Set training image shapes
             shapes = [[1, 1]] * nb
