@@ -271,7 +271,7 @@ def wh_iou(box1, box2):
     return inter_area / union_area  # iou
 
 
-def compute_loss(p, targets, model, giou_loss=False):  # predictions, targets, model
+def compute_loss(p, targets, model, giou_loss=True):  # predictions, targets, model
     ft = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
     lxy, lwh, lcls, lobj = ft([0]), ft([0]), ft([0]), ft([0])
     txy, twh, tcls, tbox, indices, anchor_vec = build_targets(model, targets)
@@ -336,17 +336,17 @@ def build_targets(model, targets):
         if nt:
             iou = torch.stack([wh_iou(x, gwh) for x in layer.anchor_vec], 0)
 
-            use_best = True
-            if use_best:
+            use_best_anchor = False
+            if use_best_anchor:
                 iou, a = iou.max(0)  # best iou and anchor
-            else:
+            else:  # use all anchors
                 na = len(layer.anchor_vec)  # number of anchors
                 a = torch.arange(na).view((-1, 1)).repeat([1, nt]).view(-1)
                 t = targets.repeat([na, 1])
                 gwh = gwh.repeat([na, 1])
                 iou = iou.view(-1)  # use all ious
 
-            # reject below threshold ious (OPTIONAL, increases P, lowers R)
+            # reject anchors below iou_thres (OPTIONAL, increases P, lowers R)
             reject = True
             if reject:
                 j = iou > iou_thres
