@@ -366,7 +366,7 @@ def letterbox(img, new_shape=416, color=(127.5, 127.5, 127.5), mode='auto'):
 
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-    img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)  # resized, no border
+    img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_AREA)  # resized, no border
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # padded square
     return img, ratiow, ratioh, dw, dh
 
@@ -400,7 +400,7 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
     S[1, 0] = math.tan((random.random() * (shear[1] - shear[0]) + shear[0]) * math.pi / 180)  # y shear (deg)
 
     M = S @ T @ R  # Combined rotation matrix. ORDER IS IMPORTANT HERE!!
-    imw = cv2.warpAffine(img, M[:2], dsize=(width, height), flags=cv2.INTER_LINEAR,
+    imw = cv2.warpAffine(img, M[:2], dsize=(width, height), flags=cv2.INTER_AREA,
                          borderValue=borderValue)  # BGR order borderValue
 
     # Return warped points also
