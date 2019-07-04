@@ -18,8 +18,8 @@ hyp = {'giou': 1.008,  # giou loss gain
        'wh': 0.1845,  # wh loss gain
        'cls': 16.94,  # cls loss gain
        'cls_pw': 6.215,  # cls BCELoss positive_weight
-       'conf': 10.61,  # conf loss gain
-       'conf_pw': 4.272,  # conf BCELoss positive_weight
+       'obj': 10.61,  # obj loss gain
+       'obj_pw': 4.272,  # obj BCELoss positive_weight
        'iou_t': 0.251,  # iou target-anchor training threshold
        'lr0': 0.001,  # initial learning rate
        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
@@ -34,8 +34,8 @@ hyp = {'giou': 1.008,  # giou loss gain
 #        'wh': 0.10,  # wh loss gain
 #        'cls': 0.035,  # cls loss gain
 #        'cls_pw': 79.0,  # cls BCELoss positive_weight
-#        'conf': 1.61,  # conf loss gain
-#        'conf_pw': 3.53,  # conf BCELoss positive_weight
+#        'obj': 1.61,  # obj loss gain
+#        'obj_pw': 3.53,  # obj BCELoss positive_weight
 #        'iou_t': 0.29,  # iou target-anchor training threshold
 #        'lr0': 0.001,  # initial learning rate
 #        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
@@ -174,7 +174,7 @@ def train(
     for epoch in range(start_epoch, epochs):
         model.train()
         print(('\n%8s%12s' + '%10s' * 7) %
-              ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'targets', 'img_size'))
+              ('Epoch', 'Batch', 'xy', 'wh', 'obj', 'cls', 'total', 'targets', 'img_size'))
 
         # Update scheduler
         scheduler.step()

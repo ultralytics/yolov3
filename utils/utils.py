@@ -273,27 +273,27 @@ def wh_iou(box1, box2):
 
 def compute_loss(p, targets, model, giou_loss=False):  # predictions, targets, model
     ft = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
-    lxy, lwh, lcls, lconf = ft([0]), ft([0]), ft([0]), ft([0])
+    lxy, lwh, lcls, lobj = ft([0]), ft([0]), ft([0]), ft([0])
     txy, twh, tcls, tbox, indices, anchor_vec = build_targets(model, targets)
     h = model.hyp  # hyperparameters
 
     # Define criteria
     MSE = nn.MSELoss()
-    CE = nn.CrossEntropyLoss()  # (weight=model.class_weights)
     BCEcls = nn.BCEWithLogitsLoss(pos_weight=ft([h['cls_pw']]))
-    BCEconf = nn.BCEWithLogitsLoss(pos_weight=ft([h['conf_pw']]))
+    BCEobj = nn.BCEWithLogitsLoss(pos_weight=ft([h['obj_pw']]))
+    # CE = nn.CrossEntropyLoss()  # (weight=model.class_weights)
 
     # Compute losses
     bs = p[0].shape[0]  # batch size
     k = bs / 64  # loss gain
     for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridy, gridx
-        tconf = torch.zeros_like(pi0[..., 0])  # conf
+        tobj = torch.zeros_like(pi0[..., 0])  # target obj
 
         # Compute losses
         if len(b):  # number of targets
             pi = pi0[b, a, gj, gi]  # predictions closest to anchors
-            tconf[b, a, gj, gi] = 1.0  # conf
+            tobj[b, a, gj, gi] = 1.0  # obj
             # pi[..., 2:4] = torch.sigmoid(pi[..., 2:4])  # wh power loss (uncomment)
 
             if giou_loss:
@@ -313,10 +313,10 @@ def compute_loss(p, targets, model, giou_loss=False):  # predictions, targets, m
             # with open('targets.txt', 'a') as file:
             #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
 
-        lconf += (k * h['conf']) * BCEconf(pi0[..., 4], tconf)  # obj_conf loss
-    loss = lxy + lwh + lconf + lcls
+        lobj += (k * h['obj']) * BCEobj(pi0[..., 4], tobj)  # obj loss
+    loss = lxy + lwh + lobj + lcls
 
-    return loss, torch.cat((lxy, lwh, lconf, lcls, loss)).detach()
+    return loss, torch.cat((lxy, lwh, lobj, lcls, loss)).detach()
 
 
 def build_targets(model, targets):
