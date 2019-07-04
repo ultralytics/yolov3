@@ -15,6 +15,7 @@ def create_modules(module_defs):
     hyperparams = module_defs.pop(0)
     output_filters = [int(hyperparams['channels'])]
     module_list = nn.ModuleList()
+    yolo_index = -1
 
     for i, module_def in enumerate(module_defs):
         modules = nn.Sequential()
@@ -44,8 +45,7 @@ def create_modules(module_defs):
             modules.add_module('maxpool_%d' % i, maxpool)
 
         elif module_def['type'] == 'upsample':
-            # upsample = nn.Upsample(scale_factor=int(module_def['stride']), mode='nearest')  # WARNING: deprecated
-            upsample = Upsample(scale_factor=int(module_def['stride']))
+            upsample = nn.Upsample(scale_factor=int(module_def['stride']), mode='nearest')
             modules.add_module('upsample_%d' % i, upsample)
 
         elif module_def['type'] == 'route':
@@ -58,6 +58,7 @@ def create_modules(module_defs):
             modules.add_module('shortcut_%d' % i, EmptyLayer())
 
         elif module_def['type'] == 'yolo':
+            yolo_index += 1
             anchor_idxs = [int(x) for x in module_def['mask'].split(',')]
             # Extract anchors
             anchors = [float(x) for x in module_def['anchors'].split(',')]
@@ -66,8 +67,7 @@ def create_modules(module_defs):
             nc = int(module_def['classes'])  # number of classes
             img_size = hyperparams['height']
             # Define detection layer
-            yolo_layer = YOLOLayer(anchors, nc, img_size, cfg=hyperparams['cfg'])
-            modules.add_module('yolo_%d' % i, yolo_layer)
+            modules.add_module('yolo_%d' % i, YOLOLayer(anchors, nc, img_size, yolo_index))
 
         # Register module list and number of output filters
         module_list.append(modules)
@@ -86,20 +86,8 @@ class EmptyLayer(nn.Module):
         return x
 
 
-class Upsample(nn.Module):
-    # Custom Upsample layer (nn.Upsample gives deprecated warning message)
-
-    def __init__(self, scale_factor=1, mode='nearest'):
-        super(Upsample, self).__init__()
-        self.scale_factor = scale_factor
-        self.mode = mode
-
-    def forward(self, x):
-        return F.interpolate(x, scale_factor=self.scale_factor, mode=self.mode)
-
-
 class YOLOLayer(nn.Module):
-    def __init__(self, anchors, nc, img_size, cfg):
+    def __init__(self, anchors, nc, img_size, yolo_index):
         super(YOLOLayer, self).__init__()
 
         self.anchors = torch.Tensor(anchors)
@@ -109,7 +97,7 @@ class YOLOLayer(nn.Module):
         self.ny = 0  # initialize number of y gridpoints
 
         if ONNX_EXPORT:  # grids must be computed in __init__
-            stride = [32, 16, 8][yolo_layer]  # stride of this layer
+            stride = [32, 16, 8][yolo_index]  # stride of this layer
             nx = int(img_size[1] / stride)  # number x grid points
             ny = int(img_size[0] / stride)  # number y grid points
             create_grids(self, max(img_size), (nx, ny))

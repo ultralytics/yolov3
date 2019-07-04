@@ -11,6 +11,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from . import torch_utils
+from . import google_utils
 
 matplotlib.rc('font', **{'size': 11})
 
@@ -284,7 +285,7 @@ def compute_loss(p, targets, model, giou_loss=False):  # predictions, targets, m
 
     # Compute losses
     bs = p[0].shape[0]  # batch size
-    k = bs  # loss gain
+    k = bs / 64  # loss gain
     for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridy, gridx
         tconf = torch.zeros_like(pi0[..., 0])  # conf
@@ -303,12 +304,12 @@ def compute_loss(p, targets, model, giou_loss=False):  # predictions, targets, m
                 lxy += (k * h['xy']) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
                 lwh += (k * h['wh']) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
 
-            # tclsm = torch.zeros_like(pi[..., 5:])
-            # tclsm[range(len(b)), tcls[i]] = 1.0
-            # lcls += (k * h['cls']) * BCEcls(pi[..., 5:], tclsm)  # class_conf loss
-            lcls += (k * h['cls']) * CE(pi[..., 5:], tcls[i])  # class_conf loss
+            tclsm = torch.zeros_like(pi[..., 5:])
+            tclsm[range(len(b)), tcls[i]] = 1.0
+            lcls += (k * h['cls']) * BCEcls(pi[..., 5:], tclsm)  # cls loss (BCE)
+            # lcls += (k * h['cls']) * CE(pi[..., 5:], tcls[i])  # cls loss (CE)
 
-            # # Append to text file
+            # Append targets to text file
             # with open('targets.txt', 'a') as file:
             #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
 

@@ -201,14 +201,12 @@ if __name__ == '__main__':
     print(opt)
 
     with torch.no_grad():
-        mAP = test(
-            opt.cfg,
-            opt.data_cfg,
-            opt.weights,
-            opt.batch_size,
-            opt.img_size,
-            opt.iou_thres,
-            opt.conf_thres,
-            opt.nms_thres,
-            opt.save_json
-        )
+        mAP = test(opt.cfg,
+                   opt.data_cfg,
+                   opt.weights,
+                   opt.batch_size,
+                   opt.img_size,
+                   opt.iou_thres,
+                   opt.conf_thres,
+                   opt.nms_thres,
+                   opt.save_json)

@@ -127,20 +127,18 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
-    parser.add_argument('--fourcc', type=str, default='mp4v', help='specifies the fourcc code for output video encoding (make sure ffmpeg supports specified fourcc codec)')
-    parser.add_argument('--output', type=str, default='output',help='specifies the output path for images and videos')
+    parser.add_argument('--fourcc', type=str, default='mp4v', help='fourcc output video codec (verify ffmpeg support)')
+    parser.add_argument('--output', type=str, default='output', help='specifies the output path for images and videos')
     opt = parser.parse_args()
     print(opt)
 
     with torch.no_grad():
-        detect(
-            opt.cfg,
-            opt.data_cfg,
-            opt.weights,
-            images=opt.images,
-            img_size=opt.img_size,
-            conf_thres=opt.conf_thres,
-            nms_thres=opt.nms_thres,
-            fourcc=opt.fourcc,
-            output=opt.output
-        )
+        detect(opt.cfg,
+               opt.data_cfg,
+               opt.weights,
+               images=opt.images,
+               img_size=opt.img_size,
+               conf_thres=opt.conf_thres,
+               nms_thres=opt.nms_thres,
+               fourcc=opt.fourcc,
+               output=opt.output)
