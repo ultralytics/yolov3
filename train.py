@@ -284,7 +284,7 @@ def print_mutation(hyp, results):
 
     if opt.cloud_evolve:
         os.system('gsutil cp gs://yolov4/evolve.txt .')  # download evolve.txt
-        with open('evolve.txt', 'a') as f:  # append result to evolve.txt
+        with open('evolve.txt', 'a') as f:  # append result
             f.write(c + b + '\n')
         os.system('gsutil cp evolve.txt gs://yolov4')  # upload evolve.txt
     else:
@@ -332,7 +332,7 @@ if __name__ == '__main__':
         print_mutation(hyp, results)  # Write mutation results
 
         for _ in range(gen):
-            # Get best hyperparamters
+            # Get best hyperparameters
             x = np.loadtxt('evolve.txt', ndmin=2)
             fitness = x[:, 2] * 0.9 + x[:, 3] * 0.1  # fitness as weighted combination of mAP and F1
             x = x[fitness.argmax()]  # select best fitness hyps
