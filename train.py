@@ -11,36 +11,22 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
-#      0.149      0.241      0.126      0.156       6.85      1.008      1.421    0.07989      16.94      6.215      10.61      4.272      0.251      0.001         -4        0.9     0.0005   320 64-1 giou
-#      0.111       0.27      0.132      0.131       3.96      1.276     0.3156     0.1425      21.21      6.224      11.59       8.83      0.376      0.001         -4        0.9     0.0005
-hyp = {'giou': 1.008,  # giou loss gain
+#     0.0945      0.279      0.114      0.131         25      0.035        0.2        0.1      0.035         79       1.61       3.53       0.29      0.001         -4        0.9     0.0005   320
+#      0.149      0.241      0.126      0.156       6.85      1.008      1.421    0.07989      16.94      6.215      10.61      4.272      0.251      0.001         -4        0.9     0.0005   320 giou
+#      0.111       0.27      0.132      0.131       3.96      1.276     0.3156     0.1425      21.21      6.224      11.59       8.83      0.376      0.001         -4        0.9     0.0005   320
+#      0.114      0.287      0.144      0.132        7.1      1.666      4.046     0.1364       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005   320 giou + best_anchor False
+hyp = {'giou': 1.666,  # giou loss gain
        'xy': 4.062,  # xy loss gain
        'wh': 0.1845,  # wh loss gain
-       'cls': 16.94,  # cls loss gain
-       'cls_pw': 6.215,  # cls BCELoss positive_weight
-       'obj': 10.61,  # obj loss gain
-       'obj_pw': 4.272,  # obj BCELoss positive_weight
-       'iou_t': 0.251,  # iou target-anchor training threshold
+       'cls': 42.6,  # cls loss gain
+       'cls_pw': 3.34,  # cls BCELoss positive_weight
+       'obj': 12.61,  # obj loss gain
+       'obj_pw': 8.338,  # obj BCELoss positive_weight
+       'iou_t': 0.2705,  # iou target-anchor training threshold
        'lr0': 0.001,  # initial learning rate
        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
        'momentum': 0.90,  # SGD momentum
        'weight_decay': 0.0005}  # optimizer weight decay
-
-
-#     0.0945      0.279      0.114      0.131         25      0.035        0.2        0.1      0.035         79       1.61       3.53       0.29      0.001         -4        0.9     0.0005   320 64-1
-#     0.112       0.265      0.111      0.144       12.6      0.035        0.2        0.1      0.035         79       1.61       3.53       0.29      0.001         -4        0.9     0.0005   320 32-2
-# hyp = {'giou': .035,  # giou loss gain
-#        'xy': 0.20,  # xy loss gain
-#        'wh': 0.10,  # wh loss gain
-#        'cls': 0.035,  # cls loss gain
-#        'cls_pw': 79.0,  # cls BCELoss positive_weight
-#        'obj': 1.61,  # obj loss gain
-#        'obj_pw': 3.53,  # obj BCELoss positive_weight
-#        'iou_t': 0.29,  # iou target-anchor training threshold
-#        'lr0': 0.001,  # initial learning rate
-#        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
-#        'momentum': 0.90,  # SGD momentum
-#        'weight_decay': 0.0005}  # optimizer weight decay
 
 
 def train(
@@ -348,7 +334,8 @@ if __name__ == '__main__':
         for _ in range(gen):
             # Get best hyperparamters
             x = np.loadtxt('evolve.txt', ndmin=2)
-            x = x[x[:, 2].argmax()]  # select best mAP as genetic fitness (col 2)
+            fitness = x[:, 2] * 0.9 + x[:, 3] * 0.1  # fitness as weighted combination of mAP and F1
+            x = x[fitness.argmax()]  # select best fitness hyps
             for i, k in enumerate(hyp.keys()):
                 hyp[k] = x[i + 5]
 
