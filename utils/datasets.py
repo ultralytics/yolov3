@@ -134,7 +134,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=416, batch_size=16, augment=False, rect=True, image_weights=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
-            self.img_files = list(filter(lambda x: len(x) > 0, img_files))
+            self.img_files = [x for x in img_files if os.path.splitext(x)[-1].lower() in img_formats]
 
         n = len(self.img_files)
         bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
@@ -149,9 +149,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.rect = False if image_weights else rect
 
         # Define labels
-        self.label_files = [x.replace('images', 'labels') for x in self.img_files]
-        for f in img_formats:
-            self.label_files = [x.replace(f, '.txt') for x in self.label_files]
+        self.label_files = [x.replace('images', 'labels').replace(os.path.splitext(x)[-1], '.txt')
+                            for x in self.img_files]
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         if self.rect:
