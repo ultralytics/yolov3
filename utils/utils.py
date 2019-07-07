@@ -629,7 +629,8 @@ def plot_images(imgs, targets, paths=None, fname='images.jpg'):
         plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
         plt.axis('off')
         if paths is not None:
-            plt.title(Path(paths[i]).name, fontdict={'size': 8})
+            s = Path(paths[i]).name
+            plt.title(s[:min(len(s), 40)], fontdict={'size': 8})  # limit to 40 characters
     fig.tight_layout()
     fig.savefig(fname, dpi=300)
     plt.close()
