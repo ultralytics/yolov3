@@ -178,7 +178,7 @@ def train(
 
         mloss = torch.zeros(5).to(device)  # mean losses
         pbar = tqdm(enumerate(dataloader), total=nb)  # progress bar
-        for i, (imgs, targets, _, _) in pbar:
+        for i, (imgs, targets, paths, _) in pbar:
             imgs = imgs.to(device)
             targets = targets.to(device)
 
@@ -192,7 +192,7 @@ def train(
 
             # Plot images with bounding boxes
             if epoch == 0 and i == 0:
-                plot_images(imgs=imgs, targets=targets, fname='train_batch%g.jpg' % i)
+                plot_images(imgs=imgs, targets=targets, paths=paths, fname='train_batch%g.jpg' % i)
 
             # SGD burn-in
             if epoch == 0 and i <= n_burnin:

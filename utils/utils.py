@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 from PIL import Image
 from tqdm import tqdm
+from pathlib import Path
 
 from . import torch_utils
 from . import google_utils
@@ -611,7 +612,7 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
     fig.savefig('comparison.png', dpi=300)
 
 
-def plot_images(imgs, targets, fname='images.jpg'):
+def plot_images(imgs, targets, paths=None, fname='images.jpg'):
     # Plots training images overlaid with targets
     imgs = imgs.cpu().numpy()
     targets = targets.cpu().numpy()
@@ -627,6 +628,8 @@ def plot_images(imgs, targets, fname='images.jpg'):
         plt.subplot(ns, ns, i + 1).imshow(imgs[i].transpose(1, 2, 0))
         plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
         plt.axis('off')
+        if paths is not None:
+            plt.title(Path(paths[i]).name, fontdict={'size': 8})
     fig.tight_layout()
     fig.savefig(fname, dpi=300)
     plt.close()
