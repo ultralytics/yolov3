@@ -2,7 +2,7 @@
 # conda install numpy opencv matplotlib tqdm pillow && conda install pytorch torchvision -c pytorch
 numpy
 opencv-python
-torch >= 1.0.0
+torch >= 1.1.0
 matplotlib
 pycocotools
 tqdm
