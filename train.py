@@ -40,7 +40,6 @@ def train(
     latest = weights + 'latest.pt'
     best = weights + 'best.pt'
     device = torch_utils.select_device()
-    img_size_test = img_size  # image size for testing
     multi_scale = not opt.single_scale
 
     if multi_scale:
@@ -140,7 +139,7 @@ def train(
     if mixed_precision:
         try:
             from apex import amp
-            model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
+            model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
         except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/259
             mixed_precision = False
 
@@ -232,7 +231,7 @@ def train(
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
         if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:
             with torch.no_grad():
-                results, maps = test.test(cfg, data_cfg, batch_size=batch_size, img_size=img_size_test, model=model,
+                results, maps = test.test(cfg, data_cfg, batch_size=batch_size, img_size=opt.img_size, model=model,
                                           conf_thres=0.1)
 
         # Write epoch results

@@ -430,7 +430,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
         pred = pred[(-pred[:, 4]).argsort()]
 
         det_max = []
-        nms_style = 'MERGE'  # 'OR' (default), 'AND', 'MERGE' (experimental)
+        nms_style = 'SOFT'  # 'OR' (default), 'AND', 'MERGE' (experimental)
         for c in pred[:, -1].unique():
             dc = pred[pred[:, -1] == c]  # select class c
             n = len(dc)
@@ -486,6 +486,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
                     iou = bbox_iou(dc[0], dc[1:])  # iou with other boxes
                     dc = dc[1:]
                     dc[:, 4] *= torch.exp(-iou ** 2 / sigma)  # decay confidences
+                    dc = dc[dc[:, 4] > nms_thres]  # new line per https://github.com/ultralytics/yolov3/issues/362
 
         if len(det_max):
             det_max = torch.cat(det_max)  # concatenate
