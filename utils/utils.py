@@ -430,7 +430,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
         pred = pred[(-pred[:, 4]).argsort()]
 
         det_max = []
-        nms_style = 'SOFT'  # 'OR' (default), 'AND', 'MERGE' (experimental)
+        nms_style = 'MERGE'  # 'OR' (default), 'AND', 'MERGE' (experimental)
         for c in pred[:, -1].unique():
             dc = pred[pred[:, -1] == c]  # select class c
             n = len(dc)
