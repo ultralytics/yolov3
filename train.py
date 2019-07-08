@@ -284,7 +284,7 @@ def print_mutation(hyp, results):
     c = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
     print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
 
-    if opt.cloud_evolve:
+    if opt.cloud:
         os.system('gsutil cp gs://yolov4/evolve.txt .')  # download evolve.txt
         with open('evolve.txt', 'a') as f:  # append result
             f.write(c + b + '\n')
@@ -311,12 +311,11 @@ if __name__ == '__main__':
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     parser.add_argument('--xywh', action='store_true', help='use xywh loss instead of GIoU loss')
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
-    parser.add_argument('--cloud-evolve', action='store_true', help='evolve hyperparameters from a cloud source')
+    parser.add_argument('--cloud', action='store_true', help='train/evolve to a cloud source')
     parser.add_argument('--var', default=0, type=int, help='debug variable')
     opt = parser.parse_args()
     print(opt)
 
-    opt.evolve = opt.cloud_evolve or opt.evolve
     if opt.evolve:
         opt.notest = True  # only test final epoch
         opt.nosave = True  # only save final checkpoint
