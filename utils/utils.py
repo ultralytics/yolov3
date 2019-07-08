@@ -11,8 +11,7 @@ from PIL import Image
 from tqdm import tqdm
 from pathlib import Path
 
-from . import torch_utils
-from . import google_utils
+from . import torch_utils  # , google_utils
 
 matplotlib.rc('font', **{'size': 11})
 
