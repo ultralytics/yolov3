@@ -81,8 +81,9 @@ def train(
             optimizer.load_state_dict(chkpt['optimizer'])
             best_fitness = chkpt['best_fitness']
 
-        with open('results.txt', 'w') as file:
-            file.write(chkpt['training_results'])  # write results.txt
+        if chkpt['training_results'] is not None:
+            with open('results.txt', 'w') as file:
+                file.write(chkpt['training_results'])  # write results.txt
 
         start_epoch = chkpt['epoch'] + 1
         del chkpt
@@ -251,7 +252,7 @@ def train(
             best_fitness = fitness
 
         # Save training results
-        save = (not opt.nosave) or (epoch == epochs - 1)
+        save = (not opt.nosave) or ((not opt.evolve) and (epoch == epochs - 1))
         if save:
             with open('results.txt', 'r') as file:
                 # Create checkpoint

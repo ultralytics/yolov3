@@ -354,7 +354,13 @@ def convert(cfg='cfg/yolov3-spp.cfg', weights='weights/yolov3-spp.weights'):
 
     elif weights.endswith('.weights'):  # darknet format
         _ = load_darknet_weights(model, weights)
-        chkpt = {'epoch': -1, 'best_loss': None, 'model': model.state_dict(), 'optimizer': None}
+
+        chkpt = {'epoch': -1,
+                 'best_fitness': None,
+                 'training_results': None,
+                 'model': model.state_dict(),
+                 'optimizer': None}
+
         torch.save(chkpt, 'converted.pt')
         print("Success: converted '%s' to 'converted.pt'" % weights)
 
