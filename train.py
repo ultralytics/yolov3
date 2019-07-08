@@ -155,7 +155,7 @@ def train(
     for epoch in range(start_epoch, epochs):
         model.train()
         print(('\n%8s%12s' + '%10s' * 7) %
-              ('Epoch', 'Batch', 'xy', 'wh', 'obj', 'cls', 'total', 'targets', 'img_size'))
+              ('Epoch', 'Batch', 'GIoU/xy', 'wh', 'obj', 'cls', 'total', 'targets', 'img_size'))
 
         # Update scheduler
         scheduler.step()
