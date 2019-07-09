@@ -158,13 +158,13 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
             # Read image shapes
             sp = 'data' + os.sep + path.replace('.txt', '.shapes').split(os.sep)[-1]  # shapefile path
-            if os.path.exists(sp):  # read existing shapefile
-                with open(sp, 'r') as f:
-                    s = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
-                assert len(s) == n, 'Shapefile out of sync, please delete %s and rerun' % sp
-            else:  # no shapefile, so read shape using PIL and write shapefile for next time (faster)
-                s = np.array([Image.open(f).size for f in tqdm(self.img_files, desc='Reading image shapes')])
+            if not os.path.exists(sp):  # read shapes using PIL and write shapefile for next time (faster)
+                s = [Image.open(f).size for f in tqdm(self.img_files, desc='Reading image shapes')]
                 np.savetxt(sp, s, fmt='%g')
+
+            with open(sp, 'r') as f:  # read existing shapefile
+                s = np.array([x.split() for x in f.read().splitlines()], dtype=np.float64)
+                assert len(s) == n, 'Shapefile error. Please delete %s and rerun' % sp  # TODO: auto-delete shapefile
 
             # Sort by aspect ratio
             ar = s[:, 1] / s[:, 0]  # aspect ratio
