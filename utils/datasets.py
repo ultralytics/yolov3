@@ -223,6 +223,16 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     pass  # print('Warning: missing labels for %s' % self.img_files[i])  # missing label file
             assert len(np.concatenate(self.labels, 0)) > 0, 'No labels found. Incorrect label paths provided.'
 
+        # Detect corrupted images https://medium.com/joelthchao/programmatically-detect-corrupted-image-8c1b2006c3d3
+        detect_corrupted_images = False
+        if detect_corrupted_images:
+            from skimage import io  # conda install -c conda-forge scikit-image
+            for file in tqdm(self.img_files, desc='Detecting corrupted images'):
+                try:
+                    _ = io.imread(file)
+                except:
+                    print('Corrupted image detected: %s' % file)
+
     def __len__(self):
         return len(self.img_files)
 

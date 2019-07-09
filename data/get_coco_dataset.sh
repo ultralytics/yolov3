@@ -36,4 +36,4 @@ paste <(awk "{print \"$PWD\"}" <trainvalno5k.part) trainvalno5k.part | tr -d '\t
 # sudo rm -rf train_images/._*
 # lastly convert each .tif to a .bmp for faster loading in cv2
 
-# /home/glenn_jocher3/coco/images/train2014/COCO_train2014_000000167126.jpg  # bad image??
+# ./coco/images/train2014/COCO_train2014_000000167126.jpg  # corrupted image
