@@ -10,11 +10,32 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from tqdm import tqdm
+from PIL import Image, ExifTags
 
 from utils.utils import xyxy2xywh, xywh2xyxy
 
 img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif']
 vid_formats = ['.mov', '.avi', '.mp4']
+
+# Get orientation exif tag
+for orientation in ExifTags.TAGS.keys():
+    if ExifTags.TAGS[orientation] == 'Orientation':
+        break
+
+
+def exif_size(img):
+    # Returns exif-corrected PIL size
+    s = img.size  # (width, height)
+    try:
+        rotation = dict(img._getexif().items())[orientation]
+        if rotation == 6:  # rotation 270
+            s = (s[1], s[0])
+        elif rotation == 8:  # rotation 90
+            s = (s[1], s[0])
+    except:
+        None
+
+    return s
 
 
 class LoadImages:  # for inference
@@ -154,12 +175,10 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         if self.rect:
-            from PIL import Image
-
             # Read image shapes
             sp = 'data' + os.sep + path.replace('.txt', '.shapes').split(os.sep)[-1]  # shapefile path
             if not os.path.exists(sp):  # read shapes using PIL and write shapefile for next time (faster)
-                s = [Image.open(f).size for f in tqdm(self.img_files, desc='Reading image shapes')]
+                s = [exif_size(Image.open(f)) for f in tqdm(self.img_files, desc='Reading image shapes')]
                 np.savetxt(sp, s, fmt='%g')
 
             with open(sp, 'r') as f:  # read existing shapefile
@@ -352,6 +371,7 @@ def letterbox(img, new_shape=416, color=(127.5, 127.5, 127.5), mode='auto'):
     # Resize a rectangular image to a 32 pixel multiple rectangle
     # https://github.com/ultralytics/yolov3/issues/232
     shape = img.shape[:2]  # current shape [height, width]
+
     if isinstance(new_shape, int):
         ratio = float(new_shape) / max(shape)
     else:
