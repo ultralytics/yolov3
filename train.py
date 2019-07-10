@@ -40,7 +40,7 @@ def train(
     latest = weights + 'latest.pt'
     best = weights + 'best.pt'
     device = torch_utils.select_device()
-    multi_scale = not opt.single_scale
+    multi_scale = opt.multi_scale
 
     if multi_scale:
         img_size_min = round(img_size / 32 / 1.5)
@@ -306,7 +306,7 @@ if __name__ == '__main__':
     parser.add_argument('--accumulate', type=int, default=4, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='data/coco_64img.data', help='coco.data file path')
-    parser.add_argument('--single-scale', action='store_true', help='train at fixed size (no multi-scale)')
+    parser.add_argument('--multi-scale', action='store_true', help='train at (1/1.5)x - 1.5x sizes')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
