@@ -31,8 +31,8 @@ def train(
         data_cfg,
         img_size=416,
         epochs=100,  # 500200 batches at bs 16, 117263 images = 273 epochs
-        batch_size=8,
-        accumulate=8,  # effective bs = batch_size * accumulate = 8 * 8 = 64
+        batch_size=16,
+        accumulate=4,  # effective bs = batch_size * accumulate = 8 * 8 = 64
         freeze_backbone=False,
 ):
     init_seeds()
@@ -302,8 +302,8 @@ def print_mutation(hyp, results):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=8, help='batch size')
-    parser.add_argument('--accumulate', type=int, default=8, help='number of batches to accumulate before optimizing')
+    parser.add_argument('--batch-size', type=int, default=16, help='batch size')
+    parser.add_argument('--accumulate', type=int, default=4, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data-cfg', type=str, default='data/coco_64img.data', help='coco.data file path')
     parser.add_argument('--single-scale', action='store_true', help='train at fixed size (no multi-scale)')
