@@ -348,7 +348,7 @@ if __name__ == '__main__':
 
             # Mutate
             init_seeds(seed=int(time.time()))
-            s = [.1, .1, .1, .1, .1, .1, .1, .1, .2 * 0, .2 * 0, .05 * 0, .2 * 0]  # fractional sigmas
+            s = [.15, .15, .15, .15, .15, .15, .15, .15, 0, 0, 0, 0]  # fractional sigmas
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                 hyp[k] *= float(x)  # vary by 20% 1sigma
