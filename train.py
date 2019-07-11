@@ -15,7 +15,7 @@ from utils.utils import *
 hyp = {'giou': 1.666,  # giou loss gain
        'xy': 4.062,  # xy loss gain
        'wh': 0.1845,  # wh loss gain
-       'cls': 1.0,  # cls loss gain
+       'cls': 42.6,  # cls loss gain
        'cls_pw': 3.34,  # cls BCELoss positive_weight
        'obj': 12.61,  # obj loss gain
        'obj_pw': 8.338,  # obj BCELoss positive_weight
