@@ -233,8 +233,8 @@ def train(
             pbar.set_description(s)  # print(s)
 
         # Report time
-        dt = (time.time() - t0) / 3600
-        print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, dt))
+        # dt = (time.time() - t0) / 3600
+        # print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, dt))
 
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
         if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:

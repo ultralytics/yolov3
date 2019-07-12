@@ -48,9 +48,9 @@ rm results*.txt  # WARNING: removes existing results
 python3 train.py --nosave --data data/coco_1img.data && mv results.txt results0r_1img.txt
 python3 train.py --nosave --data data/coco_10img.data && mv results.txt results0r_10img.txt
 python3 train.py --nosave --data data/coco_100img.data && mv results.txt results0r_100img.txt
-#python3 train.py --nosave --data data/coco_100img.data --transfer && mv results.txt results3_100imgTL.txt
+# python3 train.py --nosave --data data/coco_100img.data --transfer && mv results.txt results3_100imgTL.txt
 python3 -c "from utils import utils; utils.plot_results()"
-gsutil cp results*.txt gs://ultralytics
+# gsutil cp results*.txt gs://ultralytics
 gsutil cp results.png gs://ultralytics
 sudo shutdown
 
@@ -90,7 +90,6 @@ python3 test.py --data ../supermarket2/supermarket2.data --weights weights/yolov
 python3 test.py --data ../supermarket2/supermarket2.data --weights weights/yolov3-spp-sm2-1cls-scalexy_150_5000.weights --cfg ../yolov3-spp-sm2-1cls-scalexy_150.cfg --img-size 320 --conf-thres 0.2  # test
 python3 test.py --data ../supermarket2/supermarket2.data --weights weights/yolov3-spp-sm2-1cls-scalexy_200_5000.weights --cfg ../yolov3-spp-sm2-1cls-scalexy_200.cfg --img-size 320 --conf-thres 0.2  # test
 python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/backup/yolov3-spp-sm2-1cls-scalexy_variable_5000.weights --cfg ../yolov3-spp-sm2-1cls-scalexy_variable.cfg --img-size 320 --conf-thres 0.2  # test
-
 
 
 # Debug/Development
