@@ -240,7 +240,7 @@ def train(
         if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:
             with torch.no_grad():
                 results, maps = test.test(cfg, data_cfg, batch_size=batch_size, img_size=opt.img_size, model=model,
-                                          conf_thres=0.001)
+                                          conf_thres=0.1)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
@@ -341,7 +341,7 @@ if __name__ == '__main__':
         for _ in range(gen):
             # Get best hyperparameters
             x = np.loadtxt('evolve.txt', ndmin=2)
-            fitness = x[:, 2] * 0.9 + x[:, 3] * 0.1  # fitness as weighted combination of mAP and F1
+            fitness = x[:, 2] * 0.5 + x[:, 3] * 0.5  # fitness as weighted combination of mAP and F1
             x = x[fitness.argmax()]  # select best fitness hyps
             for i, k in enumerate(hyp.keys()):
                 hyp[k] = x[i + 5]
