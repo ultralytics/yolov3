@@ -348,14 +348,14 @@ if __name__ == '__main__':
 
             # Mutate
             init_seeds(seed=int(time.time()))
-            s = [.15, .15, .15, .15, .15, .15, .15, .15, 0, 0, 0, 0]  # fractional sigmas
+            s = [.15, .15, .15, .15, .15, .15, .15, .15, .15, .15, .15, .15]  # fractional sigmas
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                 hyp[k] *= float(x)  # vary by 20% 1sigma
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay']
-            limits = [(1e-4, 1e-2), (0, 0.70), (0.70, 0.98), (0, 0.01)]
+            limits = [(1e-4, 1e-2), (0.00, 0.70), (0.60, 0.98), (0, 0.01)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
