@@ -74,7 +74,7 @@ def detect(
 
         if det is not None and len(det) > 0:
             # Rescale boxes from 416 to true image size
-            det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+            det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()  # TODO: clamp to image border https://github.com/ultralytics/yolov3/issues/368
 
             # Print results to screen
             print('%gx%g ' % img.shape[2:], end='')  # print image size
