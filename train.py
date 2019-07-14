@@ -12,18 +12,19 @@ from utils.datasets import *
 from utils.utils import *
 
 #      0.109      0.297       0.15      0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005   320 giou + best_anchor False
-hyp = {'giou': 1.666,  # giou loss gain
+#      0.223      0.218      0.138      0.189       9.28      1.153      4.376    0.08263      24.28       3.05      20.93      2.842     0.2759   0.001357     -5.036     0.9158  0.0005722   mAP/F1 - 50/50 weighting
+hyp = {'giou': 1.153,  # giou loss gain
        'xy': 4.062,  # xy loss gain
        'wh': 0.1845,  # wh loss gain
-       'cls': 42.6,  # cls loss gain
-       'cls_pw': 3.34,  # cls BCELoss positive_weight
-       'obj': 12.61,  # obj loss gain
-       'obj_pw': 8.338,  # obj BCELoss positive_weight
-       'iou_t': 0.2705,  # iou target-anchor training threshold
-       'lr0': 0.001,  # initial learning rate
+       'cls': 24.28,  # cls loss gain
+       'cls_pw': 3.05,  # cls BCELoss positive_weight
+       'obj': 20.93,  # obj loss gain
+       'obj_pw': 2.842,  # obj BCELoss positive_weight
+       'iou_t': 0.2759,  # iou target-anchor training threshold
+       'lr0': 0.001357,  # initial learning rate
        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.90,  # SGD momentum
-       'weight_decay': 0.0005}  # optimizer weight decay
+       'momentum': 0.9158,  # SGD momentum
+       'weight_decay': 0.0005722}  # optimizer weight decay
 
 
 def train(
