@@ -254,9 +254,6 @@ def load_darknet_weights(self, weights, cutoff=-1):
             url = 'https://pjreddie.com/media/files/' + weights_file
             print('Downloading ' + url + ' to ' + weights)
             os.system('curl ' + url + ' -o ' + weights)
-            import requests
-            r = requests.get(url)
-
         except IOError:
             print(weights + ' not found.\nTry https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI')
 
