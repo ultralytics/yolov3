@@ -130,7 +130,8 @@ def scale_coords(img1_shape, coords, img0_shape):
     coords[:, [0, 2]] -= (img1_shape[1] - img0_shape[1] * gain) / 2  # x padding
     coords[:, [1, 3]] -= (img1_shape[0] - img0_shape[0] * gain) / 2  # y padding
     coords[:, :4] /= gain
-    coords[:, :4] = coords[:, :4].clamp(min=0)
+    coords[:, [0, 2]] = coords[:, [0, 2]].clamp(min=0, max=img0_shape[1])  # clip x
+    coords[:, [1, 3]] = coords[:, [1, 3]].clamp(min=0, max=img0_shape[0])  # clip y
     return coords
 
 
