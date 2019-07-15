@@ -88,6 +88,9 @@ def test(
                     stats.append(([], torch.Tensor(), torch.Tensor(), tcls))
                 continue
 
+            # Clip boxes to image bounds
+            clip_coords(pred, shapes[si])
+
             # Append to text file
             # with open('test.txt', 'a') as file:
             #    [file.write('%11.5g' * 7 % tuple(x) + '\n') for x in pred]

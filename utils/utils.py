@@ -125,14 +125,19 @@ def xywh2xyxy(x):
 
 
 def scale_coords(img1_shape, coords, img0_shape):
-    # Rescale coords1 (xyxy) from img1_shape to img0_shape
+    # Rescale coords (xyxy) from img1_shape to img0_shape
     gain = max(img1_shape) / max(img0_shape)  # gain  = old / new
     coords[:, [0, 2]] -= (img1_shape[1] - img0_shape[1] * gain) / 2  # x padding
     coords[:, [1, 3]] -= (img1_shape[0] - img0_shape[0] * gain) / 2  # y padding
     coords[:, :4] /= gain
-    coords[:, [0, 2]] = coords[:, [0, 2]].clamp(min=0, max=img0_shape[1])  # clip x
-    coords[:, [1, 3]] = coords[:, [1, 3]].clamp(min=0, max=img0_shape[0])  # clip y
+    clip_coords(coords, img0_shape)
     return coords
+
+
+def clip_coords(boxes, img_shape):
+    # Clip bounding xyxy bounding boxes to image shape (height, width)
+    boxes[:, [0, 2]] = boxes[:, [0, 2]].clamp(min=0, max=img_shape[1])  # clip x
+    boxes[:, [1, 3]] = boxes[:, [1, 3]].clamp(min=0, max=img_shape[0])  # clip y
 
 
 def ap_per_class(tp, conf, pred_cls, target_cls):
@@ -582,7 +587,7 @@ def kmeans_targets(path='./data/coco_64img.txt'):  # from utils.utils import *; 
 # Plotting functions ---------------------------------------------------------------------------------------------------
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):
     # Plots one bounding box on image img
-    tl = line_thickness or round(0.002 * (img.shape[0]+img.shape[1])/2) + 1  # line thickness
+    tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line thickness
     color = color or [random.randint(0, 255) for _ in range(3)]
     c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
     cv2.rectangle(img, c1, c2, color, thickness=tl)
