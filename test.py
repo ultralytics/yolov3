@@ -89,7 +89,7 @@ def test(
                 continue
 
             # Clip boxes to image bounds
-            clip_coords(pred, shapes[si])
+            # clip_coords(pred, shapes[si])
 
             # Append to text file
             # with open('test.txt', 'a') as file:
