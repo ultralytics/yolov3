@@ -35,12 +35,12 @@ git pull https://github.com/ultralytics/yolov3 test  # branch
 # Test Darknet training
 python3 test.py --weights ../darknet/backup/yolov3.backup
 
-# Copy latest.pt TO bucket
-gsutil cp yolov3/weights/latest1gpu.pt gs://ultralytics
+# Copy last.pt TO bucket
+gsutil cp yolov3/weights/last1gpu.pt gs://ultralytics
 
-# Copy latest.pt FROM bucket
-gsutil cp gs://ultralytics/latest.pt yolov3/weights/latest.pt
-wget https://storage.googleapis.com/ultralytics/yolov3/latest_v1_0.pt -O weights/latest_v1_0.pt
+# Copy last.pt FROM bucket
+gsutil cp gs://ultralytics/last.pt yolov3/weights/last.pt
+wget https://storage.googleapis.com/ultralytics/yolov3/last_v1_0.pt -O weights/last_v1_0.pt
 wget https://storage.googleapis.com/ultralytics/yolov3/best_v1_0.pt -O weights/best_v1_0.pt
 
 # Reproduce tutorials
@@ -94,7 +94,7 @@ python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/ba
 
 # Debug/Development
 python3 train.py --data data/coco.data --img-size 320 --single-scale --batch-size 64 --accumulate 1 --epochs 1 --evolve --giou
-python3 test.py --weights weights/latest.pt --cfg cfg/yolov3-spp.cfg --img-size 320
+python3 test.py --weights weights/last.pt --cfg cfg/yolov3-spp.cfg --img-size 320
 
 gsutil cp evolve.txt gs://ultralytics
 sudo shutdown

@@ -50,7 +50,7 @@ https://colab.research.google.com/drive/1G8T-VFxQkjDe4idzN8F-hbIBqkkkQnxw
 
 **Start Training:** `python3 train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`.
 
-**Resume Training:** `python3 train.py --resume` to resume training from `weights/latest.pt`.
+**Resume Training:** `python3 train.py --resume` to resume training from `weights/last.pt`.
 
 Each epoch trains on 117,263 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. Default training settings produce loss plots below, with **training speed of 0.25 s/batch on a V100 GPU (almost 50 COCO epochs/day)**.
 
@@ -136,8 +136,9 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 
 # mAP
 
-- Use `test.py --weights weights/yolov3.weights` to test the official YOLOv3 weights.
-- Use `test.py --weights weights/latest.pt` to test the latest training results.
+- `test.py --weights weights/yolov3.weights` to test official YOLOv3 weights.
+- `test.py --weights weights/last.pt` to test most recent checkpoint.
+- `test.py --weights weights/best.pt` to test best checkpoint.
 - Compare to darknet published results https://arxiv.org/abs/1804.02767.
 
 <!---

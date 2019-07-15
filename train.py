@@ -45,7 +45,7 @@ def train(cfg,
     # Initialize
     init_seeds()
     weights = 'weights' + os.sep
-    latest = weights + 'latest.pt'
+    last = weights + 'last.pt'
     best = weights + 'best.pt'
     device = torch_utils.select_device()
     multi_scale = opt.multi_scale
@@ -79,10 +79,10 @@ def train(cfg,
             for p in model.parameters():
                 p.requires_grad = True if p.shape[0] == nf else False
 
-        else:  # resume from latest.pt
+        else:  # resume from last.pt
             if opt.bucket:
-                os.system('gsutil cp gs://%s/latest.pt %s' % (opt.bucket, latest))  # download from bucket
-            chkpt = torch.load(latest, map_location=device)  # load checkpoint
+                os.system('gsutil cp gs://%s/last.pt %s' % (opt.bucket, last))  # download from bucket
+            chkpt = torch.load(last, map_location=device)  # load checkpoint
             model.load_state_dict(chkpt['model'])
 
         if chkpt['optimizer'] is not None:
@@ -273,10 +273,10 @@ def train(cfg,
                              model) is nn.parallel.DistributedDataParallel else model.state_dict(),
                          'optimizer': optimizer.state_dict()}
 
-            # Save latest checkpoint
-            torch.save(chkpt, latest)
+            # Save last checkpoint
+            torch.save(chkpt, last)
             if opt.bucket:
-                os.system('gsutil cp %s gs://%s' % (latest, opt.bucket))  # upload to bucket
+                os.system('gsutil cp %s gs://%s' % (last, opt.bucket))  # upload to bucket
 
             # Save best checkpoint
             if best_fitness == fitness:
