@@ -7,20 +7,19 @@ from utils.datasets import *
 from utils.utils import *
 
 
-def detect(
-        cfg,
-        data_cfg,
-        weights,
-        images='data/samples',  # input folder
-        output='output',  # output folder
-        fourcc='mp4v',
-        img_size=416,
-        conf_thres=0.5,
-        nms_thres=0.5,
-        save_txt=False,
-        save_images=True,
-        webcam=False
-):
+def detect(cfg,
+           data_cfg,
+           weights,
+           images='data/samples',  # input folder
+           output='output',  # output folder
+           fourcc='mp4v',  # video codec
+           img_size=416,
+           conf_thres=0.5,
+           nms_thres=0.5,
+           save_txt=False,
+           save_images=True,
+           webcam=False):
+    # Initialize
     device = torch_utils.select_device()
     torch.backends.cudnn.benchmark = False  # set False for reproducible results
     if os.path.exists(output):
@@ -74,7 +73,7 @@ def detect(
 
         if det is not None and len(det) > 0:
             # Rescale boxes from 416 to true image size
-            det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()  # TODO: clamp to image border https://github.com/ultralytics/yolov3/issues/368
+            det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
             # Print results to screen
             print('%gx%g ' % img.shape[2:], end='')  # print image size

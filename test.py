@@ -8,18 +8,17 @@ from utils.datasets import *
 from utils.utils import *
 
 
-def test(
-        cfg,
-        data_cfg,
-        weights=None,
-        batch_size=16,
-        img_size=416,
-        iou_thres=0.5,
-        conf_thres=0.001,
-        nms_thres=0.5,
-        save_json=False,
-        model=None
-):
+def test(cfg,
+         data_cfg,
+         weights=None,
+         batch_size=16,
+         img_size=416,
+         iou_thres=0.5,
+         conf_thres=0.001,
+         nms_thres=0.5,
+         save_json=False,
+         model=None):
+    # Initialize/load model and set device
     if model is None:
         device = torch_utils.select_device()
 
@@ -104,12 +103,10 @@ def test(
                 box = xyxy2xywh(box)  # xywh
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
                 for di, d in enumerate(pred):
-                    jdict.append({
-                        'image_id': image_id,
-                        'category_id': coco91class[int(d[6])],
-                        'bbox': [float3(x) for x in box[di]],
-                        'score': float(d[4])
-                    })
+                    jdict.append({'image_id': image_id,
+                                  'category_id': coco91class[int(d[6])],
+                                  'bbox': [float3(x) for x in box[di]],
+                                  'score': float(d[4])})
 
             # Assign all predictions as incorrect
             correct = [0] * len(pred)

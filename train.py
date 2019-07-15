@@ -20,6 +20,8 @@ from utils.utils import *
 # 0.268	0.268	0.178	0.240	4.36	1.104	5.596	0.2087	14.47	2.599	16.27	2.406	0.4114	0.001585	-4	0.950	0.000524
 # 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # 320 --epochs 2
 
+
+# Training hyperparameters
 hyp = {'giou': 0.8541,  # giou loss gain
        'xy': 4.062,  # xy loss gain
        'wh': 0.1845,  # wh loss gain
@@ -34,15 +36,13 @@ hyp = {'giou': 0.8541,  # giou loss gain
        'weight_decay': 0.000467}  # optimizer weight decay
 
 
-def train(
-        cfg,
-        data_cfg,
-        img_size=416,
-        epochs=100,  # 500200 batches at bs 16, 117263 images = 273 epochs
-        batch_size=16,
-        accumulate=4,  # effective bs = batch_size * accumulate = 8 * 8 = 64
-        freeze_backbone=False,
-):
+def train(cfg,
+          data_cfg,
+          img_size=416,
+          epochs=100,  # 500200 batches at bs 16, 117263 images = 273 epochs
+          batch_size=16,
+          accumulate=4):  # effective bs = batch_size * accumulate = 8 * 8 = 64
+    # Initialize
     init_seeds()
     weights = 'weights' + os.sep
     latest = weights + 'latest.pt'
@@ -178,6 +178,7 @@ def train(
         scheduler.step()
 
         # Freeze backbone at epoch 0, unfreeze at epoch 1 (optional)
+        freeze_backbone = False
         if freeze_backbone and epoch < 2:
             for name, p in model.named_parameters():
                 if int(name.split('.')[1]) < cutoff:  # if layer < 75
