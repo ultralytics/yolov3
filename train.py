@@ -167,12 +167,11 @@ def train(cfg,
     maps = np.zeros(nc)  # mAP per class
     results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
     n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
-    t, t0 = time.time(), time.time()
     torch.cuda.empty_cache()
     for epoch in range(start_epoch, epochs):
         model.train()
-        print(('\n%8s%12s' + '%10s' * 7) %
-              ('Epoch', 'Batch', 'GIoU/xy', 'wh', 'obj', 'cls', 'total', 'targets', 'img_size'))
+        print(('\n%8s' + '%10s' * 8) %
+              ('Epoch', 'GIoU/xy', 'wh', 'obj', 'cls', 'total', 'targets', 'img_size', 'gpu_mem'))
 
         # Update scheduler
         scheduler.step()
@@ -236,10 +235,8 @@ def train(cfg,
 
             # Print batch results
             mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
-            # s = ('%8s%12s' + '%10.3g' * 7) % ('%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, nb - 1), *mloss, len(targets), time.time() - t)
-            s = ('%8s%12s' + '%10.3g' * 7) % (
-                '%g/%g' % (epoch, epochs - 1), '%g/%g' % (i, nb - 1), *mloss, len(targets), img_size)
-            t = time.time()
+            mem = torch.cuda.memory_cached() if torch.cuda.is_available() else 0
+            s = ('%8s' + '%10.3g' * 8) % ('%g/%g' % (epoch, epochs - 1), *mloss, len(targets), img_size, mem)
             pbar.set_description(s)  # print(s)
 
         # Report time
