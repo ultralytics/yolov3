@@ -18,7 +18,7 @@ def select_device(force_cpu=False):
     if cuda:
         try:  # Mixed precision training https://github.com/NVIDIA/apex
             from apex import amp
-            apex_str = ' with Apex'
+            apex_str = 'with Apex '
         except:
             apex_str = ''
 
@@ -27,13 +27,12 @@ def select_device(force_cpu=False):
         ng = torch.cuda.device_count()
         x = [torch.cuda.get_device_properties(i) for i in range(ng)]
         cuda_str = 'Using CUDA ' + apex_str
-        print("%sdevice0 _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
-              (cuda_str, x[0].name, x[0].total_memory / c))
-        if ng > 0:
-            # torch.cuda.set_device(0)  # OPTIONAL: Set GPU ID
-            for i in range(1, ng):
-                print("%sdevice%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
-                      (' ' * len(cuda_str), i, x[i].name, x[i].total_memory / c))
+        for i in range(0, ng):
+            if ng == 1:
+                # torch.cuda.set_device(0)  # OPTIONAL: Set GPU ID
+                cuda_str = ' ' * len(cuda_str)
+            print("%sdevice%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
+                  (cuda_str, i, x[i].name, x[i].total_memory / c))
 
     print('')  # skip a line
     return device
