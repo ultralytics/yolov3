@@ -235,7 +235,7 @@ def train(cfg,
 
             # Print batch results
             mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
-            mem = torch.cuda.memory_cached() / 1E6 if torch.cuda.is_available() else 0
+            mem = torch.cuda.memory_cached() / 1E9 if torch.cuda.is_available() else 0
             s = ('%8s' + '%10.3g' * 8) % ('%g/%g' % (epoch, epochs - 1), *mloss, len(targets), img_size, mem)
             pbar.set_description(s)  # print(s)
 
