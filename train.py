@@ -156,7 +156,6 @@ def train(cfg,
         try:
             from apex import amp
             model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
-            print('Using Apex')
         except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/259
             mixed_precision = False
 
