@@ -171,7 +171,7 @@ def train(cfg,
     for epoch in range(start_epoch, epochs):
         model.train()
         print(('\n%8s' + '%10s' * 8) %
-              ('Epoch', 'GIoU/xy', 'wh', 'obj', 'cls', 'total', 'targets', 'img_size', 'gpu_mem'))
+              ('Epoch', 'gpu_mem', 'GIoU/xy', 'wh', 'obj', 'cls', 'total', 'targets', 'img_size'))
 
         # Update scheduler
         scheduler.step()
@@ -236,7 +236,7 @@ def train(cfg,
             # Print batch results
             mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
             mem = torch.cuda.memory_cached() / 1E9 if torch.cuda.is_available() else 0  # (GB)
-            s = ('%8s' + '%10.3g' * 8) % ('%g/%g' % (epoch, epochs - 1), *mloss, len(targets), img_size, mem)
+            s = ('%8s' + '%10.3g' * 8) % ('%g/%g' % (epoch, epochs - 1), mem, *mloss, len(targets), img_size)
             pbar.set_description(s)  # print(s)
 
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)

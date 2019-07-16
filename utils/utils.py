@@ -685,7 +685,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
 
     fig, ax = plt.subplots(2, 5, figsize=(14, 7))
     ax = ax.ravel()
-    s = ['X + Y', 'Width + Height', 'Confidence', 'Classification', 'Train Loss', 'Precision', 'Recall', 'mAP', 'F1',
+    s = ['GIoU/XY', 'Width/Height', 'Confidence', 'Classification', 'Train Loss', 'Precision', 'Recall', 'mAP', 'F1',
          'Test Loss']
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
         results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11, 12, 13]).T
