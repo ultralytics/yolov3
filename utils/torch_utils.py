@@ -26,7 +26,7 @@ def select_device(force_cpu=False):
         c = 1024 ** 2  # bytes to MB
         ng = torch.cuda.device_count()
         x = [torch.cuda.get_device_properties(i) for i in range(ng)]
-        cuda_str = 'Using CUDA' + apex_str
+        cuda_str = 'Using CUDA ' + apex_str
         print("%sdevice0 _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
               (cuda_str, x[0].name, x[0].total_memory / c))
         if ng > 0:
