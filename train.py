@@ -15,25 +15,40 @@ from utils.utils import *
 #      0.223      0.218      0.138      0.189       9.28      1.153      4.376    0.08263      24.28       3.05      20.93      2.842     0.2759   0.001357     -5.036     0.9158  0.0005722   mAP/F1 - 50/50 weighting
 #      0.231      0.215      0.135      0.191       9.51      1.432      3.007    0.06082      24.87      3.477      24.13      2.802     0.3436   0.001127     -5.036     0.9232  0.0005874
 #      0.246      0.194      0.128      0.192       8.12      1.101      3.954     0.0817      22.83      3.967      19.83      1.779     0.3352   0.000895     -5.036     0.9238  0.0007973
-# 0.242	0.296	0.196	0.231	5.67	0.8541	4.286	0.1539	21.61	1.957	22.9	2.894	0.3689	0.001844	-4	0.913	0.000467
-# 0.298	0.244	0.167	0.247	4.99	0.8896	4.067	0.1694	21.41	2.033	25.61	1.783	0.4115	0.00128	    -4	0.950	0.000377
-# 0.268	0.268	0.178	0.240	4.36	1.104	5.596	0.2087	14.47	2.599	16.27	2.406	0.4114	0.001585	-4	0.950	0.000524
-# 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # 320 --epochs 2
+# 0.242	0.296	0.196	0.231	5.67	0.8541	4.286	0.1539	21.61	1.957	22.9	2.894	0.3689	0.001844	-4	0.913	0.000467  # ha
+# 0.298	0.244	0.167	0.247	4.99	0.8896	4.067	0.1694	21.41	2.033	25.61	1.783	0.4115	0.00128	    -4	0.950	0.000377  # hb
+# 0.268	0.268	0.178	0.240	4.36	1.104	5.596	0.2087	14.47	2.599	16.27	2.406	0.4114	0.001585	-4	0.950	0.000524  # hc
+# 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 320 --epochs 2
 
 
-# Training hyperparameters
-hyp = {'giou': 0.8541,  # giou loss gain
+# # ha
+# hyp = {'giou': 0.8541,  # giou loss gain
+#        'xy': 4.062,  # xy loss gain
+#        'wh': 0.1845,  # wh loss gain
+#        'cls': 21.61,  # cls loss gain
+#        'cls_pw': 1.957,  # cls BCELoss positive_weight
+#        'obj': 22.9,  # obj loss gain
+#        'obj_pw': 2.894,  # obj BCELoss positive_weight
+#        'iou_t': 0.3689,  # iou target-anchor training threshold
+#        'lr0': 0.001844,  # initial learning rate
+#        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.913,  # SGD momentum
+#        'weight_decay': 0.000467}  # optimizer weight decay
+
+
+# hd
+hyp = {'giou': 1.153,  # giou loss gain
        'xy': 4.062,  # xy loss gain
        'wh': 0.1845,  # wh loss gain
-       'cls': 21.61,  # cls loss gain
-       'cls_pw': 1.957,  # cls BCELoss positive_weight
-       'obj': 22.9,  # obj loss gain
-       'obj_pw': 2.894,  # obj BCELoss positive_weight
-       'iou_t': 0.3689,  # iou target-anchor training threshold
-       'lr0': 0.001844,  # initial learning rate
+       'cls': 24.28,  # cls loss gain
+       'cls_pw': 3.05,  # cls BCELoss positive_weight
+       'obj': 20.93,  # obj loss gain
+       'obj_pw': 2.842,  # obj BCELoss positive_weight
+       'iou_t': 0.2759,  # iou target-anchor training threshold
+       'lr0': 0.001357,  # initial learning rate
        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.913,  # SGD momentum
-       'weight_decay': 0.000467}  # optimizer weight decay
+       'momentum': 0.916,  # SGD momentum
+       'weight_decay': 0.000572}  # optimizer weight decay
 
 
 def train(cfg,
