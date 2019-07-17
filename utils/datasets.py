@@ -277,7 +277,11 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         if img is None:
             img = cv2.imread(img_path)  # BGR
             assert img is not None, 'File Not Found ' + img_path
-            if self.n < 1001:
+            if self.n < 2001:
+                r = self.img_size / max(img.shape)  # ratio
+                if r < 1:  # downsize image and cache in RAM for future
+                    h, w, _ = img.shape
+                    img = cv2.resize(img, (int(w*r), int(h*r)), interpolation=cv2.INTER_AREA)  # resized, no border
                 self.imgs[index] = img  # cache image into memory
 
         # Augment colorspace
