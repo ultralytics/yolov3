@@ -21,34 +21,34 @@ from utils.utils import *
 # 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 320 --epochs 2
 
 
-# # ha
-# hyp = {'giou': 0.8541,  # giou loss gain
-#        'xy': 4.062,  # xy loss gain
-#        'wh': 0.1845,  # wh loss gain
-#        'cls': 21.61,  # cls loss gain
-#        'cls_pw': 1.957,  # cls BCELoss positive_weight
-#        'obj': 22.9,  # obj loss gain
-#        'obj_pw': 2.894,  # obj BCELoss positive_weight
-#        'iou_t': 0.3689,  # iou target-anchor training threshold
-#        'lr0': 0.001844,  # initial learning rate
-#        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
-#        'momentum': 0.913,  # SGD momentum
-#        'weight_decay': 0.000467}  # optimizer weight decay
-
-
-# hd
-hyp = {'giou': 1.153,  # giou loss gain
+# Training hyperparameters a
+hyp = {'giou': 0.8541,  # giou loss gain
        'xy': 4.062,  # xy loss gain
        'wh': 0.1845,  # wh loss gain
-       'cls': 24.28,  # cls loss gain
-       'cls_pw': 3.05,  # cls BCELoss positive_weight
-       'obj': 20.93,  # obj loss gain
-       'obj_pw': 2.842,  # obj BCELoss positive_weight
-       'iou_t': 0.2759,  # iou target-anchor training threshold
-       'lr0': 0.001357,  # initial learning rate
+       'cls': 21.61,  # cls loss gain
+       'cls_pw': 1.957,  # cls BCELoss positive_weight
+       'obj': 22.9,  # obj loss gain
+       'obj_pw': 2.894,  # obj BCELoss positive_weight
+       'iou_t': 0.3689,  # iou target-anchor training threshold
+       'lr0': 0.001844,  # initial learning rate
        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.916,  # SGD momentum
-       'weight_decay': 0.000572}  # optimizer weight decay
+       'momentum': 0.913,  # SGD momentum
+       'weight_decay': 0.000467}  # optimizer weight decay
+
+
+# Training hyperparameters d
+# hyp = {'giou': 1.153,  # giou loss gain
+#        'xy': 4.062,  # xy loss gain
+#        'wh': 0.1845,  # wh loss gain
+#        'cls': 24.28,  # cls loss gain
+#        'cls_pw': 3.05,  # cls BCELoss positive_weight
+#        'obj': 20.93,  # obj loss gain
+#        'obj_pw': 2.842,  # obj BCELoss positive_weight
+#        'iou_t': 0.2759,  # iou target-anchor training threshold
+#        'lr0': 0.001357,  # initial learning rate
+#        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.916,  # SGD momentum
+#        'weight_decay': 0.000572}  # optimizer weight decay
 
 
 def train(cfg,
