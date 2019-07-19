@@ -534,11 +534,12 @@ def coco_only_people(path='../coco/labels/val2014/'):
             print(labels.shape[0], file)
 
 
-def select_best_evolve(path='../../Downloads/evolve*.txt'):  # from utils.utils import *; select_best_evolve()
+def select_best_evolve(path='evolve*.txt'):  # from utils.utils import *; select_best_evolve()
     # Find best evolved mutation
     for file in sorted(glob.glob(path)):
         x = np.loadtxt(file, dtype=np.float32)
-        print(file, x[x[:, 2].argmax()])
+        fitness = x[:, 2] * 0.5 + x[:, 3] * 0.5  # weighted mAP and F1 combination
+        print(file, x[fitness.argmax()])
 
 
 def kmeans_targets(path='./data/coco_64img.txt'):  # from utils.utils import *; kmeans_targets()
