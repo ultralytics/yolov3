@@ -87,9 +87,6 @@ def test(cfg,
                     stats.append(([], torch.Tensor(), torch.Tensor(), tcls))
                 continue
 
-            # Clip boxes to image bounds
-            clip_coords(pred, (height, width))
-
             # Append to text file
             # with open('test.txt', 'a') as file:
             #    [file.write('%11.5g' * 7 % tuple(x) + '\n') for x in pred]
@@ -99,7 +96,7 @@ def test(cfg,
                 # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
                 image_id = int(Path(paths[si]).stem.split('_')[-1])
                 box = pred[:, :4].clone()  # xyxy
-                box = scale_coords(imgs[si].shape[1:], box, shapes[si])  # to original shape
+                scale_coords(imgs[si].shape[1:], box, shapes[si])  # to original shape
                 box = xyxy2xywh(box)  # xywh
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
                 for di, d in enumerate(pred):
@@ -107,6 +104,9 @@ def test(cfg,
                                   'category_id': coco91class[int(d[6])],
                                   'bbox': [float3(x) for x in box[di]],
                                   'score': float(d[4])})
+
+            # Clip boxes to image bounds
+            clip_coords(pred, (height, width))
 
             # Assign all predictions as incorrect
             correct = [0] * len(pred)

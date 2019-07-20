@@ -152,7 +152,7 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=True, image_weights=False):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False):
         with open(path, 'r') as f:
             img_files = f.read().splitlines()
             self.img_files = [x for x in img_files if os.path.splitext(x)[-1].lower() in img_formats]
@@ -280,7 +280,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             img = cv2.imread(img_path)  # BGR
             assert img is not None, 'File Not Found ' + img_path
             r = self.img_size / max(img.shape)  # size ratio
-            if r < 1:  # downsize if target shape is smaller
+            if self.augment and r < 1:  # if training (NOT testing), downsize to inference shape
                 h, w, _ = img.shape
                 img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_AREA)
 
