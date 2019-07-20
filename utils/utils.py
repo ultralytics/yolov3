@@ -23,8 +23,8 @@ np.set_printoptions(linewidth=320, formatter={'float_kind': '{:11.5g}'.format}) 
 cv2.setNumThreads(0)
 
 
-def float3(x):  # format floats to 3 decimals
-    return float(format(x, '.3f'))
+def floatn(x, n=3):  # format floats to n decimals
+    return float(format(x, '.%gf' % n))
 
 
 def init_seeds(seed=0):

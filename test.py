@@ -102,8 +102,8 @@ def test(cfg,
                 for di, d in enumerate(pred):
                     jdict.append({'image_id': image_id,
                                   'category_id': coco91class[int(d[6])],
-                                  'bbox': [float3(x) for x in box[di]],
-                                  'score': float(format('.5f', d[4]))})
+                                  'bbox': [floatn(x, 3) for x in box[di]],
+                                  'score': floatn(d[4], 5)})
 
             # Clip boxes to image bounds
             clip_coords(pred, (height, width))
