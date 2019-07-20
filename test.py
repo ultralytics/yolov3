@@ -21,6 +21,7 @@ def test(cfg,
     # Initialize/load model and set device
     if model is None:
         device = torch_utils.select_device()
+        verbose = False
 
         # Initialize model
         model = Darknet(cfg, img_size).to(device)
@@ -35,6 +36,7 @@ def test(cfg,
             model = nn.DataParallel(model)
     else:
         device = next(model.parameters()).device  # get model device
+        verbose = True
 
     # Configure run
     data = parse_data_cfg(data)
@@ -156,7 +158,7 @@ def test(cfg,
     print(pf % ('all', seen, nt.sum(), mp, mr, map, mf1))
 
     # Print results per class
-    if nc > 1 and len(stats):
+    if verbose and nc > 1 and len(stats):
         for i, c in enumerate(ap_class):
             print(pf % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
 
