@@ -9,7 +9,7 @@ from utils.utils import *
 
 
 def test(cfg,
-         data_cfg,
+         data,
          weights=None,
          batch_size=16,
          img_size=416,
@@ -37,10 +37,10 @@ def test(cfg,
         device = next(model.parameters()).device  # get model device
 
     # Configure run
-    data_cfg = parse_data_cfg(data_cfg)
-    nc = int(data_cfg['classes'])  # number of classes
-    test_path = data_cfg['valid']  # path to test images
-    names = load_classes(data_cfg['names'])  # class names
+    data = parse_data_cfg(data)
+    nc = int(data['classes'])  # number of classes
+    test_path = data['valid']  # path to test images
+    names = load_classes(data['names'])  # class names
 
     # Dataloader
     dataset = LoadImagesAndLabels(test_path, img_size, batch_size)
@@ -203,7 +203,7 @@ if __name__ == '__main__':
 
     with torch.no_grad():
         mAP = test(opt.cfg,
-                   opt.data_cfg,
+                   opt.data,
                    opt.weights,
                    opt.batch_size,
                    opt.img_size,

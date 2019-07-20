@@ -8,7 +8,7 @@ from utils.utils import *
 
 
 def detect(cfg,
-           data_cfg,
+           data,
            weights,
            images='data/samples',  # input folder
            output='output',  # output folder
@@ -59,7 +59,7 @@ def detect(cfg,
         dataloader = LoadImages(images, img_size=img_size)
 
     # Get classes and colors
-    classes = load_classes(parse_data_cfg(data_cfg)['names'])
+    classes = load_classes(parse_data_cfg(data)['names'])
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(classes))]
 
     for i, (path, img, im0, vid_cap) in enumerate(dataloader):
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     with torch.no_grad():
         detect(opt.cfg,
-               opt.data_cfg,
+               opt.data,
                opt.weights,
                images=opt.images,
                img_size=opt.img_size,

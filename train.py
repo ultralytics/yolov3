@@ -62,7 +62,7 @@ hyp = {'giou': 1.153,  # giou loss gain
 
 
 def train(cfg,
-          data_cfg,
+          data,
           img_size=416,
           epochs=100,  # 500200 batches at bs 16, 117263 images = 273 epochs
           batch_size=16,
@@ -81,7 +81,7 @@ def train(cfg,
         img_size = img_sz_max * 32  # initiate with maximum multi_scale size
 
     # Configure run
-    data_dict = parse_data_cfg(data_cfg)
+    data_dict = parse_data_cfg(data)
     train_path = data_dict['train']
     nc = int(data_dict['classes'])  # number of classes
 
@@ -270,7 +270,7 @@ def train(cfg,
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
         if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:
             with torch.no_grad():
-                results, maps = test.test(cfg, data_cfg, batch_size=batch_size, img_size=opt.img_size, model=model,
+                results, maps = test.test(cfg, data, batch_size=batch_size, img_size=opt.img_size, model=model,
                                           conf_thres=0.1)
 
         # Write epoch results
@@ -361,7 +361,7 @@ if __name__ == '__main__':
 
     # Train
     results = train(opt.cfg,
-                    opt.data_cfg,
+                    opt.data,
                     img_size=opt.img_size,
                     epochs=opt.epochs,
                     batch_size=opt.batch_size,
@@ -393,7 +393,7 @@ if __name__ == '__main__':
 
             # Train mutation
             results = train(opt.cfg,
-                            opt.data_cfg,
+                            opt.data,
                             img_size=opt.img_size,
                             epochs=opt.epochs,
                             batch_size=opt.batch_size,
