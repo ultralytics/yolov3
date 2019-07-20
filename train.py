@@ -33,11 +33,17 @@ hyp = {'giou': 1.153,  # giou loss gain
        'cls_pw': 3.05,  # cls BCELoss positive_weight
        'obj': 20.93,  # obj loss gain
        'obj_pw': 2.842,  # obj BCELoss positive_weight
-       'iou_t': 0.2759,  # iou target-anchor training threshold
+       'iou_t': 0.2759,  # iou training threshold
        'lr0': 0.001357,  # initial learning rate
-       'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
+       'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
        'momentum': 0.916,  # SGD momentum
-       'weight_decay': 0.000572}  # optimizer weight decay
+       'weight_decay': 0.000572,  # optimizer weight decay
+       'hsv_s': 0.5,  # image HSV-Saturation augmentation (fraction)
+       'hsv_v': 0.5,  # image HSV-Value augmentation (fraction)
+       'degrees': 10,  # image rotation (+/- deg)
+       'translate': 0.1,  # image translation (+/- fraction)
+       'scale': 0.1,  # image scale (+/- gain)
+       'shear': 2}  # image shear (+/- deg)
 
 
 # # Training hyperparameters e
@@ -50,7 +56,7 @@ hyp = {'giou': 1.153,  # giou loss gain
 #        'obj_pw': 2.634,  # obj BCELoss positive_weight
 #        'iou_t': 0.273,  # iou target-anchor training threshold
 #        'lr0': 0.001542,  # initial learning rate
-#        'lrf': -4.,  # final learning rate = lr0 * (10 ** lrf)
+#        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
 #        'momentum': 0.8364,  # SGD momentum
 #        'weight_decay': 0.0008393}  # optimizer weight decay
 
@@ -149,6 +155,7 @@ def train(cfg,
                                   img_size,
                                   batch_size,
                                   augment=True,
+                                  hyp=hyp,  # augmentation hyperparameters
                                   rect=opt.rect)  # rectangular training
 
     # Initialize distributed training
@@ -375,14 +382,14 @@ if __name__ == '__main__':
 
             # Mutate
             init_seeds(seed=int(time.time()))
-            s = [.15, .15, .15, .15, .15, .15, .15, .15, .15, .00, .05, .10]  # fractional sigmas
+            s = [.15, .15, .15, .15, .15, .15, .15, .15, .15, .00, .05, .10, .15, .15, .15, .15, .15, .15]  # sigmas
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                 hyp[k] *= float(x)  # vary by 20% 1sigma
 
             # Clip to limits
-            keys = ['lr0', 'iou_t', 'momentum', 'weight_decay']
-            limits = [(1e-4, 1e-2), (0.00, 0.70), (0.60, 0.95), (0, 0.01)]
+            keys = ['lr0', 'iou_t', 'momentum', 'weight_decay', 'hsv_s', 'hsv_v', 'translate', 'scale']
+            limits = [(1e-4, 1e-2), (0.00, 0.70), (0.60, 0.95), (0, 0.001), (0, .8), (0, .8), (0, .8), (0, .8)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
