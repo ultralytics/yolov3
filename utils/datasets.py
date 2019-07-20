@@ -178,19 +178,16 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         if self.rect:
             # Read image shapes
             sp = 'data' + os.sep + path.replace('.txt', '.shapes').split(os.sep)[-1]  # shapefile path
-            if not os.path.exists(sp):  # read shapes using PIL and write shapefile for next time (faster)
-                s = [exif_size(Image.open(f)) for f in tqdm(self.img_files, desc='Reading image shapes')]
-                np.savetxt(sp, s, fmt='%g')
-
             try:
                 with open(sp, 'r') as f:  # read existing shapefile
-                    s = np.array([x.split() for x in f.read().splitlines()], dtype=np.float64)
+                    s = [x.split() for x in f.read().splitlines()]
                     assert len(s) == n, 'Shapefile out of sync'
             except:
-                os.remove(sp)
-                print('Shapefile deleted: %s. Please rerun again.' % sp)
+                s = [exif_size(Image.open(f)) for f in tqdm(self.img_files, desc='Reading image shapes')]
+                np.savetxt(sp, s, fmt='%g')  # overwrites existing (if any)
 
             # Sort by aspect ratio
+            s = np.array(s, dtype=np.float64)
             ar = s[:, 1] / s[:, 0]  # aspect ratio
             i = ar.argsort()
             self.img_files = [self.img_files[i] for i in i]
