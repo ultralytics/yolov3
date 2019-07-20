@@ -12,11 +12,11 @@ from utils.datasets import *
 from utils.utils import *
 
 # 320 --epochs 1
-#      0.109      0.297       0.15      0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005   320 giou + best_anchor False
-#      0.223      0.218      0.138      0.189       9.28      1.153      4.376    0.08263      24.28       3.05      20.93      2.842     0.2759   0.001357     -5.036     0.9158  0.0005722   mAP/F1 - 50/50 weighting
-#      0.231      0.215      0.135      0.191       9.51      1.432      3.007    0.06082      24.87      3.477      24.13      2.802     0.3436   0.001127     -5.036     0.9232  0.0005874
-#      0.246      0.194      0.128      0.192       8.12      1.101      3.954     0.0817      22.83      3.967      19.83      1.779     0.3352   0.000895     -5.036     0.9238  0.0007973
-#      0.187      0.237      0.144      0.186       14.6      1.607      4.202    0.09439      39.27      3.726      31.26      2.634      0.273   0.001542     -5.036     0.8364  0.0008393
+#      0.109      0.297       0.15      0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005 a  320 giou + best_anchor False
+#      0.223      0.218      0.138      0.189       9.28      1.153      4.376    0.08263      24.28       3.05      20.93      2.842     0.2759   0.001357     -5.036     0.9158  0.0005722 b  mAP/F1 - 50/50 weighting
+#      0.231      0.215      0.135      0.191       9.51      1.432      3.007    0.06082      24.87      3.477      24.13      2.802     0.3436   0.001127     -5.036     0.9232  0.0005874 c
+#      0.246      0.194      0.128      0.192       8.12      1.101      3.954     0.0817      22.83      3.967      19.83      1.779     0.3352   0.000895     -5.036     0.9238  0.0007973 d
+#      0.187      0.237      0.144      0.186       14.6      1.607      4.202    0.09439      39.27      3.726      31.26      2.634      0.273   0.001542     -5.036     0.8364  0.0008393 e
 
 # 320 --epochs 2
 # 0.242	0.296	0.196	0.231	5.67	0.8541	4.286	0.1539	21.61	1.957	22.9	2.894	0.3689	0.001844	-4	0.913	0.000467  # ha 0.417 mAP @ epoch 100
@@ -70,9 +70,9 @@ def train(cfg,
     multi_scale = opt.multi_scale
 
     if multi_scale:
-        img_size_min = round(img_size / 32 / 1.5)
-        img_size_max = round(img_size / 32 * 1.5)
-        img_size = img_size_max * 32  # initiate with maximum multi_scale size
+        img_sz_min = round(img_size / 32 / 1.5)
+        img_sz_max = round(img_size / 32 * 1.5)
+        img_size = img_sz_max * 32  # initiate with maximum multi_scale size
 
     # Configure run
     data_dict = parse_data_cfg(data_cfg)
@@ -216,10 +216,11 @@ def train(cfg,
             # Multi-Scale training TODO: short-side to 32-multiple https://github.com/ultralytics/yolov3/issues/358
             if multi_scale:
                 if (i + nb * epoch) / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
-                    img_size = random.choice(range(img_size_min, img_size_max + 1)) * 32
-                    # print('img_size = %g' % img_size)
-                scale_factor = img_size / max(imgs.shape[-2:])
-                imgs = F.interpolate(imgs, scale_factor=scale_factor, mode='bilinear', align_corners=False)
+                    img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
+                sf = img_size / max(imgs.shape[2:])  # scale factor
+                if sf != 1:
+                    ns = [math.ceil(x * sf / 32.) * 32 for x in imgs.shape[2:]]  # new shape
+                    imgs = F.interpolate(imgs, size=ns, mode='bilinear', align_corners=False)
 
             # Plot images with bounding boxes
             if epoch == 0 and i == 0:
