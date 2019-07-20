@@ -177,20 +177,18 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         if self.rect:
             # Read image shapes
-            s = np.array([exif_size(Image.open(f)) for f in tqdm(self.img_files, desc='Reading image shapes')],
-                         dtype=np.float64)
-            # sp = 'data' + os.sep + path.replace('.txt', '.shapes').split(os.sep)[-1]  # shapefile path
-            # if not os.path.exists(sp):  # read shapes using PIL and write shapefile for next time (faster)
-            #     s = [exif_size(Image.open(f)) for f in tqdm(self.img_files, desc='Reading image shapes')]
-            #     np.savetxt(sp, s, fmt='%g')
-            #
-            # try:
-            #     with open(sp, 'r') as f:  # read existing shapefile
-            #         s = np.array([x.split() for x in f.read().splitlines()], dtype=np.float64)
-            #         assert len(s) == n, 'Shapefile out of sync'
-            # except:
-            #     os.remove(sp)
-            #     print('Shapefile deleted: %s. Please rerun again.' % sp)
+            sp = 'data' + os.sep + path.replace('.txt', '.shapes').split(os.sep)[-1]  # shapefile path
+            if not os.path.exists(sp):  # read shapes using PIL and write shapefile for next time (faster)
+                s = [exif_size(Image.open(f)) for f in tqdm(self.img_files, desc='Reading image shapes')]
+                np.savetxt(sp, s, fmt='%g')
+
+            try:
+                with open(sp, 'r') as f:  # read existing shapefile
+                    s = np.array([x.split() for x in f.read().splitlines()], dtype=np.float64)
+                    assert len(s) == n, 'Shapefile out of sync'
+            except:
+                os.remove(sp)
+                print('Shapefile deleted: %s. Please rerun again.' % sp)
 
             # Sort by aspect ratio
             ar = s[:, 1] / s[:, 0]  # aspect ratio
