@@ -40,7 +40,7 @@ hyp = {'giou': 1.153,  # giou loss gain
        'weight_decay': 0.000572,  # optimizer weight decay
        'hsv_s': 0.5,  # image HSV-Saturation augmentation (fraction)
        'hsv_v': 0.5,  # image HSV-Value augmentation (fraction)
-       'degrees': 10,  # image rotation (+/- deg)
+       'degrees': 5,  # image rotation (+/- deg)
        'translate': 0.1,  # image translation (+/- fraction)
        'scale': 0.1,  # image scale (+/- gain)
        'shear': 2}  # image shear (+/- deg)
@@ -339,7 +339,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=16, help='batch size')
     parser.add_argument('--accumulate', type=int, default=4, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data-cfg', type=str, default='data/coco_64img.data', help='coco.data file path')
+    parser.add_argument('--data', type=str, default='data/coco_64img.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='train at (1/1.5)x - 1.5x sizes')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
@@ -369,10 +369,8 @@ if __name__ == '__main__':
 
     # Evolve hyperparameters (optional)
     if opt.evolve:
-        gen = 1000  # generations to evolve
         print_mutation(hyp, results)  # Write mutation results
-
-        for _ in range(gen):
+        for _ in range(1000):  # generations to evolve
             # Get best hyperparameters
             x = np.loadtxt('evolve.txt', ndmin=2)
             fitness = x[:, 2] * 0.5 + x[:, 3] * 0.5  # fitness as weighted combination of mAP and F1
@@ -385,7 +383,7 @@ if __name__ == '__main__':
             s = [.15, .15, .15, .15, .15, .15, .15, .15, .15, .00, .05, .10, .15, .15, .15, .15, .15, .15]  # sigmas
             for i, k in enumerate(hyp.keys()):
                 x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
-                hyp[k] *= float(x)  # vary by 20% 1sigma
+                hyp[k] *= float(x)  # vary by sigmas
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay', 'hsv_s', 'hsv_v', 'translate', 'scale']
