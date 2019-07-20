@@ -294,8 +294,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             S = img_hsv[:, :, 1].astype(np.float32)  # saturation
             V = img_hsv[:, :, 2].astype(np.float32)  # value
 
-            a = (random.random() * 2 - 1) * fraction + 1
-            b = (random.random() * 2 - 1) * fraction + 1
+            a = random.uniform(-1, 1) * fraction + 1
+            b = random.uniform(-1, 1) * fraction + 1
             S *= a
             V *= b
 
@@ -331,7 +331,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Augment image and labels
         if self.augment:
-            img, labels = random_affine(img, labels, degrees=(-5, 5), translate=(0.10, 0.10), scale=(0.90, 1.10))
+            img, labels = random_affine(img, labels, degrees=(-3, 3), translate=(0.05, 0.05), scale=(0.90, 1.10))
 
         nL = len(labels)  # number of labels
         if nL:
@@ -376,7 +376,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         return torch.stack(img, 0), torch.cat(label, 0), path, hw
 
 
-def letterbox(img, new_shape=416, color=(127.5, 127.5, 127.5), mode='auto'):
+def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto'):
     # Resize a rectangular image to a 32 pixel multiple rectangle
     # https://github.com/ultralytics/yolov3/issues/232
     shape = img.shape[:2]  # current shape [height, width]
@@ -411,7 +411,7 @@ def letterbox(img, new_shape=416, color=(127.5, 127.5, 127.5), mode='auto'):
 
 
 def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-2, 2),
-                  borderValue=(127.5, 127.5, 127.5)):
+                  borderValue=(128, 128, 128)):
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
     # https://medium.com/uruvideo/dataset-augmentation-with-random-homographies-a8f4b44830d4
 
@@ -423,20 +423,20 @@ def random_affine(img, targets=(), degrees=(-10, 10), translate=(.1, .1), scale=
 
     # Rotation and Scale
     R = np.eye(3)
-    a = random.random() * (degrees[1] - degrees[0]) + degrees[0]
-    # a += random.choice([-180, -90, 0, 90])  # 90deg rotations added to small rotations
-    s = random.random() * (scale[1] - scale[0]) + scale[0]
+    a = random.uniform(degrees[0], degrees[1])
+    # a += random.choice([-180, -90, 0, 90])  # add 90deg rotations to small rotations
+    s = random.uniform(scale[0], scale[1])
     R[:2] = cv2.getRotationMatrix2D(angle=a, center=(img.shape[1] / 2, img.shape[0] / 2), scale=s)
 
     # Translation
     T = np.eye(3)
-    T[0, 2] = (random.random() * 2 - 1) * translate[0] * img.shape[0] + border  # x translation (pixels)
-    T[1, 2] = (random.random() * 2 - 1) * translate[1] * img.shape[1] + border  # y translation (pixels)
+    T[0, 2] = random.uniform(-1, 1) * translate[0] * img.shape[0] + border  # x translation (pixels)
+    T[1, 2] = random.uniform(-1, 1) * translate[1] * img.shape[1] + border  # y translation (pixels)
 
     # Shear
     S = np.eye(3)
-    S[0, 1] = math.tan((random.random() * (shear[1] - shear[0]) + shear[0]) * math.pi / 180)  # x shear (deg)
-    S[1, 0] = math.tan((random.random() * (shear[1] - shear[0]) + shear[0]) * math.pi / 180)  # y shear (deg)
+    S[0, 1] = math.tan(random.uniform(shear[0], shear[1]) * math.pi / 180)  # x shear (deg)
+    S[1, 0] = math.tan(random.uniform(shear[0], shear[1]) * math.pi / 180)  # y shear (deg)
 
     M = S @ T @ R  # Combined rotation matrix. ORDER IS IMPORTANT HERE!!
     imw = cv2.warpAffine(img, M[:2], dsize=(width, height), flags=cv2.INTER_AREA,
