@@ -328,7 +328,7 @@ def print_mutation(hyp, results):
         with open('evolve.txt', 'a') as f:  # append result
             f.write(c + b + '\n')
         x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
-        np.savetxt('evolve.txt', x[np.argsort(-fitness(x))]  , '%11.3g')  # save sort by fitness
+        np.savetxt('evolve3.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sort by fitness
         os.system('gsutil cp evolve.txt gs://%s' % opt.bucket)  # upload evolve.txt
     else:
         with open('evolve.txt', 'a') as f:
@@ -410,14 +410,14 @@ if __name__ == '__main__':
             # # Plot results
             # import numpy as np
             # import matplotlib.pyplot as plt
-            # a = np.loadtxt('evolve_1000val.txt')
-            # x = a[:, 2] * a[:, 3]  # metric = mAP * F1
+            # a = np.loadtxt('evolve.txt')
+            # x = fitness(a)
             # weights = (x - x.min()) ** 2
-            # fig = plt.figure(figsize=(14, 7))
+            # fig = plt.figure(figsize=(10, 10))
             # for i in range(len(hyp)):
             #     y = a[:, i + 5]
             #     mu = (y * weights).sum() / weights.sum()
-            #     plt.subplot(2, 5, i+1)
+            #     plt.subplot(4, 5, i + 1)
             #     plt.plot(x.max(), mu, 'o')
             #     plt.plot(x, y, '.')
-            #     print(list(hyp.keys())[i],'%.4g' % mu)
+            #     print(list(hyp.keys())[i], '%.4g' % mu)
