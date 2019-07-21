@@ -312,7 +312,7 @@ def train(cfg,
 
     # Report time
     print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
-
+    del model, optimizer
     return results
 
 
