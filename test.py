@@ -21,7 +21,7 @@ def test(cfg,
     # Initialize/load model and set device
     if model is None:
         device = torch_utils.select_device()
-        verbose = False
+        verbose = True
 
         # Initialize model
         model = Darknet(cfg, img_size).to(device)
@@ -36,7 +36,7 @@ def test(cfg,
             model = nn.DataParallel(model)
     else:
         device = next(model.parameters()).device  # get model device
-        verbose = True
+        verbose = False
 
     # Configure run
     data = parse_data_cfg(data)
