@@ -319,7 +319,7 @@ def train(cfg,
 def print_mutation(hyp, results):
     # Write mutation results
     a = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
-    b = '%11.4g' * len(hyp) % tuple(hyp.values())  # hyperparam values
+    b = '%11.3g' * len(hyp) % tuple(hyp.values())  # hyperparam values
     c = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
     print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
 
@@ -327,10 +327,16 @@ def print_mutation(hyp, results):
         os.system('gsutil cp gs://%s/evolve.txt .' % opt.bucket)  # download evolve.txt
         with open('evolve.txt', 'a') as f:  # append result
             f.write(c + b + '\n')
+        x = np.loadtxt('evolve.txt', ndmin=2)
+        np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sorted by fitness
         os.system('gsutil cp evolve.txt gs://%s' % opt.bucket)  # upload evolve.txt
     else:
         with open('evolve.txt', 'a') as f:
             f.write(c + b + '\n')
+
+
+def fitness(x):  # returns fitness of hyp evolution vectors
+    return x[:, 2] * 0.5 + x[:, 3] * 0.5  # fitness = weighted combination of mAP and F1
 
 
 if __name__ == '__main__':
@@ -373,8 +379,7 @@ if __name__ == '__main__':
         for _ in range(1000):  # generations to evolve
             # Get best hyperparameters
             x = np.loadtxt('evolve.txt', ndmin=2)
-            fitness = x[:, 2] * 0.5 + x[:, 3] * 0.5  # fitness as weighted combination of mAP and F1
-            x = x[fitness.argmax()]  # select best fitness hyps
+            x = x[fitness(x).argmax()]  # select best fitness hyps
             for i, k in enumerate(hyp.keys()):
                 hyp[k] = x[i + 5]
 
