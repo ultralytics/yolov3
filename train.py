@@ -37,7 +37,7 @@ hyp = {'giou': 1.153,  # giou loss gain
        'lr0': 0.001357,  # initial learning rate
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
        'momentum': 0.916,  # SGD momentum
-       'weight_decay': 0.000572,  # optimizer weight decay
+       'weight_decay': 0.0000572,  # optimizer weight decay
        'hsv_s': 0.5,  # image HSV-Saturation augmentation (fraction)
        'hsv_v': 0.5,  # image HSV-Value augmentation (fraction)
        'degrees': 5,  # image rotation (+/- deg)
@@ -328,7 +328,7 @@ def print_mutation(hyp, results):
         with open('evolve.txt', 'a') as f:  # append result
             f.write(c + b + '\n')
         x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
-        np.savetxt('evolve2.txt', x[np.argsort(-fitness(x))]  , '%11.3g')  # save sort by fitness
+        np.savetxt('evolve.txt', x[np.argsort(-fitness(x))]  , '%11.3g')  # save sort by fitness
         os.system('gsutil cp evolve.txt gs://%s' % opt.bucket)  # upload evolve.txt
     else:
         with open('evolve.txt', 'a') as f:
