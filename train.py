@@ -327,8 +327,8 @@ def print_mutation(hyp, results):
         os.system('gsutil cp gs://%s/evolve.txt .' % opt.bucket)  # download evolve.txt
         with open('evolve.txt', 'a') as f:  # append result
             f.write(c + b + '\n')
-        x = np.loadtxt('evolve.txt', ndmin=2)
-        np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sorted by fitness
+        x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
+        np.savetxt('evolve2.txt', x[np.argsort(-fitness(x))]  , '%11.3g')  # save sort by fitness
         os.system('gsutil cp evolve.txt gs://%s' % opt.bucket)  # upload evolve.txt
     else:
         with open('evolve.txt', 'a') as f:
