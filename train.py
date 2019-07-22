@@ -235,9 +235,10 @@ def train(cfg,
 
             # SGD burn-in
             if epoch == 0 and i <= n_burnin:
-                lr = hyp['lr0'] * (i / n_burnin) ** 4
+                g = (i / n_burnin) ** 4  # gain
                 for x in optimizer.param_groups:
-                    x['lr'] = lr
+                    x['lr'] = hyp['lr0'] * g
+                    x['weight_decay'] = hyp['weight_decay'] * g
 
             # Run model
             pred = model(imgs)
