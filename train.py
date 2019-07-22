@@ -10,6 +10,7 @@ import test  # import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
 from utils.utils import *
+from utils.adabound import *
 
 # 320 --epochs 1
 #      0.109      0.297       0.15      0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005 a  320 giou + best_anchor False
@@ -89,7 +90,8 @@ def train(cfg,
     model = Darknet(cfg).to(device)
 
     # Optimizer
-    optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'])
+    optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'], nesterov=True)
+    # optimizer = AdaBound(model.parameters(), lr=hyp['lr0'], final_lr=0.1)
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
@@ -192,7 +194,7 @@ def train(cfg,
     nb = len(dataloader)
     maps = np.zeros(nc)  # mAP per class
     results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
-    n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
+    # n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
     t0 = time.time()
     for epoch in range(start_epoch, epochs):
         model.train()
@@ -234,11 +236,11 @@ def train(cfg,
                 plot_images(imgs=imgs, targets=targets, paths=paths, fname='train_batch%g.jpg' % i)
 
             # SGD burn-in
-            if epoch == 0 and i <= n_burnin:
-                g = (i / n_burnin) ** 4  # gain
-                for x in optimizer.param_groups:
-                    x['lr'] = hyp['lr0'] * g
-                    x['weight_decay'] = hyp['weight_decay'] * g
+            # if epoch == 0 and i <= n_burnin:
+            #     g = (i / n_burnin) ** 4  # gain
+            #     for x in optimizer.param_groups:
+            #         x['lr'] = hyp['lr0'] * g
+            #         x['weight_decay'] = hyp['weight_decay'] * g
 
             # Run model
             pred = model(imgs)
