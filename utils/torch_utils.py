@@ -18,7 +18,7 @@ def select_device(force_cpu=False):
     if cuda:
         try:  # Mixed precision training https://github.com/NVIDIA/apex
             from apex import amp
-            apex_str = 'with Apex '
+            apex_str = 'Apex '
         except:
             apex_str = ''
 
