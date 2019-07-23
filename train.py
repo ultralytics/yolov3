@@ -18,6 +18,7 @@ from utils.adabound import *
 #      0.231      0.215      0.135      0.191       9.51      1.432      3.007    0.06082      24.87      3.477      24.13      2.802     0.3436   0.001127     -5.036     0.9232  0.0005874 c
 #      0.246      0.194      0.128      0.192       8.12      1.101      3.954     0.0817      22.83      3.967      19.83      1.779     0.3352   0.000895     -5.036     0.9238  0.0007973 d
 #      0.187      0.237      0.144      0.186       14.6      1.607      4.202    0.09439      39.27      3.726      31.26      2.634      0.273   0.001542     -5.036     0.8364  0.0008393 e
+#      0.25       0.217       0.136       0.195         3.3         1.2           2       0.604        15.7        3.67          20        1.36       0.194     0.00128          -4        0.95    0.000201         0.8       0.388         1.2       0.119      0.0589       0.401 f
 
 # 320 --epochs 2
 # 0.242	0.296	0.196	0.231	5.67	0.8541	4.286	0.1539	21.61	1.957	22.9	2.894	0.3689	0.001844	-4	0.913	0.000467  # ha 0.417 mAP @ epoch 100
@@ -26,25 +27,26 @@ from utils.adabound import *
 # 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 0.438 mAP @ epoch 100
 
 
-# Training hyperparameters d
-hyp = {'giou': 1.153,  # giou loss gain
+
+# Training hyperparameters f
+hyp = {'giou': 1.2,  # giou loss gain
        'xy': 4.062,  # xy loss gain
        'wh': 0.1845,  # wh loss gain
-       'cls': 24.28,  # cls loss gain
-       'cls_pw': 3.05,  # cls BCELoss positive_weight
-       'obj': 20.93,  # obj loss gain
-       'obj_pw': 2.842,  # obj BCELoss positive_weight
-       'iou_t': 0.2759,  # iou training threshold
-       'lr0': 0.001357,  # initial learning rate
+       'cls': 15.7,  # cls loss gain
+       'cls_pw': 3.67,  # cls BCELoss positive_weight
+       'obj': 20.0,  # obj loss gain
+       'obj_pw': 1.36,  # obj BCELoss positive_weight
+       'iou_t': 0.194,  # iou training threshold
+       'lr0': 0.00128,  # initial learning rate
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.916,  # SGD momentum
-       'weight_decay': 0.0000572,  # optimizer weight decay
-       'hsv_s': 0.5,  # image HSV-Saturation augmentation (fraction)
-       'hsv_v': 0.5,  # image HSV-Value augmentation (fraction)
-       'degrees': 5,  # image rotation (+/- deg)
-       'translate': 0.1,  # image translation (+/- fraction)
-       'scale': 0.1,  # image scale (+/- gain)
-       'shear': 2}  # image shear (+/- deg)
+       'momentum': 0.95,  # SGD momentum
+       'weight_decay': 0.000201,  # optimizer weight decay
+       'hsv_s': 0.8,  # image HSV-Saturation augmentation (fraction)
+       'hsv_v': 0.388,  # image HSV-Value augmentation (fraction)
+       'degrees': 1.2,  # image rotation (+/- deg)
+       'translate': 0.119,  # image translation (+/- fraction)
+       'scale': 0.0589,  # image scale (+/- gain)
+       'shear': 0.401}  # image shear (+/- deg)
 
 
 # # Training hyperparameters e
@@ -90,7 +92,8 @@ def train(cfg,
     model = Darknet(cfg).to(device)
 
     # Optimizer
-    optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'], nesterov=True)
+    optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'],
+                          nesterov=True)
     # optimizer = AdaBound(model.parameters(), lr=hyp['lr0'], final_lr=0.1)
 
     cutoff = -1  # backbone reaches to cutoff layer
