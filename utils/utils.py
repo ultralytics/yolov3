@@ -617,7 +617,7 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
     plt.ylabel('output')
     plt.legend()
     fig.tight_layout()
-    fig.savefig('comparison.png', dpi=300)
+    fig.savefig('comparison.png', dpi=200)
 
 
 def plot_images(imgs, targets, paths=None, fname='images.jpg'):
@@ -642,7 +642,7 @@ def plot_images(imgs, targets, paths=None, fname='images.jpg'):
             s = Path(paths[i]).name
             plt.title(s[:min(len(s), 40)], fontdict={'size': 8})  # limit to 40 characters
     fig.tight_layout()
-    fig.savefig(fname, dpi=300)
+    fig.savefig(fname, dpi=200)
     plt.close()
 
 
@@ -662,7 +662,7 @@ def plot_test_txt():  # from utils.utils import *; plot_test()
     ax[0].hist(cx, bins=600)
     ax[1].hist(cy, bins=600)
     fig.tight_layout()
-    plt.savefig('hist1d.jpg', dpi=300)
+    plt.savefig('hist1d.jpg', dpi=200)
 
 
 def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
@@ -678,7 +678,7 @@ def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
         ax[i].legend()
         ax[i].set_title(s[i])
     fig.tight_layout()
-    plt.savefig('targets.jpg', dpi=300)
+    plt.savefig('targets.jpg', dpi=200)
 
 
 def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
@@ -698,4 +698,4 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
             ax[i].set_title(s[i])
     fig.tight_layout()
     ax[4].legend()
-    fig.savefig('results.png', dpi=300)
+    fig.savefig('results.png', dpi=200)
