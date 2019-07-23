@@ -27,7 +27,6 @@ from utils.adabound import *
 # 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 0.438 mAP @ epoch 100
 
 
-
 # Training hyperparameters f
 hyp = {'giou': 1.2,  # giou loss gain
        'xy': 4.062,  # xy loss gain
@@ -318,7 +317,8 @@ def train(cfg,
 
     # Report time
     print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
-    del model, optimizer
+    del model, optimizer, loss, dataset, dataloader, scaled_loss, scheduler
+    torch.cuda.empty_cache()
     return results
 
 
