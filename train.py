@@ -79,7 +79,7 @@ def train(cfg,
     weights = 'weights' + os.sep
     last = weights + 'last.pt'
     best = weights + 'best.pt'
-    device = torch_utils.select_device()
+    device = torch_utils.select_device(apex=mixed_precision)
     multi_scale = opt.multi_scale
 
     if multi_scale:
@@ -162,7 +162,6 @@ def train(cfg,
     # Mixed precision training https://github.com/NVIDIA/apex
     if mixed_precision:
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
-        print('Using Apex')
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:

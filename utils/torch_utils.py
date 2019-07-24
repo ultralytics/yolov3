@@ -9,7 +9,8 @@ def init_seeds(seed=0):
     # torch.backends.cudnn.deterministic = True  # https://pytorch.org/docs/stable/notes/randomness.html
 
 
-def select_device(force_cpu=False):
+def select_device(force_cpu=False, apex=False):
+    # apex if mixed precision training https://github.com/NVIDIA/apex
     cuda = False if force_cpu else torch.cuda.is_available()
     device = torch.device('cuda:0' if cuda else 'cpu')
 
@@ -20,7 +21,7 @@ def select_device(force_cpu=False):
         c = 1024 ** 2  # bytes to MB
         ng = torch.cuda.device_count()
         x = [torch.cuda.get_device_properties(i) for i in range(ng)]
-        cuda_str = 'Using CUDA '
+        cuda_str = 'Using CUDA ' + 'Apex ' if apex else ''
         for i in range(0, ng):
             if i == 1:
                 # torch.cuda.set_device(0)  # OPTIONAL: Set GPU ID
