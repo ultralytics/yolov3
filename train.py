@@ -162,6 +162,7 @@ def train(cfg,
     # Mixed precision training https://github.com/NVIDIA/apex
     if mixed_precision:
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
+        print('Using Apex')
 
     # Initialize distributed training
     if torch.cuda.device_count() > 1:

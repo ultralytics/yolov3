@@ -16,17 +16,11 @@ def select_device(force_cpu=False):
     if not cuda:
         print('Using CPU')
     if cuda:
-        try:  # Mixed precision training https://github.com/NVIDIA/apex
-            from apex import amp
-            apex_str = 'Apex '
-        except:
-            apex_str = ''
-
         torch.backends.cudnn.benchmark = True  # set False for reproducible results
         c = 1024 ** 2  # bytes to MB
         ng = torch.cuda.device_count()
         x = [torch.cuda.get_device_properties(i) for i in range(ng)]
-        cuda_str = 'Using CUDA ' + apex_str
+        cuda_str = 'Using CUDA '
         for i in range(0, ng):
             if i == 1:
                 # torch.cuda.set_device(0)  # OPTIONAL: Set GPU ID
