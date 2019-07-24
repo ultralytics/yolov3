@@ -379,8 +379,8 @@ if __name__ == '__main__':
         if opt.bucket:
             os.system('gsutil cp gs://%s/evolve.txt .' % opt.bucket)  # download evolve.txt if exists
 
-        for _ in range(1000):  # generations to evolve
-            if os._exists('evolve.txt'):  # if evolve.txt exists: select best hyps and mutate
+        for _ in range(2):  # generations to evolve
+            if os.path.exists('evolve.txt'):  # if evolve.txt exists: select best hyps and mutate
                 # Get best hyperparameters
                 x = np.loadtxt('evolve.txt', ndmin=2)
                 x = x[fitness(x).argmax()]  # select best fitness hyps
