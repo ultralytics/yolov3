@@ -3,12 +3,19 @@ import time
 
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
+import torch.distributed as dist
 
 import test  # import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
 from utils.utils import *
 from utils.adabound import *
+
+mixed_precision = True
+try:  # Mixed precision training https://github.com/NVIDIA/apex
+    from apex import amp
+except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/259
+    mixed_precision = False
 
 # 320 --epochs 1
 #      0.109      0.297       0.15      0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005 a  320 giou + best_anchor False
@@ -152,6 +159,18 @@ def train(cfg,
     # plt.tight_layout()
     # plt.savefig('LR.png', dpi=300)
 
+    # Mixed precision training https://github.com/NVIDIA/apex
+    if mixed_precision:
+        model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
+
+    # Initialize distributed training
+    if torch.cuda.device_count() > 1:
+        dist.init_process_group(backend='nccl',  # 'distributed backend'
+                                init_method='tcp://127.0.0.1:9999',  # distributed training init method
+                                world_size=1,  # number of nodes for distributed training
+                                rank=0)  # distributed training node rank
+        model = torch.nn.parallel.DistributedDataParallel(model)
+
     # Dataset
     dataset = LoadImagesAndLabels(train_path,
                                   img_size,
@@ -160,16 +179,6 @@ def train(cfg,
                                   hyp=hyp,  # augmentation hyperparameters
                                   rect=opt.rect)  # rectangular training
 
-    # Initialize distributed training
-    if torch.cuda.device_count() > 1:
-        torch.distributed.init_process_group(backend='nccl',  # 'distributed backend'
-                                             init_method='tcp://127.0.0.1:9999',  # distributed training init method
-                                             world_size=1,  # number of nodes for distributed training
-                                             rank=0)  # distributed training node rank
-
-        model = torch.nn.parallel.DistributedDataParallel(model)
-        # sampler = torch.utils.data.distributed.DistributedSampler(dataset)
-
     # Dataloader
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size,
@@ -177,15 +186,6 @@ def train(cfg,
                                              shuffle=not opt.rect,  # Shuffle=True unless rectangular training is used
                                              pin_memory=True,
                                              collate_fn=dataset.collate_fn)
-
-    # Mixed precision training https://github.com/NVIDIA/apex
-    mixed_precision = True
-    if mixed_precision:
-        try:
-            from apex import amp
-            model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
-        except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/259
-            mixed_precision = False
 
     # Start training
     model.hyp = hyp  # attach hyperparameters to model
@@ -315,7 +315,7 @@ def train(cfg,
 
     # Report time
     print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
-    del model, optimizer, loss, dataset, dataloader, scheduler
+    dist.destroy_process_group() if torch.cuda.is_available() else None
     torch.cuda.empty_cache()
     return results
 

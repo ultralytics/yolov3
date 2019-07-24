@@ -86,10 +86,11 @@ https://cloud.google.com/deep-learning-vm/
 GPUs | `batch_size` | batch time | epoch time | epoch cost
 --- |---| --- | --- | --- 
 1 K80 | 64 (32x2) | 2.9s  | 175min  | $0.58
-1 T4 | 64 (32x2) | 0.8s  | 49min  | $0.29
+1 T4 | 64 (32x2) | 0.80s  | 49min  | $0.29
+2 T4 | 64 (64x1) | 0.52s  | 32min  | $0.36
 1 2080ti | 64 (32x2) | -  | -  | -
 1 V100 | 64 (32x2) | 0.38s | 23min | $0.31
-2 V100 | 64 (64x1) | 0.38s | 23min | $0.62
+2 V100 | 64 (64x1) | 0.30s | 18min | $0.46
 
 # Inference
 
