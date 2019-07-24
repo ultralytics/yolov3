@@ -315,7 +315,7 @@ def train(cfg,
 
     # Report time
     print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
-    dist.destroy_process_group() if torch.cuda.is_available() else None
+    dist.destroy_process_group() if torch.cuda.device_count() > 1 else None
     torch.cuda.empty_cache()
     return results
 
