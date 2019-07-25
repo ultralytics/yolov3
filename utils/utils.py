@@ -703,7 +703,7 @@ def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
     plt.savefig('targets.jpg', dpi=200)
 
 
-def plot_evolution_results(hyp):  # from utils.utils import *; plot_evolution_results()
+def plot_evolution_results(hyp):  # from utils.utils import *; plot_evolution_results(hyp)
     # Plot hyperparameter evolution results in evolve.txt
     x = np.loadtxt('evolve.txt')
     f = fitness(x)
@@ -717,8 +717,8 @@ def plot_evolution_results(hyp):  # from utils.utils import *; plot_evolution_re
         plt.subplot(4, 5, i + 1)
         plt.plot(mu, f.max(), 'o', markersize=10)
         plt.plot(y, f, '.')
-        plt.title('%s = %g' % (k, v), fontdict={'size': 8})  # limit to 40 characters
-        print(list(hyp.keys())[i], '%.4g' % mu)
+        plt.title('%s = %.3g' % (k, mu), fontdict={'size': 9})  # limit to 40 characters
+        print('%15s: %.3g' % (k, mu))
     fig.tight_layout()
     plt.savefig('evolve.png', dpi=200)
 
