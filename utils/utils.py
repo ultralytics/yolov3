@@ -583,6 +583,30 @@ def kmeans_targets(path='./data/coco_64img.txt', n=9, img_size=320):  # from uti
         print('%.1f, ' % x, end='')  # drop-in replacement for *.cfg anchors
 
 
+def print_mutation(hyp, results, bucket=''):
+    # Print mutation results to evolve.txt (for use with train.py --evolve)
+    a = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
+    b = '%11.3g' * len(hyp) % tuple(hyp.values())  # hyperparam values
+    c = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
+    print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
+
+    if bucket:
+        os.system('gsutil cp gs://%s/evolve.txt .' % bucket)  # download evolve.txt
+        with open('evolve.txt', 'a') as f:  # append result
+            f.write(c + b + '\n')
+        x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
+        np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sort by fitness
+        os.system('gsutil cp evolve.txt gs://%s' % bucket)  # upload evolve.txt
+    else:
+        with open('evolve.txt', 'a') as f:
+            f.write(c + b + '\n')
+
+
+def fitness(x):
+    # Returns fitness (for use with results.txt or evolve.txt)
+    return 0.5 * x[:, 2] + 0.5 * x[:, 3]  # fitness = 0.5 * mAP + 0.5 * F1
+
+
 # Plotting functions ---------------------------------------------------------------------------------------------------
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):
     # Plots one bounding box on image img
@@ -677,6 +701,26 @@ def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
         ax[i].set_title(s[i])
     fig.tight_layout()
     plt.savefig('targets.jpg', dpi=200)
+
+
+def plot_evolution_results(hyp):  # from utils.utils import *; plot_evolution_results()
+    # Plot hyperparameter evolution results in evolve.txt
+    x = np.loadtxt('evolve.txt')
+    f = fitness(x)
+    weights = (f - f.min()) ** 2  # for weighted results
+    fig = plt.figure(figsize=(12, 10))
+    matplotlib.rc('font', **{'size': 8})
+    for i, (k, v) in enumerate(hyp.items()):
+        y = x[:, i + 5]
+        # mu = (y * weights).sum() / weights.sum()  # best weighted result
+        mu = y[f.argmax()]  # best single result
+        plt.subplot(4, 5, i + 1)
+        plt.plot(mu, f.max(), 'o', markersize=10)
+        plt.plot(y, f, '.')
+        plt.title('%s = %g' % (k, v), fontdict={'size': 8})  # limit to 40 characters
+        print(list(hyp.keys())[i], '%.4g' % mu)
+    fig.tight_layout()
+    plt.savefig('evolve.png', dpi=200)
 
 
 def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()

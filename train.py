@@ -320,27 +320,7 @@ def train(cfg,
     return results
 
 
-def print_mutation(hyp, results):
-    # Write mutation results
-    a = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
-    b = '%11.3g' * len(hyp) % tuple(hyp.values())  # hyperparam values
-    c = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
-    print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
 
-    if opt.bucket:
-        os.system('gsutil cp gs://%s/evolve.txt .' % opt.bucket)  # download evolve.txt
-        with open('evolve.txt', 'a') as f:  # append result
-            f.write(c + b + '\n')
-        x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
-        np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sort by fitness
-        os.system('gsutil cp evolve.txt gs://%s' % opt.bucket)  # upload evolve.txt
-    else:
-        with open('evolve.txt', 'a') as f:
-            f.write(c + b + '\n')
-
-
-def fitness(x):  # returns fitness of hyp evolution vectors
-    return 0.5 * x[:, 2] + 0.5 * x[:, 3]  # fitness = 0.5 * mAP + 0.5 * F1
 
 
 if __name__ == '__main__':
@@ -409,19 +389,7 @@ if __name__ == '__main__':
                             accumulate=opt.accumulate)
 
             # Write mutation results
-            print_mutation(hyp, results)
+            print_mutation(hyp, results, opt.bucket)
 
-            # # Plot results
-            # import numpy as np
-            # import matplotlib.pyplot as plt
-            # a = np.loadtxt('evolve.txt')
-            # x = fitness(a)
-            # weights = (x - x.min()) ** 2
-            # fig = plt.figure(figsize=(10, 10))
-            # for i in range(len(hyp)):
-            #     y = a[:, i + 5]
-            #     mu = (y * weights).sum() / weights.sum()
-            #     plt.subplot(4, 5, i + 1)
-            #     plt.plot(x.max(), mu, 'o')
-            #     plt.plot(x, y, '.')
-            #     print(list(hyp.keys())[i], '%.4g' % mu)
+            # Plot results
+            plot_evolution_results(hyp)
