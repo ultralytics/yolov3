@@ -340,7 +340,7 @@ def print_mutation(hyp, results):
 
 
 def fitness(x):  # returns fitness of hyp evolution vectors
-    return x[:, 2] * 0.5 + x[:, 3] * 0.5  # fitness = weighted combination of mAP and F1
+    return 0.5 * x[:, 2] + 0.5 * x[:, 3]  # fitness = 0.5 * mAP + 0.5 * F1
 
 
 if __name__ == '__main__':
