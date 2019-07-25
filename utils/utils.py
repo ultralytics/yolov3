@@ -580,7 +580,7 @@ def kmeans_targets(path='./data/coco_64img.txt', n=9, img_size=320):  # from uti
     k = cluster.vq.kmeans(wh, n)[0]
     k = k[np.argsort(k.prod(1))]
     for x in k.ravel():
-        print('%.1f, ' % x, end='')
+        print('%.1f, ' % x, end='')  # drop-in replacement for *.cfg anchors
 
 
 # Plotting functions ---------------------------------------------------------------------------------------------------
