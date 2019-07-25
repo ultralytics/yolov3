@@ -139,6 +139,7 @@ class YOLOLayer(nn.Module):
             return torch.cat((xy / ngu, wh, p_conf, p_cls), 2).squeeze().t()
 
         else:  # inference
+            # s = 1.5  # scale_xy  (pxy = pxy * s - (s - 1) / 2)
             io = p.clone()  # inference output
             io[..., 0:2] = torch.sigmoid(io[..., 0:2]) + self.grid_xy  # xy
             io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method

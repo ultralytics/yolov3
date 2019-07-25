@@ -40,8 +40,6 @@ def exif_size(img):
 
 class LoadImages:  # for inference
     def __init__(self, path, img_size=416):
-        self.height = img_size
-
         files = []
         if os.path.isdir(path):
             files = sorted(glob.glob('%s/*.*' % path))
@@ -52,6 +50,7 @@ class LoadImages:  # for inference
         videos = [x for x in files if os.path.splitext(x)[-1].lower() in vid_formats]
         nI, nV = len(images), len(videos)
 
+        self.img_size = img_size
         self.files = images + videos
         self.nF = nI + nV  # number of files
         self.video_flag = [False] * nI + [True] * nV
@@ -96,7 +95,7 @@ class LoadImages:  # for inference
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
-        img, *_ = letterbox(img0, new_shape=self.height)
+        img, *_ = letterbox(img0, new_shape=self.img_size)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
@@ -117,8 +116,10 @@ class LoadImages:  # for inference
 
 class LoadWebcam:  # for inference
     def __init__(self, img_size=416):
-        self.cam = cv2.VideoCapture(0)
-        self.height = img_size
+        self.img_size = img_size
+        self.cam = cv2.VideoCapture(0)  # local camera
+        # self.cam = cv2.VideoCapture('rtsp://192.168.1.64/1')  # IP camera
+        # self.cam = cv2.VideoCapture('rtsp://username:password@192.168.1.64/1')  # IP camera with login
 
     def __iter__(self):
         self.count = -1
@@ -138,7 +139,7 @@ class LoadWebcam:  # for inference
         print('webcam %g: ' % self.count, end='')
 
         # Padded resize
-        img, *_ = letterbox(img0, new_shape=self.height)
+        img, *_ = letterbox(img0, new_shape=self.img_size)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
