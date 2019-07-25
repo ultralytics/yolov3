@@ -8,9 +8,9 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
+from PIL import Image, ExifTags
 from torch.utils.data import Dataset
 from tqdm import tqdm
-from PIL import Image, ExifTags
 
 from utils.utils import xyxy2xywh, xywh2xyxy
 
@@ -154,8 +154,7 @@ class LoadWebcam:  # for inference
 class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False):
         with open(path, 'r') as f:
-            img_files = f.read().splitlines()
-            self.img_files = [x for x in img_files if os.path.splitext(x)[-1].lower() in img_formats]
+            self.img_files = [x for x in f.read().splitlines() if os.path.splitext(x)[-1].lower() in img_formats]
 
         n = len(self.img_files)
         bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index

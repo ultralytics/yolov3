@@ -1,5 +1,7 @@
 import glob
+import os
 import random
+from pathlib import Path
 
 import cv2
 import matplotlib
@@ -9,7 +11,6 @@ import torch
 import torch.nn as nn
 from PIL import Image
 from tqdm import tqdm
-from pathlib import Path
 
 from . import torch_utils  # , google_utils
 
@@ -543,18 +544,14 @@ def select_best_evolve(path='evolve*.txt'):  # from utils.utils import *; select
 
 
 def kmeans_targets(path='./data/coco_64img.txt'):  # from utils.utils import *; kmeans_targets()
+    img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif']
     with open(path, 'r') as f:
-        img_files = f.read().splitlines()
-        img_files = list(filter(lambda x: len(x) > 0, img_files))
+        img_files = [x for x in f.read().splitlines() if os.path.splitext(x)[-1].lower() in img_formats]
 
     # Read shapes
     n = len(img_files)
     assert n > 0, 'No images found in %s' % path
-    label_files = [x.replace('images', 'labels').
-                       replace('.jpeg', '.txt').
-                       replace('.jpg', '.txt').
-                       replace('.bmp', '.txt').
-                       replace('.png', '.txt') for x in img_files]
+    label_files = [x.replace('images', 'labels').replace(os.path.splitext(x)[-1], '.txt') for x in img_files]
     s = np.array([Image.open(f).size for f in tqdm(img_files, desc='Reading image shapes')])  # (width, height)
 
     # Read targets
