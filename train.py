@@ -18,12 +18,14 @@ except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/25
     mixed_precision = False
 
 # 320 --epochs 1
-#      0.109      0.297       0.15      0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005 a  320 giou + best_anchor False
-#      0.223      0.218      0.138      0.189       9.28      1.153      4.376    0.08263      24.28       3.05      20.93      2.842     0.2759   0.001357     -5.036     0.9158  0.0005722 b  mAP/F1 - 50/50 weighting
-#      0.231      0.215      0.135      0.191       9.51      1.432      3.007    0.06082      24.87      3.477      24.13      2.802     0.3436   0.001127     -5.036     0.9232  0.0005874 c
-#      0.246      0.194      0.128      0.192       8.12      1.101      3.954     0.0817      22.83      3.967      19.83      1.779     0.3352   0.000895     -5.036     0.9238  0.0007973 d
-#      0.187      0.237      0.144      0.186       14.6      1.607      4.202    0.09439      39.27      3.726      31.26      2.634      0.273   0.001542     -5.036     0.8364  0.0008393 e
-#      0.25       0.217       0.136       0.195         3.3         1.2           2       0.604        15.7        3.67          20        1.36       0.194     0.00128          -4        0.95    0.000201         0.8       0.388         1.2       0.119      0.0589       0.401 f
+#      0.109      0.297       0.150       0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005 a  320 giou + best_anchor False
+#      0.223      0.218       0.138       0.189       9.28      1.153      4.376    0.08263      24.28       3.05      20.93      2.842     0.2759   0.001357     -5.036     0.9158  0.0005722 b  mAP/F1 - 50/50 weighting
+#      0.231      0.215       0.135       0.191       9.51      1.432      3.007    0.06082      24.87      3.477      24.13      2.802     0.3436   0.001127     -5.036     0.9232  0.0005874 c
+#      0.246      0.194       0.128       0.192       8.12      1.101      3.954     0.0817      22.83      3.967      19.83      1.779     0.3352   0.000895     -5.036     0.9238  0.0007973 d
+#      0.187      0.237       0.144       0.186       14.6      1.607      4.202    0.09439      39.27      3.726      31.26      2.634      0.273   0.001542     -5.036     0.8364  0.0008393 e
+#      0.250      0.217       0.136       0.195         3.3         1.2           2       0.604        15.7        3.67          20        1.36       0.194     0.00128          -4        0.95    0.000201         0.8       0.388         1.2       0.119      0.0589       0.401 f
+#      0.269      0.225       0.149       0.218        6.71        1.13        5.25       0.246        22.4        3.64        17.8        1.31       0.256     0.00146          -4       0.936     0.00042       0.123        0.18        1.81      0.0987      0.0788       0.441 g
+
 
 # 320 --epochs 2
 # 0.242	0.296	0.196	0.231	5.67	0.8541	4.286	0.1539	21.61	1.957	22.9	2.894	0.3689	0.001844	-4	0.913	0.000467  # ha 0.417 mAP @ epoch 100
@@ -32,40 +34,25 @@ except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/25
 # 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 0.438 mAP @ epoch 100
 
 
-# Training hyperparameters f
-hyp = {'giou': 1.2,  # giou loss gain
-       'xy': 4.062,  # xy loss gain
-       'wh': 0.1845,  # wh loss gain
-       'cls': 15.7,  # cls loss gain
-       'cls_pw': 3.67,  # cls BCELoss positive_weight
-       'obj': 20.0,  # obj loss gain
-       'obj_pw': 1.36,  # obj BCELoss positive_weight
-       'iou_t': 0.194,  # iou training threshold
-       'lr0': 0.00128,  # initial learning rate
+# Training hyperparameters g
+hyp = {'giou': 1.13,  # giou loss gain
+       'xy': 5.25,  # xy loss gain
+       'wh': 0.246,  # wh loss gain
+       'cls': 22.4,  # cls loss gain
+       'cls_pw': 3.64,  # cls BCELoss positive_weight
+       'obj': 17.8,  # obj loss gain
+       'obj_pw': 1.31,  # obj BCELoss positive_weight
+       'iou_t': 0.256,  # iou training threshold
+       'lr0': 0.00146,  # initial learning rate
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.95,  # SGD momentum
-       'weight_decay': 0.000201,  # optimizer weight decay
-       'hsv_s': 0.8,  # image HSV-Saturation augmentation (fraction)
-       'hsv_v': 0.388,  # image HSV-Value augmentation (fraction)
-       'degrees': 1.2,  # image rotation (+/- deg)
-       'translate': 0.119,  # image translation (+/- fraction)
-       'scale': 0.0589,  # image scale (+/- gain)
-       'shear': 0.401}  # image shear (+/- deg)
-
-
-# # Training hyperparameters e
-# hyp = {'giou': 1.607,  # giou loss gain
-#        'xy': 4.062,  # xy loss gain
-#        'wh': 0.1845,  # wh loss gain
-#        'cls': 39.27,  # cls loss gain
-#        'cls_pw': 3.726,  # cls BCELoss positive_weight
-#        'obj': 31.26,  # obj loss gain
-#        'obj_pw': 2.634,  # obj BCELoss positive_weight
-#        'iou_t': 0.273,  # iou target-anchor training threshold
-#        'lr0': 0.001542,  # initial learning rate
-#        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-#        'momentum': 0.8364,  # SGD momentum
-#        'weight_decay': 0.0008393}  # optimizer weight decay
+       'momentum': 0.936,  # SGD momentum
+       'weight_decay': 0.00042,  # optimizer weight decay
+       'hsv_s': 0.123,  # image HSV-Saturation augmentation (fraction)
+       'hsv_v': 0.18,  # image HSV-Value augmentation (fraction)
+       'degrees': 1.81,  # image rotation (+/- deg)
+       'translate': 0.0987,  # image translation (+/- fraction)
+       'scale': 0.0788,  # image scale (+/- gain)
+       'shear': 0.441}  # image shear (+/- deg)
 
 
 def train(cfg,
