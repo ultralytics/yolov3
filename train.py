@@ -26,6 +26,7 @@ except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/25
 #      0.250      0.217       0.136       0.195         3.3         1.2           2       0.604        15.7        3.67          20        1.36       0.194     0.00128          -4        0.95    0.000201         0.8       0.388         1.2       0.119      0.0589       0.401 f
 #      0.269      0.225       0.149       0.218        6.71        1.13        5.25       0.246        22.4        3.64        17.8        1.31       0.256     0.00146          -4       0.936     0.00042       0.123        0.18        1.81      0.0987      0.0788       0.441 g
 #      0.179      0.274       0.165       0.187        7.95        1.22        7.62       0.224          17        5.71        17.7        3.28       0.295     0.00136          -4       0.875    0.000319       0.131       0.208        2.14        0.14      0.0773       0.228 h
+#      0.296      0.228       0.152       0.220        5.18        1.43        4.27       0.265        11.7        4.81        11.5        1.56       0.281      0.0013          -4       0.944    0.000427      0.0599       0.142        1.03      0.0552      0.0555       0.434 i
 
 # 320 --epochs 2
 # 0.242	0.296	0.196	0.231	5.67	0.8541	4.286	0.1539	21.61	1.957	22.9	2.894	0.3689	0.001844	-4	0.913	0.000467  # ha 0.417 mAP @ epoch 100
@@ -34,7 +35,7 @@ except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/25
 # 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 0.438 mAP @ epoch 100
 
 
-# # Training hyperparameters g
+# Training hyperparameters g
 # hyp = {'giou': 1.13,  # giou loss gain
 #        'xy': 5.25,  # xy loss gain
 #        'wh': 0.246,  # wh loss gain
@@ -54,26 +55,25 @@ except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/25
 #        'scale': 0.0788,  # image scale (+/- gain)
 #        'shear': 0.441}  # image shear (+/- deg)
 
-
-# Training hyperparameters h
-hyp = {'giou': 1.22,  # giou loss gain
-       'xy': 7.62,  # xy loss gain
-       'wh': 0.224,  # wh loss gain
-       'cls': 17.0,  # cls loss gain
-       'cls_pw': 5.71,  # cls BCELoss positive_weight
-       'obj': 17.7,  # obj loss gain
-       'obj_pw': 3.28,  # obj BCELoss positive_weight
-       'iou_t': 0.295,  # iou training threshold
-       'lr0': 0.00136,  # initial learning rate
+# Training hyperparameters i
+hyp = {'giou': 1.43,  # giou loss gain
+       'xy': 4.27,  # xy loss gain
+       'wh': 0.265,  # wh loss gain
+       'cls': 11.7,  # cls loss gain
+       'cls_pw': 4.81,  # cls BCELoss positive_weight
+       'obj': 11.5,  # obj loss gain
+       'obj_pw': 1.56,  # obj BCELoss positive_weight
+       'iou_t': 0.281,  # iou training threshold
+       'lr0': 0.0013,  # initial learning rate
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.875,  # SGD momentum
-       'weight_decay': 0.00032,  # optimizer weight decay
-       'hsv_s': 0.131,  # image HSV-Saturation augmentation (fraction)
-       'hsv_v': 0.208,  # image HSV-Value augmentation (fraction)
-       'degrees': 2.14,  # image rotation (+/- deg)
-       'translate': 0.14,  # image translation (+/- fraction)
-       'scale': 0.0773,  # image scale (+/- gain)
-       'shear': 0.228}  # image shear (+/- deg)
+       'momentum': 0.944,  # SGD momentum
+       'weight_decay': 0.000427,  # optimizer weight decay
+       'hsv_s': 0.0599,  # image HSV-Saturation augmentation (fraction)
+       'hsv_v': 0.142,  # image HSV-Value augmentation (fraction)
+       'degrees': 1.03,  # image rotation (+/- deg)
+       'translate': 0.0552,  # image translation (+/- fraction)
+       'scale': 0.0555,  # image scale (+/- gain)
+       'shear': 0.434}  # image shear (+/- deg)
 
 
 def train(cfg,
