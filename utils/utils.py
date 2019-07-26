@@ -606,7 +606,7 @@ def print_mutation(hyp, results, bucket=''):
 
 def fitness(x):
     # Returns fitness (for use with results.txt or evolve.txt)
-    return 0.5 * x[:, 2] + 0.5 * x[:, 3]  # fitness = 0.5 * mAP + 0.5 * F1
+    return 0.90 * x[:, 2] + 0.10 * x[:, 3]  # fitness = 0.9 * mAP + 0.1 * F1
 
 
 # Plotting functions ---------------------------------------------------------------------------------------------------
