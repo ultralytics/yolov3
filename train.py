@@ -389,4 +389,4 @@ if __name__ == '__main__':
             print_mutation(hyp, results, opt.bucket)
 
             # Plot results
-            plot_evolution_results(hyp)
+            # plot_evolution_results(hyp)
