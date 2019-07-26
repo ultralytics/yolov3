@@ -43,8 +43,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 # Jupyter Notebook
 
-Use our Jupyter [notebook](https://colab.research.google.com/github/ultralytics/yolov3/blob/master/examples.ipynb) to quickly get started with training, inference and testing examples.
-https://colab.research.google.com/github/ultralytics/yolov3/blob/master/examples.ipynb
+Our Jupyter [notebook](https://colab.research.google.com/github/ultralytics/yolov3/blob/master/examples.ipynb) provides quick training, inference and testing examples.
 
 # Training
 
