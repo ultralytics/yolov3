@@ -69,6 +69,8 @@ def create_modules(module_defs):
             img_size = hyperparams['height']
             # Define detection layer
             modules.add_module('yolo_%d' % i, YOLOLayer(anchors, nc, img_size, yolo_index))
+        else:
+            print('Warning: Unrecognized Layer Type: ' + module_def['type'])
 
         # Register module list and number of output filters
         module_list.append(modules)
