@@ -1,7 +1,7 @@
 # pip3 install -U -r requirements.txt
 # conda install numpy opencv matplotlib tqdm pillow
 # conda install pytorch torchvision -c pytorch
-# conda install -c conda-forge scikit-image
+# conda install scikit-image -c conda-forge
 numpy
 opencv-python
 torch >= 1.1.0

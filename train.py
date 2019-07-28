@@ -4,19 +4,29 @@ import time
 import torch.distributed as dist
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
-from torch.utils.data import DataLoader
 
 import test  # import test.py to get mAP after each epoch
 from models import *
+from utils.adabound import *
 from utils.datasets import *
 from utils.utils import *
 
+mixed_precision = True
+try:  # Mixed precision training https://github.com/NVIDIA/apex
+    from apex import amp
+except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/259
+    mixed_precision = False
+
 # 320 --epochs 1
-#      0.109      0.297       0.15      0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005 a  320 giou + best_anchor False
-#      0.223      0.218      0.138      0.189       9.28      1.153      4.376    0.08263      24.28       3.05      20.93      2.842     0.2759   0.001357     -5.036     0.9158  0.0005722 b  mAP/F1 - 50/50 weighting
-#      0.231      0.215      0.135      0.191       9.51      1.432      3.007    0.06082      24.87      3.477      24.13      2.802     0.3436   0.001127     -5.036     0.9232  0.0005874 c
-#      0.246      0.194      0.128      0.192       8.12      1.101      3.954     0.0817      22.83      3.967      19.83      1.779     0.3352   0.000895     -5.036     0.9238  0.0007973 d
-#      0.187      0.237      0.144      0.186       14.6      1.607      4.202    0.09439      39.27      3.726      31.26      2.634      0.273   0.001542     -5.036     0.8364  0.0008393 e
+#      0.109      0.297       0.150       0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005 a  320 giou + best_anchor False
+#      0.223      0.218       0.138       0.189       9.28      1.153      4.376    0.08263      24.28       3.05      20.93      2.842     0.2759   0.001357     -5.036     0.9158  0.0005722 b  mAP/F1 - 50/50 weighting
+#      0.231      0.215       0.135       0.191       9.51      1.432      3.007    0.06082      24.87      3.477      24.13      2.802     0.3436   0.001127     -5.036     0.9232  0.0005874 c
+#      0.246      0.194       0.128       0.192       8.12      1.101      3.954     0.0817      22.83      3.967      19.83      1.779     0.3352   0.000895     -5.036     0.9238  0.0007973 d
+#      0.187      0.237       0.144       0.186       14.6      1.607      4.202    0.09439      39.27      3.726      31.26      2.634      0.273   0.001542     -5.036     0.8364  0.0008393 e
+#      0.250      0.217       0.136       0.195         3.3         1.2           2       0.604        15.7        3.67          20        1.36       0.194     0.00128          -4        0.95    0.000201         0.8       0.388         1.2       0.119      0.0589       0.401 f
+#      0.269      0.225       0.149       0.218        6.71        1.13        5.25       0.246        22.4        3.64        17.8        1.31       0.256     0.00146          -4       0.936     0.00042       0.123        0.18        1.81      0.0987      0.0788       0.441 g
+#      0.179      0.274       0.165       0.187        7.95        1.22        7.62       0.224          17        5.71        17.7        3.28       0.295     0.00136          -4       0.875    0.000319       0.131       0.208        2.14        0.14      0.0773       0.228 h
+#      0.296      0.228       0.152       0.220        5.18        1.43        4.27       0.265        11.7        4.81        11.5        1.56       0.281      0.0013          -4       0.944    0.000427      0.0599       0.142        1.03      0.0552      0.0555       0.434 i
 
 # 320 --epochs 2
 # 0.242	0.296	0.196	0.231	5.67	0.8541	4.286	0.1539	21.61	1.957	22.9	2.894	0.3689	0.001844	-4	0.913	0.000467  # ha 0.417 mAP @ epoch 100
@@ -25,40 +35,45 @@ from utils.utils import *
 # 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 0.438 mAP @ epoch 100
 
 
-# Training hyperparameters d
-hyp = {'giou': 1.153,  # giou loss gain
-       'xy': 4.062,  # xy loss gain
-       'wh': 0.1845,  # wh loss gain
-       'cls': 24.28,  # cls loss gain
-       'cls_pw': 3.05,  # cls BCELoss positive_weight
-       'obj': 20.93,  # obj loss gain
-       'obj_pw': 2.842,  # obj BCELoss positive_weight
-       'iou_t': 0.2759,  # iou training threshold
-       'lr0': 0.001357,  # initial learning rate
-       'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.916,  # SGD momentum
-       'weight_decay': 0.0000572,  # optimizer weight decay
-       'hsv_s': 0.5,  # image HSV-Saturation augmentation (fraction)
-       'hsv_v': 0.5,  # image HSV-Value augmentation (fraction)
-       'degrees': 5,  # image rotation (+/- deg)
-       'translate': 0.1,  # image translation (+/- fraction)
-       'scale': 0.1,  # image scale (+/- gain)
-       'shear': 2}  # image shear (+/- deg)
-
-
-# # Training hyperparameters e
-# hyp = {'giou': 1.607,  # giou loss gain
-#        'xy': 4.062,  # xy loss gain
-#        'wh': 0.1845,  # wh loss gain
-#        'cls': 39.27,  # cls loss gain
-#        'cls_pw': 3.726,  # cls BCELoss positive_weight
-#        'obj': 31.26,  # obj loss gain
-#        'obj_pw': 2.634,  # obj BCELoss positive_weight
-#        'iou_t': 0.273,  # iou target-anchor training threshold
-#        'lr0': 0.001542,  # initial learning rate
+# Training hyperparameters g
+# hyp = {'giou': 1.13,  # giou loss gain
+#        'xy': 5.25,  # xy loss gain
+#        'wh': 0.246,  # wh loss gain
+#        'cls': 22.4,  # cls loss gain
+#        'cls_pw': 3.64,  # cls BCELoss positive_weight
+#        'obj': 17.8,  # obj loss gain
+#        'obj_pw': 1.31,  # obj BCELoss positive_weight
+#        'iou_t': 0.256,  # iou training threshold
+#        'lr0': 0.00146,  # initial learning rate
 #        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-#        'momentum': 0.8364,  # SGD momentum
-#        'weight_decay': 0.0008393}  # optimizer weight decay
+#        'momentum': 0.936,  # SGD momentum
+#        'weight_decay': 0.00042,  # optimizer weight decay
+#        'hsv_s': 0.123,  # image HSV-Saturation augmentation (fraction)
+#        'hsv_v': 0.18,  # image HSV-Value augmentation (fraction)
+#        'degrees': 1.81,  # image rotation (+/- deg)
+#        'translate': 0.0987,  # image translation (+/- fraction)
+#        'scale': 0.0788,  # image scale (+/- gain)
+#        'shear': 0.441}  # image shear (+/- deg)
+
+# Training hyperparameters i
+hyp = {'giou': 1.43,  # giou loss gain
+       'xy': 4.27,  # xy loss gain
+       'wh': 0.265,  # wh loss gain
+       'cls': 11.7,  # cls loss gain
+       'cls_pw': 4.81,  # cls BCELoss positive_weight
+       'obj': 11.5,  # obj loss gain
+       'obj_pw': 1.56,  # obj BCELoss positive_weight
+       'iou_t': 0.281,  # iou training threshold
+       'lr0': 0.0013,  # initial learning rate
+       'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
+       'momentum': 0.944,  # SGD momentum
+       'weight_decay': 0.000427,  # optimizer weight decay
+       'hsv_s': 0.0599,  # image HSV-Saturation augmentation (fraction)
+       'hsv_v': 0.142,  # image HSV-Value augmentation (fraction)
+       'degrees': 1.03,  # image rotation (+/- deg)
+       'translate': 0.0552,  # image translation (+/- fraction)
+       'scale': 0.0555,  # image scale (+/- gain)
+       'shear': 0.434}  # image shear (+/- deg)
 
 
 def train(cfg,
@@ -66,13 +81,13 @@ def train(cfg,
           img_size=416,
           epochs=100,  # 500200 batches at bs 16, 117263 images = 273 epochs
           batch_size=16,
-          accumulate=4):  # effective bs = batch_size * accumulate = 8 * 8 = 64
+          accumulate=4):  # effective bs = batch_size * accumulate = 16 * 4 = 64
     # Initialize
     init_seeds()
     weights = 'weights' + os.sep
     last = weights + 'last.pt'
     best = weights + 'best.pt'
-    device = torch_utils.select_device()
+    device = torch_utils.select_device(apex=mixed_precision)
     multi_scale = opt.multi_scale
 
     if multi_scale:
@@ -89,11 +104,13 @@ def train(cfg,
     model = Darknet(cfg).to(device)
 
     # Optimizer
-    optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'])
+    optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'],
+                          nesterov=True)
+    # optimizer = AdaBound(model.parameters(), lr=hyp['lr0'], final_lr=0.1)
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
-    best_fitness = 0.0
+    best_fitness = 0.
     if opt.resume or opt.transfer:  # Load previously saved model
         if opt.transfer:  # Transfer learning
             nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
@@ -136,7 +153,7 @@ def train(cfg,
     # lf = lambda x: 10 ** (hyp['lrf'] * x / epochs)  # exp ramp
     # lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inverse exp ramp
     # scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
-    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[round(opt.epochs * x) for x in (0.8, 0.9)], gamma=0.1)
+    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[round(opt.epochs * x) for x in [0.8]], gamma=0.1)
     scheduler.last_epoch = start_epoch - 1
 
     # # Plot lr schedule
@@ -150,6 +167,18 @@ def train(cfg,
     # plt.tight_layout()
     # plt.savefig('LR.png', dpi=300)
 
+    # Mixed precision training https://github.com/NVIDIA/apex
+    if mixed_precision:
+        model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
+
+    # Initialize distributed training
+    if torch.cuda.device_count() > 1:
+        dist.init_process_group(backend='nccl',  # 'distributed backend'
+                                init_method='tcp://127.0.0.1:9999',  # distributed training init method
+                                world_size=1,  # number of nodes for distributed training
+                                rank=0)  # distributed training node rank
+        model = torch.nn.parallel.DistributedDataParallel(model)
+
     # Dataset
     dataset = LoadImagesAndLabels(train_path,
                                   img_size,
@@ -158,32 +187,13 @@ def train(cfg,
                                   hyp=hyp,  # augmentation hyperparameters
                                   rect=opt.rect)  # rectangular training
 
-    # Initialize distributed training
-    if torch.cuda.device_count() > 1:
-        dist.init_process_group(backend='nccl',  # 'distributed backend'
-                                init_method='tcp://127.0.0.1:9999',  # distributed training init method
-                                world_size=1,  # number of nodes for distributed training
-                                rank=0)  # distributed training node rank
-
-        model = torch.nn.parallel.DistributedDataParallel(model)
-        # sampler = torch.utils.data.distributed.DistributedSampler(dataset)
-
     # Dataloader
-    dataloader = DataLoader(dataset,
-                            batch_size=batch_size,
-                            num_workers=opt.num_workers,
-                            shuffle=not opt.rect,  # Shuffle=True unless rectangular training is used
-                            pin_memory=True,
-                            collate_fn=dataset.collate_fn)
-
-    # Mixed precision training https://github.com/NVIDIA/apex
-    mixed_precision = True
-    if mixed_precision:
-        try:
-            from apex import amp
-            model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
-        except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/259
-            mixed_precision = False
+    dataloader = torch.utils.data.DataLoader(dataset,
+                                             batch_size=batch_size,
+                                             num_workers=opt.num_workers,
+                                             shuffle=not opt.rect,  # Shuffle=True unless rectangular training is used
+                                             pin_memory=True,
+                                             collate_fn=dataset.collate_fn)
 
     # Start training
     model.hyp = hyp  # attach hyperparameters to model
@@ -192,7 +202,7 @@ def train(cfg,
     nb = len(dataloader)
     maps = np.zeros(nc)  # mAP per class
     results = (0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
-    n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
+    # n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
     t0 = time.time()
     for epoch in range(start_epoch, epochs):
         model.train()
@@ -234,11 +244,11 @@ def train(cfg,
                 plot_images(imgs=imgs, targets=targets, paths=paths, fname='train_batch%g.jpg' % i)
 
             # SGD burn-in
-            if epoch == 0 and i <= n_burnin:
-                g = (i / n_burnin) ** 4  # gain
-                for x in optimizer.param_groups:
-                    x['lr'] = hyp['lr0'] * g
-                    x['weight_decay'] = hyp['weight_decay'] * g
+            # if epoch == 0 and i <= n_burnin:
+            #     g = (i / n_burnin) ** 4  # gain
+            #     for x in optimizer.param_groups:
+            #         x['lr'] = hyp['lr0'] * g
+            #         x['weight_decay'] = hyp['weight_decay'] * g
 
             # Run model
             pred = model(imgs)
@@ -313,31 +323,9 @@ def train(cfg,
 
     # Report time
     print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
-    del model, optimizer
+    dist.destroy_process_group() if torch.cuda.device_count() > 1 else None
+    torch.cuda.empty_cache()
     return results
-
-
-def print_mutation(hyp, results):
-    # Write mutation results
-    a = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
-    b = '%11.3g' * len(hyp) % tuple(hyp.values())  # hyperparam values
-    c = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
-    print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
-
-    if opt.bucket:
-        os.system('gsutil cp gs://%s/evolve.txt .' % opt.bucket)  # download evolve.txt
-        with open('evolve.txt', 'a') as f:  # append result
-            f.write(c + b + '\n')
-        x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
-        np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sort by fitness
-        os.system('gsutil cp evolve.txt gs://%s' % opt.bucket)  # upload evolve.txt
-    else:
-        with open('evolve.txt', 'a') as f:
-            f.write(c + b + '\n')
-
-
-def fitness(x):  # returns fitness of hyp evolution vectors
-    return x[:, 2] * 0.5 + x[:, 3] * 0.5  # fitness = weighted combination of mAP and F1
 
 
 if __name__ == '__main__':
@@ -362,38 +350,38 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     print(opt)
 
-    if opt.evolve:
+    if not opt.evolve:  # Train normally
+        results = train(opt.cfg,
+                        opt.data,
+                        img_size=opt.img_size,
+                        epochs=opt.epochs,
+                        batch_size=opt.batch_size,
+                        accumulate=opt.accumulate)
+
+    else:  # Evolve hyperparameters (optional)
         opt.notest = True  # only test final epoch
         opt.nosave = True  # only save final checkpoint
+        if opt.bucket:
+            os.system('gsutil cp gs://%s/evolve.txt .' % opt.bucket)  # download evolve.txt if exists
 
-    # Train
-    results = train(opt.cfg,
-                    opt.data,
-                    img_size=opt.img_size,
-                    epochs=opt.epochs,
-                    batch_size=opt.batch_size,
-                    accumulate=opt.accumulate)
+        for _ in range(1):  # generations to evolve
+            if os.path.exists('evolve.txt'):  # if evolve.txt exists: select best hyps and mutate
+                # Get best hyperparameters
+                x = np.loadtxt('evolve.txt', ndmin=2)
+                x = x[fitness(x).argmax()]  # select best fitness hyps
+                for i, k in enumerate(hyp.keys()):
+                    hyp[k] = x[i + 5]
 
-    # Evolve hyperparameters (optional)
-    if opt.evolve:
-        print_mutation(hyp, results)  # Write mutation results
-        for _ in range(1000):  # generations to evolve
-            # Get best hyperparameters
-            x = np.loadtxt('evolve.txt', ndmin=2)
-            x = x[fitness(x).argmax()]  # select best fitness hyps
-            for i, k in enumerate(hyp.keys()):
-                hyp[k] = x[i + 5]
-
-            # Mutate
-            init_seeds(seed=int(time.time()))
-            s = [.15, .15, .15, .15, .15, .15, .15, .15, .15, .00, .05, .20, .20, .20, .20, .20, .20, .20]  # sigmas
-            for i, k in enumerate(hyp.keys()):
-                x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
-                hyp[k] *= float(x)  # vary by sigmas
+                # Mutate
+                init_seeds(seed=int(time.time()))
+                s = [.15, .15, .15, .15, .15, .15, .15, .15, .15, .00, .05, .20, .20, .20, .20, .20, .20, .20]  # sigmas
+                for i, k in enumerate(hyp.keys()):
+                    x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
+                    hyp[k] *= float(x)  # vary by sigmas
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay', 'hsv_s', 'hsv_v', 'translate', 'scale']
-            limits = [(1e-4, 1e-2), (0.00, 0.70), (0.60, 0.95), (0, 0.001), (0, .8), (0, .8), (0, .8), (0, .8)]
+            limits = [(1e-4, 1e-2), (0.00, 0.70), (0.60, 0.97), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
@@ -406,19 +394,7 @@ if __name__ == '__main__':
                             accumulate=opt.accumulate)
 
             # Write mutation results
-            print_mutation(hyp, results)
+            print_mutation(hyp, results, opt.bucket)
 
-            # # Plot results
-            # import numpy as np
-            # import matplotlib.pyplot as plt
-            # a = np.loadtxt('evolve.txt')
-            # x = fitness(a)
-            # weights = (x - x.min()) ** 2
-            # fig = plt.figure(figsize=(10, 10))
-            # for i in range(len(hyp)):
-            #     y = a[:, i + 5]
-            #     mu = (y * weights).sum() / weights.sum()
-            #     plt.subplot(4, 5, i + 1)
-            #     plt.plot(x.max(), mu, 'o')
-            #     plt.plot(x, y, '.')
-            #     print(list(hyp.keys())[i], '%.4g' % mu)
+            # Plot results
+            # plot_evolution_results(hyp)

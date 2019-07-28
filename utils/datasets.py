@@ -8,9 +8,9 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
+from PIL import Image, ExifTags
 from torch.utils.data import Dataset
 from tqdm import tqdm
-from PIL import Image, ExifTags
 
 from utils.utils import xyxy2xywh, xywh2xyxy
 
@@ -40,8 +40,6 @@ def exif_size(img):
 
 class LoadImages:  # for inference
     def __init__(self, path, img_size=416):
-        self.height = img_size
-
         files = []
         if os.path.isdir(path):
             files = sorted(glob.glob('%s/*.*' % path))
@@ -52,6 +50,7 @@ class LoadImages:  # for inference
         videos = [x for x in files if os.path.splitext(x)[-1].lower() in vid_formats]
         nI, nV = len(images), len(videos)
 
+        self.img_size = img_size
         self.files = images + videos
         self.nF = nI + nV  # number of files
         self.video_flag = [False] * nI + [True] * nV
@@ -96,7 +95,7 @@ class LoadImages:  # for inference
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
-        img, *_ = letterbox(img0, new_shape=self.height)
+        img, *_ = letterbox(img0, new_shape=self.img_size)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
@@ -117,8 +116,10 @@ class LoadImages:  # for inference
 
 class LoadWebcam:  # for inference
     def __init__(self, img_size=416):
-        self.cam = cv2.VideoCapture(0)
-        self.height = img_size
+        self.img_size = img_size
+        self.cam = cv2.VideoCapture(0)  # local camera
+        # self.cam = cv2.VideoCapture('rtsp://192.168.1.64/1')  # IP camera
+        # self.cam = cv2.VideoCapture('rtsp://username:password@192.168.1.64/1')  # IP camera with login
 
     def __iter__(self):
         self.count = -1
@@ -138,7 +139,7 @@ class LoadWebcam:  # for inference
         print('webcam %g: ' % self.count, end='')
 
         # Padded resize
-        img, *_ = letterbox(img0, new_shape=self.height)
+        img, *_ = letterbox(img0, new_shape=self.img_size)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
@@ -154,8 +155,7 @@ class LoadWebcam:  # for inference
 class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False):
         with open(path, 'r') as f:
-            img_files = f.read().splitlines()
-            self.img_files = [x for x in img_files if os.path.splitext(x)[-1].lower() in img_formats]
+            self.img_files = [x for x in f.read().splitlines() if os.path.splitext(x)[-1].lower() in img_formats]
 
         n = len(self.img_files)
         bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
@@ -405,10 +405,11 @@ def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto'):
         new_unpad = (new_shape, new_shape)
         ratiow, ratioh = new_shape / shape[1], new_shape / shape[0]
 
+    if shape[::-1] != new_unpad:
+        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_AREA)  # resize
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-    img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_AREA)  # resized, no border
-    img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # padded square
+    img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
     return img, ratiow, ratioh, dw, dh
 
 

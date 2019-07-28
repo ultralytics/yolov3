@@ -28,6 +28,12 @@ python3 detect.py
 # Test
 python3 test.py --save-json
 
+# Evolve
+for i in {0..500}
+do
+  python3 train.py --data data/coco.data --img-size 320 --epochs 1 --batch-size 64 --accumulate 1 --evolve --bucket yolov4
+done
+
 # Git pull
 git pull https://github.com/ultralytics/yolov3  # master
 git pull https://github.com/ultralytics/yolov3 test  # branch

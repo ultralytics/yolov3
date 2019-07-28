@@ -1,5 +1,7 @@
 import glob
+import os
 import random
+from pathlib import Path
 
 import cv2
 import matplotlib
@@ -9,7 +11,6 @@ import torch
 import torch.nn as nn
 from PIL import Image
 from tqdm import tqdm
-from pathlib import Path
 
 from . import torch_utils  # , google_utils
 
@@ -303,12 +304,14 @@ def compute_loss(p, targets, model, giou_loss=True):  # predictions, targets, mo
             tobj[b, a, gj, gi] = 1.0  # obj
             # pi[..., 2:4] = torch.sigmoid(pi[..., 2:4])  # wh power loss (uncomment)
 
+            # s = 1.5  # scale_xy
+            pxy = torch.sigmoid(pi[..., 0:2])  # * s - (s - 1) / 2
             if giou_loss:
-                pbox = torch.cat((torch.sigmoid(pi[..., 0:2]), torch.exp(pi[..., 2:4]) * anchor_vec[i]), 1)  # predicted
+                pbox = torch.cat((pxy, torch.exp(pi[..., 2:4]) * anchor_vec[i]), 1)  # predicted
                 giou = bbox_iou(pbox.t(), tbox[i], x1y1x2y2=False, GIoU=True)  # giou computation
                 lxy += (k * h['giou']) * (1.0 - giou).mean()  # giou loss
             else:
-                lxy += (k * h['xy']) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
+                lxy += (k * h['xy']) * MSE(pxy, txy[i])  # xy loss
                 lwh += (k * h['wh']) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
 
             tclsm = torch.zeros_like(pi[..., 5:])
@@ -542,23 +545,20 @@ def select_best_evolve(path='evolve*.txt'):  # from utils.utils import *; select
         print(file, x[fitness.argmax()])
 
 
-def kmeans_targets(path='./data/coco_64img.txt'):  # from utils.utils import *; kmeans_targets()
+def kmeans_targets(path='./data/coco_64img.txt', n=9, img_size=320):  # from utils.utils import *; kmeans_targets()
+    # Produces a list of target kmeans suitable for use in *.cfg files
+    img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif']
     with open(path, 'r') as f:
-        img_files = f.read().splitlines()
-        img_files = list(filter(lambda x: len(x) > 0, img_files))
+        img_files = [x for x in f.read().splitlines() if os.path.splitext(x)[-1].lower() in img_formats]
 
     # Read shapes
-    n = len(img_files)
-    assert n > 0, 'No images found in %s' % path
-    label_files = [x.replace('images', 'labels').
-                       replace('.jpeg', '.txt').
-                       replace('.jpg', '.txt').
-                       replace('.bmp', '.txt').
-                       replace('.png', '.txt') for x in img_files]
+    nf = len(img_files)
+    assert nf > 0, 'No images found in %s' % path
+    label_files = [x.replace('images', 'labels').replace(os.path.splitext(x)[-1], '.txt') for x in img_files]
     s = np.array([Image.open(f).size for f in tqdm(img_files, desc='Reading image shapes')])  # (width, height)
 
     # Read targets
-    labels = [np.zeros((0, 5))] * n
+    labels = [np.zeros((0, 5))] * nf
     iter = tqdm(label_files, desc='Reading labels')
     for i, file in enumerate(iter):
         try:
@@ -570,19 +570,43 @@ def kmeans_targets(path='./data/coco_64img.txt'):  # from utils.utils import *; 
                     assert (l[:, 1:] <= 1).all(), 'non-normalized or out of bounds coordinate labels: %s' % file
                     l[:, [1, 3]] *= s[i][0]
                     l[:, [2, 4]] *= s[i][1]
-                    l[:, 1:] *= 320 / max(s[i])
+                    l[:, 1:] *= img_size / max(s[i])  # nominal img_size for training here
                     labels[i] = l
         except:
             pass  # print('Warning: missing labels for %s' % self.img_files[i])  # missing label file
     assert len(np.concatenate(labels, 0)) > 0, 'No labels found. Incorrect label paths provided.'
 
-    # kmeans
+    # kmeans calculation
     from scipy import cluster
     wh = np.concatenate(labels, 0)[:, 3:5]
-    k = cluster.vq.kmeans(wh, 9)[0]
+    k = cluster.vq.kmeans(wh, n)[0]
     k = k[np.argsort(k.prod(1))]
     for x in k.ravel():
-        print('%.1f, ' % x, end='')
+        print('%.1f, ' % x, end='')  # drop-in replacement for *.cfg anchors
+
+
+def print_mutation(hyp, results, bucket=''):
+    # Print mutation results to evolve.txt (for use with train.py --evolve)
+    a = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
+    b = '%11.3g' * len(hyp) % tuple(hyp.values())  # hyperparam values
+    c = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
+    print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
+
+    if bucket:
+        os.system('gsutil cp gs://%s/evolve.txt .' % bucket)  # download evolve.txt
+        with open('evolve.txt', 'a') as f:  # append result
+            f.write(c + b + '\n')
+        x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
+        np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sort by fitness
+        os.system('gsutil cp evolve.txt gs://%s' % bucket)  # upload evolve.txt
+    else:
+        with open('evolve.txt', 'a') as f:
+            f.write(c + b + '\n')
+
+
+def fitness(x):
+    # Returns fitness (for use with results.txt or evolve.txt)
+    return 0.50 * x[:, 2] + 0.50 * x[:, 3]  # fitness = 0.9 * mAP + 0.1 * F1
 
 
 # Plotting functions ---------------------------------------------------------------------------------------------------
@@ -617,7 +641,7 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
     plt.ylabel('output')
     plt.legend()
     fig.tight_layout()
-    fig.savefig('comparison.png', dpi=300)
+    fig.savefig('comparison.png', dpi=200)
 
 
 def plot_images(imgs, targets, paths=None, fname='images.jpg'):
@@ -642,7 +666,7 @@ def plot_images(imgs, targets, paths=None, fname='images.jpg'):
             s = Path(paths[i]).name
             plt.title(s[:min(len(s), 40)], fontdict={'size': 8})  # limit to 40 characters
     fig.tight_layout()
-    fig.savefig(fname, dpi=300)
+    fig.savefig(fname, dpi=200)
     plt.close()
 
 
@@ -662,7 +686,7 @@ def plot_test_txt():  # from utils.utils import *; plot_test()
     ax[0].hist(cx, bins=600)
     ax[1].hist(cy, bins=600)
     fig.tight_layout()
-    plt.savefig('hist1d.jpg', dpi=300)
+    plt.savefig('hist1d.jpg', dpi=200)
 
 
 def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
@@ -678,7 +702,27 @@ def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
         ax[i].legend()
         ax[i].set_title(s[i])
     fig.tight_layout()
-    plt.savefig('targets.jpg', dpi=300)
+    plt.savefig('targets.jpg', dpi=200)
+
+
+def plot_evolution_results(hyp):  # from utils.utils import *; plot_evolution_results(hyp)
+    # Plot hyperparameter evolution results in evolve.txt
+    x = np.loadtxt('evolve.txt')
+    f = fitness(x)
+    weights = (f - f.min()) ** 2  # for weighted results
+    fig = plt.figure(figsize=(12, 10))
+    matplotlib.rc('font', **{'size': 8})
+    for i, (k, v) in enumerate(hyp.items()):
+        y = x[:, i + 5]
+        # mu = (y * weights).sum() / weights.sum()  # best weighted result
+        mu = y[f.argmax()]  # best single result
+        plt.subplot(4, 5, i + 1)
+        plt.plot(mu, f.max(), 'o', markersize=10)
+        plt.plot(y, f, '.')
+        plt.title('%s = %.3g' % (k, mu), fontdict={'size': 9})  # limit to 40 characters
+        print('%15s: %.3g' % (k, mu))
+    fig.tight_layout()
+    plt.savefig('evolve.png', dpi=200)
 
 
 def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
@@ -698,4 +742,4 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
             ax[i].set_title(s[i])
     fig.tight_layout()
     ax[4].legend()
-    fig.savefig('results.png', dpi=300)
+    fig.savefig('results.png', dpi=200)

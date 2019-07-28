@@ -5,7 +5,7 @@
     </td>
     <td align="center">
     <a href="https://www.ultralytics.com" target="_blank">
-    <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="200"></a>
+    <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="160"></a>
       <img src="https://user-images.githubusercontent.com/26833433/61591093-2b4d4480-abc2-11e9-8b46-d88eb1dabba1.jpg">
           <a href="https://itunes.apple.com/app/id1452689527" target="_blank">
     <img src="https://user-images.githubusercontent.com/26833433/50044365-9b22ac00-0082-11e9-862f-e77aee7aa7b0.png" width="180"></a>
@@ -43,8 +43,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 
 # Jupyter Notebook
 
-A jupyter notebook with training, inference and testing examples is available at: 
-https://colab.research.google.com/drive/1G8T-VFxQkjDe4idzN8F-hbIBqkkkQnxw
+Our Jupyter [notebook](https://colab.research.google.com/github/ultralytics/yolov3/blob/master/examples.ipynb) provides quick training, inference and testing examples.
 
 # Training
 
@@ -87,10 +86,11 @@ https://cloud.google.com/deep-learning-vm/
 GPUs | `batch_size` | batch time | epoch time | epoch cost
 --- |---| --- | --- | --- 
 1 K80 | 64 (32x2) | 2.9s  | 175min  | $0.58
-1 T4 | 64 (32x2) | 0.8s  | 49min  | $0.29
+1 T4 | 64 (32x2) | 0.80s  | 49min  | $0.29
+2 T4 | 64 (64x1) | 0.52s  | 32min  | $0.36
 1 2080ti | 64 (32x2) | -  | -  | -
 1 V100 | 64 (32x2) | 0.38s | 23min | $0.31
-2 V100 | 64 (64x1) | 0.38s | 23min | $0.62
+2 V100 | 64 (64x1) | 0.30s | 18min | $0.46
 
 # Inference
 
