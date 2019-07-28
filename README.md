@@ -5,7 +5,7 @@
     </td>
     <td align="center">
     <a href="https://www.ultralytics.com" target="_blank">
-    <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="200"></a>
+    <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="160"></a>
       <img src="https://user-images.githubusercontent.com/26833433/61591093-2b4d4480-abc2-11e9-8b46-d88eb1dabba1.jpg">
           <a href="https://itunes.apple.com/app/id1452689527" target="_blank">
     <img src="https://user-images.githubusercontent.com/26833433/50044365-9b22ac00-0082-11e9-862f-e77aee7aa7b0.png" width="180"></a>
