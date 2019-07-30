@@ -42,7 +42,7 @@ class LoadImages:  # for inference
     def __init__(self, path, img_size=416):
         files = []
         if os.path.isdir(path):
-            files = sorted(glob.glob('%s/*.*' % path))
+            files = sorted(glob.glob(os.path.join(path, '*.*')))
         elif os.path.isfile(path):
             files = [path]
 
