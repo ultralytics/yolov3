@@ -186,7 +186,7 @@ def train(cfg,
                                   augment=True,
                                   hyp=hyp,  # augmentation hyperparameters
                                   rect=opt.rect,  # rectangular training
-                                  image_weights=False)
+                                  image_weights=opt.img_weights)
 
     # Dataloader
     dataloader = torch.utils.data.DataLoader(dataset,
@@ -349,6 +349,7 @@ if __name__ == '__main__':
     parser.add_argument('--xywh', action='store_true', help='use xywh loss instead of GIoU loss')
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
+    parser.add_argument('--img-weights', action='store_true', help='select training images by weight')
     parser.add_argument('--var', default=0, type=int, help='debug variable')
     opt = parser.parse_args()
     print(opt)
