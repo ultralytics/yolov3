@@ -213,7 +213,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.imgs = [None] * n
         self.labels = [None] * n
         preload_labels = False
-        if preload_labels:
+        if preload_labels or image_weights:
             self.labels = [np.zeros((0, 5))] * n
             extract_bounding_boxes = False
             for i, file in enumerate(tqdm(self.label_files, desc='Reading labels') if n > 10 else self.label_files):
