@@ -2,6 +2,7 @@
 # conda install numpy opencv matplotlib tqdm pillow
 # conda install pytorch torchvision -c pytorch
 # conda install scikit-image -c conda-forge
+# conda install -c spyder-ide spyder-line-profiler
 numpy
 opencv-python
 torch >= 1.1.0

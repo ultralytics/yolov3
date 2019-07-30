@@ -40,11 +40,12 @@ def detect(cfg,
         _ = load_darknet_weights(model, weights)
 
     # Fuse Conv2d + BatchNorm2d layers
-    model.fuse()
+    # model.fuse()
 
     # Eval mode
     model.to(device).eval()
 
+    # Export mode
     if ONNX_EXPORT:
         img = torch.zeros((1, 3, s[0], s[1]))
         torch.onnx.export(model, img, 'weights/export.onnx', verbose=True)
