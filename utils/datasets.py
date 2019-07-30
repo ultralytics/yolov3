@@ -40,6 +40,7 @@ def exif_size(img):
 
 class LoadImages:  # for inference
     def __init__(self, path, img_size=416):
+        path = str(Path(path))  # os-agnostic
         files = []
         if os.path.isdir(path):
             files = sorted(glob.glob(os.path.join(path, '*.*')))
@@ -154,6 +155,7 @@ class LoadWebcam:  # for inference
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False):
+        path = str(Path(path))  # os-agnostic
         with open(path, 'r') as f:
             self.img_files = [x for x in f.read().splitlines() if os.path.splitext(x)[-1].lower() in img_formats]
 
