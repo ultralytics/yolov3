@@ -156,7 +156,7 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=True, image_weights=False):
         path = str(Path(path))  # os-agnostic
         with open(path, 'r') as f:
             self.img_files = [x.replace('/', os.sep) for x in f.read().splitlines()  # os-agnostic
@@ -409,8 +409,8 @@ def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto'):
         new_unpad = (new_shape, new_shape)
         ratiow, ratioh = new_shape / shape[1], new_shape / shape[0]
 
-    if shape[::-1] != new_unpad:
-        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_AREA)  # resize
+    if shape[::-1] != new_unpad:  # resize
+        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_AREA)  # INTER_AREA for quality, INTER_LINEAR for speed
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
