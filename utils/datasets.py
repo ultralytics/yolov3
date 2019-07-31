@@ -39,7 +39,7 @@ def exif_size(img):
 
 
 class LoadImages:  # for inference
-    def __init__(self, path, img_size=416):
+    def __init__(self, path, img_size=416, half=False):
         path = str(Path(path))  # os-agnostic
         files = []
         if os.path.isdir(path):
@@ -56,6 +56,7 @@ class LoadImages:  # for inference
         self.nF = nI + nV  # number of files
         self.video_flag = [False] * nI + [True] * nV
         self.mode = 'images'
+        self.half = half  # half precision fp16 images
         if any(videos):
             self.new_video(videos[0])  # new video
         else:
@@ -100,7 +101,7 @@ class LoadImages:  # for inference
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
-        img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
+        img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)  # uint8 to fp16/fp32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
         # cv2.imwrite(path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
@@ -116,8 +117,9 @@ class LoadImages:  # for inference
 
 
 class LoadWebcam:  # for inference
-    def __init__(self, img_size=416):
+    def __init__(self, img_size=416, half=False):
         self.img_size = img_size
+        self.half = half  # half precision fp16 images
         self.cam = cv2.VideoCapture(0)  # local camera
         # self.cam = cv2.VideoCapture('rtsp://192.168.1.64/1')  # IP camera
         # self.cam = cv2.VideoCapture('rtsp://username:password@192.168.1.64/1')  # IP camera with login
@@ -144,7 +146,7 @@ class LoadWebcam:  # for inference
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
-        img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
+        img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)  # uint8 to fp16/fp32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
         return img_path, img, img0, None

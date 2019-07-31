@@ -51,18 +51,24 @@ def detect(cfg,
         torch.onnx.export(model, img, 'weights/export.onnx', verbose=True)
         return
 
+    # Half precision
+    opt.half = opt.half and device.type != 'cpu'  # half precision only supported on cuda
+    if opt.half:
+        model.half()
+
     # Set Dataloader
     vid_path, vid_writer = None, None
     if webcam:
         save_images = False
-        dataloader = LoadWebcam(img_size=img_size)
+        dataloader = LoadWebcam(img_size=img_size, half=opt.half)
     else:
-        dataloader = LoadImages(images, img_size=img_size)
+        dataloader = LoadImages(images, img_size=img_size, half=opt.half)
 
     # Get classes and colors
     classes = load_classes(parse_data_cfg(data)['names'])
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(classes))]
 
+    # Run inference
     for i, (path, img, im0, vid_cap) in enumerate(dataloader):
         t = time.time()
         save_path = str(Path(output) / Path(path).name)
@@ -129,6 +135,7 @@ if __name__ == '__main__':
     parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
     parser.add_argument('--fourcc', type=str, default='mp4v', help='fourcc output video codec (verify ffmpeg support)')
     parser.add_argument('--output', type=str, default='output', help='specifies the output path for images and videos')
+    parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
     opt = parser.parse_args()
     print(opt)
 
