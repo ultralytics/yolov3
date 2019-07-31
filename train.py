@@ -131,7 +131,7 @@ def train(cfg,
             optimizer.load_state_dict(chkpt['optimizer'])
             best_fitness = chkpt['best_fitness']
 
-        if chkpt['training_results'] is not None:
+        if chkpt.get('training_results') is not None:
             with open('results.txt', 'w') as file:
                 file.write(chkpt['training_results'])  # write results.txt
 
@@ -350,7 +350,7 @@ if __name__ == '__main__':
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
     parser.add_argument('--img-weights', action='store_true', help='select training images by weight')
-    parser.add_argument('--var', default=0, type=int, help='debug variable')
+
     opt = parser.parse_args()
     print(opt)
 
