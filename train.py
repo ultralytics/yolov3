@@ -131,7 +131,7 @@ def train(cfg,
             optimizer.load_state_dict(chkpt['optimizer'])
             best_fitness = chkpt['best_fitness']
 
-        if chkpt['training_results'] is not None:
+        if chkpt.get('training_results') is not None:
             with open('results.txt', 'w') as file:
                 file.write(chkpt['training_results'])  # write results.txt
 
