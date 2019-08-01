@@ -51,9 +51,7 @@ Our Jupyter [notebook](https://colab.research.google.com/github/ultralytics/yolo
 
 **Resume Training:** `python3 train.py --resume` to resume training from `weights/last.pt`.
 
-Each epoch trains on 117,263 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set. Default training settings produce loss plots below, with **training speed of 0.25 s/batch on a V100 GPU (almost 50 COCO epochs/day)**.
-
-Here we see training results from `coco_16img.data`, `coco_64img.data`, 2 example datasets available in the `data/` folder, which train and test on the first 16 and 64 images of the COCO2014-trainval dataset.
+Each epoch trains on 117,263 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set, though we can train on smaller datasets to get started. Here we see training results from `coco_16img.data`, `coco_64img.data`, 2 example datasets available in the `data/` folder, which train and test on the first 16 and 64 images of the COCO2014-trainval dataset.
 
 `from utils import utils; utils.plot_results()`
 ![results](https://user-images.githubusercontent.com/26833433/62325526-1fa82a80-b4ac-11e9-958e-2a263bf15ab0.png)
