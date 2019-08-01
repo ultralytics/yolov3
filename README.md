@@ -47,13 +47,11 @@ Our Jupyter [notebook](https://colab.research.google.com/github/ultralytics/yolo
 
 # Training
 
-**Start Training:** `python3 train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`.
+**Start Training:** `python3 train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`. Each epoch trains on 117,263 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set.
 
 **Resume Training:** `python3 train.py --resume` to resume training from `weights/last.pt`.
 
-Each epoch trains on 117,263 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set, though we can train on smaller datasets to get started. Here we see training results from `coco_16img.data`, `coco_64img.data`, 2 example datasets available in the `data/` folder, which train and test on the first 16 and 64 images of the COCO2014-trainval dataset.
-
-`from utils import utils; utils.plot_results()`
+**Plot Training:** `from utils import utils; utils.plot_results()` plots training results from `coco_16img.data`, `coco_64img.data`, 2 example datasets available in the `data/` folder, which train and test on the first 16 and 64 images of the COCO2014-trainval dataset.
 ![results](https://user-images.githubusercontent.com/26833433/62325526-1fa82a80-b4ac-11e9-958e-2a263bf15ab0.png)
 
 ## Image Augmentation
