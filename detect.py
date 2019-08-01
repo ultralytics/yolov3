@@ -17,8 +17,7 @@ def detect(cfg,
            conf_thres=0.5,
            nms_thres=0.5,
            save_txt=False,
-           save_images=True,
-           webcam=False):
+           save_images=True):
     # Initialize
     device = torch_utils.select_device()
     torch.backends.cudnn.benchmark = False  # set False for reproducible results
@@ -58,7 +57,7 @@ def detect(cfg,
 
     # Set Dataloader
     vid_path, vid_writer = None, None
-    if webcam:
+    if opt.webcam:
         save_images = False
         dataloader = LoadWebcam(img_size=img_size, half=opt.half)
     else:
@@ -101,7 +100,7 @@ def detect(cfg,
 
         print('Done. (%.3fs)' % (time.time() - t))
 
-        if webcam:  # Show live webcam
+        if opt.webcam:  # Show live webcam
             cv2.imshow(weights, im0)
 
         if save_images:  # Save image with detections
@@ -139,6 +138,7 @@ if __name__ == '__main__':
     parser.add_argument('--fourcc', type=str, default='mp4v', help='fourcc output video codec (verify ffmpeg support)')
     parser.add_argument('--output', type=str, default='output', help='specifies the output path for images and videos')
     parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
+    parser.add_argument('--webcam', action='store_true', help='use webcam')
     opt = parser.parse_args()
     print(opt)
 
