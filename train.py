@@ -14,8 +14,8 @@ from utils.utils import *
 mixed_precision = True
 try:  # Mixed precision training https://github.com/NVIDIA/apex
     from apex import amp
-except:  # not installed: install help: https://github.com/NVIDIA/apex/issues/259
-    mixed_precision = False
+except:
+    mixed_precision = False  # not installed
 
 # 320 --epochs 1
 #      0.109      0.297       0.150       0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005 a  320 giou + best_anchor False
