@@ -88,7 +88,7 @@ GPUs | `batch_size` | batch time | epoch time | epoch cost
 K80 | 64 (32x2) | 2.90 s  | 175 min  | $0.58
 T4 | 64 (32x2) | 0.80 s  | 49 min  | $0.29
 T4 x2 | 64 (64x1) | 0.52 s  | 32 min  | $0.36
-V100 | 64 (32x2) | 0.38 s | 23 min | $0.31
+V100 | 64 (32x2) | 0.35 s | 21 min | $0.28
 V100 x2 | 64 (64x1) | 0.30 s | 18 min | $0.46
 2080Ti | 64 (32x2) | 0.46 s  | 28 min  | - 
 
