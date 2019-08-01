@@ -265,13 +265,15 @@ def load_darknet_weights(self, weights, cutoff=-1):
     file = Path(weights).name
 
     # Try to download weights if not available locally
+    msg = weights + ' missing, download from https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI'
     if not os.path.isfile(weights):
         try:
             url = 'https://pjreddie.com/media/files/' + file
             print('Downloading ' + url)
-            os.system('curl ' + url + ' -o ' + weights)
+            os.system('curl -f ' + url + ' -o ' + weights)
         except IOError:
-            print(weights + ' not found.\nTry https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI')
+            print(msg)
+    assert os.path.exists(weights), msg  # download missing weights from Google Drive
 
     # Establish cutoffs
     if file == 'darknet53.conv.74':
