@@ -69,6 +69,7 @@ def detect(cfg,
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(classes))]
 
     # Run inference
+    t0 = time.time()
     for i, (path, img, im0, vid_cap) in enumerate(dataloader):
         t = time.time()
         save_path = str(Path(output) / Path(path).name)
@@ -122,6 +123,8 @@ def detect(cfg,
         print('Results saved to %s' % os.getcwd() + os.sep + output)
         if platform == 'darwin':  # macos
             os.system('open ' + output + ' ' + save_path)
+
+    print('Done. (%.3fs)' % (time.time() - t0))
 
 
 if __name__ == '__main__':
