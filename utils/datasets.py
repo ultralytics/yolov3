@@ -283,7 +283,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             r = self.img_size / max(img.shape)  # size ratio
             if self.augment and r < 1:  # if training (NOT testing), downsize to inference shape
                 h, w, _ = img.shape
-                img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_AREA)
+                img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # INTER_LINEAR fastest
 
             if self.n < 3000:  # cache into memory if image count < 3000
                 self.imgs[index] = img
@@ -410,7 +410,7 @@ def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto'):
         ratiow, ratioh = new_shape / shape[1], new_shape / shape[0]
 
     if shape[::-1] != new_unpad:  # resize
-        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_AREA)  # INTER_AREA for quality, INTER_LINEAR for speed
+        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)  # INTER_AREA is better, INTER_LINEAR is faster
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
