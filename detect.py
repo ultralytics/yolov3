@@ -77,7 +77,7 @@ def detect(cfg,
         # Get detections
         img = torch.from_numpy(img).unsqueeze(0).to(device)
         pred, _ = model(img)
-        det = non_max_suppression(pred, conf_thres, nms_thres)[0]
+        det = non_max_suppression(pred.float(), conf_thres, nms_thres)[0]
 
         if det is not None and len(det) > 0:
             # Rescale boxes from 416 to true image size
