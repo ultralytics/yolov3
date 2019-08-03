@@ -84,6 +84,7 @@ def create_modules(module_defs):
 
     return hyperparams, module_list
 
+
 class YOLOLayer(nn.Module):
     def __init__(self, anchors, nc, img_size, yolo_index):
         super(YOLOLayer, self).__init__()
