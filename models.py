@@ -16,29 +16,29 @@ def create_modules(module_defs):
     module_list = nn.ModuleList()
     yolo_index = -1
 
-    for i, module_def in enumerate(module_defs):
+    for i, mdef in enumerate(module_defs):
         modules = nn.Sequential()
 
-        if module_def['type'] == 'convolutional':
-            bn = int(module_def['batch_normalize'])
-            filters = int(module_def['filters'])
-            kernel_size = int(module_def['size'])
-            pad = (kernel_size - 1) // 2 if int(module_def['pad']) else 0
+        if mdef['type'] == 'convolutional':
+            bn = int(mdef['batch_normalize'])
+            filters = int(mdef['filters'])
+            kernel_size = int(mdef['size'])
+            pad = (kernel_size - 1) // 2 if int(mdef['pad']) else 0
             modules.add_module('Conv2d', nn.Conv2d(in_channels=output_filters[-1],
                                                    out_channels=filters,
                                                    kernel_size=kernel_size,
-                                                   stride=int(module_def['stride']),
+                                                   stride=int(mdef['stride']),
                                                    padding=pad,
                                                    bias=not bn))
             if bn:
                 modules.add_module('BatchNorm2d', nn.BatchNorm2d(filters))
-            if module_def['activation'] == 'leaky':
+            if mdef['activation'] == 'leaky':
                 # modules.add_module('activation', nn.PReLU(num_parameters=filters, init=0.1))
                 modules.add_module('activation', nn.LeakyReLU(0.1, inplace=True))
 
-        elif module_def['type'] == 'maxpool':
-            kernel_size = int(module_def['size'])
-            stride = int(module_def['stride'])
+        elif mdef['type'] == 'maxpool':
+            kernel_size = int(mdef['size'])
+            stride = int(mdef['stride'])
             maxpool = nn.MaxPool2d(kernel_size=kernel_size, stride=stride, padding=int((kernel_size - 1) // 2))
             if kernel_size == 2 and stride == 1:  # yolov3-tiny
                 modules.add_module('ZeroPad2d', nn.ZeroPad2d((0, 1, 0, 1)))
@@ -46,34 +46,34 @@ def create_modules(module_defs):
             else:
                 modules = maxpool
 
-        elif module_def['type'] == 'upsample':
-            modules = nn.Upsample(scale_factor=int(module_def['stride']), mode='nearest')
+        elif mdef['type'] == 'upsample':
+            modules = nn.Upsample(scale_factor=int(mdef['stride']), mode='nearest')
 
-        elif module_def['type'] == 'route':  # nn.Sequential() placeholder for 'route' layer
-            layers = [int(x) for x in module_def['layers'].split(',')]
+        elif mdef['type'] == 'route':  # nn.Sequential() placeholder for 'route' layer
+            layers = [int(x) for x in mdef['layers'].split(',')]
             filters = sum([output_filters[i + 1 if i > 0 else i] for i in layers])
-            # if module_defs[i+1]['type'] == 'reorg3d':
-            #     modules = nn.Upsample(scale_factor=1/float(module_defs[i+1]['stride']), mode='nearest')  # reorg3d
+            # if mdef[i+1]['type'] == 'reorg3d':
+            #     modules = nn.Upsample(scale_factor=1/float(mdef[i+1]['stride']), mode='nearest')  # reorg3d
 
-        elif module_def['type'] == 'shortcut':  # nn.Sequential() placeholder for 'shortcut' layer
-            filters = output_filters[int(module_def['from'])]
+        elif mdef['type'] == 'shortcut':  # nn.Sequential() placeholder for 'shortcut' layer
+            filters = output_filters[int(mdef['from'])]
 
-        elif module_def['type'] == 'reorg3d':  # yolov3-spp-pan-scale
+        elif mdef['type'] == 'reorg3d':  # yolov3-spp-pan-scale
             # torch.Size([16, 128, 104, 104])
             # torch.Size([16, 64, 208, 208]) <-- # stride 2 interpolate dimensions 2 and 3 to cat with prior layer
             pass
 
-        elif module_def['type'] == 'yolo':
+        elif mdef['type'] == 'yolo':
             yolo_index += 1
-            mask = [int(x) for x in module_def['mask'].split(',')]  # anchor mask
-            a = [float(x) for x in module_def['anchors'].split(',')]  # anchors
+            mask = [int(x) for x in mdef['mask'].split(',')]  # anchor mask
+            a = [float(x) for x in mdef['anchors'].split(',')]  # anchors
             a = [(a[i], a[i + 1]) for i in range(0, len(a), 2)]
             modules = YOLOLayer(anchors=[a[i] for i in mask],  # anchor list
-                                nc=int(module_def['classes']),  # number of classes
+                                nc=int(mdef['classes']),  # number of classes
                                 img_size=hyperparams['height'],  # 416
                                 yolo_index=yolo_index)  # 0, 1 or 2
         else:
-            print('Warning: Unrecognized Layer Type: ' + module_def['type'])
+            print('Warning: Unrecognized Layer Type: ' + mdef['type'])
 
         # Register module list and number of output filters
         module_list.append(modules)
@@ -176,12 +176,12 @@ class Darknet(nn.Module):
         layer_outputs = []
         output = []
 
-        for i, (module_def, module) in enumerate(zip(self.module_defs, self.module_list)):
-            mtype = module_def['type']
+        for i, (mdef, module) in enumerate(zip(self.module_defs, self.module_list)):
+            mtype = mdef['type']
             if mtype in ['convolutional', 'upsample', 'maxpool']:
                 x = module(x)
             elif mtype == 'route':
-                layer_i = [int(x) for x in module_def['layers'].split(',')]
+                layer_i = [int(x) for x in mdef['layers'].split(',')]
                 if len(layer_i) == 1:
                     x = layer_outputs[layer_i[0]]
                 else:
@@ -192,7 +192,7 @@ class Darknet(nn.Module):
                         x = torch.cat([layer_outputs[i] for i in layer_i], 1)
                     # print(''), [print(layer_outputs[i].shape) for i in layer_i], print(x.shape)
             elif mtype == 'shortcut':
-                layer_i = int(module_def['from'])
+                layer_i = int(mdef['from'])
                 x = layer_outputs[-1] + layer_outputs[layer_i]
             elif mtype == 'yolo':
                 x = module(x, img_size)
@@ -226,8 +226,7 @@ class Darknet(nn.Module):
 
 
 def get_yolo_layers(model):
-    a = [module_def['type'] == 'yolo' for module_def in model.module_defs]
-    return [i for i, x in enumerate(a) if x]  # [82, 94, 106] for yolov3
+    return [i for i, x in enumerate(model.module_defs) if x['type'] == 'yolo']  # [82, 94, 106] for yolov3
 
 
 def create_grids(self, img_size=416, ng=(13, 13), device='cpu', type=torch.float32):
@@ -278,10 +277,10 @@ def load_darknet_weights(self, weights, cutoff=-1):
         weights = np.fromfile(f, dtype=np.float32)  # The rest are weights
 
     ptr = 0
-    for i, (module_def, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
-        if module_def['type'] == 'convolutional':
+    for i, (mdef, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
+        if mdef['type'] == 'convolutional':
             conv_layer = module[0]
-            if module_def['batch_normalize']:
+            if mdef['batch_normalize']:
                 # Load BN bias, weights, running mean and running variance
                 bn_layer = module[1]
                 num_b = bn_layer.bias.numel()  # Number of biases
@@ -325,11 +324,11 @@ def save_weights(self, path='model.weights', cutoff=-1):
         self.seen.tofile(f)  # (int64) number of images seen during training
 
         # Iterate through layers
-        for i, (module_def, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
-            if module_def['type'] == 'convolutional':
+        for i, (mdef, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
+            if mdef['type'] == 'convolutional':
                 conv_layer = module[0]
                 # If batch norm, load bn first
-                if module_def['batch_normalize']:
+                if mdef['batch_normalize']:
                     bn_layer = module[1]
                     bn_layer.bias.data.cpu().numpy().tofile(f)
                     bn_layer.weight.data.cpu().numpy().tofile(f)
