@@ -285,7 +285,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 h, w, _ = img.shape
                 img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # INTER_LINEAR fastest
 
-            if self.n < 3000:  # cache into memory if image count < 3000
+            if self.n < 5000:  # cache into memory if image count < 5000
                 self.imgs[index] = img
 
         # Augment colorspace
