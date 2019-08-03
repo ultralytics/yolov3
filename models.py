@@ -51,14 +51,13 @@ def create_modules(module_defs):
         elif module_def['type'] == 'route':
             layers = [int(x) for x in module_def['layers'].split(',')]
             filters = sum([output_filters[i + 1 if i > 0 else i] for i in layers])
-            modules.add_module('route_%d' % i, EmptyLayer())
+            modules.add_module('route_%d' % i, nn.Sequential())  # Placeholder for 'route' layer
             # if module_defs[i+1]['type'] == 'reorg3d':
             #     upsample = nn.Upsample(scale_factor=1/float(module_defs[i+1]['stride']), mode='nearest')
             #     modules.add_module('reorg3d_%d' % i, upsample)
-
         elif module_def['type'] == 'shortcut':
             filters = output_filters[int(module_def['from'])]
-            modules.add_module('shortcut_%d' % i, EmptyLayer())
+            modules.add_module('shortcut_%d' % i, nn.Sequential())  # Placeholder for 'shortcut' layer
 
         elif module_def['type'] == 'reorg3d':
             # torch.Size([16, 128, 104, 104])
@@ -84,16 +83,6 @@ def create_modules(module_defs):
         output_filters.append(filters)
 
     return hyperparams, module_list
-
-
-class EmptyLayer(nn.Module):
-    """Placeholder for 'route' and 'shortcut' layers"""
-
-    def __init__(self):
-        super(EmptyLayer, self).__init__()
-
-    def forward(self, x):
-        return x
 
 
 class YOLOLayer(nn.Module):
