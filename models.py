@@ -39,9 +39,9 @@ def create_modules(module_defs):
         elif module_def['type'] == 'maxpool':
             kernel_size = int(module_def['size'])
             stride = int(module_def['stride'])
+            maxpool = nn.MaxPool2d(kernel_size=kernel_size, stride=stride, padding=int((kernel_size - 1) // 2))
             if kernel_size == 2 and stride == 1:  # yolov3-tiny
                 modules.add_module('_debug_padding_%d' % i, nn.ZeroPad2d((0, 1, 0, 1)))
-            maxpool = nn.MaxPool2d(kernel_size=kernel_size, stride=stride, padding=int((kernel_size - 1) // 2))
             modules.add_module('maxpool_%d' % i, maxpool)
 
         elif module_def['type'] == 'upsample':
