@@ -56,7 +56,8 @@ def test(cfg,
     model.eval()
     coco91class = coco80_to_coco91_class()
     s = ('%30s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP', 'F1')
-    loss, p, r, f1, mp, mr, map, mf1 = 0., 0., 0., 0., 0., 0., 0., 0.
+    p, r, f1, mp, mr, map, mf1 = 0., 0., 0., 0., 0., 0., 0.
+    loss = torch.zeros(3)
     jdict, stats, ap, ap_class = [], [], [], []
     for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc=s)):
         targets = targets.to(device)
@@ -72,7 +73,7 @@ def test(cfg,
 
         # Compute loss
         if hasattr(model, 'hyp'):  # if model has loss hyperparameters
-            loss += compute_loss(train_out, targets, model)[0].item()
+            loss += compute_loss(train_out, targets, model)[1][[0, 2, 3]]  # GIoU, obj, cls
 
         # Run NMS
         output = non_max_suppression(inf_out, conf_thres=conf_thres, nms_thres=nms_thres)
@@ -186,7 +187,7 @@ def test(cfg,
     maps = np.zeros(nc) + map
     for i, c in enumerate(ap_class):
         maps[c] = ap[i]
-    return (mp, mr, map, mf1, loss / len(dataloader)), maps
+    return (mp, mr, map, mf1, *(loss / len(dataloader)).tolist()), maps
 
 
 if __name__ == '__main__':
@@ -204,12 +205,12 @@ if __name__ == '__main__':
     print(opt)
 
     with torch.no_grad():
-        mAP = test(opt.cfg,
-                   opt.data,
-                   opt.weights,
-                   opt.batch_size,
-                   opt.img_size,
-                   opt.iou_thres,
-                   opt.conf_thres,
-                   opt.nms_thres,
-                   opt.save_json)
+        results = test(opt.cfg,
+                       opt.data,
+                       opt.weights,
+                       opt.batch_size,
+                       opt.img_size,
+                       opt.iou_thres,
+                       opt.conf_thres,
+                       opt.nms_thres,
+                       opt.save_json)
