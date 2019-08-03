@@ -39,42 +39,37 @@ def create_modules(module_defs):
         elif module_def['type'] == 'maxpool':
             kernel_size = int(module_def['size'])
             stride = int(module_def['stride'])
-            if kernel_size == 2 and stride == 1:
+            if kernel_size == 2 and stride == 1:  # yolov3-tiny
                 modules.add_module('_debug_padding_%d' % i, nn.ZeroPad2d((0, 1, 0, 1)))
             maxpool = nn.MaxPool2d(kernel_size=kernel_size, stride=stride, padding=int((kernel_size - 1) // 2))
             modules.add_module('maxpool_%d' % i, maxpool)
 
         elif module_def['type'] == 'upsample':
-            upsample = nn.Upsample(scale_factor=int(module_def['stride']), mode='nearest')
-            modules.add_module('upsample_%d' % i, upsample)
+            modules = nn.Upsample(scale_factor=int(module_def['stride']), mode='nearest')
 
-        elif module_def['type'] == 'route':
+        elif module_def['type'] == 'route':  # nn.Sequential() placeholder for 'route' layer
             layers = [int(x) for x in module_def['layers'].split(',')]
             filters = sum([output_filters[i + 1 if i > 0 else i] for i in layers])
-            modules.add_module('route_%d' % i, nn.Sequential())  # Placeholder for 'route' layer
             # if module_defs[i+1]['type'] == 'reorg3d':
-            #     upsample = nn.Upsample(scale_factor=1/float(module_defs[i+1]['stride']), mode='nearest')
-            #     modules.add_module('reorg3d_%d' % i, upsample)
-        elif module_def['type'] == 'shortcut':
-            filters = output_filters[int(module_def['from'])]
-            modules.add_module('shortcut_%d' % i, nn.Sequential())  # Placeholder for 'shortcut' layer
+            #     modules = nn.Upsample(scale_factor=1/float(module_defs[i+1]['stride']), mode='nearest')  # reorg3d
 
-        elif module_def['type'] == 'reorg3d':
+        elif module_def['type'] == 'shortcut':  # nn.Sequential() placeholder for 'shortcut' layer
+            filters = output_filters[int(module_def['from'])]
+
+        elif module_def['type'] == 'reorg3d':  # yolov3-spp-pan-scale
             # torch.Size([16, 128, 104, 104])
             # torch.Size([16, 64, 208, 208]) <-- # stride 2 interpolate dimensions 2 and 3 to cat with prior layer
             pass
 
         elif module_def['type'] == 'yolo':
             yolo_index += 1
-            anchor_idxs = [int(x) for x in module_def['mask'].split(',')]
-            # Extract anchors
-            anchors = [float(x) for x in module_def['anchors'].split(',')]
-            anchors = [(anchors[i], anchors[i + 1]) for i in range(0, len(anchors), 2)]
-            anchors = [anchors[i] for i in anchor_idxs]
-            nc = int(module_def['classes'])  # number of classes
-            img_size = hyperparams['height']
-            # Define detection layer
-            modules.add_module('yolo_%d' % i, YOLOLayer(anchors, nc, img_size, yolo_index))
+            mask = [int(x) for x in module_def['mask'].split(',')]  # anchor mask
+            a = [float(x) for x in module_def['anchors'].split(',')]  # anchors
+            a = [(a[i], a[i + 1]) for i in range(0, len(a), 2)]
+            modules = YOLOLayer(anchors=[a[i] for i in mask],  # anchor list
+                                nc=int(module_def['classes']),  # number of classes
+                                img_size=hyperparams['height'],  # 416
+                                yolo_index=yolo_index)  # 0, 1 or 2
         else:
             print('Warning: Unrecognized Layer Type: ' + module_def['type'])
 
@@ -146,11 +141,11 @@ class YOLOLayer(nn.Module):
             io[..., 0:2] = torch.sigmoid(io[..., 0:2]) + self.grid_xy  # xy
             io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method
             io[..., :4] *= self.stride
-            
+
             # io[..., 2:4] = ((torch.sigmoid(io[..., 2:4]) * 2) ** 3) * self.anchor_wh  # wh power method
             io[..., 4:] = torch.sigmoid(io[..., 4:])  # p_conf, p_cls
             # io[..., 5:] = F.softmax(io[..., 5:], dim=4)  # p_cls
-            
+
             if self.nc == 1:
                 io[..., 5] = 1  # single-class model https://github.com/ultralytics/yolov3/issues/235
 
@@ -198,7 +193,7 @@ class Darknet(nn.Module):
                 layer_i = int(module_def['from'])
                 x = layer_outputs[-1] + layer_outputs[layer_i]
             elif mtype == 'yolo':
-                x = module[0](x, img_size)
+                x = module(x, img_size)
                 output.append(x)
             layer_outputs.append(x)
 
