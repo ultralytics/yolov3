@@ -14,7 +14,7 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
     # from utils.google_utils import *; gdrive_download()
     t = time.time()
 
-    print('Downloading https://drive.google.com/uc?export=download&id=%s as %s... ' % (id, name))
+    print('Downloading https://drive.google.com/uc?export=download&id=%s as %s... ' % (id, name), end='')
     if os.path.exists(name):  # remove existing
         os.remove(name)
 
@@ -35,7 +35,7 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
         print('Unzipping %s... ' % name, end='')
         os.system('unzip -q %s' % name)
 
-    print('Done (%.1fs)' % (time.time()-t))
+    print('Done (%.1fs)' % (time.time() - t))
 
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
