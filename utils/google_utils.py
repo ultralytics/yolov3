@@ -32,7 +32,7 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
 
     # Unzip if archive
     if name.endswith('.zip'):
-        print('Unzipping %s... ' % name, end='')
+        print('unzipping... ', end='')
         os.system('unzip -q %s' % name)
 
     print('Done (%.1fs)' % (time.time() - t))
