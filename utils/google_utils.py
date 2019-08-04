@@ -1,7 +1,37 @@
 # This file contains google utils: https://cloud.google.com/storage/docs/reference/libraries
 # pip install --upgrade google-cloud-storage
 
-from google.cloud import storage
+import os
+
+
+# from google.cloud import storage
+
+
+def gdrive_download(files=(('1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', 'coco.zip'))):
+    # https://gist.github.com/tanaikech/f0f2d122e05bf5f971611258c22c110f
+    # Downloads a file from Google Drive, accepting presented query
+    # from utils.google_utils import *; gdrive_download()
+
+    for (id, name) in files:
+        if os.path.exists(name):  # remove existing
+            os.remove(name)
+
+        # Attempt small file download
+        s = 'curl -f -L -o %s https://drive.google.com/uc?export=download&id=%s' % (name, id)
+        os.system(s)
+
+        # Attempt large file download
+        if not os.path.exists(name):  # file size > 40MB
+            print('Google Drive file > 40 MB, attempting large file download...')
+            s = ["curl -c ./cookie -s -L \"https://drive.google.com/uc?export=download&id=%s\" > /dev/null" % id,
+                 "curl -Lb ./cookie \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
+                 id, name),
+                 'rm ./cookie']
+            [os.system(x) for x in s]  # run commands
+
+        # Unzip if archive
+        if name.endswith('.zip'):
+            os.system('unzip -q %s' % name)
 
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
