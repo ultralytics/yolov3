@@ -22,7 +22,7 @@ def gdrive_download(files=(('1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', 'coco.zip'))):
 
         # Attempt large file download
         if not os.path.exists(name):  # file size > 40MB
-            print('Google Drive file > 40 MB, attempting large file download...')
+            print('Google Drive file ''%s'' > 40 MB, attempting large file download...' % name)
             s = ["curl -c ./cookie -s -L \"https://drive.google.com/uc?export=download&id=%s\" > /dev/null" % id,
                  "curl -Lb ./cookie \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
                  id, name),
