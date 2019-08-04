@@ -91,9 +91,10 @@ def train(cfg,
     multi_scale = opt.multi_scale
 
     if multi_scale:
-        img_sz_min = round(img_size / 32 / 1.5)
-        img_sz_max = round(img_size / 32 * 1.5)
+        img_sz_min = round(img_size / 32 / 1.5) + 1
+        img_sz_max = round(img_size / 32 * 1.5) - 1
         img_size = img_sz_max * 32  # initiate with maximum multi_scale size
+        print('Using multi-scale %g - %g' % (img_sz_min * 32, img_size))
 
     # Configure run
     data_dict = parse_data_cfg(data)
