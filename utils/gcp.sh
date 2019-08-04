@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
 # New VM
-rm -rf yolov3 weights coco
+rm -rf sample_data yolov3 darknet apex coco cocoapi knife knifec
 git clone https://github.com/ultralytics/yolov3
-# git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
-git clone https://github.com/NVIDIA/apex && cd apex && pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" . --user && cd ..  && rm -rf apex
-bash yolov3/weights/download_yolov3_weights.sh && cp -r weights yolov3
-bash yolov3/data/get_coco_dataset_gdrive.sh
+git clone https://github.com/AlexeyAB/darknet && cd darknet && make GPU=1 CUDNN=1 CUDNN_HALF=1 OPENCV=0 && wget -c https://pjreddie.com/media/files/darknet53.conv.74 && cd ..
+git clone https://github.com/NVIDIA/apex && cd apex && pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" . --user && cd .. && rm -rf apex
+python3 -c "
+from yolov3.utils.google_utils import gdrive_download
+gdrive_download('1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO','coco.zip')
+gdrive_download('1GrFcTIIsKzOafZltUOS75RSahPrj2KyT','knife.zip')
+gdrive_download('19sLJEGHlIAIFHcEftq4aLCw_tkWZmhD1','knifec.zip')"
 sudo shutdown
 
 # Re-clone
