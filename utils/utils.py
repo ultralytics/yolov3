@@ -748,9 +748,27 @@ def plot_evolution_results(hyp):  # from utils.utils import *; plot_evolution_re
     plt.savefig('evolve.png', dpi=200)
 
 
-def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
+def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results2()
     # Plot training results files 'results*.txt'
-    # import os; os.system('wget https://storage.googleapis.com/ultralytics/yolov3/results_v3.txt')
+
+    fig, ax = plt.subplots(2, 5, figsize=(14, 7))
+    ax = ax.ravel()
+    s = ['GIoU', 'Confidence', 'Classification', 'Precision', 'Recall',
+         'GIoU val', 'val Confidence', 'val Classification', 'mAP', 'F1']
+    for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
+        results = np.loadtxt(f, usecols=[2, 4, 5, 9, 10, 13, 14, 15, 11, 12]).T
+        n = results.shape[1]  # number of rows
+        x = range(start, min(stop, n) if stop else n)
+        for i in range(10):
+            ax[i].plot(x, results[i, x], marker='.', label=f.replace('.txt', ''))
+            ax[i].set_title(s[i])
+    fig.tight_layout()
+    ax[4].legend()
+    fig.savefig('results.png', dpi=200)
+
+
+def plot_results_orig(start=0, stop=0):  # from utils.utils import *; plot_results_orig()
+    # Plot training results files 'results*.txt' in original format
 
     fig, ax = plt.subplots(2, 5, figsize=(14, 7))
     ax = ax.ravel()
