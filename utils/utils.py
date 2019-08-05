@@ -777,8 +777,8 @@ def plot_results_overlay(start=1, stop=0):  # from utils.utils import *; plot_re
         fig, ax = plt.subplots(1, 5, figsize=(14, 3.5))
         ax = ax.ravel()
         for i in range(5):
-            ax[i].plot(x, results[i, x], marker='.', label=s[i])
-            ax[i].plot(x, results[i + 5, x], marker='.', label=s[i + 5])
+            for j in [i, i+5]:
+                ax[i].plot(x, results[j, x], marker='.', label=s[j])
             ax[i].set_title(t[i])
             ax[i].legend()
             ax[i].set_ylabel(f) if i == 0 else None  # add filename
