@@ -7,7 +7,6 @@ import torch.optim.lr_scheduler as lr_scheduler
 
 import test  # import test.py to get mAP after each epoch
 from models import *
-from utils.adabound import *
 from utils.datasets import *
 from utils.utils import *
 
@@ -344,7 +343,7 @@ if __name__ == '__main__':
     parser.add_argument('--rect', action='store_true', help='rectangular training')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--transfer', action='store_true', help='transfer learning flag')
-    parser.add_argument('--num-workers', type=int, default=4, help='number of Pytorch DataLoader workers')
+    parser.add_argument('--num-workers', type=int, default=os.cpu_count(), help='DataLoader workers')
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     parser.add_argument('--xywh', action='store_true', help='use xywh loss instead of GIoU loss')
