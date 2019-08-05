@@ -75,18 +75,17 @@ HS**V** Intensity | +/- 50%
 https://cloud.google.com/deep-learning-vm/  
 **Machine type:** n1-standard-8 (8 vCPUs, 30 GB memory)  
 **CPU platform:** Intel Skylake  
-**GPUs:** K80 ($0.20/hr), T4 ($0.35/hr), V100 ($0.80/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32  
+**GPUs:** K80 ($0.20/hr), T4 ($0.35/hr), V100 ($0.83/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32  
 **HDD:** 100 GB SSD  
 **Dataset:** COCO train 2014 (117,263 images)
 
-GPUs | `batch_size` | batch time | epoch time | epoch cost
+GPUs | `batch_size` | images/sec | epoch time | epoch cost
 --- |---| --- | --- | --- 
-K80 | 64 (32x2) | 2.90 s  | 175 min  | $0.58
-T4 | 64 (32x2) | 0.80 s  | 49 min  | $0.29
-T4 x2 | 64 (64x1) | 0.52 s  | 32 min  | $0.36
-V100 | 64 (32x2) | 0.35 s | 21 min | $0.28
-V100 x2 | 64 (64x1) | 0.30 s | 18 min | $0.46
-2080Ti | 64 (32x2) | 0.46 s  | 28 min  | - 
+K80 | 64 (32x2) | 11  | 175 min  | $0.58
+T4 | 64 (32x2) | 40  | 49 min  | $0.29
+T4 x2 | 64 (64x1) | 61  | 32 min  | $0.36
+V100 | 64 (32x2) | 115 | 17 min | $0.24
+2080Ti | 64 (32x2) | 69  | 28 min  | - 
 
 
 # Inference
