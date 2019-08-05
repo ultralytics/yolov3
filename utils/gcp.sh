@@ -69,6 +69,12 @@ python3 test.py --save-json --img-size 416
 python3 test.py --save-json --img-size 320
 sudo shutdown
 
+# Benchmark script
+git clone https://github.com/ultralytics/yolov3  # clone our repo
+git clone https://github.com/NVIDIA/apex && cd apex && pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" . --user && cd .. && rm -rf apex  # install nvidia apex
+python3 -c "from yolov3.utils.google_utils import gdrive_download; gdrive_download('1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO','coco.zip')"  # download coco dataset (20GB)
+cd yolov3 && clear && python3 train.py --epochs 1 --num-workers 8  # run benchmark (~30 min)
+
 # Unit tests
 python3 detect.py  # detect 2 persons, 1 tie
 python3 test.py --data data/coco_32img.data  # test mAP = 0.8
