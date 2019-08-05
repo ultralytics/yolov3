@@ -766,7 +766,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     fig.savefig('results.png', dpi=200)
 
 
-def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_results_overlay()
+def plot_results_overlay(start=1, stop=0):  # from utils.utils import *; plot_results_overlay()
     # Plot training results files 'results*.txt', overlaying train and val losses
     s = ['train', 'train', 'train', 'Precision', 'mAP', 'val', 'val', 'val', 'Recall', 'F1']  # legends
     t = ['GIoU', 'Confidence', 'Classification', 'P-R', 'mAP-F1']  # titles
@@ -781,6 +781,7 @@ def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_re
             ax[i].plot(x, results[i + 5, x], marker='.', label=s[i + 5])
             ax[i].set_title(t[i])
             ax[i].legend()
+            ax[i].set_ylabel(f) if i == 0 else None  # add filename
         fig.tight_layout()
         fig.savefig(f.replace('.txt', '.png'), dpi=200)
 
