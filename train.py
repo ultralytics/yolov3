@@ -197,6 +197,7 @@ def train(cfg,
                                              collate_fn=dataset.collate_fn)
 
     # Start training
+    model.nc = nc  # attach number of classes to model
     model.hyp = hyp  # attach hyperparameters to model
     if dataset.image_weights:
         model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
