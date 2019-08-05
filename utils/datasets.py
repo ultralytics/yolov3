@@ -93,7 +93,7 @@ class LoadImages:  # for inference
             # Read image
             self.count += 1
             img0 = cv2.imread(path)  # BGR
-            assert img0 is not None, 'File Not Found ' + path
+            assert img0 is not None, 'Image Not Found ' + path
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
@@ -279,13 +279,13 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img = self.imgs[index]
         if img is None:
             img = cv2.imread(img_path)  # BGR
-            assert img is not None, 'File Not Found ' + img_path
+            assert img is not None, 'Image Not Found ' + img_path
             r = self.img_size / max(img.shape)  # size ratio
             if self.augment and r < 1:  # if training (NOT testing), downsize to inference shape
                 h, w, _ = img.shape
                 img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # INTER_LINEAR fastest
 
-            if self.n < 5000:  # cache into memory if image count < 5000
+            if index < 5000:  # cache first 5000 images into memory (~5GB)
                 self.imgs[index] = img
 
         # Augment colorspace
