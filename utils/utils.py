@@ -768,21 +768,21 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
 
 def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_results_overlay()
     # Plot training results files 'results*.txt', overlaying train and val losses
-    fig, ax = plt.subplots(1, 5, figsize=(14, 3.5))
-    ax = ax.ravel()
     s = ['train', 'train', 'train', 'Precision', 'mAP', 'val', 'val', 'val', 'Recall', 'F1']  # legends
     t = ['GIoU', 'Confidence', 'Classification', 'P-R', 'mAP-F1']  # titles
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
-        results = np.loadtxt(f, usecols=[2, 4, 5, 9, 11, 13, 14, 15, 10,  12]).T
+        results = np.loadtxt(f, usecols=[2, 4, 5, 9, 11, 13, 14, 15, 10, 12]).T
         n = results.shape[1]  # number of rows
         x = range(start, min(stop, n) if stop else n)
+        fig, ax = plt.subplots(1, 5, figsize=(14, 3.5))
+        ax = ax.ravel()
         for i in range(5):
             ax[i].plot(x, results[i, x], marker='.', label=s[i])
-            ax[i].plot(x, results[i+5, x], marker='.', label=s[i+5])
+            ax[i].plot(x, results[i + 5, x], marker='.', label=s[i + 5])
             ax[i].set_title(t[i])
             ax[i].legend()
-    fig.tight_layout()
-    fig.savefig('results.png', dpi=200)
+        fig.tight_layout()
+        fig.savefig(f.replace('.txt', '.png'), dpi=200)
 
 
 def plot_results_orig(start=0, stop=0):  # from utils.utils import *; plot_results_orig()
