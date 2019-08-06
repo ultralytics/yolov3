@@ -19,7 +19,7 @@ def detect(cfg,
            save_txt=False,
            save_images=True):
     # Initialize
-    device = torch_utils.select_device()
+    device = torch_utils.select_device(force_cpu=ONNX_EXPORT)
     torch.backends.cudnn.benchmark = False  # set False for reproducible results
     if os.path.exists(output):
         shutil.rmtree(output)  # delete output folder
