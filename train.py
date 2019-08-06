@@ -341,7 +341,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data', type=str, default='data/coco.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='train at (1/1.5)x - 1.5x sizes')
-    parser.add_argument('--img-size', type=int, default=320, help='inference size (pixels)')
+    parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--transfer', action='store_true', help='transfer learning flag')

@@ -180,18 +180,25 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
             tpc = (tp[i]).cumsum()
 
             # Recall
-            recall_curve = tpc / (n_gt + 1e-16)
-            r.append(recall_curve[-1])
+            recall = tpc / (n_gt + 1e-16)  # recall curve
+            r.append(recall[-1])
 
             # Precision
-            precision_curve = tpc / (tpc + fpc)
-            p.append(precision_curve[-1])
+            precision = tpc / (tpc + fpc)  # precision curve
+            p.append(precision[-1])
 
             # AP from recall-precision curve
-            ap.append(compute_ap(recall_curve, precision_curve))
+            ap.append(compute_ap(recall, precision))
 
             # Plot
-            # plt.plot(recall_curve, precision_curve)
+            # fig, ax = plt.subplots(1, 1, figsize=(4, 4))
+            # ax.plot(np.concatenate(([0.], recall)), np.concatenate(([0.], precision)))
+            # ax.set_xlabel('YOLOv3-SPP')
+            # ax.set_xlabel('Recall')
+            # ax.set_ylabel('Precision')
+            # ax.set_xlim(0, 1)
+            # fig.tight_layout()
+            # fig.savefig('PR_curve.png', dpi=300)
 
     # Compute F1 score (harmonic mean of precision and recall)
     p, r, ap = np.array(p), np.array(r), np.array(ap)
@@ -209,21 +216,18 @@ def compute_ap(recall, precision):
     # Returns
         The average precision as computed in py-faster-rcnn.
     """
-    # correct AP calculation
-    # first append sentinel values at the end
-
+    # Append sentinel values to beginning and end
     mrec = np.concatenate(([0.], recall, [1.]))
     mpre = np.concatenate(([0.], precision, [0.]))
 
-    # compute the precision envelope
+    # Compute the precision envelope
     for i in range(mpre.size - 1, 0, -1):
         mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
 
-    # to calculate area under PR curve, look for points
-    # where X axis (recall) changes value
+    # Calculate area under PR curve, looking for points where x axis (recall) changes
     i = np.where(mrec[1:] != mrec[:-1])[0]
 
-    # and sum (\Delta recall) * prec
+    # Sum (\Delta recall) * prec
     ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
 
