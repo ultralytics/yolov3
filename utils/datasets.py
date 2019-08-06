@@ -214,11 +214,10 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         # Preload labels (required for weighted CE training)
         self.imgs = [None] * n
         self.labels = [None] * n
-        preload_labels = False
-        if preload_labels or image_weights:
+        if augment or image_weights:  # cache labels for faster training
             self.labels = [np.zeros((0, 5))] * n
             extract_bounding_boxes = False
-            for i, file in enumerate(tqdm(self.label_files, desc='Reading labels') if n > 10 else self.label_files):
+            for i, file in enumerate(tqdm(self.label_files, desc='Caching labels')):
                 try:
                     with open(file, 'r') as f:
                         l = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
