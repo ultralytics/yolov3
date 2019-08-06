@@ -61,7 +61,7 @@ hyp = {'giou': 1.43,  # giou loss gain
        'cls': 11.7,  # cls loss gain
        'cls_pw': 4.81,  # cls BCELoss positive_weight
        'obj': 11.5,  # obj loss gain
-       'obj_pw': 1.0,  # obj BCELoss positive_weight
+       'obj_pw': 1.56,  # obj BCELoss positive_weight
        'iou_t': 0.281,  # iou training threshold
        'lr0': 0.0013,  # initial learning rate
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
@@ -386,7 +386,7 @@ if __name__ == '__main__':
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay', 'hsv_s', 'hsv_v', 'translate', 'scale']
-            limits = [(1e-4, 1e-2), (0.00, 0.70), (0.60, 0.97), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9)]
+            limits = [(1e-4, 1e-2), (0.00, 0.70), (0.60, 0.98), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
