@@ -61,7 +61,7 @@ hyp = {'giou': 1.43,  # giou loss gain
        'cls': 11.7,  # cls loss gain
        'cls_pw': 4.81,  # cls BCELoss positive_weight
        'obj': 11.5,  # obj loss gain
-       'obj_pw': 1.56,  # obj BCELoss positive_weight
+       'obj_pw': 1.0,  # obj BCELoss positive_weight
        'iou_t': 0.281,  # iou training threshold
        'lr0': 0.0013,  # initial learning rate
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
@@ -375,7 +375,7 @@ if __name__ == '__main__':
                 x = np.loadtxt('evolve.txt', ndmin=2)
                 x = x[fitness(x).argmax()]  # select best fitness hyps
                 for i, k in enumerate(hyp.keys()):
-                    hyp[k] = x[i + 5]
+                    hyp[k] = x[i + 7]
 
                 # Mutate
                 init_seeds(seed=int(time.time()))
