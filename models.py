@@ -203,7 +203,7 @@ class Darknet(nn.Module):
             return output
         elif ONNX_EXPORT:
             output = torch.cat(output, 1)  # cat 3 layers 85 x (507, 2028, 8112) to 85 x 10647
-            nc = self.module_list[self.yolo_layers[0]][0].nc  # number of classes
+            nc = self.module_list[self.yolo_layers[0]].nc  # number of classes
             return output[5:5 + nc].t(), output[:4].t()  # ONNX scores, boxes
         else:
             io, p = list(zip(*output))  # inference output, training output
