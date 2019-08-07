@@ -697,7 +697,9 @@ def plot_images(imgs, targets, paths=None, fname='images.jpg'):
             plt.title(s[:min(len(s), 40)], fontdict={'size': 8})  # limit to 40 characters
     fig.tight_layout()
     fig.savefig(fname, dpi=200)
+    fig_image = fig_to_data(fig)
     plt.close()
+    return fig_image
 
 
 def plot_test_txt():  # from utils.utils import *; plot_test()
@@ -809,3 +811,26 @@ def plot_results_orig(start=0, stop=0):  # from utils.utils import *; plot_resul
     fig.tight_layout()
     ax[4].legend()
     fig.savefig('results.png', dpi=200)
+
+
+def version_to_tuple(version):
+    # Used to compare versions of library
+    return tuple(map(int, (version.split("."))))
+
+
+def fig_to_data(fig):
+    # Used to convert a Matplotlib figure to a 4D numpy array with RGBA channels and return it
+    # param fig a matplotlib figure
+    # return a numpy 3D array of RGBA values
+
+    # draw the renderer
+    fig.canvas.draw()
+ 
+    # Get the RGBA buffer from the figure
+    w,h = fig.canvas.get_width_height()
+    buf = np.fromstring (fig.canvas.tostring_argb(), dtype=np.uint8)
+    buf.shape = (w, h, 4)
+ 
+    # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
+    buf = np.roll(buf, 3, axis = 2)
+    return buf[:,:,:3] # Return RGB numpy image
