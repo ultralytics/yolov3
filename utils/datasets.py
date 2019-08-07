@@ -156,7 +156,7 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=True, image_weights=False):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=True, image_weights=False, cache_images=False):
         path = str(Path(path))  # os-agnostic
         with open(path, 'r') as f:
             self.img_files = [x.replace('/', os.sep) for x in f.read().splitlines()  # os-agnostic
@@ -254,7 +254,6 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             assert nf > 0, 'No labels found. Recommend correcting image and label paths.'
 
         # Cache images into memory for faster training (~5GB)
-        cache_images = False
         if cache_images and augment:  # if training
             for i in tqdm(range(min(len(self.img_files), 10000)), desc='Reading images'):  # max 10k images
                 img_path = self.img_files[i]
