@@ -31,7 +31,7 @@ def create_modules(module_defs):
                                                    padding=pad,
                                                    bias=not bn))
             if bn:
-                modules.add_module('BatchNorm2d', nn.BatchNorm2d(filters))
+                modules.add_module('BatchNorm2d', nn.BatchNorm2d(filters, momentum=0.1))
             if mdef['activation'] == 'leaky':
                 # modules.add_module('activation', nn.PReLU(num_parameters=filters, init=0.1))
                 modules.add_module('activation', nn.LeakyReLU(0.1, inplace=True))

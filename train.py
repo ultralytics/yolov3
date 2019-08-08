@@ -186,7 +186,6 @@ def train(cfg,
     nb = len(dataloader)
     maps = np.zeros(nc)  # mAP per class
     results = (0, 0, 0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
-    # n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
     t0 = time.time()
     for epoch in range(start_epoch, epochs):
         model.train()
@@ -215,22 +214,26 @@ def train(cfg,
             imgs = imgs.to(device)
             targets = targets.to(device)
 
-            # Multi-Scale training TODO: short-side to 32-multiple https://github.com/ultralytics/yolov3/issues/358
+            # Multi-Scale training
             if multi_scale:
                 if (i + nb * epoch) / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
                     img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
                 sf = img_size / max(imgs.shape[2:])  # scale factor
                 if sf != 1:
-                    ns = [math.ceil(x * sf / 32.) * 32 for x in imgs.shape[2:]]  # new shape
+                    ns = [math.ceil(x * sf / 32.) * 32 for x in imgs.shape[2:]]  # new shape (stretched to 32-multiple)
                     imgs = F.interpolate(imgs, size=ns, mode='bilinear', align_corners=False)
 
             # Plot images with bounding boxes
             if epoch == 0 and i == 0:
                 plot_images(imgs=imgs, targets=targets, paths=paths, fname='train_batch%g.jpg' % i)
 
-            # SGD burn-in
+            # Hyperparameter burn-in
+            # n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
             # if epoch == 0 and i <= n_burnin:
-            #     g = (i / n_burnin) ** 4  # gain
+            #     for m in model.named_modules():
+            #         if m[0].endswith('BatchNorm2d'):
+            #             m[1].momentum = 1 - i / n_burnin * 0.99  # BatchNorm2d momentum falls from 1 - 0.01
+            #     g = (i / n_burnin) ** 4  # gain rises from 0 - 1
             #     for x in optimizer.param_groups:
             #         x['lr'] = hyp['lr0'] * g
             #         x['weight_decay'] = hyp['weight_decay'] * g
