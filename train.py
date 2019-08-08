@@ -33,46 +33,25 @@ except:
 # 0.268	0.268	0.178	0.240	4.36	1.104	5.596	0.2087	14.47	2.599	16.27	2.406	0.4114	0.001585	-4	0.950	0.000524  # hc
 # 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 0.438 mAP @ epoch 100
 
-
-# Training hyperparameters g
-# hyp = {'giou': 1.13,  # giou loss gain
-#        'xy': 5.25,  # xy loss gain
-#        'wh': 0.246,  # wh loss gain
-#        'cls': 22.4,  # cls loss gain
-#        'cls_pw': 3.64,  # cls BCELoss positive_weight
-#        'obj': 17.8,  # obj loss gain
-#        'obj_pw': 1.31,  # obj BCELoss positive_weight
-#        'iou_t': 0.256,  # iou training threshold
-#        'lr0': 0.00146,  # initial learning rate
-#        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-#        'momentum': 0.936,  # SGD momentum
-#        'weight_decay': 0.00042,  # optimizer weight decay
-#        'hsv_s': 0.123,  # image HSV-Saturation augmentation (fraction)
-#        'hsv_v': 0.18,  # image HSV-Value augmentation (fraction)
-#        'degrees': 1.81,  # image rotation (+/- deg)
-#        'translate': 0.0987,  # image translation (+/- fraction)
-#        'scale': 0.0788,  # image scale (+/- gain)
-#        'shear': 0.441}  # image shear (+/- deg)
-
-# Training hyperparameters i
-hyp = {'giou': 1.43,  # giou loss gain
-       'xy': 4.27,  # xy loss gain
-       'wh': 0.265,  # wh loss gain
-       'cls': 11.7,  # cls loss gain
-       'cls_pw': 4.81,  # cls BCELoss positive_weight
-       'obj': 11.5,  # obj loss gain
-       'obj_pw': 1.56,  # obj BCELoss positive_weight
-       'iou_t': 0.281,  # iou training threshold
-       'lr0': 0.0013,  # initial learning rate
+# Training hyperparameters j (50.5 mAP yolov3-320) evolved by @ktian08 https://github.com/ultralytics/yolov3/issues/310
+hyp = {'giou': 1.582,  # giou loss gain
+       'xy': 4.688,  # xy loss gain
+       'wh': 0.1857,  # wh loss gain
+       'cls': 27.76,  # cls loss gain
+       'cls_pw': 1.446,  # cls BCELoss positive_weight
+       'obj': 21.35,  # obj loss gain
+       'obj_pw': 3.941,  # obj BCELoss positive_weight
+       'iou_t': 0.2635,  # iou training threshold
+       'lr0': 0.002324,  # initial learning rate
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.944,  # SGD momentum
-       'weight_decay': 0.000427,  # optimizer weight decay
-       'hsv_s': 0.0599,  # image HSV-Saturation augmentation (fraction)
-       'hsv_v': 0.142,  # image HSV-Value augmentation (fraction)
-       'degrees': 1.03,  # image rotation (+/- deg)
-       'translate': 0.0552,  # image translation (+/- fraction)
-       'scale': 0.0555,  # image scale (+/- gain)
-       'shear': 0.434}  # image shear (+/- deg)
+       'momentum': 0.97,  # SGD momentum
+       'weight_decay': 0.0004569,  # optimizer weight decay
+       'hsv_s': 0.5703,  # image HSV-Saturation augmentation (fraction)
+       'hsv_v': 0.3174,  # image HSV-Value augmentation (fraction)
+       'degrees': 1.113,  # image rotation (+/- deg)
+       'translate': 0.06797,  # image translation (+/- fraction)
+       'scale': 0.1059,  # image scale (+/- gain)
+       'shear': 0.5768}  # image shear (+/- deg)
 
 
 def train(cfg,
