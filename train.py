@@ -359,18 +359,15 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     print(opt)
 
-
-
     if not opt.evolve:  # Train normally
         # Tensorboard support, 
-        # start with "tensorboard --logdir=runs"
-        # go to localhost:6006
+        # start with "tensorboard --logdir=runs" then go to localhost:6006
         tensorboard_support = True
-        if version_to_tuple(torch.__version__)>= version_to_tuple("1.1.0"):
-            try:  
+        if version_to_tuple(torch.__version__) >= version_to_tuple("1.1.0"):
+            try:
                 from torch.utils.tensorboard import SummaryWriter
+
                 tb_train_name = time.time()
-                print('here')
                 tb_writer = SummaryWriter('runs/{}'.format(tb_train_name))
             except:
                 tensorboard_support = False
@@ -381,7 +378,7 @@ if __name__ == '__main__':
                         epochs=opt.epochs,
                         batch_size=opt.batch_size,
                         accumulate=opt.accumulate,
-                        write_to_tensorboard=tensorboard_results)
+                        write_to_tensorboard=tensorboard_support)
 
     else:  # Evolve hyperparameters (optional)
         opt.notest = True  # only test final epoch
