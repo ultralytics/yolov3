@@ -7,3 +7,5 @@ torch >= 1.1.0
 matplotlib
 pycocotools
 tqdm
+tb-nightly
+future
