@@ -16,7 +16,7 @@ def create_modules(module_defs):
     module_list = nn.ModuleList()
     yolo_index = -1
 
-    for i, mdef in enumerate(module_defs):
+    for mdef in module_defs:
         modules = nn.Sequential()
 
         if mdef['type'] == 'convolutional':
