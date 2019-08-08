@@ -229,7 +229,7 @@ def train(cfg,
                 plot_images(imgs=imgs, targets=targets, paths=paths, fname='train_batch%g.jpg' % i)
 
             # Hyperparameter burn-in
-            # n_burn = min(nb // 5 + 1, 1000)  # number of burn-in batches
+            # n_burn = nb - 1  # min(nb // 5 + 1, 1000)  # number of burn-in batches
             # if ni <= n_burn:
             #     for m in model.named_modules():
             #         if m[0].endswith('BatchNorm2d'):
