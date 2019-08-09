@@ -352,6 +352,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     print(opt)
 
+    tb_writer = None
     if not opt.evolve:  # Train normally
         try:
             # Start Tensorboard with "tensorboard --logdir=runs", view at http://localhost:6006/
@@ -359,7 +360,7 @@ if __name__ == '__main__':
 
             tb_writer = SummaryWriter()
         except:
-            tb_writer = None
+            pass
 
         results = train(opt.cfg,
                         opt.data,
