@@ -697,9 +697,7 @@ def plot_images(imgs, targets, paths=None, fname='images.jpg'):
             plt.title(s[:min(len(s), 40)], fontdict={'size': 8})  # limit to 40 characters
     fig.tight_layout()
     fig.savefig(fname, dpi=200)
-    fig_image = fig_to_data(fig)
     plt.close()
-    return fig_image
 
 
 def plot_test_txt():  # from utils.utils import *; plot_test()
@@ -816,9 +814,3 @@ def plot_results_orig(start=0, stop=0):  # from utils.utils import *; plot_resul
 def version_to_tuple(version):
     # Used to compare versions of library
     return tuple(map(int, (version.split("."))))
-
-
-def fig_to_data(fig):
-    # Converts a matplotlib fig to 3D numpy array (fig is a matplotlib figure)
-    fig.canvas.draw()
-    return np.array(fig.canvas.renderer.buffer_rgba())[:, :, :3]  # RGB image
