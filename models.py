@@ -213,13 +213,14 @@ class Darknet(nn.Module):
         # Fuse Conv2d + BatchNorm2d layers throughout model
         fused_list = nn.ModuleList()
         for a in list(self.children())[0]:
-            for i, b in enumerate(a):
-                if isinstance(b, nn.modules.batchnorm.BatchNorm2d):
-                    # fuse this bn layer with the previous conv2d layer
-                    conv = a[i - 1]
-                    fused = torch_utils.fuse_conv_and_bn(conv, b)
-                    a = nn.Sequential(fused, *list(a.children())[i + 1:])
-                    break
+            if isinstance(a, nn.Sequential):
+                for i, b in enumerate(a):
+                    if isinstance(b, nn.modules.batchnorm.BatchNorm2d):
+                        # fuse this bn layer with the previous conv2d layer
+                        conv = a[i - 1]
+                        fused = torch_utils.fuse_conv_and_bn(conv, b)
+                        a = nn.Sequential(fused, *list(a.children())[i + 1:])
+                        break
             fused_list.append(a)
         self.module_list = fused_list
         # model_info(self)  # yolov3-spp reduced from 225 to 152 layers
