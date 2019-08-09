@@ -59,8 +59,7 @@ def train(cfg,
           img_size=416,
           epochs=100,  # 500200 batches at bs 16, 117263 images = 273 epochs
           batch_size=16,
-          accumulate=4,
-          write_to_tensorboard=False):  # effective bs = batch_size * accumulate = 16 * 4 = 64
+          accumulate=4):  # effective bs = batch_size * accumulate = 16 * 4 = 64
     # Initialize
     init_seeds()
     weights = 'weights' + os.sep
@@ -227,10 +226,10 @@ def train(cfg,
 
             # Plot images with bounding boxes
             if epoch == 0 and i == 0:
-                figure_image = plot_images(imgs=imgs, targets=targets, paths=paths, fname='train_batch%g.jpg' % i)
-
-                if write_to_tensorboard:
-                    tb_writer.add_image('train_batch', figure_image, dataformats='HWC')
+                fname = 'train_batch%g.jpg' % i
+                fig_data = plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname)
+                if tb_writer:
+                    tb_writer.add_image(fname, fig_data, dataformats='HWC')
 
             # Hyperparameter burn-in
             # n_burn = nb - 1  # min(nb // 5 + 1, 1000)  # number of burn-in batches
@@ -282,19 +281,12 @@ def train(cfg,
             file.write(s + '%11.3g' * 7 % results + '\n')  # P, R, mAP, F1, test_losses=(GIoU, obj, cls)
 
         # Write Tensorboard results
-        if write_to_tensorboard:
-            tb_writer.add_scalar('GIoU/XY', mloss[0], epoch)
-            tb_writer.add_scalar('Width/Height', mloss[1], epoch)
-            tb_writer.add_scalar('Confidence', mloss[2], epoch)
-            tb_writer.add_scalar('Classification', mloss[3], epoch)
-            tb_writer.add_scalar('Train loss', mloss[4], epoch)
-            tb_writer.add_scalar('Precision', results[0], epoch)
-            tb_writer.add_scalar('Recall', results[1], epoch)
-            tb_writer.add_scalar('mAP', results[2], epoch)
-            tb_writer.add_scalar('F1', results[3], epoch)
-            tb_writer.add_scalar('Test loss GIoU', results[4], epoch)
-            tb_writer.add_scalar('Test loss obj', results[5], epoch)
-            tb_writer.add_scalar('Test loss cls', results[6], epoch)
+        if tb_writer:
+            x = list(mloss[:5]) + list(results[:7])
+            titles = ['GIoU/XY', 'Width/Height', 'Objectness', 'Classification', 'Train loss', 'Precision', 'Recall',
+                      'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification']
+            for xi, title in zip(x, titles):
+                tb_writer.add_scalar(title, xi, epoch)
 
         # Update best map
         fitness = results[2]  # mAP
@@ -360,25 +352,20 @@ if __name__ == '__main__':
     print(opt)
 
     if not opt.evolve:  # Train normally
-        # Tensorboard support, 
-        # start with "tensorboard --logdir=runs" then go to localhost:6006
-        tensorboard_support = True
-        if version_to_tuple(torch.__version__) >= version_to_tuple("1.1.0"):
-            try:
-                from torch.utils.tensorboard import SummaryWriter
+        try:
+            # Start Tensorboard with "tensorboard --logdir=runs", view at http://localhost:6006/
+            from torch.utils.tensorboard import SummaryWriter
 
-                tb_train_name = time.time()
-                tb_writer = SummaryWriter('runs/{}'.format(tb_train_name))
-            except:
-                tensorboard_support = False
+            tb_writer = SummaryWriter()
+        except:
+            tb_writer = None
 
         results = train(opt.cfg,
                         opt.data,
                         img_size=opt.img_size,
                         epochs=opt.epochs,
                         batch_size=opt.batch_size,
-                        accumulate=opt.accumulate,
-                        write_to_tensorboard=tensorboard_support)
+                        accumulate=opt.accumulate)
 
     else:  # Evolve hyperparameters (optional)
         opt.notest = True  # only test final epoch
