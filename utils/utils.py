@@ -766,8 +766,14 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
         n = results.shape[1]  # number of rows
         x = range(start, min(stop, n) if stop else n)
         for i in range(10):
-            ax[i].plot(x, results[i, x], marker='.', label=f.replace('.txt', ''))
+            y = results[i, x]
+            if i in [0, 1, 2, 5, 6, 7]:
+                y[y == 0] = np.nan  # dont show zero loss values
+            ax[i].plot(x, y, marker='.', label=f.replace('.txt', ''))
             ax[i].set_title(s[i])
+            if i in [5, 6, 7]:  # share train and val loss y axes
+                ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
+
     fig.tight_layout()
     ax[4].legend()
     fig.savefig('results.png', dpi=200)
@@ -785,30 +791,15 @@ def plot_results_overlay(start=1, stop=0):  # from utils.utils import *; plot_re
         ax = ax.ravel()
         for i in range(5):
             for j in [i, i + 5]:
-                ax[i].plot(x, results[j, x], marker='.', label=s[j])
+                y = results[j, x]
+                if i in [0, 1, 2]:
+                    y[y == 0] = np.nan  # dont show zero loss values
+                ax[i].plot(x, y, marker='.', label=s[j])
             ax[i].set_title(t[i])
             ax[i].legend()
             ax[i].set_ylabel(f) if i == 0 else None  # add filename
         fig.tight_layout()
         fig.savefig(f.replace('.txt', '.png'), dpi=200)
-
-
-def plot_results_orig(start=0, stop=0):  # from utils.utils import *; plot_results_orig()
-    # Plot training results files 'results*.txt' in original format
-    fig, ax = plt.subplots(2, 5, figsize=(14, 7))
-    ax = ax.ravel()
-    s = ['GIoU/XY', 'Width/Height', 'Confidence', 'Classification', 'Train Loss', 'Precision', 'Recall', 'mAP', 'F1',
-         'Test Loss']
-    for f in sorted(glob.glob('results*.txt') + glob.glob('../../Google Drive/results*.txt')):
-        results = np.loadtxt(f, usecols=[2, 3, 4, 5, 6, 9, 10, 11, 12, 13]).T
-        n = results.shape[1]  # number of rows
-        x = range(start, min(stop, n) if stop else n)
-        for i in range(10):
-            ax[i].plot(x, results[i, x], marker='.', label=f.replace('.txt', ''))
-            ax[i].set_title(s[i])
-    fig.tight_layout()
-    ax[4].legend()
-    fig.savefig('results.png', dpi=200)
 
 
 def version_to_tuple(version):
