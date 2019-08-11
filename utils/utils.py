@@ -624,14 +624,14 @@ def print_mutation(hyp, results, bucket=''):
 
     if bucket:
         os.system('gsutil cp gs://%s/evolve.txt .' % bucket)  # download evolve.txt
-        with open('evolve.txt', 'a') as f:  # append result
-            f.write(c + b + '\n')
-        x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
-        np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sort by fitness
+
+    with open('evolve.txt', 'a') as f:  # append result
+        f.write(c + b + '\n')
+    x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
+    np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sort by fitness
+
+    if bucket:
         os.system('gsutil cp evolve.txt gs://%s' % bucket)  # upload evolve.txt
-    else:
-        with open('evolve.txt', 'a') as f:
-            f.write(c + b + '\n')
 
 
 def fitness(x):

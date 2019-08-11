@@ -51,7 +51,7 @@ def detect(cfg,
         return
 
     # Half precision
-    opt.half = opt.half and device.type != 'cpu'  # half precision only supported on cuda
+    opt.half = opt.half and device.type != 'cpu'  # half precision only supported on CUDA
     if opt.half:
         model.half()
 
