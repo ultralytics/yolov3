@@ -107,6 +107,7 @@ python3 test.py --data ../supermarket2/supermarket2.data --weights weights/yolov
 python3 test.py --data ../supermarket2/supermarket2.data --weights weights/yolov3-spp-sm2-1cls-scalexy_200_5000.weights --cfg ../yolov3-spp-sm2-1cls-scalexy_200.cfg --img-size 320 --conf-thres 0.2  # test
 python3 test.py --data ../supermarket2/supermarket2.data --weights ../darknet/backup/yolov3-spp-sm2-1cls-scalexy_variable_5000.weights --cfg ../yolov3-spp-sm2-1cls-scalexy_variable.cfg --img-size 320 --conf-thres 0.2  # test
 
+python3 train.py --img-size 320 --epochs 27 --batch-size 64 --accumulate 1 --nosave --notest && python3 test.py --weights weights/last.pt --img-size 320 --save-json && sudo shutdown
 
 # Debug/Development
 python3 train.py --data data/coco.data --img-size 320 --single-scale --batch-size 64 --accumulate 1 --epochs 1 --evolve --giou
