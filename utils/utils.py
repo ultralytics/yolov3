@@ -775,7 +775,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
                 ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
 
     fig.tight_layout()
-    ax[4].legend()
+    ax[0].legend()
     fig.savefig('results.png', dpi=200)
 
 

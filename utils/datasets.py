@@ -120,9 +120,13 @@ class LoadWebcam:  # for inference
     def __init__(self, img_size=416, half=False):
         self.img_size = img_size
         self.half = half  # half precision fp16 images
-        self.cam = cv2.VideoCapture(0)  # local camera
-        # self.cam = cv2.VideoCapture('rtsp://192.168.1.64/1')  # IP camera
-        # self.cam = cv2.VideoCapture('rtsp://username:password@192.168.1.64/1')  # IP camera with login
+
+        pipe = 0  # local camera
+        # pipe = 'rtsp://192.168.1.64/1'  # IP camera
+        # pipe = 'rtsp://username:password@192.168.1.64/1'  # IP camera with login
+        # pipe = '"rtspsrc location="rtsp://username:password@192.168.1.64/1" latency=10 ! appsink'  # GStreamer https://answers.opencv.org/question/215996/changing-gstreamer-pipeline-to-opencv-in-pythonsolved/
+
+        self.cap = cv2.VideoCapture(pipe)  # video capture object
 
     def __iter__(self):
         self.count = -1
@@ -135,7 +139,7 @@ class LoadWebcam:  # for inference
             raise StopIteration
 
         # Read image
-        ret_val, img0 = self.cam.read()
+        ret_val, img0 = self.cap.read()
         assert ret_val, 'Webcam Error'
         img_path = 'webcam_%g.jpg' % self.count
         img0 = cv2.flip(img0, 1)  # flip left-right
@@ -156,7 +160,8 @@ class LoadWebcam:  # for inference
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=True, image_weights=False, cache_images=False):
+    def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=True, image_weights=False,
+                 cache_images=False):
         path = str(Path(path))  # os-agnostic
         with open(path, 'r') as f:
             self.img_files = [x.replace('/', os.sep) for x in f.read().splitlines()  # os-agnostic
