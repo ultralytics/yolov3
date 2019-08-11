@@ -4,7 +4,7 @@ from pathlib import Path
 
 import torch.nn.functional as F
 
-ONNX_EXPORT = True
+ONNX_EXPORT = False
 
 
 def create_modules(module_defs):
