@@ -11,3 +11,4 @@ pycocotools
 tqdm
 tb-nightly
 future
+Pillow
