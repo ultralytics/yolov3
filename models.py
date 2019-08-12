@@ -201,7 +201,7 @@ class Darknet(nn.Module):
                         x = torch.cat([layer_outputs[i] for i in layer_i], 1)
                     # print(''), [print(layer_outputs[i].shape) for i in layer_i], print(x.shape)
             elif mtype == 'shortcut':
-                x += layer_outputs[int(mdef['from'])]
+                x = layer_outputs[-1] + layer_outputs[int(mdef['from'])	]
             elif mtype == 'yolo':
                 x = module(x, img_size)
                 output.append(x)
