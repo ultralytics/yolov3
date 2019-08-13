@@ -151,7 +151,7 @@ def train(cfg,
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
 
     # Initialize distributed training
-    if torch.cuda.device_count() > 1:
+    if torch.cuda.device_count() > 1 and os.name != 'nt':
         dist.init_process_group(backend='nccl',  # 'distributed backend'
                                 init_method='tcp://127.0.0.1:9999',  # distributed training init method
                                 world_size=1,  # number of nodes for distributed training
@@ -324,7 +324,7 @@ def train(cfg,
 
     # Report time
     print('%g epochs completed in %.3f hours.' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
-    dist.destroy_process_group() if torch.cuda.device_count() > 1 else None
+    dist.destroy_process_group() if torch.cuda.device_count() > 1 and os.name != 'nt' else None
     torch.cuda.empty_cache()
     return results
 
