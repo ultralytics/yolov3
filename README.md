@@ -132,33 +132,13 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 - `test.py --weights weights/best.pt` tests best checkpoint.
 - Compare to darknet published results https://arxiv.org/abs/1804.02767.
 
-<!---
-%<i></i> | ultralytics/yolov3 OR-NMS 5:52@416 (`pycocotools`) | darknet  
---- | --- | ---  
-YOLOv3-320 | 51.9 (51.4) | 51.5  
-YOLOv3-416 | 55.0 (54.9) | 55.3  
-YOLOv3-608 | 57.5 (57.8) | 57.9  
+[ultralytics/yolov3](https://github.com/ultralytics/yolov3) mAP@0.5 ([darknet](https://arxiv.org/abs/1804.02767) reported mAP@0.5)
 
-<i></i> | ultralytics/yolov3 MERGE-NMS 7:15@416 (`pycocotools`) | darknet  
---- | --- | ---  
-YOLOv3-320 | 52.3 (51.7) | 51.5  
-YOLOv3-416 | 55.4 (55.3) | 55.3  
-YOLOv3-608 | 57.9 (58.1) | 57.9  
-
-<i></i> | ultralytics/yolov3 MERGE+earlier_pred4 8:34@416 (`pycocotools`) | darknet  
---- | --- | ---  
-YOLOv3-320 | 52.3 (51.8) | 51.5  
-YOLOv3-416 | 55.5 (55.4) | 55.3  
-YOLOv3-608 | 57.9 (58.2) | 57.9  
---->
-<i></i> | [ultralytics/yolov3](https://github.com/ultralytics/yolov3) | [darknet](https://arxiv.org/abs/1804.02767) 
---- | --- | ---  
-`YOLOv3 320` | 51.8 | 51.5  
-`YOLOv3 416` | 55.4 | 55.3  
-`YOLOv3 608` | 58.2 | 57.9  
-`YOLOv3-spp 320` | 52.4 | -  
-`YOLOv3-spp 416` | 56.5 | -  
-`YOLOv3-spp 608` | 60.7 | 60.6  
+<i></i>         | 320         | 416         | 608
+---             | ---         | ---         | ---
+`YOLOv3`        | 51.8 (51.5) | 55.4 (55.3) | 58.2 (57.9)
+`YOLOv3-SPP`    | 52.4        | 56.5        | 60.7 (60.6)
+`YOLOv3-tiny`   | 29.0        | 32.9 (33.1) | 35.5
 
 ``` bash
 # install pycocotools
