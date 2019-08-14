@@ -132,7 +132,7 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 - `test.py --weights weights/best.pt` tests best checkpoint.
 - Compare to darknet published results https://arxiv.org/abs/1804.02767.
 
-[ultralytics/yolov3](https://github.com/ultralytics/yolov3) mAP@0.5 ([darknet](https://arxiv.org/abs/1804.02767) reported mAP@0.5)
+[ultralytics/yolov3](https://github.com/ultralytics/yolov3) mAP@0.5 ([darknet](https://arxiv.org/abs/1804.02767)-reported mAP@0.5)
 
 <i></i>         | 320         | 416         | 608
 ---             | ---         | ---         | ---
