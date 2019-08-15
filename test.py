@@ -48,7 +48,7 @@ def test(cfg,
     dataset = LoadImagesAndLabels(test_path, img_size, batch_size)
     dataloader = DataLoader(dataset,
                             batch_size=batch_size,
-                            num_workers=os.cpu_count(),
+                            num_workers=min(os.cpu_count(), batch_size),
                             pin_memory=True,
                             collate_fn=dataset.collate_fn)
 
