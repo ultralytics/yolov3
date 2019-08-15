@@ -208,6 +208,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             i = ar.argsort()
             self.img_files = [self.img_files[i] for i in i]
             self.label_files = [self.label_files[i] for i in i]
+            self.shapes = s[i]
             ar = ar[i]
 
             # Set training image shapes

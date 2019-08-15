@@ -575,42 +575,30 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmeans_targets(path='./data/coco_64img.txt', n=9, img_size=320):  # from utils.utils import *; kmeans_targets()
+def kmeans_targets(path='data/coco_64img.txt', n=9, img_size=416):  # from utils.utils import *; kmeans_targets()
     # Produces a list of target kmeans suitable for use in *.cfg files
-    img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif']
-    with open(path, 'r') as f:
-        img_files = [x for x in f.read().splitlines() if os.path.splitext(x)[-1].lower() in img_formats]
-
-    # Read shapes
-    nf = len(img_files)
-    assert nf > 0, 'No images found in %s' % path
-    label_files = [x.replace('images', 'labels').replace(os.path.splitext(x)[-1], '.txt') for x in img_files]
-    s = np.array([Image.open(f).size for f in tqdm(img_files, desc='Reading image shapes')])  # (width, height)
-
-    # Read targets
-    labels = [np.zeros((0, 5))] * nf
-    iter = tqdm(label_files, desc='Reading labels')
-    for i, file in enumerate(iter):
-        try:
-            with open(file, 'r') as f:
-                l = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
-                if l.shape[0]:
-                    assert l.shape[1] == 5, '> 5 label columns: %s' % file
-                    assert (l >= 0).all(), 'negative labels: %s' % file
-                    assert (l[:, 1:] <= 1).all(), 'non-normalized or out of bounds coordinate labels: %s' % file
-                    l[:, [1, 3]] *= s[i][0]
-                    l[:, [2, 4]] *= s[i][1]
-                    l[:, 1:] *= img_size / max(s[i])  # nominal img_size for training here
-                    labels[i] = l
-        except:
-            pass  # print('Warning: missing labels for %s' % self.img_files[i])  # missing label file
-    assert len(np.concatenate(labels, 0)) > 0, 'No labels found. Incorrect label paths provided.'
-
-    # kmeans calculation
+    from utils.datasets import LoadImagesAndLabels
     from scipy import cluster
-    wh = np.concatenate(labels, 0)[:, 3:5]
+
+    # Get label wh
+    dataset = LoadImagesAndLabels(path, augment=True, rect=True)
+    for s, l in zip(dataset.shapes, dataset.labels):
+        l[:, [1, 3]] *= s[0]
+        l[:, [2, 4]] *= s[1]
+        l[:, 1:] *= img_size / max(s)  # nominal img_size for training here
+    wh = np.concatenate(dataset.labels, 0)[:, 3:5]  # wh from cxywh
+
+    # Kmeans calculation
     k = cluster.vq.kmeans(wh, n)[0]
-    k = k[np.argsort(k.prod(1))]
+    k = k[np.argsort(k.prod(1))]  # sort small to large
+
+    # Measure IoUs
+    iou = torch.stack([wh_iou(torch.Tensor(wh).T, torch.Tensor(x).T) for x in k], 0)
+    miou = iou.mean()  # mean IoU with all anchors
+    biou = iou.max(0)[0].mean()  # mean IoU with the closest anchor
+
+    # Print results
+    print('kmeans anchors (n=%g, img_size=%g, IoU=%.2f/%.2f mean/best): ' % (n, img_size, miou, biou), end='')
     for x in k.ravel():
         print('%.1f, ' % x, end='')  # drop-in replacement for *.cfg anchors
 
