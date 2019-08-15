@@ -272,10 +272,16 @@ def train(cfg,
             pbar.set_description(s)
 
         # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
-        if not (opt.notest or (opt.nosave and epoch < 10)) or epoch == epochs - 1:
+        final_epoch = epoch + 1 == epochs
+        if not (opt.notest or (opt.nosave and epoch < 10)) or final_epoch:
             with torch.no_grad():
-                results, maps = test.test(cfg, data, batch_size=batch_size, img_size=opt.img_size, model=model,
-                                          conf_thres=0.1)
+                results, maps = test.test(cfg,
+                                          data,
+                                          batch_size=batch_size,
+                                          img_size=opt.img_size,
+                                          model=model,
+                                          conf_thres=0.001 if final_epoch else 0.1,  # 0.1 for speed
+                                          save_json=final_epoch and 'coco.data' in data)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
@@ -295,7 +301,7 @@ def train(cfg,
             best_fitness = fitness
 
         # Save training results
-        save = (not opt.nosave) or ((not opt.evolve) and (epoch == epochs - 1))
+        save = (not opt.nosave) or ((not opt.evolve) and final_epoch)
         if save:
             with open('results.txt', 'r') as file:
                 # Create checkpoint
