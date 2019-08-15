@@ -1,8 +1,7 @@
+import torch.nn.functional as F
+
 from utils.parse_config import *
 from utils.utils import *
-from pathlib import Path
-
-import torch.nn.functional as F
 
 ONNX_EXPORT = False
 
@@ -71,9 +70,7 @@ def create_modules(module_defs, img_size):
         elif mdef['type'] == 'yolo':
             yolo_index += 1
             mask = [int(x) for x in mdef['mask'].split(',')]  # anchor mask
-            a = [float(x) for x in mdef['anchors'].split(',')]  # anchors
-            a = [(a[i], a[i + 1]) for i in range(0, len(a), 2)]
-            modules = YOLOLayer(anchors=[a[i] for i in mask],  # anchor list
+            modules = YOLOLayer(anchors=mdef['anchors'][mask],  # anchor list
                                 nc=int(mdef['classes']),  # number of classes
                                 img_size=img_size,  # (416, 416)
                                 yolo_index=yolo_index)  # 0, 1 or 2

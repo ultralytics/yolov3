@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-from PIL import Image
 from tqdm import tqdm
 
 from . import torch_utils  # , google_utils
