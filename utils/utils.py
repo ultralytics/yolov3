@@ -594,13 +594,16 @@ def kmeans_targets(path='data/coco_64img.txt', n=9, img_size=416):  # from utils
 
     # Measure IoUs
     iou = torch.stack([wh_iou(torch.Tensor(wh).T, torch.Tensor(x).T) for x in k], 0)
-    miou = iou.mean()  # mean IoU with all anchors
-    biou = iou.max(0)[0].mean()  # mean IoU with the closest anchor
+    biou = iou.max(0)[0]  # closest anchor IoU
 
-    # Print results
-    print('kmeans anchors (n=%g, img_size=%g, IoU=%.2f/%.2f mean/best): ' % (n, img_size, miou, biou), end='')
-    for x in k.ravel():
-        print('%.1f, ' % x, end='')  # drop-in replacement for *.cfg anchors
+    # Print
+    print('kmeans anchors (n=%g, img_size=%g, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
+          (n, img_size, biou.min(), iou.mean(), biou.mean()), end='')
+    for i, x in enumerate(k):
+        print('%i,%i' % (round(x[0]), round(x[1])), end=',  ' if i < len(k) - 1 else '\n')  # use in *.cfg
+
+    # Plot
+    # plt.hist(biou.numpy().ravel(), 100)
 
 
 def print_mutation(hyp, results, bucket=''):
