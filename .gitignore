@@ -18,6 +18,7 @@
 *.cfg
 !cfg/yolov3*.cfg
 
+runs/*
 data/*
 !data/samples/zidane.jpg
 !data/samples/bus.jpg
