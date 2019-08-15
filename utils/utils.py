@@ -595,6 +595,8 @@ def kmeans_targets(path='data/coco_64img.txt', n=9, img_size=416):  # from utils
     iou = torch.stack([wh_iou(torch.Tensor(wh).T, torch.Tensor(x).T) for x in k], 0)
     biou = iou.max(0)[0]  # closest anchor IoU
 
+    print((biou < 0.2635).float().mean())
+
     # Print
     print('kmeans anchors (n=%g, img_size=%g, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
           (n, img_size, biou.min(), iou.mean(), biou.mean()), end='')
