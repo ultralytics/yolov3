@@ -33,7 +33,7 @@ except:
 # 0.268	0.268	0.178	0.240	4.36	1.104	5.596	0.2087	14.47	2.599	16.27	2.406	0.4114	0.001585	-4	0.950	0.000524  # hc
 # 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 0.438 mAP @ epoch 100
 
-# Training hyperparameters j (50.5 mAP yolov3-320) evolved by @ktian08 https://github.com/ultralytics/yolov3/issues/310
+# Hyperparameters (j-series, 50.5 mAP yolov3-320) evolved by @ktian08 https://github.com/ultralytics/yolov3/issues/310
 hyp = {'giou': 1.582,  # giou loss gain
        'xy': 4.688,  # xy loss gain
        'wh': 0.1857,  # wh loss gain
@@ -52,6 +52,26 @@ hyp = {'giou': 1.582,  # giou loss gain
        'translate': 0.06797,  # image translation (+/- fraction)
        'scale': 0.1059,  # image scale (+/- gain)
        'shear': 0.5768}  # image shear (+/- deg)
+
+# Hyperparameters (k-series, j-series with all *_pw=1)
+# hyp = {'giou': 1.582,  # giou loss gain
+#        'xy': 4.688,  # xy loss gain
+#        'wh': 0.1857,  # wh loss gain
+#        'cls': 40.14,  # cls loss gain
+#        'cls_pw': 1.0,  # cls BCELoss positive_weight
+#        'obj': 84.14,  # obj loss gain
+#        'obj_pw': 1.0,  # obj BCELoss positive_weight
+#        'iou_t': 0.2635,  # iou training threshold
+#        'lr0': 0.002324,  # initial learning rate
+#        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
+#        'momentum': 0.97,  # SGD momentum
+#        'weight_decay': 0.0004569,  # optimizer weight decay
+#        'hsv_s': 0.5703,  # image HSV-Saturation augmentation (fraction)
+#        'hsv_v': 0.3174,  # image HSV-Value augmentation (fraction)
+#        'degrees': 1.113,  # image rotation (+/- deg)
+#        'translate': 0.06797,  # image translation (+/- fraction)
+#        'scale': 0.1059,  # image scale (+/- gain)
+#        'shear': 0.5768}  # image shear (+/- deg)
 
 
 def train(cfg,
