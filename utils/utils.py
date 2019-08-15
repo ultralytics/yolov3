@@ -583,9 +583,9 @@ def kmeans_targets(path='data/coco_64img.txt', n=9, img_size=416):  # from utils
     # Get label wh
     dataset = LoadImagesAndLabels(path, augment=True, rect=True)
     for s, l in zip(dataset.shapes, dataset.labels):
-        l[:, [1, 3]] *= s[0]
+        l[:, [1, 3]] *= s[0]  # normalized to pixels
         l[:, [2, 4]] *= s[1]
-        l[:, 1:] *= img_size / max(s)  # nominal img_size for training here
+        l[:, 1:] *= img_size / max(s)  # nominal img_size for training
     wh = np.concatenate(dataset.labels, 0)[:, 3:5]  # wh from cxywh
 
     # Kmeans calculation
