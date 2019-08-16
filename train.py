@@ -37,7 +37,7 @@ except:
 hyp = {'giou': 1.582,  # giou loss gain
        'xy': 4.688,  # xy loss gain
        'wh': 0.1857,  # wh loss gain
-       'cls': 27.76,  # cls loss gain
+       'cls': 27.76,  # cls loss gain  (CE should be around ~1.0)
        'cls_pw': 1.446,  # cls BCELoss positive_weight
        'obj': 21.35,  # obj loss gain
        'obj_pw': 3.941,  # obj BCELoss positive_weight
