@@ -96,7 +96,7 @@ class YOLOLayer(nn.Module):
     def __init__(self, anchors, nc, img_size, yolo_index):
         super(YOLOLayer, self).__init__()
 
-        self.anchors = torch.from_numpy(anchors)
+        self.anchors = torch.Tensor(anchors)
         self.na = len(anchors)  # number of anchors (3)
         self.nc = nc  # number of classes (80)
         self.nx = 0  # initialize number of x gridpoints
