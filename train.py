@@ -53,25 +53,25 @@ hyp = {'giou': 1.582,  # giou loss gain
        'scale': 0.1059,  # image scale (+/- gain)
        'shear': 0.5768}  # image shear (+/- deg)
 
-# Hyperparameters (k-series, j-series with all *_pw=1)
-# hyp = {'giou': 1.582,  # giou loss gain
+# # Hyperparameters (i-series)
+# hyp = {'giou': 1.43,  # giou loss gain
 #        'xy': 4.688,  # xy loss gain
 #        'wh': 0.1857,  # wh loss gain
-#        'cls': 40.14,  # cls loss gain
-#        'cls_pw': 1.0,  # cls BCELoss positive_weight
-#        'obj': 84.14,  # obj loss gain
-#        'obj_pw': 1.0,  # obj BCELoss positive_weight
-#        'iou_t': 0.2635,  # iou training threshold
-#        'lr0': 0.002324,  # initial learning rate
+#        'cls': 11.7,  # cls loss gain
+#        'cls_pw': 4.81,  # cls BCELoss positive_weight
+#        'obj': 11.5,  # obj loss gain
+#        'obj_pw': 1.56,  # obj BCELoss positive_weight
+#        'iou_t': 0.281,  # iou training threshold
+#        'lr0': 0.0013,  # initial learning rate
 #        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-#        'momentum': 0.97,  # SGD momentum
-#        'weight_decay': 0.0004569,  # optimizer weight decay
-#        'hsv_s': 0.5703,  # image HSV-Saturation augmentation (fraction)
-#        'hsv_v': 0.3174,  # image HSV-Value augmentation (fraction)
-#        'degrees': 1.113,  # image rotation (+/- deg)
-#        'translate': 0.06797,  # image translation (+/- fraction)
-#        'scale': 0.1059,  # image scale (+/- gain)
-#        'shear': 0.5768}  # image shear (+/- deg)
+#        'momentum': 0.944,  # SGD momentum
+#        'weight_decay': 0.000427,  # optimizer weight decay
+#        'hsv_s': 0.0599,  # image HSV-Saturation augmentation (fraction)
+#        'hsv_v': 0.142,  # image HSV-Value augmentation (fraction)
+#        'degrees': 1.03,  # image rotation (+/- deg)
+#        'translate': 0.0552,  # image translation (+/- fraction)
+#        'scale': 0.0555,  # image scale (+/- gain)
+#        'shear': 0.434}  # image shear (+/- deg)
 
 
 def train(cfg,
