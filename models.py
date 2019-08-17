@@ -155,7 +155,7 @@ class YOLOLayer(nn.Module):
             # io[..., 2:4] = ((torch.sigmoid(io[..., 2:4]) * 2) ** 3) * self.anchor_wh  # wh power method
             io[..., :4] *= self.stride
 
-            arc = 'normal'  # (normal, uCE uBCE) architecture types
+            arc = 'normal'  # (normal, uCE, uBCE) architecture types
             if arc == 'normal':
                 io[..., 4:] = torch.sigmoid(io[..., 4:])
             elif arc == 'uCE':
