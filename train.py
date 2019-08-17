@@ -200,8 +200,7 @@ def train(cfg,
     # Start training
     model.nc = nc  # attach number of classes to model
     model.hyp = hyp  # attach hyperparameters to model
-    if dataset.image_weights:
-        model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
+    model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
     model_info(model, report='summary')  # 'full' or 'summary'
     nb = len(dataloader)
     maps = np.zeros(nc)  # mAP per class
