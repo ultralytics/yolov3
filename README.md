@@ -150,8 +150,8 @@ Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/
 Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
                 Class    Images   Targets         P         R       mAP        F1: 100% 313/313 [07:40<00:00,  2.34s/it]
                 all       5e+03  3.58e+04     0.117     0.788     0.595     0.199
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.367
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.607 <--
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.367 <---
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.607 <---
  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.387
  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.208
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.392
@@ -168,8 +168,8 @@ Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/
 Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
                 Class    Images   Targets         P         R       mAP        F1: 100% 313/313 [07:01<00:00,  1.41s/it]
                 all       5e+03  3.58e+04     0.105     0.746     0.554      0.18
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.336
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.565 <--
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.336 <---
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.565 <---
  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.350
  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.151
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.361
