@@ -155,9 +155,14 @@ class YOLOLayer(nn.Module):
             # io[..., 2:4] = ((torch.sigmoid(io[..., 2:4]) * 2) ** 3) * self.anchor_wh  # wh power method
             io[..., :4] *= self.stride
 
-            io[..., 4:] = torch.sigmoid(io[..., 4:])  # p_conf, p_cls
-            # io[..., 4:] = F.softmax(io[..., 4:], dim=4)  # unified detection CE
-            # io[..., 4] = io[..., 5:].max(4)[0]  # unified detection BCE
+            arc = 'normal'  # (normal, uCE uBCE) architecture types
+            if arc == 'normal':
+                io[..., 4:] = torch.sigmoid(io[..., 4:])
+            elif arc == 'uCE':
+                io[..., 4:] = F.softmax(io[..., 4:], dim=4)  # unified detection CE
+                io[..., 4] = 1
+            elif arc == 'uBCE':
+                io[..., 4] = io[..., 5:].max(4)[0]  # unified detection BCE
 
             if self.nc == 1:
                 io[..., 5] = 1  # single-class model https://github.com/ultralytics/yolov3/issues/235
