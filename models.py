@@ -155,7 +155,7 @@ class YOLOLayer(nn.Module):
             # io[..., 2:4] = ((torch.sigmoid(io[..., 2:4]) * 2) ** 3) * self.anchor_wh  # wh power method
             io[..., :4] *= self.stride
 
-            arc = 'normal'  # (normal, uCE, uBCE, uBCEs) detection architectures
+            arc = 'uBCEs'  # (normal, uCE, uBCE, uBCEs) detection architectures
             if arc == 'normal':
                 torch.sigmoid_(io[..., 4:])
             elif arc == 'uCE':  # unified CE (1 background + 80 classes)
@@ -165,7 +165,8 @@ class YOLOLayer(nn.Module):
                 torch.sigmoid_(io[..., 4:])
                 io[..., 4] = 1 - io[..., 4]
             elif arc == 'uBCEs':  # unified BCE simplified (80 classes)
-                torch.sigmoid_(io[..., 4:])
+                torch.sigmoid_(io[..., 5:])
+                io[..., 4] = 1
 
             if self.nc == 1:
                 io[..., 5] = 1  # single-class model https://github.com/ultralytics/yolov3/issues/235

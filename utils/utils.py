@@ -329,51 +329,51 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     arc = 'normal'  # (normal, uCE, uBCE, uBCEs) detection architectures
     for i, pi0 in enumerate(p):  # layer i predictions, i
         b, a, gj, gi = indices[i]  # image, anchor, gridy, gridx
-        tobj = torch.zeros_like(pi0[..., 0])  # target obj
+        tobj = torch.zeros_like(pi[..., 0])  # target obj
 
         # Compute losses
         nb = len(b)
         if nb:  # number of targets
-            pi = pi0[b, a, gj, gi]  # predictions closest to anchors
+            ps = pi[b, a, gj, gi]  # prediction subset corresponding to targets
             tobj[b, a, gj, gi] = 1.0  # obj
-            # pi[..., 2:4] = torch.sigmoid(pi[..., 2:4])  # wh power loss (uncomment)
+            # ps[:, 2:4] = torch.sigmoid(ps[:, 2:4])  # wh power loss (uncomment)
 
             # GIoU
-            pxy = torch.sigmoid(pi[..., 0:2])  # pxy = pxy * s - (s - 1) / 2,  s = 1.5  (scale_xy)
-            pbox = torch.cat((pxy, torch.exp(pi[..., 2:4]) * anchor_vec[i]), 1)  # predicted
+            pxy = torch.sigmoid(ps[:, 0:2])  # pxy = pxy * s - (s - 1) / 2,  s = 1.5  (scale_xy)
+            pbox = torch.cat((pxy, torch.exp(ps[:, 2:4]) * anchor_vec[i]), 1)  # predicted box
             giou = bbox_iou(pbox.t(), tbox[i], x1y1x2y2=False, GIoU=True)  # giou computation
             lbox += (1.0 - giou).mean()  # giou loss
 
             if arc == 'normal' and model.nc > 1:  # cls loss (only if multiple classes)
-                t = torch.zeros_like(pi[..., 5:])  # targets
+                t = torch.zeros_like(ps[:, 5:])  # targets
                 t[range(nb), tcls[i]] = 1.0
-                lcls += BCEcls(pi[..., 5:], t)  # BCE
-                # lcls += CE(pi[..., 5:], tcls[i])  # CE
+                lcls += BCEcls(ps[:, 5:], t)  # BCE
+                # lcls += CE(ps[:, 5:], tcls[i])  # CE
 
             # Append targets to text file
             # with open('targets.txt', 'a') as file:
             #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
 
         if arc == 'normal':
-            lobj += BCEobj(pi0[..., 4], tobj)  # obj loss
+            lobj += BCEobj(pi[..., 4], tobj)  # obj loss
 
         elif arc == 'uCE':  # unified CE (1 background + 80 classes), hyps 20
-            t = torch.zeros_like(pi0[..., 0], dtype=torch.long)  # targets
+            t = torch.zeros_like(pi[..., 0], dtype=torch.long)  # targets
             if nb:
                 t[b, a, gj, gi] = tcls[i] + 1
-            lcls += CE(pi0[..., 4:].view(-1, model.nc + 1), t.view(-1))
+            lcls += CE(pi[..., 4:].view(-1, model.nc + 1), t.view(-1))
 
         elif arc == 'uBCE':  # unified BCE (1 background + 80 classes), hyps 200-30
-            t = torch.zeros_like(pi0[..., 5:])  # targets
+            t = torch.zeros_like(pi[..., 5:])  # targets
             if nb:
                 t[b, a, gj, gi, tcls[i]] = 1.0
-            lcls += BCEcls(pi0[..., 5:], t)
+            lcls += BCEcls(pi[..., 5:], t)
 
         elif arc == 'uBCEs':  # unified BCE simplified (80 classes)
-            t = torch.zeros_like(pi0[..., 5:])  # targets
+            t = torch.zeros_like(pi[..., 5:])  # targets
             if nb:
                 t[b, a, gj, gi, tcls[i]] = 1.0
-            lcls += BCEcls(pi0[..., 5:], t)
+            lcls += BCEcls(pi[..., 5:], t)
 
     lbox *= k * h['giou']
     lobj *= k * h['obj']
