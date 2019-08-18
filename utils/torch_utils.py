@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 
 
 def init_seeds(seed=0):

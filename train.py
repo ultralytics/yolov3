@@ -53,6 +53,7 @@ hyp = {'giou': 1.582,  # giou loss gain
        'scale': 0.1059,  # image scale (+/- gain)
        'shear': 0.5768}  # image shear (+/- deg)
 
+
 # # Hyperparameters (i-series)
 # hyp = {'giou': 1.43,  # giou loss gain
 #        'xy': 4.688,  # xy loss gain
@@ -103,9 +104,10 @@ def train(cfg,
     model = Darknet(cfg).to(device)
 
     # Optimizer
+    # optimizer = optim.Adam(model.parameters(), lr=hyp['lr0'], weight_decay=hyp['weight_decay'])
+    # optimizer = AdaBound(model.parameters(), lr=hyp['lr0'], final_lr=0.1)
     optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'],
                           nesterov=True)
-    # optimizer = AdaBound(model.parameters(), lr=hyp['lr0'], final_lr=0.1)
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
