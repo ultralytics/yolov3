@@ -327,7 +327,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     bs = p[0].shape[0]  # batch size
     k = bs / 64  # loss gain
     arc = 'normal'  # (normal, uCE, uBCE, uBCEs) detection architectures
-    for i, pi0 in enumerate(p):  # layer i predictions, i
+    for i, pi in enumerate(p):  # layer index, layer predictions
         b, a, gj, gi = indices[i]  # image, anchor, gridy, gridx
         tobj = torch.zeros_like(pi[..., 0])  # target obj
 
