@@ -74,6 +74,12 @@ def create_modules(module_defs, img_size):
                                 nc=int(mdef['classes']),  # number of classes
                                 img_size=img_size,  # (416, 416)
                                 yolo_index=yolo_index)  # 0, 1 or 2
+
+            # Initialize preceding Conv2d() detection bias to -5 (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
+            bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
+            bias[:, 4:] -= - 5
+            module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
+
         else:
             print('Warning: Unrecognized Layer Type: ' + mdef['type'])
 
