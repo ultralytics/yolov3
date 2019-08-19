@@ -18,7 +18,7 @@
 
 # Introduction
 
-This directory contains PyTorch YOLOv3 software and an iOS App developed by Ultralytics LLC, and **is freely available for redistribution under the GPL-3.0 license**. For more information please visit https://www.ultralytics.com.
+This directory contains PyTorch YOLOv3 software developed by Ultralytics LLC, and **is freely available for redistribution under the GPL-3.0 license**. For more information please visit https://www.ultralytics.com.
 
 # Description
 
@@ -52,7 +52,7 @@ Our Jupyter [notebook](https://colab.research.google.com/github/ultralytics/yolo
 **Resume Training:** `python3 train.py --resume` to resume training from `weights/last.pt`.
 
 **Plot Training:** `from utils import utils; utils.plot_results()` plots training results from `coco_16img.data`, `coco_64img.data`, 2 example datasets available in the `data/` folder, which train and test on the first 16 and 64 images of the COCO2014-trainval dataset.
-![image](https://user-images.githubusercontent.com/26833433/62865295-5ed94580-bd0e-11e9-9803-e07571e2ea23.png)
+![image](https://user-images.githubusercontent.com/26833433/63258271-fe9d5300-c27b-11e9-9a15-95038daf4438.png)
 
 ## Image Augmentation
 
