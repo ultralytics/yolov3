@@ -75,10 +75,17 @@ def create_modules(module_defs, img_size):
                                 img_size=img_size,  # (416, 416)
                                 yolo_index=yolo_index)  # 0, 1 or 2
 
-            # Initialize preceding Conv2d() detection bias to -5 (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
+            # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
-            bias[:, 4:] -= 5
+            bias[:, 4] -= 3.0  # obj
+            bias[:, 5:] -= 0.3  # cls
             module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
+
+            # for l in model.yolo_layers:  # print pretrained biases
+            #     b = model.module_list[l - 1][0].bias.view(3, -1)  # bias 3x85
+            #     print('regression: %.2f+/-%.2f, ' % (b[:, :4].mean(), b[:, :4].std()),
+            #           'objectness: %.2f+/-%.2f, ' % (b[:, 4].mean(), b[:, 4].std()),
+            #           'classification: %.2f+/-%.2f' % (b[:, 5:].mean(), b[:, 5:].std()))
 
         else:
             print('Warning: Unrecognized Layer Type: ' + mdef['type'])
