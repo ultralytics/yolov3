@@ -52,7 +52,7 @@ Our Jupyter [notebook](https://colab.research.google.com/github/ultralytics/yolo
 **Resume Training:** `python3 train.py --resume` to resume training from `weights/last.pt`.
 
 **Plot Training:** `from utils import utils; utils.plot_results()` plots training results from `coco_16img.data`, `coco_64img.data`, 2 example datasets available in the `data/` folder, which train and test on the first 16 and 64 images of the COCO2014-trainval dataset.
-![image](https://user-images.githubusercontent.com/26833433/63232750-2e703a80-c22b-11e9-893e-83e09603e2d4.png)
+![image](https://user-images.githubusercontent.com/26833433/63257986-512a3f80-c27b-11e9-9c26-61922a1d0f10.png)
 
 ## Image Augmentation
 
