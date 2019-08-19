@@ -77,8 +77,8 @@ def create_modules(module_defs, img_size):
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
-            bias[:, 4] -= 3.0  # obj
-            bias[:, 5:] -= 0.3  # cls
+            bias[:, 4] -= 5.0  # obj
+            bias[:, 5:] -= 4.0  # cls
             module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
 
             # for l in model.yolo_layers:  # print pretrained biases
