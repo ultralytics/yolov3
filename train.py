@@ -37,10 +37,10 @@ except:
 hyp = {'giou': 1.582,  # giou loss gain
        'xy': 4.688,  # xy loss gain
        'wh': 0.1857,  # wh loss gain
-       'cls': 27.76,  # cls loss gain  (CE=~1.0, uCE=~20, uBCE=~200,~30)
+       'cls': 27.76,  # cls loss gain  (CE=~1.0, uCE=~20)
        'cls_pw': 1.446,  # cls BCELoss positive_weight
        'obj': 21.35,  # obj loss gain
-       'obj_pw': 3.941,  # obj BCELoss positive_weight
+       'obj_pw': 3.941,  # obj BCELoss positive_weight (*=80 for uBCE with 80 classes)
        'iou_t': 0.2635,  # iou training threshold
        'lr0': 0.002324,  # initial learning rate
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
@@ -362,7 +362,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=32, help='batch size')
     parser.add_argument('--accumulate', type=int, default=2, help='number of batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
-    parser.add_argument('--data', type=str, default='data/coco.data', help='coco.data file path')
+    parser.add_argument('--data', type=str, default='../out/data.data', help='coco.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='train at (1/1.5)x - 1.5x sizes')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
