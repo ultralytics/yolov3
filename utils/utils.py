@@ -62,8 +62,8 @@ def labels_to_class_weights(labels, nc=80):
     weights = np.bincount(classes, minlength=nc)  # occurences per class
 
     # Prepend gridpoint count (for uCE trianing)
-    # gpi = ((320 / 32 * np.array([1, 2, 4])) ** 2 * 3).sum()  # gridpoints per image
-    # weights = np.hstack([gpi * ni - weights.sum() * 9, weights * 9]) ** 0.5  # prepend gridpoints to start
+    gpi = ((320 / 32 * np.array([1, 2, 4])) ** 2 * 3).sum()  # gridpoints per image
+    weights = np.hstack([gpi * ni - weights.sum() * 9, weights * 9]) ** 0.5  # prepend gridpoints to start
 
     weights[weights == 0] = 1  # replace empty bins with 1
     weights = 1 / weights  # number of targets per class
