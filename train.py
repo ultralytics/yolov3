@@ -39,8 +39,8 @@ hyp = {'giou': 1.582,  # giou loss gain
        'wh': 0.1857,  # wh loss gain
        'cls': 27.76,  # cls loss gain  (CE=~1.0, uCE=~20)
        'cls_pw': 1.446,  # cls BCELoss positive_weight
-       'obj': 21.35,  # obj loss gain
-       'obj_pw': 3.941,  # obj BCELoss positive_weight (*=80 for uBCE with 80 classes)
+       'obj': 21.35,  # obj loss gain (*=80 for uBCE with 80 classes)
+       'obj_pw': 3.941,  # obj BCELoss positive_weight
        'iou_t': 0.2635,  # iou training threshold
        'lr0': 0.002324,  # initial learning rate
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
