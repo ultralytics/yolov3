@@ -174,10 +174,7 @@ class YOLOLayer(nn.Module):
             elif arc == 'uCE':  # unified CE (1 background + 80 classes)
                 io[..., 4:] = F.softmax(io[..., 4:], dim=4)
                 io[..., 4] = 1
-            elif arc == 'uBCE':  # unified BCE (1 background + 80 classes)
-                torch.sigmoid_(io[..., 4:])
-                io[..., 4] = 1 - io[..., 4]
-            elif arc == 'uBCEs':  # unified BCE simplified (80 classes)
+            elif arc == 'uBCE':  # unified BCE (80 classes)
                 torch.sigmoid_(io[..., 5:])
                 io[..., 4] = 1
 

@@ -369,12 +369,6 @@ def compute_loss(p, targets, model):  # predictions, targets, model
                 t[b, a, gj, gi, tcls[i]] = 1.0
             lcls += BCEcls(pi[..., 5:], t)
 
-        elif arc == 'uBCEs':  # unified BCE simplified (80 classes)
-            t = torch.zeros_like(pi[..., 5:])  # targets
-            if nb:
-                t[b, a, gj, gi, tcls[i]] = 1.0
-            lcls += BCEcls(pi[..., 5:], t)
-
     lbox *= k * h['giou']
     lobj *= k * h['obj']
     lcls *= k * h['cls']
