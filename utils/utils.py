@@ -367,7 +367,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             t = torch.zeros_like(pi[..., 5:])  # targets
             if nb:
                 t[b, a, gj, gi, tcls[i]] = 1.0
-            lcls += BCEobj(pi[..., 5:], t)
+            lobj += BCEobj(pi[..., 5:], t)
 
     lbox *= k * h['giou']
     lobj *= k * h['obj']
