@@ -77,23 +77,21 @@ def create_modules(module_defs, img_size):
                                 yolo_index=yolo_index)  # 0, 1 or 2
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
-            bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
-            if arc == 'normal':
-                bias[:, 4] -= 5.0  # obj
-                bias[:, 5:] -= 4.0  # cls
-            elif arc == 'uCE':  # unified CE (1 background + 80 classes)
-                bias[:, 4] += 3.0  # obj
-                bias[:, 5:] -= 4.0  # cls
-            elif arc == 'uBCE':  # unified BCE (80 classes)
-                bias[:, 4] -= 5.0  # obj
-                bias[:, 5:] -= 4.0  # cls
-            module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
+            try:
+                if arc == 'normal':
+                    b = [-5.0, -4.0]  # obj, cls
+                elif arc == 'uCE':  # unified CE (1 background + 80 classes)
+                    b = [3.0, -4.0]  # obj, cls
+                elif arc == 'uBCE':  # unified BCE (80 classes)
+                    b = [-5.0, -4.0]  # obj, cls
 
-            # for l in model.yolo_layers:  # print pretrained biases
-            #     b = model.module_list[l - 1][0].bias.view(3, -1)  # bias 3x85
-            #     print('regression: %.2f+/-%.2f, ' % (b[:, :4].mean(), b[:, :4].std()),
-            #           'objectness: %.2f+/-%.2f, ' % (b[:, 4].mean(), b[:, 4].std()),
-            #           'classification: %.2f+/-%.2f' % (b[:, 5:].mean(), b[:, 5:].std()))
+                bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
+                bias[:, 4] += b[0]  # obj
+                bias[:, 5:] += b[1]  # cls
+                module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
+                # utils.print_model_biases(model)
+            except:
+                print('WARNING: smart bias initialization failure.')
 
         else:
             print('Warning: Unrecognized Layer Type: ' + mdef['type'])
