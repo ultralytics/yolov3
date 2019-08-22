@@ -81,8 +81,11 @@ def create_modules(module_defs, img_size):
             if arc == 'normal':
                 bias[:, 4] -= 5.0  # obj
                 bias[:, 5:] -= 4.0  # cls
-            elif arc == 'uCE':
+            elif arc == 'uCE':  # unified CE (1 background + 80 classes)
                 bias[:, 4] += 3.0  # obj
+                bias[:, 5:] -= 4.0  # cls
+            elif arc == 'uBCE':  # unified BCE (80 classes)
+                bias[:, 4] -= 5.0  # obj
                 bias[:, 5:] -= 4.0  # cls
             module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
 
