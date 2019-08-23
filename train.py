@@ -128,7 +128,7 @@ def train():
     if opt.transfer:  # transfer learning
         nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
 
-        for x in optimizer.param_groups:
+        for x in optimizer.param_groups:  # lower parameter count can handle more aggressive training hyps
             x['lr'] *= 10
             x['momentum'] *= 0.9
 
