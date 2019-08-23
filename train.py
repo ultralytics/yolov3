@@ -369,7 +369,6 @@ if __name__ == '__main__':
     parser.add_argument('--weights', type=str, default='', help='initial weights')  # i.e. weights/darknet.53.conv.74
     opt = parser.parse_args()
     opt.weights = 'weights/last.pt' if opt.resume else opt.weights
-    opt.transfer = True
     print(opt)
 
     tb_writer = None
