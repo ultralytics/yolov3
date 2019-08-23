@@ -4,13 +4,11 @@ from utils.parse_config import *
 from utils.utils import *
 
 ONNX_EXPORT = False
-arc = 'normal'  # (normal, uCE, uBCE, uBCEs) detection architectures
 
 
-def create_modules(module_defs, img_size):
-    """
-    Constructs module list of layer blocks from module configuration in module_defs
-    """
+def create_modules(module_defs, img_size, arc):
+    # Constructs module list of layer blocks from module configuration in module_defs
+
     hyperparams = module_defs.pop(0)
     output_filters = [int(hyperparams['channels'])]
     module_list = nn.ModuleList()
@@ -74,11 +72,12 @@ def create_modules(module_defs, img_size):
             modules = YOLOLayer(anchors=mdef['anchors'][mask],  # anchor list
                                 nc=int(mdef['classes']),  # number of classes
                                 img_size=img_size,  # (416, 416)
-                                yolo_index=yolo_index)  # 0, 1 or 2
+                                yolo_index=yolo_index,  # 0, 1 or 2
+                                arc=arc)  # yolo architecture
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
-                if arc == 'normal':
+                if arc == 'default':
                     b = [-5.0, -4.0]  # obj, cls
                 elif arc == 'uCE':  # unified CE (1 background + 80 classes)
                     b = [3.0, -4.0]  # obj, cls
@@ -113,7 +112,7 @@ class Swish(nn.Module):
 
 
 class YOLOLayer(nn.Module):
-    def __init__(self, anchors, nc, img_size, yolo_index):
+    def __init__(self, anchors, nc, img_size, yolo_index, arc):
         super(YOLOLayer, self).__init__()
 
         self.anchors = torch.Tensor(anchors)
@@ -121,6 +120,7 @@ class YOLOLayer(nn.Module):
         self.nc = nc  # number of classes (80)
         self.nx = 0  # initialize number of x gridpoints
         self.ny = 0  # initialize number of y gridpoints
+        self.arc = arc
 
         if ONNX_EXPORT:  # grids must be computed in __init__
             stride = [32, 16, 8][yolo_index]  # stride of this layer
@@ -175,12 +175,12 @@ class YOLOLayer(nn.Module):
             # io[..., 2:4] = ((torch.sigmoid(io[..., 2:4]) * 2) ** 3) * self.anchor_wh  # wh power method
             io[..., :4] *= self.stride
 
-            if arc == 'normal':
+            if self.arc == 'default':
                 torch.sigmoid_(io[..., 4:])
-            elif arc == 'uCE':  # unified CE (1 background + 80 classes)
+            elif self.arc == 'uCE':  # unified CE (1 background + 80 classes)
                 io[..., 4:] = F.softmax(io[..., 4:], dim=4)
                 io[..., 4] = 1
-            elif arc == 'uBCE':  # unified BCE (80 classes)
+            elif self.arc == 'uBCE':  # unified BCE (80 classes)
                 torch.sigmoid_(io[..., 5:])
                 io[..., 4] = 1
 
@@ -192,13 +192,13 @@ class YOLOLayer(nn.Module):
 
 
 class Darknet(nn.Module):
-    """YOLOv3 object detection model"""
+    # YOLOv3 object detection model
 
-    def __init__(self, cfg, img_size=(416, 416)):
+    def __init__(self, cfg, img_size=(416, 416), arc='default'):
         super(Darknet, self).__init__()
 
         self.module_defs = parse_model_cfg(cfg)
-        self.module_list, self.routs = create_modules(self.module_defs, img_size)
+        self.module_list, self.routs = create_modules(self.module_defs, img_size, arc)
         self.yolo_layers = get_yolo_layers(self)
 
         # Darknet Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346

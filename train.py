@@ -84,7 +84,7 @@ def train():
     nc = int(data_dict['classes'])  # number of classes
 
     # Initialize model
-    model = Darknet(cfg).to(device)
+    model = Darknet(cfg, arc=opt.arc).to(device)
 
     # Optimizer
     # optimizer = optim.Adam(model.parameters(), lr=hyp['lr0'], weight_decay=hyp['weight_decay'])
@@ -259,7 +259,7 @@ def train():
             pred = model(imgs)
 
             # Compute loss
-            loss, loss_items = compute_loss(pred, targets, model)
+            loss, loss_items = compute_loss(pred, targets, model, arc=opt.arc)
             if torch.isnan(loss):
                 print('WARNING: nan loss detected, ending training')
                 return results
@@ -367,6 +367,7 @@ if __name__ == '__main__':
     parser.add_argument('--img-weights', action='store_true', help='select training images by weight')
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--weights', type=str, default='', help='initial weights')  # i.e. weights/darknet.53.conv.74
+    parser.add_argument('--arc', type=str, default='default', help='yolo architecture')  # default, uCE, uBCE
     opt = parser.parse_args()
     opt.weights = 'weights/last.pt' if opt.resume else opt.weights
     print(opt)
