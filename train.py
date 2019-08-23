@@ -332,7 +332,7 @@ def train(cfg,
                          'training_results': file.read(),
                          'model': model.module.state_dict() if type(
                              model) is nn.parallel.DistributedDataParallel else model.state_dict(),
-                         'optimizer': optimizer.state_dict()}
+                         'optimizer': None if final_epoch else optimizer.state_dict()}
 
             # Save last checkpoint
             torch.save(chkpt, last)

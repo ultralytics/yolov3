@@ -88,6 +88,7 @@ def create_modules(module_defs, img_size):
                 bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
                 bias[:, 4] += b[0]  # obj
                 bias[:, 5:] += b[1]  # cls
+                # bias = torch.load('weights/yolov3-spp.bias.pt')[yolo_index]  # list of tensors [3x85, 3x85, 3x85]
                 module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
                 # utils.print_model_biases(model)
             except:
