@@ -815,7 +815,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     fig.savefig('results.png', dpi=200)
 
 
-def plot_results_overlay(start=1, stop=0):  # from utils.utils import *; plot_results_overlay()
+def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_results_overlay()
     # Plot training results files 'results*.txt', overlaying train and val losses
     s = ['train', 'train', 'train', 'Precision', 'mAP', 'val', 'val', 'val', 'Recall', 'F1']  # legends
     t = ['GIoU', 'Confidence', 'Classification', 'P-R', 'mAP-F1']  # titles
