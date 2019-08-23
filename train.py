@@ -121,7 +121,7 @@ def train():
         start_epoch = chkpt['epoch'] + 1
         del chkpt
 
-    else:  # darknet format
+    elif len(weights) > 0:  # darknet format
         # possible weights are 'yolov3.weights', 'yolov3-tiny.conv.15',  'darknet53.conv.74' etc.
         cutoff = load_darknet_weights(model, weights)
 
