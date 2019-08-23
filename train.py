@@ -129,8 +129,8 @@ def train():
         nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
 
         for x in optimizer.param_groups:
-            x['lr'] = 0.1
-            x['momentum'] = 0.9
+            x['lr'] *= 10
+            x['momentum'] *= 0.9
 
         for p in model.parameters():
             p.requires_grad = True if p.shape[0] == nf else False
