@@ -191,6 +191,7 @@ def train():
 
     # Start training
     model.nc = nc  # attach number of classes to model
+    model.arc = opt.arc  # attach yolo architecture
     model.hyp = hyp  # attach hyperparameters to model
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
     model_info(model, report='summary')  # 'full' or 'summary'
@@ -259,7 +260,7 @@ def train():
             pred = model(imgs)
 
             # Compute loss
-            loss, loss_items = compute_loss(pred, targets, model, arc=opt.arc)
+            loss, loss_items = compute_loss(pred, targets, model)
             if torch.isnan(loss):
                 print('WARNING: nan loss detected, ending training')
                 return results
