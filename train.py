@@ -127,6 +127,11 @@ def train():
 
     if opt.transfer:  # transfer learning
         nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
+
+        for x in optimizer.param_groups:
+            x['lr'] = 0.1
+            x['momentum'] = 0.9
+
         for p in model.parameters():
             p.requires_grad = True if p.shape[0] == nf else False
 
@@ -364,6 +369,7 @@ if __name__ == '__main__':
     parser.add_argument('--weights', type=str, default='', help='initial weights')  # i.e. weights/darknet.53.conv.74
     opt = parser.parse_args()
     opt.weights = 'weights/last.pt' if opt.resume else opt.weights
+    opt.transfer = True
     print(opt)
 
     tb_writer = None
