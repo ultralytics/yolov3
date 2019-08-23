@@ -250,7 +250,7 @@ def train():
                     imgs = F.interpolate(imgs, size=ns, mode='bilinear', align_corners=False)
 
             # Plot images with bounding boxes
-            if epoch == 0 and i == 0:
+            if ni == 0:
                 fname = 'train_batch%g.jpg' % i
                 plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname)
                 if tb_writer:
@@ -284,7 +284,7 @@ def train():
                 loss.backward()
 
             # Accumulate gradient for x batches before optimizing
-            if (i + 1) % accumulate == 0 or (i + 1) == nb:
+            if ni % accumulate == 0:
                 optimizer.step()
                 optimizer.zero_grad()
 
@@ -305,7 +305,7 @@ def train():
                                           img_size=opt.img_size,
                                           model=model,
                                           conf_thres=0.001 if final_epoch and epoch > 0 else 0.1,  # 0.1 for speed
-                                          save_json=final_epoch and 'coco.data' in data)
+                                          save_json=final_epoch and epoch > 0 and 'coco.data' in data)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
@@ -366,7 +366,7 @@ if __name__ == '__main__':
     parser.add_argument('--accumulate', type=int, default=2, help='batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data', type=str, default='data/coco.data', help='*.data file path')
-    parser.add_argument('--multi-scale', action='store_true', help='train at (1/1.5)x - 1.5x sizes')
+    parser.add_argument('--multi-scale', action='store_true', help='adjust (67% - 150%) img_size every 10 batches')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
     parser.add_argument('--resume', action='store_true', help='resume training from last.pt')
