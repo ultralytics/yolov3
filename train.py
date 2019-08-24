@@ -249,6 +249,10 @@ def train():
                 print('WARNING: nan loss detected, ending training')
                 return results
 
+            # Divide by accumulation count
+            if accumulate > 1:
+                loss /= accumulate
+
             # Compute gradient
             if mixed_precision:
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
