@@ -562,11 +562,15 @@ def print_model_biases(model):
               'classification: %.2f+/-%.2f' % (b[:, 5:].mean(), b[:, 5:].std()))
 
 
-def strip_optimizer_from_checkpoint(filename='weights/best.pt'):
+def strip_optimizer(f='weights/best.pt'):
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
-    a = torch.load(filename, map_location='cpu')
-    a['optimizer'] = []
-    torch.save(a, filename.replace('.pt', '_lite.pt'))
+    x = torch.load(f)
+    x['optimizer'] = None
+    # x['training_results'] = None
+    # x['epoch'] = -1
+    # for p in x['model']:
+    #     p.requires_grad = True
+    torch.save(x, f)
 
 
 def coco_class_count(path='../coco/labels/train2014/'):
