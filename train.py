@@ -16,28 +16,8 @@ try:  # Mixed precision training https://github.com/NVIDIA/apex
 except:
     mixed_precision = False  # not installed
 
-# 320 --epochs 1
-#      0.109      0.297       0.150       0.126       7.04      1.666      4.062     0.1845       42.6       3.34      12.61      8.338     0.2705      0.001         -4        0.9     0.0005 a  320 giou + best_anchor False
-#      0.223      0.218       0.138       0.189       9.28      1.153      4.376    0.08263      24.28       3.05      20.93      2.842     0.2759   0.001357     -5.036     0.9158  0.0005722 b  mAP/F1 - 50/50 weighting
-#      0.231      0.215       0.135       0.191       9.51      1.432      3.007    0.06082      24.87      3.477      24.13      2.802     0.3436   0.001127     -5.036     0.9232  0.0005874 c
-#      0.246      0.194       0.128       0.192       8.12      1.101      3.954     0.0817      22.83      3.967      19.83      1.779     0.3352   0.000895     -5.036     0.9238  0.0007973 d
-#      0.187      0.237       0.144       0.186       14.6      1.607      4.202    0.09439      39.27      3.726      31.26      2.634      0.273   0.001542     -5.036     0.8364  0.0008393 e
-#      0.250      0.217       0.136       0.195         3.3         1.2           2       0.604        15.7        3.67          20        1.36       0.194     0.00128          -4        0.95    0.000201         0.8       0.388         1.2       0.119      0.0589       0.401 f
-#      0.269      0.225       0.149       0.218        6.71        1.13        5.25       0.246        22.4        3.64        17.8        1.31       0.256     0.00146          -4       0.936     0.00042       0.123        0.18        1.81      0.0987      0.0788       0.441 g
-#      0.179      0.274       0.165       0.187        7.95        1.22        7.62       0.224          17        5.71        17.7        3.28       0.295     0.00136          -4       0.875    0.000319       0.131       0.208        2.14        0.14      0.0773       0.228 h
-#      0.296      0.228       0.152       0.220        5.18        1.43        4.27       0.265        11.7        4.81        11.5        1.56       0.281      0.0013          -4       0.944    0.000427      0.0599       0.142        1.03      0.0552      0.0555       0.434 i
-
-# 320 --epochs 2
-# 0.242	0.296	0.196	0.231	5.67	0.8541	4.286	0.1539	21.61	1.957	22.9	2.894	0.3689	0.001844	-4	0.913	0.000467  # ha 0.417 mAP @ epoch 100
-# 0.298	0.244	0.167	0.247	4.99	0.8896	4.067	0.1694	21.41	2.033	25.61	1.783	0.4115	0.00128	    -4	0.950	0.000377  # hb
-# 0.268	0.268	0.178	0.240	4.36	1.104	5.596	0.2087	14.47	2.599	16.27	2.406	0.4114	0.001585	-4	0.950	0.000524  # hc
-# 0.161	0.327	0.190	0.193	7.82	1.153	4.062	0.1845	24.28	3.05	20.93	2.842	0.2759	0.001357	-4	0.916	0.000572  # hd 0.438 mAP @ epoch 100
-
 # Hyperparameters (j-series, 50.5 mAP yolov3-320) evolved by @ktian08 https://github.com/ultralytics/yolov3/issues/310
-# Transfer learning edge layers: 0.1 lr0, 0.9 momentum
 hyp = {'giou': 1.582,  # giou loss gain
-       'xy': 4.688,  # xy loss gain
-       'wh': 0.1857,  # wh loss gain
        'cls': 27.76,  # cls loss gain  (CE=~1.0, uCE=~20)
        'cls_pw': 1.446,  # cls BCELoss positive_weight
        'obj': 21.35,  # obj loss gain (*=80 for uBCE with 80 classes)
@@ -125,10 +105,11 @@ def train():
         # possible weights are 'yolov3.weights', 'yolov3-tiny.conv.15',  'darknet53.conv.74' etc.
         cutoff = load_darknet_weights(model, weights)
 
-    if opt.transfer:  # transfer learning
+    if opt.transfer:  # transfer learning edge (yolo) layers
         nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
 
-        for x in optimizer.param_groups:  # lower parameter count can handle more aggressive training hyps
+        for x in optimizer.param_groups:
+            # lower param count allows more aggressive training settings: ~0.1 lr0, ~0.9 momentum
             x['lr'] *= 10
             x['momentum'] *= 0.9
 
@@ -197,13 +178,12 @@ def train():
     model_info(model, report='summary')  # 'full' or 'summary'
     nb = len(dataloader)
     maps = np.zeros(nc)  # mAP per class
-    results = (0, 0, 0, 0, 0, 0, 0)  # P, R, mAP, F1, test_loss
+    results = (0, 0, 0, 0, 0, 0, 0, 0)  # 'P', 'R', 'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification'
     t0 = time.time()
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
 
         model.train()
-        print(('\n' + '%10s' * 9) %
-              ('Epoch', 'gpu_mem', 'GIoU/xy', 'wh', 'obj', 'cls', 'total', 'targets', 'img_size'))
+        print(('\n' + '%10s' * 8) % ('Epoch', 'gpu_mem', 'GIoU', 'obj', 'cls', 'total', 'targets', 'img_size'))
 
         # Update scheduler
         if epoch > 0:
@@ -222,7 +202,7 @@ def train():
             image_weights = labels_to_image_weights(dataset.labels, nc=nc, class_weights=w)
             dataset.indices = random.choices(range(dataset.n), weights=image_weights, k=dataset.n)  # rand weighted idx
 
-        mloss = torch.zeros(5).to(device)  # mean losses
+        mloss = torch.zeros(4).to(device)  # mean losses
         pbar = tqdm(enumerate(dataloader), total=nb)  # progress bar
         for i, (imgs, targets, paths, _) in pbar:  # batch -------------------------------------------------------------
             ni = i + nb * epoch  # number integrated batches (since train start)
@@ -280,7 +260,7 @@ def train():
             # Print batch results
             mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
             mem = torch.cuda.memory_cached() / 1E9 if torch.cuda.is_available() else 0  # (GB)
-            s = ('%10s' * 2 + '%10.3g' * 7) % (
+            s = ('%10s' * 2 + '%10.3g' * 6) % (
                 '%g/%g' % (epoch, epochs - 1), '%.3gG' % mem, *mloss, len(targets), img_size)
             pbar.set_description(s)
 
@@ -298,13 +278,13 @@ def train():
 
         # Write epoch results
         with open('results.txt', 'a') as file:
-            file.write(s + '%11.3g' * 7 % results + '\n')  # P, R, mAP, F1, test_losses=(GIoU, obj, cls)
+            file.write(s + '%10.3g' * 7 % results + '\n')  # P, R, mAP, F1, test_losses=(GIoU, obj, cls)
 
         # Write Tensorboard results
         if tb_writer:
-            x = list(mloss[:5]) + list(results[:7])
-            titles = ['GIoU/XY', 'Width/Height', 'Objectness', 'Classification', 'Train loss', 'Precision', 'Recall',
-                      'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification']
+            x = list(mloss) + list(results)
+            titles = ['GIoU', 'Objectness', 'Classification', 'Train loss',
+                      'Precision', 'Recall', 'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification']
             for xi, title in zip(x, titles):
                 tb_writer.add_scalar(title, xi, epoch)
 

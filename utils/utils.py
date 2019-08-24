@@ -374,7 +374,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     lobj *= k * h['obj']
     lcls *= k * h['cls']
     loss = lbox + lobj + lcls
-    return loss, torch.cat((lbox, ft([0]), lobj, lcls, loss)).detach()
+    return loss, torch.cat((lbox, lobj, lcls, loss)).detach()
 
 
 def build_targets(model, targets):
@@ -661,9 +661,9 @@ def kmeans_targets(path='../coco/trainvalno5k.txt', n=9, img_size=416):  # from 
 
 def print_mutation(hyp, results, bucket=''):
     # Print mutation results to evolve.txt (for use with train.py --evolve)
-    a = '%11s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
-    b = '%11.3g' * len(hyp) % tuple(hyp.values())  # hyperparam values
-    c = '%11.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
+    a = '%10s' * len(hyp) % tuple(hyp.keys())  # hyperparam keys
+    b = '%10.3g' * len(hyp) % tuple(hyp.values())  # hyperparam values
+    c = '%10.3g' * len(results) % results  # results (P, R, mAP, F1, test_loss)
     print('\n%s\n%s\nEvolved fitness: %s\n' % (a, b, c))
 
     if bucket:
@@ -672,7 +672,7 @@ def print_mutation(hyp, results, bucket=''):
     with open('evolve.txt', 'a') as f:  # append result
         f.write(c + b + '\n')
     x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
-    np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%11.3g')  # save sort by fitness
+    np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%10.3g')  # save sort by fitness
 
     if bucket:
         os.system('gsutil cp evolve.txt gs://%s' % bucket)  # upload evolve.txt
@@ -680,7 +680,7 @@ def print_mutation(hyp, results, bucket=''):
 
 def fitness(x):
     # Returns fitness (for use with results.txt or evolve.txt)
-    return 0.50 * x[:, 2] + 0.50 * x[:, 3]  # fitness = 0.9 * mAP + 0.1 * F1
+    return 0.50 * x[:, 2] + 0.50 * x[:, 3]  # fitness = 0.5 * mAP + 0.5 * F1
 
 
 # Plotting functions ---------------------------------------------------------------------------------------------------
@@ -803,10 +803,10 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
     fig, ax = plt.subplots(2, 5, figsize=(14, 7))
     ax = ax.ravel()
-    s = ['GIoU', 'Confidence', 'Classification', 'Precision', 'Recall',
-         'val GIoU', 'val Confidence', 'val Classification', 'mAP', 'F1']
+    s = ['GIoU', 'Objectness', 'Classification', 'Precision', 'Recall',
+         'val GIoU', 'val Objectness', 'val Classification', 'mAP', 'F1']
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
-        results = np.loadtxt(f, usecols=[2, 4, 5, 9, 10, 13, 14, 15, 11, 12], ndmin=2).T
+        results = np.loadtxt(f, usecols=[2, 3, 4, 8, 9, 12, 13, 14, 10, 11], ndmin=2).T
         n = results.shape[1]  # number of rows
         x = range(start, min(stop, n) if stop else n)
         for i in range(10):
@@ -826,9 +826,9 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
 def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_results_overlay()
     # Plot training results files 'results*.txt', overlaying train and val losses
     s = ['train', 'train', 'train', 'Precision', 'mAP', 'val', 'val', 'val', 'Recall', 'F1']  # legends
-    t = ['GIoU', 'Confidence', 'Classification', 'P-R', 'mAP-F1']  # titles
+    t = ['GIoU', 'Objectness', 'Classification', 'P-R', 'mAP-F1']  # titles
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
-        results = np.loadtxt(f, usecols=[2, 4, 5, 9, 11, 13, 14, 15, 10, 12], ndmin=2).T
+        results = np.loadtxt(f, usecols=[2, 3, 4, 8, 9, 12, 13, 14, 10, 11], ndmin=2).T
         n = results.shape[1]  # number of rows
         x = range(start, min(stop, n) if stop else n)
         fig, ax = plt.subplots(1, 5, figsize=(14, 3.5))

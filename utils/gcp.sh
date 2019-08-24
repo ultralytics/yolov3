@@ -16,7 +16,7 @@ sudo shutdown
 
 # Re-clone
 rm -rf yolov3  # Warning: remove existing
-git clone https://github.com/ultralytics/yolov3  # master
+git clone https://github.com/ultralytics/yolov3 && cd yolov3 # master
 # git clone -b test --depth 1 https://github.com/ultralytics/yolov3 test  # branch
 
 # Train
