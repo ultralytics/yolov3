@@ -268,11 +268,11 @@ def train():
                 '%g/%g' % (epoch, epochs - 1), '%.3gG' % mem, *mloss, len(targets), img_size)
             pbar.set_description(s)  # end batch -----------------------------------------------------------------------
 
+        final_epoch = epoch + 1 == epochs
         if opt.prebias:
             print_model_biases(model)
         else:
             # Calculate mAP (always test final epoch, skip first 10 if opt.nosave)
-            final_epoch = epoch + 1 == epochs
             if not (opt.notest or (opt.nosave and epoch < 10)) or final_epoch:
                 with torch.no_grad():
                     results, maps = test.test(cfg,
