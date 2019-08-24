@@ -555,7 +555,7 @@ def get_yolo_layers(model):
 
 def print_model_biases(model):
     # prints the bias neurons preceding each yolo layer
-    print('\nModel Output-Bias Summary::')
+    print('\nModel output-bias Summary:')
     for l in model.yolo_layers:  # print pretrained biases
         b = model.module_list[l - 1][0].bias.view(3, -1)  # bias 3x85
         print('regression: %.2f+/-%.2f, ' % (b[:, :4].mean(), b[:, :4].std()),
