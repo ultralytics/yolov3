@@ -592,7 +592,7 @@ def coco_only_people(path='../coco/labels/val2014/'):
 def select_best_evolve(path='evolve*.txt'):  # from utils.utils import *; select_best_evolve()
     # Find best evolved mutation
     for file in sorted(glob.glob(path)):
-        x = np.loadtxt(file, dtype=np.float32)
+        x = np.loadtxt(file, dtype=np.float32, ndmin=2)
         fitness = x[:, 2] * 0.5 + x[:, 3] * 0.5  # weighted mAP and F1 combination
         print(file, x[fitness.argmax()])
 
@@ -774,7 +774,7 @@ def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
 
 def plot_evolution_results(hyp):  # from utils.utils import *; plot_evolution_results(hyp)
     # Plot hyperparameter evolution results in evolve.txt
-    x = np.loadtxt('evolve.txt')
+    x = np.loadtxt('evolve.txt', ndmin=2)
     f = fitness(x)
     weights = (f - f.min()) ** 2  # for weighted results
     fig = plt.figure(figsize=(12, 10))
@@ -799,7 +799,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     s = ['GIoU', 'Confidence', 'Classification', 'Precision', 'Recall',
          'val GIoU', 'val Confidence', 'val Classification', 'mAP', 'F1']
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
-        results = np.loadtxt(f, usecols=[2, 4, 5, 9, 10, 13, 14, 15, 11, 12]).T
+        results = np.loadtxt(f, usecols=[2, 4, 5, 9, 10, 13, 14, 15, 11, 12], ndmin=2).T
         n = results.shape[1]  # number of rows
         x = range(start, min(stop, n) if stop else n)
         for i in range(10):
@@ -821,7 +821,7 @@ def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_re
     s = ['train', 'train', 'train', 'Precision', 'mAP', 'val', 'val', 'val', 'Recall', 'F1']  # legends
     t = ['GIoU', 'Confidence', 'Classification', 'P-R', 'mAP-F1']  # titles
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
-        results = np.loadtxt(f, usecols=[2, 4, 5, 9, 11, 13, 14, 15, 10, 12]).T
+        results = np.loadtxt(f, usecols=[2, 4, 5, 9, 11, 13, 14, 15, 10, 12], ndmin=2).T
         n = results.shape[1]  # number of rows
         x = range(start, min(stop, n) if stop else n)
         fig, ax = plt.subplots(1, 5, figsize=(14, 3.5))
