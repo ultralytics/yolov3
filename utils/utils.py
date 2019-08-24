@@ -562,14 +562,17 @@ def print_model_biases(model):
               'classification: %.2f+/-%.2f' % (b[:, 5:].mean(), b[:, 5:].std()))
 
 
-def strip_optimizer(f='weights/best.pt'):
+def strip_optimizer(f='weights/best.pt'):  # from utils.utils import *; strip_optimizer()
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
     x = torch.load(f)
     x['optimizer'] = None
     # x['training_results'] = None
     # x['epoch'] = -1
-    # for p in x['model']:
-    #     p.requires_grad = True
+    # for p in x['model'].values():
+    #     try:
+    #         p.requires_grad = True
+    #     except:
+    #         pass
     torch.save(x, f)
 
 
