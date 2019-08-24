@@ -39,7 +39,7 @@ def train():
     cfg = opt.cfg
     data = opt.data
     img_size = opt.img_size
-    epochs = opt.epochs  # 500200 batches at bs 16, 117263 images = 273 epochs
+    epochs = 1 if opt.prebias else opt.epochs  # 500200 batches at bs 16, 117263 images = 273 epochs
     batch_size = opt.batch_size
     accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
     weights = opt.weights  # initial training weights
@@ -105,7 +105,7 @@ def train():
         # possible weights are 'yolov3.weights', 'yolov3-tiny.conv.15',  'darknet53.conv.74' etc.
         cutoff = load_darknet_weights(model, weights)
 
-    if opt.transfer:  # transfer learning edge (yolo) layers
+    if opt.transfer or opt.prebias:  # transfer learning edge (yolo) layers
         nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
 
         for x in optimizer.param_groups:
@@ -114,7 +114,12 @@ def train():
             x['momentum'] *= 0.9
 
         for p in model.parameters():
-            p.requires_grad = True if p.shape[0] == nf else False
+            if opt.prebias and p.numel() == nf:  # train yolo biases only
+                p.requires_grad = True
+            elif opt.transfer and p.shape[0] == nf:  # train yolo biases+weights only
+                p.requires_grad = True
+            else:
+                p.requires_grad = False
 
     # Scheduler https://github.com/ultralytics/yolov3/issues/238
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
@@ -349,6 +354,7 @@ if __name__ == '__main__':
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--weights', type=str, default='', help='initial weights')  # i.e. weights/darknet.53.conv.74
     parser.add_argument('--arc', type=str, default='default', help='yolo architecture')  # default, uCE, uBCE
+    parser.add_argument('--prebias', action='store_true', help='transfer-learn yolo biases prior to training')
     opt = parser.parse_args()
     opt.weights = 'weights/last.pt' if opt.resume else opt.weights
     print(opt)
@@ -363,7 +369,13 @@ if __name__ == '__main__':
         except:
             pass
 
-        results = train()
+        if opt.prebias:
+            train()  # transfer-learn yolo biases for 1 epoch
+            create_backbone('weights/last.pt')  # saved results as backbone.pt
+            opt.weights = 'weights/backbone.pt'  # assign backbone
+            opt.prebias = False  # disable prebias and train normally
+
+        train()
 
     else:  # Evolve hyperparameters (optional)
         opt.notest = True  # only test final epoch

@@ -205,12 +205,12 @@ if __name__ == '__main__':
     print(opt)
 
     with torch.no_grad():
-        results = test(opt.cfg,
-                       opt.data,
-                       opt.weights,
-                       opt.batch_size,
-                       opt.img_size,
-                       opt.iou_thres,
-                       opt.conf_thres,
-                       opt.nms_thres,
-                       opt.save_json)
+        test(opt.cfg,
+             opt.data,
+             opt.weights,
+             opt.batch_size,
+             opt.img_size,
+             opt.iou_thres,
+             opt.conf_thres,
+             opt.nms_thres,
+             opt.save_json)
