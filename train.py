@@ -39,7 +39,7 @@ def train():
     cfg = opt.cfg
     data = opt.data
     img_size = opt.img_size
-    epochs = 1 if opt.prebias else opt.epochs  # 500200 batches at bs 16, 117263 images = 273 epochs
+    epochs = 3 if opt.prebias else opt.epochs  # 500200 batches at bs 16, 117263 images = 273 epochs
     batch_size = opt.batch_size
     accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
     weights = opt.weights  # initial training weights
@@ -110,7 +110,7 @@ def train():
 
         for x in optimizer.param_groups:
             # lower param count allows more aggressive training settings: ~0.1 lr0, ~0.9 momentum
-            x['lr'] *= 10
+            x['lr'] *= 100
             x['momentum'] *= 0.9
 
         for p in model.parameters():
