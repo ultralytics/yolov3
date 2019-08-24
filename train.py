@@ -186,7 +186,6 @@ def train():
     results = (0, 0, 0, 0, 0, 0, 0)  # 'P', 'R', 'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification'
     t0 = time.time()
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
-
         model.train()
         print(('\n' + '%10s' * 8) % ('Epoch', 'gpu_mem', 'GIoU', 'obj', 'cls', 'total', 'targets', 'img_size'))
 
@@ -267,19 +266,22 @@ def train():
             mem = torch.cuda.memory_cached() / 1E9 if torch.cuda.is_available() else 0  # (GB)
             s = ('%10s' * 2 + '%10.3g' * 6) % (
                 '%g/%g' % (epoch, epochs - 1), '%.3gG' % mem, *mloss, len(targets), img_size)
-            pbar.set_description(s)
+            pbar.set_description(s)  # end batch -----------------------------------------------------------------------
 
-        # Calculate mAP (always test final epoch, skip first 5 if opt.nosave)
-        final_epoch = epoch + 1 == epochs
-        if not (opt.notest or (opt.nosave and epoch < 10)) or final_epoch:
-            with torch.no_grad():
-                results, maps = test.test(cfg,
-                                          data,
-                                          batch_size=batch_size,
-                                          img_size=opt.img_size,
-                                          model=model,
-                                          conf_thres=0.001 if final_epoch and epoch > 0 else 0.1,  # 0.1 for speed
-                                          save_json=final_epoch and epoch > 0 and 'coco.data' in data)
+        if opt.prebias:
+            print_model_biases(model)
+        else:
+            # Calculate mAP (always test final epoch, skip first 10 if opt.nosave)
+            final_epoch = epoch + 1 == epochs
+            if not (opt.notest or (opt.nosave and epoch < 10)) or final_epoch:
+                with torch.no_grad():
+                    results, maps = test.test(cfg,
+                                              data,
+                                              batch_size=batch_size,
+                                              img_size=opt.img_size,
+                                              model=model,
+                                              conf_thres=0.001 if final_epoch and epoch > 0 else 0.1,  # 0.1 for speed
+                                              save_json=final_epoch and epoch > 0 and 'coco.data' in data)
 
         # Write epoch results
         with open('results.txt', 'a') as file:
@@ -293,7 +295,7 @@ def train():
             for xi, title in zip(x, titles):
                 tb_writer.add_scalar(title, xi, epoch)
 
-        # Update best map
+        # Update best mAP
         fitness = results[2]  # mAP
         if fitness > best_fitness:
             best_fitness = fitness
@@ -324,7 +326,7 @@ def train():
                 torch.save(chkpt, wdir + 'backup%g.pt' % epoch)
 
             # Delete checkpoint
-            del chkpt
+            del chkpt  # end epoch -------------------------------------------------------------------------------------
 
     # Report time
     plot_results()  # save as results.png
@@ -373,9 +375,10 @@ if __name__ == '__main__':
             train()  # transfer-learn yolo biases for 1 epoch
             create_backbone('weights/last.pt')  # saved results as backbone.pt
             opt.weights = 'weights/backbone.pt'  # assign backbone
-            opt.prebias = False  # disable prebias and train normally
+            opt.prebias = False  # disable prebias
+            print(opt)  # display options
 
-        train()
+        train()  # train normally
 
     else:  # Evolve hyperparameters (optional)
         opt.notest = True  # only test final epoch
