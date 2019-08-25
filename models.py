@@ -78,11 +78,11 @@ def create_modules(module_defs, img_size, arc):
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
                 if arc == 'default':
-                    b = [-5, -4]  # obj, cls
+                    b = [-4, -3.6]  # obj, cls
                 elif arc == 'uCE':  # unified CE (1 background + 80 classes)
-                    b = [7, 0]  # obj, cls
+                    b = [10, -0.1]  # obj, cls
                 elif arc == 'uBCE':  # unified BCE (80 classes)
-                    b = [0, -3.5]  # obj, cls
+                    b = [0, -8.5]  # obj, cls
 
                 bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
                 bias[:, 4] += b[0]  # obj
