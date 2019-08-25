@@ -79,7 +79,7 @@ def create_modules(module_defs, img_size, arc):
             try:
                 if arc == 'defaultpw':  # default with positive weights
                     b = [-4, -3.6]  # obj, cls
-                if arc == 'default':  # default no pw (40 cls, 80 obj)
+                elif arc == 'default':  # default no pw (40 cls, 80 obj)
                     b = [-5.5, -4.0]
                 elif arc == 'uBCE':  # unified BCE (80 classes)
                     b = [0, -8.5]
