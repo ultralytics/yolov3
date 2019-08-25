@@ -322,8 +322,8 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     # Define criteria
     BCEcls = nn.BCEWithLogitsLoss(pos_weight=ft([h['cls_pw']]))
     BCEobj = nn.BCEWithLogitsLoss(pos_weight=ft([h['obj_pw']]))
-    FBCE = FocalLoss(nn.BCEWithLogitsLoss())
-    FCE = FocalLoss(nn.CrossEntropyLoss())  # weight=model.class_weights
+    FBCE = nn.BCEWithLogitsLoss()
+    FCE = nn.CrossEntropyLoss()  # weight=model.class_weights
 
     # Compute losses
     for i, pi in enumerate(p):  # layer index, layer predictions

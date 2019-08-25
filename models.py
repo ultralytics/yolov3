@@ -82,7 +82,7 @@ def create_modules(module_defs, img_size, arc):
                 elif arc == 'uCE':  # unified CE (1 background + 80 classes)
                     b = [7, 0]  # obj, cls
                 elif arc == 'uBCE':  # unified BCE (80 classes)
-                    b = [0, -4]  # obj, cls
+                    b = [0, -3.5]  # obj, cls
 
                 bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
                 bias[:, 4] += b[0]  # obj
