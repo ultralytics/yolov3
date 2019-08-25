@@ -39,7 +39,7 @@ def train():
     cfg = opt.cfg
     data = opt.data
     img_size = opt.img_size
-    epochs = 3 if opt.prebias else opt.epochs  # 500200 batches at bs 16, 117263 images = 273 epochs
+    epochs = 1 if opt.prebias else opt.epochs  # 500200 batches at bs 16, 117263 images = 273 epochs
     batch_size = opt.batch_size
     accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
     weights = opt.weights  # initial training weights
