@@ -44,6 +44,10 @@ def train():
     accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
     weights = opt.weights  # initial training weights
 
+    if 'pw' not in opt.arc:  # remove BCELoss positive weights
+        hyp['cls_pw'] = 0
+        hyp['obj_pw'] = 0
+
     # Initialize
     init_seeds()
     wdir = 'weights' + os.sep  # weights dir
@@ -359,7 +363,7 @@ if __name__ == '__main__':
     parser.add_argument('--img-weights', action='store_true', help='select training images by weight')
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--weights', type=str, default='', help='initial weights')  # i.e. weights/darknet.53.conv.74
-    parser.add_argument('--arc', type=str, default='default', help='yolo architecture')  # default, uCE, uBCE
+    parser.add_argument('--arc', type=str, default='defaultpw', help='yolo architecture')  # defaultpw, uCE, uBCE
     parser.add_argument('--prebias', action='store_true', help='transfer-learn yolo biases prior to training')
     opt = parser.parse_args()
     opt.weights = 'weights/last.pt' if opt.resume else opt.weights
