@@ -71,10 +71,18 @@ def train():
     model = Darknet(cfg, arc=opt.arc).to(device)
 
     # Optimizer
-    # optimizer = optim.Adam(model.parameters(), lr=hyp['lr0'], weight_decay=hyp['weight_decay'])
-    # optimizer = AdaBound(model.parameters(), lr=hyp['lr0'], final_lr=0.1)
-    optimizer = optim.SGD(model.parameters(), lr=hyp['lr0'], momentum=hyp['momentum'], weight_decay=hyp['weight_decay'],
-                          nesterov=True)
+    pg0, pg1 = [], []  # optimizer parameter groups
+    for k, v in dict(model.named_parameters()).items():
+        if 'Conv2d.weight' in k:
+            pg1 += [v]  # parameter group 1 (apply weight_decay)
+        else:
+            pg0 += [v]  # parameter group 0
+
+    # optimizer = optim.Adam(pg0, lr=hyp['lr0'])
+    # optimizer = AdaBound(pg0, lr=hyp['lr0'], final_lr=0.1)
+    optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
+    optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
+    del pg0, pg1
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
@@ -112,17 +120,17 @@ def train():
     if opt.transfer or opt.prebias:  # transfer learning edge (yolo) layers
         nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
 
-        for x in optimizer.param_groups:
-            # lower param count allows more aggressive training settings: ~0.1 lr0, ~0.9 momentum
-            x['lr'] *= 100
-            x['momentum'] *= 0.9
+        for p in optimizer.param_groups:
+            # lower param count allows more aggressive training settings: i.e. SGD ~0.1 lr0, ~0.9 momentum
+            p['lr'] *= 100
+            p['momentum'] *= 0.9
 
         for p in model.parameters():
-            if opt.prebias and p.numel() == nf:  # train yolo biases only
+            if opt.prebias and p.numel() == nf:  # train (yolo biases)
                 p.requires_grad = True
-            elif opt.transfer and p.shape[0] == nf:  # train yolo biases+weights only
+            elif opt.transfer and p.shape[0] == nf:  # train (yolo biases+weights)
                 p.requires_grad = True
-            else:
+            else:  # freeze layer
                 p.requires_grad = False
 
     # Scheduler https://github.com/ultralytics/yolov3/issues/238
