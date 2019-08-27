@@ -45,8 +45,8 @@ def train():
     weights = opt.weights  # initial training weights
 
     if 'pw' not in opt.arc:  # remove BCELoss positive weights
-        hyp['cls_pw'] = 0
-        hyp['obj_pw'] = 0
+        hyp['cls_pw'] = 1.
+        hyp['obj_pw'] = 1.
 
     # Initialize
     init_seeds()
