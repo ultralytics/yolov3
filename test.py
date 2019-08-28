@@ -165,23 +165,26 @@ def test(cfg,
 
     # Save JSON
     if save_json and map and len(jdict):
-        imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataset.img_files]
-        with open('results.json', 'w') as file:
-            json.dump(jdict, file)
+        try:
+            imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataset.img_files]
+            with open('results.json', 'w') as file:
+                json.dump(jdict, file)
 
-        from pycocotools.coco import COCO
-        from pycocotools.cocoeval import COCOeval
+            from pycocotools.coco import COCO
+            from pycocotools.cocoeval import COCOeval
 
-        # https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb
-        cocoGt = COCO('../coco/annotations/instances_val2014.json')  # initialize COCO ground truth api
-        cocoDt = cocoGt.loadRes('results.json')  # initialize COCO pred api
+            # https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb
+            cocoGt = COCO('../coco/annotations/instances_val2014.json')  # initialize COCO ground truth api
+            cocoDt = cocoGt.loadRes('results.json')  # initialize COCO pred api
 
-        cocoEval = COCOeval(cocoGt, cocoDt, 'bbox')
-        cocoEval.params.imgIds = imgIds  # [:32]  # only evaluate these images
-        cocoEval.evaluate()
-        cocoEval.accumulate()
-        cocoEval.summarize()
-        map = cocoEval.stats[1]  # update mAP to pycocotools mAP
+            cocoEval = COCOeval(cocoGt, cocoDt, 'bbox')
+            cocoEval.params.imgIds = imgIds  # [:32]  # only evaluate these images
+            cocoEval.evaluate()
+            cocoEval.accumulate()
+            cocoEval.summarize()
+            map = cocoEval.stats[1]  # update mAP to pycocotools mAP
+        except:
+            print('WARNING: pycocotools not installed, can not compute official COCO mAP')
 
     # Return results
     maps = np.zeros(nc) + map
