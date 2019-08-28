@@ -184,7 +184,7 @@ def test(cfg,
             cocoEval.summarize()
             map = cocoEval.stats[1]  # update mAP to pycocotools mAP
         except:
-            print('WARNING: pycocotools not installed, can not compute official COCO mAP')
+            print('WARNING: missing dependency pycocotools from requirements.txt. Can not compute official COCO mAP.')
 
     # Return results
     maps = np.zeros(nc) + map
