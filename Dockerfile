@@ -1,11 +1,19 @@
 # Start from Nvidia PyTorch image https://ngc.nvidia.com/catalog/containers/nvidia:pytorch
 FROM nvcr.io/nvidia/pytorch:19.07-py3
 
-# Install dependencies
-RUN pip install -U -r requirements.txt
+# Create working directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
-# Move file into container
-# RUN mv 1047.tif ./1047.tif
+# Copy contents
+COPY . /usr/src/app
+
+# Install dependencies
+# RUN pip install -U -r requirements.txt
+RUN conda update -n base -c defaults conda
+RUN conda install -y -c anaconda future numpy opencv matplotlib tqdm pillow
+RUN conda install -y -c conda-forge scikit-image tensorboard pycocotools
+# conda install pytorch torchvision -c pytorch
 
 # Move model into container
 # RUN mv yolov3-spp.pt ./weights
