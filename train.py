@@ -283,9 +283,6 @@ def train():
             s = ('%10s' * 2 + '%10.3g' * 6) % (
                 '%g/%g' % (epoch, epochs - 1), '%.3gG' % mem, *mloss, len(targets), img_size)
             pbar.set_description(s)
-            if torch.isnan(loss):
-                print('WARNING: nan loss detected, ending training', loss_items)
-                return results
 
             # end batch ------------------------------------------------------------------------------------------------
 
