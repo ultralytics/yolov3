@@ -27,9 +27,7 @@ COPY . /usr/src/app
 # sudo docker image prune -af && sudo docker build -t friendlyhello . && sudo docker tag friendlyhello ultralytics/yolov3:v0
 
 # Run container
-# time sudo docker run -it --memory=8g --cpus=4 ultralytics/yolov3:v0 bash -c './run.sh /1047.tif /tmp && cat /tmp/1047.tif.txt'
-
-# time sudo docker run -it --memory=8g --cpus=4 ultralytics/yolov3:v0 bash -c 'python3 detect.py'
+# time sudo nvidia-docker run ultralytics/yolov3:v0 python3 detect.py
 
 # Push container to https://hub.docker.com/u/ultralytics
 # sudo docker push ultralytics/xview:v30
