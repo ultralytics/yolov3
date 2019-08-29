@@ -24,7 +24,7 @@ COPY . /usr/src/app
 # Build container
 # rm -rf yolov3  # Warning: remove existing
 # git clone https://github.com/ultralytics/yolov3 && cd yolov3 && python3 detect.py
-# sudo docker image prune -af -y && sudo docker build -t friendlyhello . && sudo docker tag friendlyhello ultralytics/yolov3:v0
+# sudo docker image prune -af && sudo docker build -t friendlyhello . && sudo docker tag friendlyhello ultralytics/yolov3:v0
 
 # Run container
 # time sudo docker run -it --memory=8g --cpus=4 ultralytics/yolov3:v0 bash -c './run.sh /1047.tif /tmp && cat /tmp/1047.tif.txt'
