@@ -7,24 +7,19 @@ from utils.datasets import *
 from utils.utils import *
 
 
-def detect(save_txt=False,
-           save_images=True):
+def detect(save_txt=False, save_images=True):
+    img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out = opt.output
-    img_size = opt.img_size
 
     # Initialize
     device = torch_utils.select_device(force_cpu=ONNX_EXPORT)
-    torch.backends.cudnn.benchmark = False  # set False for reproducible results
+    torch.backends.cudnn.benchmark = False  # set False to speed up variable image size inference
     if os.path.exists(out):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
 
     # Initialize model
-    if ONNX_EXPORT:
-        s = (320, 192)  # (320, 192) or (416, 256) or (608, 352) onnx model image size (height, width)
-        model = Darknet(opt.cfg, s)
-    else:
-        model = Darknet(opt.cfg, img_size)
+    model = Darknet(opt.cfg, img_size)
 
     # Load weights
     if opt.weights.endswith('.pt'):  # pytorch format
@@ -40,7 +35,7 @@ def detect(save_txt=False,
 
     # Export mode
     if ONNX_EXPORT:
-        img = torch.zeros((1, 3, s[0], s[1]))
+        img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
         torch.onnx.export(model, img, 'weights/export.onnx', verbose=True)
         return
 
