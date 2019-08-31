@@ -91,20 +91,30 @@ V100 x2 | 64 (64x1) | 150 | 13 min | $0.36
 
 # Inference
 
-`detect.py` runs inference on all images **and videos** in the `data/samples` folder:
+`detect.py` runs inference on any sources:
+
+```bash
+python3 detect.py --source ...
+```
+
+- Image:  `--source example.jpg`
+- Video:  `--source example.mp4`
+- Directory:  `--source dir/`
+- Webcam:  `--source 0`
+- RTSP stream:  `--source rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa`
+- HTTP stream:  `--source http://wmccpinetop.axiscam.net/mjpg/video.mjpg`
+
+To run a specific models:
 
 **YOLOv3:** `python3 detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.weights`
-<img src="https://user-images.githubusercontent.com/26833433/50524393-b0adc200-0ad5-11e9-9335-4774a1e52374.jpg" width="600">
+<img src="https://user-images.githubusercontent.com/26833433/50524393-b0adc200-0ad5-11e9-9335-4774a1e52374.jpg" width="500">
 
 **YOLOv3-tiny:** `python3 detect.py --cfg cfg/yolov3-tiny.cfg --weights weights/yolov3-tiny.weights`
-<img src="https://user-images.githubusercontent.com/26833433/50374155-21427380-05ea-11e9-8d24-f1a4b2bac1ad.jpg" width="600">
+<img src="https://user-images.githubusercontent.com/26833433/50374155-21427380-05ea-11e9-8d24-f1a4b2bac1ad.jpg" width="500">
 
 **YOLOv3-SPP:** `python3 detect.py --cfg cfg/yolov3-spp.cfg --weights weights/yolov3-spp.weights`
-<img src="https://user-images.githubusercontent.com/26833433/54747926-e051ff00-4bd8-11e9-8b5d-93a41d871ec7.jpg" width="600">
+<img src="https://user-images.githubusercontent.com/26833433/54747926-e051ff00-4bd8-11e9-8b5d-93a41d871ec7.jpg" width="500">
 
-## Webcam
-
-`python3 detect.py --source 0` shows a live webcam feed.
 
 # Pretrained Weights
 
@@ -140,11 +150,7 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 `YOLOv3-SPP`    | 52.4        | 56.5        | 60.7 (60.6)
 `YOLOv3-tiny`   | 29.0        | 32.9 (33.1) | 35.5
 
-``` bash
-# install pycocotools
-git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
-cd yolov3
-
+```bash
 python3 test.py --save-json --img-size 608
 Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', img_size=608, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3-spp.weights')
 Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
