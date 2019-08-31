@@ -104,7 +104,7 @@ V100 x2 | 64 (64x1) | 150 | 13 min | $0.36
 
 ## Webcam
 
-`python3 detect.py --webcam` shows a live webcam feed.
+`python3 detect.py --source 0` shows a live webcam feed.
 
 # Pretrained Weights
 

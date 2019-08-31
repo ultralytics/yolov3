@@ -117,11 +117,12 @@ class LoadImages:  # for inference
 
 
 class LoadWebcam:  # for inference
-    def __init__(self, img_size=416, half=False):
+    def __init__(self, pipe=0, img_size=416, half=False):
         self.img_size = img_size
         self.half = half  # half precision fp16 images
 
-        pipe = 0  # local camera
+        if pipe == '0':
+            pipe = 0  # local camera
         # pipe = 'rtsp://192.168.1.64/1'  # IP camera
         # pipe = 'rtsp://username:password@192.168.1.64/1'  # IP camera with login
         # pipe = 'rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa'  # IP traffic camera
@@ -162,7 +163,7 @@ class LoadWebcam:  # for inference
                         break
 
         # Print
-        assert ret_val, 'Webcam Error'
+        assert ret_val, 'Camera Error %s' % self.pipe
         img_path = 'webcam_%g.jpg' % self.count
         print('webcam %g: ' % self.count, end='')
 

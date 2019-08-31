@@ -7,8 +7,9 @@ from utils.datasets import *
 from utils.utils import *
 
 
-def detect(save_txt=False, save_images=True):
+def detect(save_txt=False, save_img=True, stream_img=False):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
+    webcam = opt.source == '0' or opt.source.startswith('rtsp') or opt.source.startswith('http')
     out = opt.output
 
     # Initialize
@@ -46,11 +47,12 @@ def detect(save_txt=False, save_images=True):
 
     # Set Dataloader
     vid_path, vid_writer = None, None
-    if opt.webcam:
-        save_images = False
-        dataloader = LoadWebcam(img_size=img_size, half=opt.half)
+    if webcam:
+        save_img = False
+        stream_img = True
+        dataloader = LoadWebcam(opt.source, img_size=img_size, half=opt.half)
     else:
-        dataloader = LoadImages(opt.input, img_size=img_size, half=opt.half)
+        dataloader = LoadImages(opt.source, img_size=img_size, half=opt.half)
 
     # Get classes and colors
     classes = load_classes(parse_data_cfg(opt.data)['names'])
@@ -67,8 +69,8 @@ def detect(save_txt=False, save_images=True):
         pred, _ = model(img)
         det = non_max_suppression(pred.float(), opt.conf_thres, opt.nms_thres)[0]
 
-        if det is not None and len(det) > 0:
-            # Rescale boxes from 416 to true image size
+        if det is not None and len(det):
+            # Rescale boxes from img_size to im0 size
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
             # Print results to screen
@@ -77,22 +79,22 @@ def detect(save_txt=False, save_images=True):
                 n = (det[:, -1] == c).sum()
                 print('%g %ss' % (n, classes[int(c)]), end=', ')
 
-            # Draw bounding boxes and labels of detections
-            for *xyxy, conf, cls_conf, cls in det:
+            # Write results
+            for *xyxy, conf, _, cls in det:
                 if save_txt:  # Write to file
                     with open(save_path + '.txt', 'a') as file:
                         file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
 
-                # Add bbox to the image
-                label = '%s %.2f' % (classes[int(cls)], conf)
-                plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
+                if save_img or stream_img:  # Add bbox to image
+                    label = '%s %.2f' % (classes[int(cls)], conf)
+                    plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
 
         print('Done. (%.3fs)' % (time.time() - t))
 
-        if opt.webcam:  # Show live webcam
+        if stream_img:  # Stream results
             cv2.imshow(opt.weights, im0)
 
-        if save_images:  # Save image with detections
+        if save_img:  # Save image with detections
             if dataloader.mode == 'images':
                 cv2.imwrite(save_path, im0)
             else:
@@ -107,7 +109,7 @@ def detect(save_txt=False, save_images=True):
                     vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (width, height))
                 vid_writer.write(im0)
 
-    if save_images:
+    if save_img:
         print('Results saved to %s' % os.getcwd() + os.sep + out)
         if platform == 'darwin':  # MacOS
             os.system('open ' + out + ' ' + save_path)
@@ -120,14 +122,13 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data', type=str, default='data/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
-    parser.add_argument('--input', type=str, default='data/samples', help='input folder')  # input folder
+    parser.add_argument('--source', type=str, default='0', help='source')  # input file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
     parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
     parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
-    parser.add_argument('--webcam', action='store_true', help='use webcam')
     opt = parser.parse_args()
     print(opt)
 
