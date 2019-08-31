@@ -1,5 +1,5 @@
 # Start from Nvidia PyTorch image https://ngc.nvidia.com/catalog/containers/nvidia:pytorch
-FROM nvcr.io/nvidia/pytorch:19.07-py3
+FROM nvcr.io/nvidia/pytorch:19.08-py3
 
 # Create working directory
 RUN mkdir -p /usr/src/app
