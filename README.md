@@ -97,8 +97,8 @@ V100 x2 | 64 (64x1) | 150 | 13 min | $0.36
 python3 detect.py --source ...
 ```
 
-- Image:  `--source example.jpg`
-- Video:  `--source example.mp4`
+- Image:  `--source file.jpg`
+- Video:  `--source file.mp4`
 - Directory:  `--source dir/`
 - Webcam:  `--source 0`
 - RTSP stream:  `--source rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa`
