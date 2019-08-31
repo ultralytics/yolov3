@@ -7,7 +7,7 @@ from utils.datasets import *
 from utils.utils import *
 
 
-def detect(save_txt=False, save_images=True):
+def detect(save_txt=False, save_img=True):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out = opt.output
 
@@ -47,7 +47,7 @@ def detect(save_txt=False, save_images=True):
     # Set Dataloader
     vid_path, vid_writer = None, None
     if opt.webcam:
-        save_images = False
+        save_img = False
         dataloader = LoadWebcam(img_size=img_size, half=opt.half)
     else:
         dataloader = LoadImages(opt.input, img_size=img_size, half=opt.half)
@@ -67,8 +67,8 @@ def detect(save_txt=False, save_images=True):
         pred, _ = model(img)
         det = non_max_suppression(pred.float(), opt.conf_thres, opt.nms_thres)[0]
 
-        if det is not None and len(det) > 0:
-            # Rescale boxes from 416 to true image size
+        if det is not None and len(det):
+            # Rescale boxes from img_size to im0 size
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
             # Print results to screen
@@ -77,22 +77,22 @@ def detect(save_txt=False, save_images=True):
                 n = (det[:, -1] == c).sum()
                 print('%g %ss' % (n, classes[int(c)]), end=', ')
 
-            # Draw bounding boxes and labels of detections
-            for *xyxy, conf, cls_conf, cls in det:
+            # Write results
+            for *xyxy, conf, _, cls in det:
                 if save_txt:  # Write to file
                     with open(save_path + '.txt', 'a') as file:
                         file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
 
-                # Add bbox to the image
-                label = '%s %.2f' % (classes[int(cls)], conf)
-                plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
+                if save_img:  # Add bbox to image
+                    label = '%s %.2f' % (classes[int(cls)], conf)
+                    plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
 
         print('Done. (%.3fs)' % (time.time() - t))
 
         if opt.webcam:  # Show live webcam
             cv2.imshow(opt.weights, im0)
 
-        if save_images:  # Save image with detections
+        if save_img:  # Save image with detections
             if dataloader.mode == 'images':
                 cv2.imwrite(save_path, im0)
             else:
@@ -107,7 +107,7 @@ def detect(save_txt=False, save_images=True):
                     vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (width, height))
                 vid_writer.write(im0)
 
-    if save_images:
+    if save_img:
         print('Results saved to %s' % os.getcwd() + os.sep + out)
         if platform == 'darwin':  # MacOS
             os.system('open ' + out + ' ' + save_path)

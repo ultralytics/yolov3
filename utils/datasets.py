@@ -162,7 +162,7 @@ class LoadWebcam:  # for inference
                         break
 
         # Print
-        assert ret_val, 'Webcam Error'
+        assert ret_val, 'Camera Error %s' % self.pipe
         img_path = 'webcam_%g.jpg' % self.count
         print('webcam %g: ' % self.count, end='')
 
