@@ -124,7 +124,7 @@ class LoadWebcam:  # for inference
         pipe = 0  # local camera
         # pipe = 'rtsp://192.168.1.64/1'  # IP camera
         # pipe = 'rtsp://username:password@192.168.1.64/1'  # IP camera with login
-        pipe = 'rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa'  # IP traffic camera
+        # pipe = 'rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa'  # IP traffic camera
         # pipe = 'http://wmccpinetop.axiscam.net/mjpg/video.mjpg'  # IP golf camera
 
         # https://answers.opencv.org/question/215996/changing-gstreamer-pipeline-to-opencv-in-pythonsolved/
