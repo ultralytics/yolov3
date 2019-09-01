@@ -54,14 +54,6 @@ def detect(save_txt=False, save_img=True, stream_img=False):
     else:
         dataloader = LoadImages(opt.source, img_size=img_size, half=opt.half)
 
-    # Attempt stream_img:
-    if stream_img:
-        try:
-            cv2.imshow('', np.zeros((480, 640, 3)))
-            cv2.destroyAllWindows()
-        except:
-            stream_img = False  # Possible SSH connection, do not stream
-
     # Get classes and colors
     classes = load_classes(parse_data_cfg(opt.data)['names'])
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(classes))]
