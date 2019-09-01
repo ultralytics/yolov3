@@ -301,8 +301,7 @@ class FocalLoss(nn.Module):
 
     def forward(self, input, target):
         loss = self.loss_fcn(input, target)
-        pt = torch.exp(-loss)
-        loss *= self.alpha * (1 - pt) ** self.gamma
+        loss *= self.alpha * (1.000001 - torch.exp(-loss)) ** self.gamma  # non-zero power for gradient stability
 
         if self.reduction == 'mean':
             return loss.mean()
