@@ -23,7 +23,7 @@ hyp = {'giou': 1.582,  # giou loss gain
        'obj': 21.35,  # obj loss gain (*=80 for uBCE with 80 classes)
        'obj_pw': 3.941,  # obj BCELoss positive_weight
        'iou_t': 0.2635,  # iou training threshold
-       'lr0': 0.002324,  # initial learning rate
+       'lr0': 0.002324,  # initial learning rate (SGD=1E-3, Adam=9E-5)
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
        'momentum': 0.97,  # SGD momentum
        'weight_decay': 0.0004569,  # optimizer weight decay
@@ -80,7 +80,7 @@ def train():
 
     # optimizer = optim.Adam(pg0, lr=hyp['lr0'])
     # optimizer = AdaBound(pg0, lr=hyp['lr0'], final_lr=0.1)
-    optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
+    # optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
     optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
     del pg0, pg1
 
@@ -259,8 +259,8 @@ def train():
             # Compute loss
             loss, loss_items = compute_loss(pred, targets, model)
             if not torch.isfinite(loss):
-                print('WARNING: non-finite loss, skipping batch ', loss_items)
-                continue
+                print('WARNING: non-finite loss, ending training ', loss_items)
+                return results
 
             # Scale loss by nominal batch_size of 64
             loss *= batch_size / 64
@@ -378,6 +378,7 @@ if __name__ == '__main__':
     parser.add_argument('--weights', type=str, default='', help='initial weights')  # i.e. weights/darknet.53.conv.74
     parser.add_argument('--arc', type=str, default='defaultpw', help='yolo architecture')  # defaultpw, uCE, uBCE
     parser.add_argument('--prebias', action='store_true', help='transfer-learn yolo biases prior to training')
+    parser.add_argument('--var', type=float, help='debug variable')
     opt = parser.parse_args()
     opt.weights = 'weights/last.pt' if opt.resume else opt.weights
     print(opt)
