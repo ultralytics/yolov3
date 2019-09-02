@@ -66,6 +66,7 @@ def train():
     data_dict = parse_data_cfg(data)
     train_path = data_dict['train']
     nc = int(data_dict['classes'])  # number of classes
+    backup_path = data_dict['backup']
 
     # Initialize model
     model = Darknet(cfg, arc=opt.arc).to(device)
@@ -342,7 +343,7 @@ def train():
 
             # Save backup every 10 epochs (optional)
             if epoch > 0 and epoch % 10 == 0:
-                torch.save(chkpt, wdir + 'backup%g.pt' % epoch)
+                torch.save(chkpt, backup_path + 'backup%g.pt' % epoch)
 
             # Delete checkpoint
             del chkpt
