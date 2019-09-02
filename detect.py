@@ -7,7 +7,7 @@ from utils.datasets import *
 from utils.utils import *
 
 
-def detect(save_txt=False, save_img=True, stream_img=False):
+def detect(save_txt=False, save_img=False, stream_img=False):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half = opt.output, opt.source, opt.weights, opt.half
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http')
@@ -48,10 +48,10 @@ def detect(save_txt=False, save_img=True, stream_img=False):
     # Set Dataloader
     vid_path, vid_writer = None, None
     if webcam:
-        save_img = False
         stream_img = True
         dataset = LoadWebcam(source, img_size=img_size, half=half)
     else:
+        save_img = True
         dataset = LoadImages(source, img_size=img_size, half=half)
 
     # Get classes and colors
