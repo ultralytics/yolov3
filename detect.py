@@ -111,7 +111,7 @@ def detect(save_txt=False, save_img=True, stream_img=False):
                     vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (width, height))
                 vid_writer.write(im0)
 
-    if save_img:
+    if save_txt or save_img:
         print('Results saved to %s' % os.getcwd() + os.sep + out)
         if platform == 'darwin':  # MacOS
             os.system('open ' + out + ' ' + save_path)
