@@ -302,6 +302,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
             os.system('curl -f ' + url + ' -o ' + weights)
         except IOError:
             print(msg)
+            os.system('rm ' + weights)  # remove partial downloads
     assert os.path.exists(weights), msg  # download missing weights from Google Drive
 
     # Establish cutoffs
