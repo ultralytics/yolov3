@@ -69,7 +69,7 @@ def detect(save_txt=False, save_img=True, stream_img=False):
         pred, _ = model(img)
         det = non_max_suppression(pred.float(), opt.conf_thres, opt.nms_thres)[0]
 
-        s = '%gx%g ' % img.shape[2:]  # string to print image size
+        s = '%gx%g ' % img.shape[2:]  # print string
         if det is not None and len(det):
             # Rescale boxes from img_size to im0 size
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
@@ -77,7 +77,7 @@ def detect(save_txt=False, save_img=True, stream_img=False):
             # Print results
             for c in det[:, -1].unique():
                 n = (det[:, -1] == c).sum()  # detections per class
-                s += '%g %ss' % (n, classes[int(c)])  # add to string
+                s += '%g %ss, ' % (n, classes[int(c)])  # add to string
 
             # Write results
             for *xyxy, conf, _, cls in det:
