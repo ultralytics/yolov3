@@ -53,7 +53,6 @@ def train():
     wdir = 'weights' + os.sep  # weights dir
     last = wdir + 'last.pt'
     best = wdir + 'best.pt'
-    device = torch_utils.select_device(apex=mixed_precision)
     multi_scale = opt.multi_scale
 
     if multi_scale:
@@ -383,6 +382,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     opt.weights = 'weights/last.pt' if opt.resume else opt.weights
     print(opt)
+    device = torch_utils.select_device(apex=mixed_precision)
 
     tb_writer = None
     if not opt.evolve:  # Train normally
@@ -399,7 +399,6 @@ if __name__ == '__main__':
             create_backbone('weights/last.pt')  # saved results as backbone.pt
             opt.weights = 'weights/backbone.pt'  # assign backbone
             opt.prebias = False  # disable prebias
-            print(opt)  # display options
 
         train()  # train normally
 
