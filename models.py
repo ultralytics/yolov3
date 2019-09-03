@@ -90,7 +90,7 @@ def create_modules(module_defs, img_size, arc):
                 elif arc == 'uFBCE':  # unified FocalBCE (5120 obj, 80 classes)
                     b = [0, -6.5]
                 elif arc == 'uFCE':  # unified FocalCE (64 cls, 1 background + 80 classes)
-                    b = [7, -0.1]
+                    b = [7.7, -1.1]
 
                 bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
                 bias[:, 4] += b[0] - bias[:, 4].mean()  # obj
