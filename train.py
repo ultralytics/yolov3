@@ -66,6 +66,10 @@ def train():
     train_path = data_dict['train']
     nc = int(data_dict['classes'])  # number of classes
 
+    # Remove previous results
+    for f in glob.glob('*_batch*.jpg') + glob.glob('results.txt'):
+        os.remove(f)
+
     # Initialize model
     model = Darknet(cfg, arc=opt.arc).to(device)
 
@@ -182,10 +186,6 @@ def train():
                                              shuffle=not opt.rect,  # Shuffle=True unless rectangular training is used
                                              pin_memory=True,
                                              collate_fn=dataset.collate_fn)
-
-    # Remove previous results
-    for f in glob.glob('*_batch*.jpg') + glob.glob('results.txt'):
-        os.remove(f)
 
     # Start training
     model.nc = nc  # attach number of classes to model
