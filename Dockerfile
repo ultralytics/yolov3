@@ -39,4 +39,4 @@ COPY . /usr/src/app
 # docker push ultralytics/yolov3:v0
 
 # Build and Push
-# sudo docker build -t ultralytics/yolov3:v0 . && docker push ultralytics/yolov3:v0
+# export tag=ultralytics/yolov3:v0 && sudo docker build -t $tag . && docker push $tag
