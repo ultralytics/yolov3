@@ -15,6 +15,9 @@ COPY . /usr/src/app
 # RUN conda install -y -c conda-forge scikit-image tensorboard pycocotools
 # conda install pytorch torchvision -c pytorch
 
+# Install OpenCV with Gstreamer support
+# ...
+
 # Move model into container
 # RUN mv yolov3-spp.pt ./weights
 
