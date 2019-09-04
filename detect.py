@@ -14,6 +14,7 @@ def detect(save_txt=False, save_img=False, stream_img=False):
 
     # Initialize
     device = torch_utils.select_device(force_cpu=ONNX_EXPORT)
+    torch.backends.cudnn.benchmark = False  # set True to speed up constant image size inference
     if os.path.exists(out):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
@@ -29,7 +30,6 @@ def detect(save_txt=False, save_img=False, stream_img=False):
 
     # Fuse Conv2d + BatchNorm2d layers
     # model.fuse()
-    # torch.backends.cudnn.benchmark = True  # set True to speed up constant image size inference
 
     # Eval mode
     model.to(device).eval()
