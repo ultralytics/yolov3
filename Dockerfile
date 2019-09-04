@@ -32,8 +32,11 @@ COPY . /usr/src/app
 # Run container
 # sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 python3 detect.py
 
-# Run container accesing local directory
+# Run container with local directory access
 # sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0 python3 train.py
 
 # Push container to https://hub.docker.com/u/ultralytics
 # docker push ultralytics/yolov3:v0
+
+# Build and Push
+# sudo docker build -t ultralytics/yolov3:v0 . && docker push ultralytics/yolov3:v0
