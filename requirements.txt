@@ -11,7 +11,7 @@ Pillow
 
 # Equivalent conda commands ----------------------------------------------------
 # conda update -n base -c defaults conda
-# conda install -y -c anaconda future numpy opencv matplotlib tqdm pillow
-# conda install -y -c conda-forge scikit-image tensorboard pycocotools
-# conda install -y -c spyder-ide spyder-line-profiler
-# conda install pytorch torchvision -c pytorch
+# conda install -yc anaconda future numpy opencv matplotlib tqdm pillow
+# conda install -yc conda-forge scikit-image tensorboard pycocotools
+# conda install -yc spyder-ide spyder-line-profiler
+# conda install -yc pytorch pytorch torchvision
