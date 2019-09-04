@@ -30,4 +30,4 @@ COPY . /usr/src/app
 # time sudo nvidia-docker run ultralytics/yolov3:v0 python3 detect.py
 
 # Push container to https://hub.docker.com/u/ultralytics
-# sudo docker push ultralytics/xview:v30
+# sudo docker push ultralytics/yolov3:v0
