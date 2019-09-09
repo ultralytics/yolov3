@@ -19,7 +19,17 @@ FROM nvcr.io/nvidia/pytorch:19.08-py3
 #RUN apt install -y libgstreamer-plugins-base1.0-dev
 #RUN git clone https://github.com/opencv/opencv.git && cd opencv && git checkout 4.1.1 && mkdir build
 #RUN git clone https://github.com/opencv/opencv_contrib.git && cd opencv_contrib && git checkout 4.1.1
-#RUN cd opencv/build && cmake ../ -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -D BUILD_opencv_python3=ON -D WITH_GSTREAMER=ON -D WITH_FFMPEG=OFF && make && make install
+#RUN cd opencv/build && cmake ../ \
+#    -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
+#    -D BUILD_OPENCV_PYTHON3=ON \
+#    -D PYTHON3_EXECUTABLE=/opt/conda/bin/python \
+#    -D PYTHON3_INCLUDE_PATH=/opt/conda/include/python3.6m \
+#    -D PYTHON3_LIBRARIES=/opt/conda/lib/python3.6/site-packages \
+#    -D WITH_GSTREAMER=ON \
+#    -D WITH_FFMPEG=OFF \
+#    && make && make install && ldconfig
+#RUN cd /usr/local/lib/python3.6/site-packages/ && mv cv2.cpython-36m-x86_64-linux-gnu.so cv2.so
+#RUN cd /opt/conda/lib/python3.6/site-packages/ && ln -s /usr/local/lib/python3.6/site-packages/cv2.so cv2.so
 #RUN python3 -c "import cv2; print(cv2.getBuildInformation())"
 
 # Create working directory
