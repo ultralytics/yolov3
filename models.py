@@ -299,7 +299,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
     if not os.path.isfile(weights):
         if file == 'yolov3-spp.weights':
             gdrive_download(id='1oPCHKsM2JpM-zgyepQciGli9X0MTsJCO', name=weights)
-        elif file == 'darknet.53.conv.74':
+        elif file == 'darknet53.conv.74':
             gdrive_download(id='18xqvs_uwAqfTXp-LJCYLYNHBOcrwbrp0', name=weights)
         else:
             try:  # download from pjreddie.com
