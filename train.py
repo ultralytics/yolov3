@@ -39,7 +39,7 @@ def train():
     cfg = opt.cfg
     data = opt.data
     img_size = opt.img_size
-    epochs = 1 if opt.prebias else opt.epochs  # 500200 batches at bs 16, 117263 images = 273 epochs
+    epochs = 1 if opt.prebias else opt.epochs  # 500200 batches at bs 64, 117263 images = 273 epochs
     batch_size = opt.batch_size
     accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
     weights = opt.weights  # initial training weights
@@ -348,7 +348,9 @@ def train():
 
         # end epoch ----------------------------------------------------------------------------------------------------
 
-    # Report time
+    # end training
+    if len(opt.name):
+        os.rename('results.txt', 'results_%s.txt' % opt.name)
     plot_results()  # save as results.png
     print('%g epochs completed in %.3f hours.\n' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
     dist.destroy_process_group() if torch.cuda.device_count() > 1 else None
@@ -377,6 +379,7 @@ if __name__ == '__main__':
     parser.add_argument('--weights', type=str, default='', help='initial weights')  # i.e. weights/darknet.53.conv.74
     parser.add_argument('--arc', type=str, default='defaultpw', help='yolo architecture')  # defaultpw, uCE, uBCE
     parser.add_argument('--prebias', action='store_true', help='transfer-learn yolo biases prior to training')
+    parser.add_argument('--name', default='', help='renames results.txt to results_name.txt if supplied')
     parser.add_argument('--var', type=float, help='debug variable')
     opt = parser.parse_args()
     opt.weights = 'weights/last.pt' if opt.resume else opt.weights
