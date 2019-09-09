@@ -35,6 +35,12 @@ WORKDIR /usr/src/app
 # Copy contents
 COPY . /usr/src/app
 
+# Copy weights
+RUN python3 -c "from utils.google_utils import *; \
+    gdrive_download(id='18xqvs_uwAqfTXp-LJCYLYNHBOcrwbrp0', name='weights/darknet53.conv.74'); \
+    gdrive_download(id='1oPCHKsM2JpM-zgyepQciGli9X0MTsJCO', name='weights/yolov3-spp.weights')"
+
+
 # ---------------------------------------------------  Extras Below  ---------------------------------------------------
 
 # Build container
@@ -49,9 +55,9 @@ COPY . /usr/src/app
 # sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0 python3 train.py
 # sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0 python3 train.py --batch-size 64 --accumulate 1 --img-size 320 --arc uFBCE --prebias --epochs 27
 
-# Push container to https://hub.docker.com/u/ultralytics
-# docker push ultralytics/yolov3:v0
-
-# Build and Push
+# Build and Push to https://hub.docker.com/u/ultralytics
 # export tag=ultralytics/yolov3:v0 && sudo docker build -t $tag . && docker push $tag
+
+# Kill all running containers
+# sudo docker kill $(sudo docker ps -q)
 
