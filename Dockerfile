@@ -1,13 +1,6 @@
 # Start from Nvidia PyTorch image https://ngc.nvidia.com/catalog/containers/nvidia:pytorch
 FROM nvcr.io/nvidia/pytorch:19.08-py3
 
-# Create working directory
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
-
-# Copy contents
-COPY . /usr/src/app
-
 # Install dependencies (pip or conda)
 # RUN pip install -U -r requirements.txt
 # RUN conda update -n base -c defaults conda
@@ -16,11 +9,25 @@ COPY . /usr/src/app
 # conda install pytorch torchvision -c pytorch
 
 # Install OpenCV with Gstreamer support
-# ...
+#WORKDIR /usr/src
+#RUN pip uninstall -y opencv-python
+#RUN apt-get update
+#RUN apt-get install -y gstreamer1.0-python3-dbg-plugin-loader
+## RUN apt-get install gstreamer1.0
+## RUN apt install -y ubuntu-restricted-extras
+#RUN apt install -y libgstreamer1.0-dev
+#RUN apt install -y libgstreamer-plugins-base1.0-dev
+#RUN git clone https://github.com/opencv/opencv.git && cd opencv && git checkout 4.1.1 && mkdir build
+#RUN git clone https://github.com/opencv/opencv_contrib.git && cd opencv_contrib && git checkout 4.1.1
+#RUN cd opencv/build && cmake ../ -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -D BUILD_opencv_python3=ON -D WITH_GSTREAMER=ON -D WITH_FFMPEG=OFF && make && make install
+#RUN python3 -c "import cv2; print(cv2.getBuildInformation())"
 
-# Move model into container
-# RUN mv yolov3-spp.pt ./weights
+# Create working directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
+# Copy contents
+COPY . /usr/src/app
 
 # ---------------------------------------------------  Extras Below  ---------------------------------------------------
 
@@ -34,6 +41,7 @@ COPY . /usr/src/app
 
 # Run container with local directory access
 # sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0 python3 train.py
+# sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0 python3 train.py --batch-size 64 --accumulate 1 --img-size 320 --arc uFBCE --prebias --epochs 27
 
 # Push container to https://hub.docker.com/u/ultralytics
 # docker push ultralytics/yolov3:v0
