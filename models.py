@@ -2,6 +2,7 @@ import torch.nn.functional as F
 
 from utils.parse_config import *
 from utils.utils import *
+from utils.google_utils import *
 
 ONNX_EXPORT = False
 
@@ -296,13 +297,18 @@ def load_darknet_weights(self, weights, cutoff=-1):
     # Try to download weights if not available locally
     msg = weights + ' missing, download from https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI'
     if not os.path.isfile(weights):
-        try:
-            url = 'https://pjreddie.com/media/files/' + file
-            print('Downloading ' + url)
-            os.system('curl -f ' + url + ' -o ' + weights)
-        except IOError:
-            print(msg)
-            os.system('rm ' + weights)  # remove partial downloads
+        if file == 'yolov3-spp.weights':
+            gdrive_download(id='1oPCHKsM2JpM-zgyepQciGli9X0MTsJCO', name=weights)
+        elif file == 'darknet.53.conv.74':
+            gdrive_download(id='18xqvs_uwAqfTXp-LJCYLYNHBOcrwbrp0', name=weights)
+        else:
+            try:  # download from pjreddie.com
+                url = 'https://pjreddie.com/media/files/' + file
+                print('Downloading ' + url)
+                os.system('curl -f ' + url + ' -o ' + weights)
+            except IOError:
+                print(msg)
+                os.system('rm ' + weights)  # remove partial downloads
     assert os.path.exists(weights), msg  # download missing weights from Google Drive
 
     # Establish cutoffs

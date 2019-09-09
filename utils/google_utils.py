@@ -18,17 +18,17 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
     if os.path.exists(name):  # remove existing
         os.remove(name)
 
-    # Attempt small file download
-    s = 'curl -f -L -o %s https://drive.google.com/uc?export=download&id=%s' % (name, id)
-    os.system(s)
-
     # Attempt large file download
-    if not os.path.exists(name):  # file size > 40MB
-        s = ["curl -c ./cookie -s -L \"https://drive.google.com/uc?export=download&id=%s\" > /dev/null" % id,
-             "curl -Lb ./cookie \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
-                 id, name),
-             'rm ./cookie']
-        [os.system(x) for x in s]  # run commands
+    s = ["curl -c ./cookie -s -L \"https://drive.google.com/uc?export=download&id=%s\" > /dev/null" % id,
+         "curl -Lb ./cookie -s \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
+             id, name),
+         'rm ./cookie']
+    [os.system(x) for x in s]  # run commands
+
+    # Attempt small file download
+    if not os.path.exists(name):  # file size < 40MB
+        s = 'curl -f -L -o %s https://drive.google.com/uc?export=download&id=%s' % (name, id)
+        os.system(s)
 
     # Unzip if archive
     if name.endswith('.zip'):
