@@ -147,7 +147,7 @@ class LoadWebcam:  # for inference
 
     def __next__(self):
         self.count += 1
-        if cv2.waitKey(1) == 27:  # esc to quit
+        if cv2.waitKey(1) == ord('q'):  # q to quit
             self.cap.release()
             cv2.destroyAllWindows()
             raise StopIteration
@@ -168,7 +168,7 @@ class LoadWebcam:  # for inference
 
         # Print
         assert ret_val, 'Camera Error %s' % self.pipe
-        img_path = 'webcam_%g.jpg' % self.count
+        img_path = 'webcam.jpg'
         print('webcam %g: ' % self.count, end='')
 
         # Padded resize
@@ -222,7 +222,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
     def __next__(self):
         self.count += 1
         img0 = self.imgs.copy()
-        if cv2.waitKey(1) == ord('q'):  # 'q' to quit
+        if cv2.waitKey(1) == ord('q'):  # q to quit
             cv2.destroyAllWindows()
             raise StopIteration
 
