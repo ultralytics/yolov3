@@ -15,7 +15,6 @@ def detect(save_txt=False, save_img=False, stream_img=False):
 
     # Initialize
     device = torch_utils.select_device(force_cpu=ONNX_EXPORT)
-    torch.backends.cudnn.benchmark = False  # set True to speed up constant image size inference
     if os.path.exists(out):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
@@ -49,6 +48,7 @@ def detect(save_txt=False, save_img=False, stream_img=False):
     # Set Dataloader
     vid_path, vid_writer = None, None
     if streams:
+        torch.backends.cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=img_size, half=half)
     elif webcam:
         stream_img = True
