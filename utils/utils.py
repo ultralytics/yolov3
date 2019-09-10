@@ -613,8 +613,7 @@ def select_best_evolve(path='evolve*.txt'):  # from utils.utils import *; select
     # Find best evolved mutation
     for file in sorted(glob.glob(path)):
         x = np.loadtxt(file, dtype=np.float32, ndmin=2)
-        fitness = x[:, 2] * 0.5 + x[:, 3] * 0.5  # weighted mAP and F1 combination
-        print(file, x[fitness.argmax()])
+        print(file, x[fitness(x).argmax()])
 
 
 def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
@@ -693,7 +692,7 @@ def print_mutation(hyp, results, bucket=''):
 
 def fitness(x):
     # Returns fitness (for use with results.txt or evolve.txt)
-    return 0.50 * x[:, 2] + 0.50 * x[:, 3]  # fitness = 0.5 * mAP + 0.5 * F1
+    return x[:, 2] * 0.5 + x[:, 3] * 0.5  # weighted mAP and F1 combination
 
 
 # Plotting functions ---------------------------------------------------------------------------------------------------
