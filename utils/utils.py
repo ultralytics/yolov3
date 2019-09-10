@@ -684,7 +684,7 @@ def print_mutation(hyp, results, bucket=''):
     with open('evolve.txt', 'a') as f:  # append result
         f.write(c + b + '\n')
     x = np.unique(np.loadtxt('evolve.txt', ndmin=2), axis=0)  # load unique rows
-    np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%10.3g')  # save sort by fitness
+    np.savetxt('evolve.txt', x[np.argsort(-fitness(x))], '%10.5g')  # save sort by fitness
 
     if bucket:
         os.system('gsutil cp evolve.txt gs://%s' % bucket)  # upload evolve.txt

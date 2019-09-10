@@ -2,11 +2,11 @@
 FROM nvcr.io/nvidia/pytorch:19.08-py3
 
 # Install dependencies (pip or conda)
+RUN pip install -U gsutil
 # RUN pip install -U -r requirements.txt
 # RUN conda update -n base -c defaults conda
 # RUN conda install -y -c anaconda future numpy opencv matplotlib tqdm pillow
 # RUN conda install -y -c conda-forge scikit-image tensorboard pycocotools
-# conda install pytorch torchvision -c pytorch
 
 # Install OpenCV with Gstreamer support
 #WORKDIR /usr/src
