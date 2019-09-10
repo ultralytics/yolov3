@@ -53,7 +53,6 @@ COPY . /usr/src/app
 
 # Run container with local directory access
 # sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0 python3 train.py
-# sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0 python3 train.py --batch-size 64 --accumulate 1 --img-size 320 --arc uFBCE --prebias --epochs 27
 
 # Build and Push to https://hub.docker.com/u/ultralytics
 # export tag=ultralytics/yolov3:v0 && sudo docker build -t $tag . && docker push $tag
@@ -61,3 +60,5 @@ COPY . /usr/src/app
 # Kill all running containers
 # sudo docker kill $(sudo docker ps -q)
 
+# Run bash for loop
+# sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 for i in {1..5}; do python3 train.py --evolve; done
