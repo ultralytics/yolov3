@@ -381,11 +381,12 @@ if __name__ == '__main__':
     parser.add_argument('--arc', type=str, default='defaultpw', help='yolo architecture')  # defaultpw, uCE, uBCE
     parser.add_argument('--prebias', action='store_true', help='transfer-learn yolo biases prior to training')
     parser.add_argument('--name', default='', help='renames results.txt to results_name.txt if supplied')
+    parser.add_argument('--device', default='', help='select device if multi-gpu, i.e. 0 or 0,1')
     parser.add_argument('--var', type=float, help='debug variable')
     opt = parser.parse_args()
     opt.weights = 'weights/last.pt' if opt.resume else opt.weights
     print(opt)
-    device = torch_utils.select_device(apex=mixed_precision)
+    device = torch_utils.select_device(opt.device, apex=mixed_precision)
 
     tb_writer = None
     if not opt.evolve:  # Train normally

@@ -1,3 +1,4 @@
+import os
 import torch
 
 
@@ -13,7 +14,11 @@ def init_seeds(seed=0):
         torch.backends.cudnn.benchmark = False
 
 
-def select_device(force_cpu=False, apex=False):
+def select_device(device=None, force_cpu=False, apex=False):
+    # Set environment variable if device is specified
+    if device:
+        os.environ['CUDA_VISIBLE_DEVICES'] = device
+
     # apex if mixed precision training https://github.com/NVIDIA/apex
     cuda = False if force_cpu else torch.cuda.is_available()
     device = torch.device('cuda:0' if cuda else 'cpu')
