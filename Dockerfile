@@ -61,4 +61,4 @@ COPY . /usr/src/app
 # sudo docker kill $(sudo docker ps -q)
 
 # Run bash for loop
-# sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 for i in {1..5}; do python3 train.py --evolve; done
+# sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 for i in {1..1000}; do python3 train.py --evolve; done
