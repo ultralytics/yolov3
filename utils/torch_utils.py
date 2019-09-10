@@ -21,7 +21,6 @@ def select_device(force_cpu=False, apex=False):
     if not cuda:
         print('Using CPU')
     if cuda:
-        torch.backends.cudnn.benchmark = True  # set False for reproducible results
         c = 1024 ** 2  # bytes to MB
         ng = torch.cuda.device_count()
         x = [torch.cuda.get_device_properties(i) for i in range(ng)]
