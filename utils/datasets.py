@@ -197,15 +197,16 @@ class LoadStreams:  # multiple IP or RTSP cameras
         self.sources = sources
         for i, s in enumerate(sources):
             # Start the thread to read frames from the video stream
+            print('%g/%g: %s... ' % (i + 1, n, s), end='')
             cap = cv2.VideoCapture(0 if s == '0' else s)
+            assert cap.isOpened(), 'Failed to open %s' % s
+            w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv2.CAP_PROP_FPS) % 100
-            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-            print('%g/%g: %gx%g at %.2f FPS %s...' % (i + 1, n, width, height, fps, s))
-            thread = Thread(target=self.update, args=([i, cap]))
-            thread.daemon = True
+            print(' success (%gx%g at %.2f FPS).' % (w, h, fps))
+            thread = Thread(target=self.update, args=([i, cap]), daemon=True)
             thread.start()
+
         print('')  # newline
         time.sleep(0.5)
 
