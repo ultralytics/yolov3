@@ -27,6 +27,7 @@ hyp = {'giou': 1.582,  # giou loss gain
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
        'momentum': 0.97,  # SGD momentum
        'weight_decay': 0.0004569,  # optimizer weight decay
+       'fl_gamma': 0.5,  # focal loss gamma
        'hsv_s': 0.5703,  # image HSV-Saturation augmentation (fraction)
        'hsv_v': 0.3174,  # image HSV-Value augmentation (fraction)
        'degrees': 1.113,  # image rotation (+/- deg)
@@ -420,14 +421,14 @@ if __name__ == '__main__':
 
                 # Mutate
                 init_seeds(seed=int(time.time()))
-                s = [.15, .15, .15, .15, .15, .15, .15, .00, .02, .20, .20, .20, .20, .20, .20, .20]  # sigmas
+                s = [.15, .15, .15, .15, .15, .15, .15, .00, .02, .20, .15, .20, .20, .20, .20, .20, .20]  # sigmas
                 for i, k in enumerate(hyp.keys()):
                     x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                     hyp[k] *= float(x)  # vary by sigmas
 
             # Clip to limits
-            keys = ['lr0', 'iou_t', 'momentum', 'weight_decay', 'hsv_s', 'hsv_v', 'translate', 'scale']
-            limits = [(1e-4, 1e-2), (0.00, 0.70), (0.60, 0.98), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9)]
+            keys = ['lr0', 'iou_t', 'momentum', 'weight_decay', 'hsv_s', 'hsv_v', 'translate', 'scale', 'fl_gamma']
+            limits = [(1e-4, 1e-2), (0.00, 0.70), (0.60, 0.98), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9), (0, 3)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
