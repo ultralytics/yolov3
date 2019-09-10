@@ -35,7 +35,7 @@ def exif_size(img):
         elif rotation == 8:  # rotation 90
             s = (s[1], s[0])
     except:
-        None
+        pass
 
     return s
 
@@ -190,7 +190,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
         self.img_size = img_size
         self.half = half  # half precision fp16 images
         with open(path, 'r') as f:
-            sources = f.read().splitlines()
+            sources = [x.strip() for x in f.read().splitlines() if len(x.strip())]
 
         n = len(sources)
         self.imgs = [None] * n
