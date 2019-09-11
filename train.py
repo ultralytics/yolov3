@@ -340,7 +340,7 @@ def train():
 
             # Save last checkpoint
             torch.save(chkpt, last)
-            if opt.bucket:
+            if opt.bucket and not opt.evolve:
                 os.system('gsutil cp %s gs://%s' % (last, opt.bucket))  # upload to bucket
 
             # Save best checkpoint
