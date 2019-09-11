@@ -327,7 +327,7 @@ def train():
             best_fitness = fitness
 
         # Save training results
-        save = (not opt.nosave) or ((not opt.evolve) and final_epoch)
+        save = (not opt.nosave) or (final_epoch and not opt.evolve) or opt.prebias
         if save:
             with open('results.txt', 'r') as file:
                 # Create checkpoint
@@ -340,7 +340,7 @@ def train():
 
             # Save last checkpoint
             torch.save(chkpt, last)
-            if opt.bucket and not opt.evolve:
+            if opt.bucket and not opt.prebias:
                 os.system('gsutil cp %s gs://%s' % (last, opt.bucket))  # upload to bucket
 
             # Save best checkpoint
