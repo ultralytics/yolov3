@@ -397,6 +397,12 @@ if __name__ == '__main__':
     device = torch_utils.select_device(opt.device, apex=mixed_precision)
 
     tb_writer = None
+    if opt.prebias:
+        train()  # transfer-learn yolo biases for 1 epoch
+        create_backbone('weights/last.pt')  # saved results as backbone.pt
+        opt.weights = 'weights/backbone.pt'  # assign backbone
+        opt.prebias = False  # disable prebias
+
     if not opt.evolve:  # Train normally
         try:
             # Start Tensorboard with "tensorboard --logdir=runs", view at http://localhost:6006/
@@ -405,12 +411,6 @@ if __name__ == '__main__':
             tb_writer = SummaryWriter()
         except:
             pass
-
-        if opt.prebias:
-            train()  # transfer-learn yolo biases for 1 epoch
-            create_backbone('weights/last.pt')  # saved results as backbone.pt
-            opt.weights = 'weights/backbone.pt'  # assign backbone
-            opt.prebias = False  # disable prebias
 
         train()  # train normally
 
