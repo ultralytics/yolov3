@@ -695,7 +695,7 @@ def print_mutation(hyp, results, bucket=''):
 
 def fitness(x):
     # Returns fitness (for use with results.txt or evolve.txt)
-    return x[:, 2] * 0.5 + x[:, 3] * 0.5  # weighted mAP and F1 combination
+    return x[:, 2] * 0.7 + x[:, 3] * 0.3  # weighted mAP and F1 combination
 
 
 # Plotting functions ---------------------------------------------------------------------------------------------------
