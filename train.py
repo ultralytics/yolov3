@@ -430,7 +430,7 @@ if __name__ == '__main__':
 
                 # Mutate
                 init_seeds(seed=int(time.time()))
-                s = [.15, .15, .15, .15, .15, .15, .15, .00, .02, .20, .15, .0, .0, .0, .0, .0, .0]  # sigmas
+                s = [.15, .15, .15, .15, .15, .15, .15, .00, .02, .20, .20, .20, .20, .20, .20, .20, .20]  # sigmas
                 for i, k in enumerate(hyp.keys()):
                     x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                     hyp[k] *= float(x)  # vary by sigmas

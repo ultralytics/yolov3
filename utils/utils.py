@@ -88,6 +88,9 @@ def coco_class_weights():  # frequency of each class in coco train2014
          1877, 17630, 4337, 4624, 1075, 3468, 135, 1380]
     weights = 1 / torch.Tensor(n)
     weights /= weights.sum()
+    # with open('data/coco.names', 'r') as f:
+    #     for k, v in zip(f.read().splitlines(), n):
+    #         print('%20s: %g' % (k, v))
     return weights
 
 

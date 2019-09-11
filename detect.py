@@ -1,5 +1,4 @@
 import argparse
-import time
 from sys import platform
 
 from models import *  # set ONNX_EXPORT in models.py
