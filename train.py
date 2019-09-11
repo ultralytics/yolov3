@@ -35,6 +35,11 @@ hyp = {'giou': 1.582,  # giou loss gain
        'scale': 0.1059,  # image scale (+/- gain)
        'shear': 0.5768}  # image shear (+/- deg)
 
+if os.path.exists('hyp.txt'):  # overwrite hyp if hyp.txt is found
+    x = np.loadtxt('hyp.txt')
+    for i, k in enumerate(hyp.keys()):
+        hyp[k] = x[i]
+
 
 def train():
     cfg = opt.cfg
