@@ -16,6 +16,9 @@ try:  # Mixed precision training https://github.com/NVIDIA/apex
 except:
     mixed_precision = False  # not installed
 
+#     0.329      0.963      0.918      0.455      0.331      0.481       0.14      0.353       61.9      0.062       26.9      0.386     0.0624   0.000219         -4      0.901   0.000414       1.86       0.57      0.317       1.11      0.068      0.106      0.577
+#     0.256      0.948      0.921      0.358       1.27       3.24       1.11        1.3       19.2       1.02       87.6       1.76      0.116    0.00288         -4      0.956   0.000277       1.09       0.57      0.317       1.11      0.068      0.106      0.577
+
 # Hyperparameters (j-series, 50.5 mAP yolov3-320) evolved by @ktian08 https://github.com/ultralytics/yolov3/issues/310
 hyp = {'giou': 1.582,  # giou loss gain
        'cls': 27.76,  # cls loss gain  (CE=~1.0, uCE=~20)
@@ -35,10 +38,11 @@ hyp = {'giou': 1.582,  # giou loss gain
        'scale': 0.1059,  # image scale (+/- gain)
        'shear': 0.5768}  # image shear (+/- deg)
 
-if os.path.exists('hyp.txt'):  # overwrite hyp if hyp.txt is found
-    x = np.loadtxt('hyp.txt')
-    for i, k in enumerate(hyp.keys()):
-        hyp[k] = x[i]
+# Overwrite hyp with hyp*.txt (optional)
+f = glob.glob('hyp*.txt')
+if f:
+    for k, v in zip(hyp.keys(), np.loadtxt(f[0])):
+        hyp[k] = v
 
 
 def train():
@@ -87,9 +91,9 @@ def train():
         else:
             pg0 += [v]  # parameter group 0
 
-    # optimizer = optim.Adam(pg0, lr=hyp['lr0'])
+    optimizer = optim.Adam(pg0, lr=hyp['lr0'])
     # optimizer = AdaBound(pg0, lr=hyp['lr0'], final_lr=0.1)
-    optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
+    # optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
     optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
     del pg0, pg1
 
@@ -427,7 +431,7 @@ if __name__ == '__main__':
 
                 # Mutate
                 init_seeds(seed=int(time.time()))
-                s = [.15, .15, .15, .15, .15, .15, .15, .00, .02, .20, .15, .20, .20, .20, .20, .20, .20]  # sigmas
+                s = [.15, .15, .15, .15, .15, .15, .15, .00, .02, .20, .15, .0, .0, .0, .0, .0, .0]  # sigmas
                 for i, k in enumerate(hyp.keys()):
                     x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                     hyp[k] *= float(x)  # vary by sigmas
