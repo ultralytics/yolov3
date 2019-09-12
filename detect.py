@@ -10,7 +10,7 @@ def detect(save_txt=False, save_img=False, stream_img=False):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half = opt.output, opt.source, opt.weights, opt.half
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http')
-    streams = source == 'streams.txt'
+    streams = source.endswith('streams.txt')
 
     # Initialize
     device = torch_utils.select_device(force_cpu=ONNX_EXPORT)
