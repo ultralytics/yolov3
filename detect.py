@@ -10,7 +10,7 @@ def detect(save_txt=False, save_img=False, stream_img=False):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half = opt.output, opt.source, opt.weights, opt.half
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http')
-    streams = source.endswith('streams.txt')
+    streams = 'streams' in source and source.endswith('.txt')
 
     # Initialize
     device = torch_utils.select_device(force_cpu=ONNX_EXPORT)
@@ -47,7 +47,7 @@ def detect(save_txt=False, save_img=False, stream_img=False):
     # Set Dataloader
     vid_path, vid_writer = None, None
     if streams:
-        stream_img = True
+        stream_img = False
         torch.backends.cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=img_size, half=half)
     elif webcam:
