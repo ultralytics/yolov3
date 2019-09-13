@@ -13,7 +13,7 @@ def detect(save_txt=False, save_img=False, stream_img=False):
     streams = 'streams' in source and source.endswith('.txt')
 
     # Initialize
-    device = torch_utils.select_device(force_cpu=ONNX_EXPORT)
+    device = torch_utils.select_device(device='cpu' if ONNX_EXPORT else opt.device)
     if os.path.exists(out):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
@@ -141,6 +141,7 @@ if __name__ == '__main__':
     parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
     parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
     parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
+    parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
     opt = parser.parse_args()
     print(opt)
 
