@@ -228,7 +228,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
             raise StopIteration
 
         # Letterbox
-        img = [letterbox(x, new_shape=self.img_size, mode='square')[0] for x in img0]
+        img = [letterbox(x, new_shape=self.img_size)[0] for x in img0]
 
         # Stack
         img = np.stack(img, 0)
