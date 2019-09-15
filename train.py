@@ -54,11 +54,16 @@ def train():
         hyp['cls_pw'] = 1.
         hyp['obj_pw'] = 1.
 
+    # Configure run
+    data_dict = parse_data_cfg(data)
+    train_path = data_dict['train']
+    nc = int(data_dict['classes'])  # number of classes
+    backup_dir =  data_dict['backup']
+
     # Initialize
     init_seeds()
-    wdir = 'weights' + os.sep  # weights dir
-    last = wdir + 'last.pt'
-    best = wdir + 'best.pt'
+    last = backup_dir + 'last.pt'
+    best = backup_dir + 'best.pt'
     multi_scale = opt.multi_scale
 
     if multi_scale:
@@ -66,11 +71,6 @@ def train():
         img_sz_max = round(img_size / 32 * 1.5) - 1
         img_size = img_sz_max * 32  # initiate with maximum multi_scale size
         print('Using multi-scale %g - %g' % (img_sz_min * 32, img_size))
-
-    # Configure run
-    data_dict = parse_data_cfg(data)
-    train_path = data_dict['train']
-    nc = int(data_dict['classes'])  # number of classes
 
     # Remove previous results
     for f in glob.glob('*_batch*.jpg') + glob.glob('results.txt'):
@@ -392,15 +392,16 @@ if __name__ == '__main__':
     parser.add_argument('--adam', action='store_true', help='use adam optimizer')
     parser.add_argument('--var', type=float, help='debug variable')
     opt = parser.parse_args()
-    opt.weights = 'weights/last.pt' if opt.resume else opt.weights
+    b_dir = parse_data_cfg(opt.data)['backup']
+    opt.weights = b_dir+'last.pt' if opt.resume else opt.weights
     print(opt)
     device = torch_utils.select_device(opt.device, apex=mixed_precision)
 
     tb_writer = None
     if opt.prebias:
         train()  # transfer-learn yolo biases for 1 epoch
-        create_backbone('weights/last.pt')  # saved results as backbone.pt
-        opt.weights = 'weights/backbone.pt'  # assign backbone
+        create_backbone(b_dir+'last.pt')  # saved results as backbone.pt
+        opt.weights = b_dir+'backbone.pt'  # assign backbone
         opt.prebias = False  # disable prebias
 
     if not opt.evolve:  # Train normally
