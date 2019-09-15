@@ -589,7 +589,7 @@ def create_backbone(f='weights/last.pt'):  # from utils.utils import *; create_b
             p.requires_grad = True
         except:
             pass
-    torch.save(x, f)
+    torch.save(x, 'weights/backbone.pt')
 
 
 def coco_class_count(path='../coco/labels/train2014/'):
