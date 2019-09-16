@@ -79,7 +79,7 @@ def create_modules(module_defs, img_size, arc):
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
                 if arc == 'defaultpw':  # default with positive weights
-                    b = [-4, -3.6]  # obj, cls
+                    b = [-4, -5]  # obj, cls
                 elif arc == 'default':  # default no pw (40 cls, 80 obj)
                     b = [-5.5, -4.0]
                 elif arc == 'uBCE':  # unified BCE (80 classes)
