@@ -185,6 +185,7 @@ def train():
                                   hyp=hyp,  # augmentation hyperparameters
                                   rect=opt.rect,  # rectangular training
                                   image_weights=opt.img_weights,
+                                  cache_labels=True if epochs > 10 else False,
                                   cache_images=False if opt.prebias else opt.cache_images)
 
     # Dataloader
