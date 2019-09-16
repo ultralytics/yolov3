@@ -1,8 +1,8 @@
 import torch.nn.functional as F
 
+from utils.google_utils import *
 from utils.parse_config import *
 from utils.utils import *
-from utils.google_utils import *
 
 ONNX_EXPORT = False
 
@@ -78,7 +78,7 @@ def create_modules(module_defs, img_size, arc):
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
-                if arc == 'defaultpw':  # default with positive weights
+                if arc == 'defaultpw' or arc == 'Fdefaultpw':  # default with positive weights
                     b = [-4, -3.6]  # obj, cls
                 elif arc == 'default':  # default no pw (40 cls, 80 obj)
                     b = [-5.5, -4.0]
