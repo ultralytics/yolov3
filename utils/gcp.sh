@@ -113,3 +113,17 @@ python3 test.py --weights weights/last.pt --cfg cfg/yolov3-spp.cfg --img-size 32
 
 gsutil cp evolve.txt gs://ultralytics
 sudo shutdown
+
+#Docker
+sudo docker kill $(sudo docker ps -q)
+sudo docker pull ultralytics/yolov3:v1
+sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v1
+
+clear
+while true
+do
+  python3 train.py --data data/coco.data --img-size 320 --batch-size 64 --accumulate 1 --evolve --epochs 1 --adam --bucket yolov4/adamdefaultpw_coco_1e --device 1
+done
+
+python3 train.py --data data/coco.data --img-size 320 --batch-size 64 --accumulate 1 --epochs 1 --adam --device 1 --prebias
+while true; do python3 train.py --data data/coco.data --img-size 320 --batch-size 64 --accumulate 1 --evolve --epochs 1 --adam --bucket yolov4/adamdefaultpw_coco_1e; done
