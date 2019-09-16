@@ -148,7 +148,7 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 <i></i>         | 320         | 416         | 608
 ---             | ---         | ---         | ---
 `YOLOv3`        | 51.8 (51.5) | 55.4 (55.3) | 58.2 (57.9)
-`YOLOv3-SPP`    | 52.4        | 56.5        | 60.7 (60.6)
+`YOLOv3-SPP`    | 52.4        | 56.8        | 60.7 (60.6)
 `YOLOv3-tiny`   | 29.0        | 32.9 (33.1) | 35.5
 
 ```bash
@@ -156,7 +156,7 @@ python3 test.py --save-json --img-size 608
 Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', img_size=608, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3-spp.weights')
 Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
                 Class    Images   Targets         P         R       mAP        F1: 100% 313/313 [07:40<00:00,  2.34s/it]
-                all       5e+03  3.58e+04     0.117     0.788     0.595     0.199
+                  all     5e+03  3.58e+04     0.119     0.788     0.594     0.201
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.367 <---
  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.607 <---
  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.387
@@ -174,19 +174,19 @@ python3 test.py --save-json --img-size 416
 Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3-spp.weights')
 Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
                 Class    Images   Targets         P         R       mAP        F1: 100% 313/313 [07:01<00:00,  1.41s/it]
-                all       5e+03  3.58e+04     0.105     0.746     0.554      0.18
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.336 <---
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.565 <---
+                  all     5e+03  3.58e+04     0.107     0.749     0.557     0.182
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.337 <---
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.568 <---
  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.350
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.151
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.361
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.494
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.281
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.433
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.459
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.256
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.495
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.622
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.152
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.359
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.496
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.279
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.432
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.460
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.257
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.494
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.623
 ```
 
 # Citation
