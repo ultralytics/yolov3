@@ -15,6 +15,10 @@ try:  # Mixed precision training https://github.com/NVIDIA/apex
 except:
     mixed_precision = False  # not installed
 
+wdir = 'weights' + os.sep  # weights dir
+last = wdir + 'last.pt'
+best = wdir + 'best.pt'
+
 # Hyperparameters (j-series, 50.5 mAP yolov3-320) evolved by @ktian08 https://github.com/ultralytics/yolov3/issues/310
 hyp = {'giou': 1.582,  # giou loss gain
        'cls': 27.76,  # cls loss gain  (CE=~1.0, uCE=~20)
@@ -56,9 +60,6 @@ def train():
 
     # Initialize
     init_seeds()
-    wdir = 'weights' + os.sep  # weights dir
-    last = wdir + 'last.pt'
-    best = wdir + 'best.pt'
     multi_scale = opt.multi_scale
 
     if multi_scale:
@@ -393,15 +394,15 @@ if __name__ == '__main__':
     parser.add_argument('--adam', action='store_true', help='use adam optimizer')
     parser.add_argument('--var', type=float, help='debug variable')
     opt = parser.parse_args()
-    opt.weights = 'weights/last.pt' if opt.resume else opt.weights
+    opt.weights = last if opt.resume else opt.weights
     print(opt)
     device = torch_utils.select_device(opt.device, apex=mixed_precision)
 
     tb_writer = None
     if opt.prebias:
         train()  # transfer-learn yolo biases for 1 epoch
-        create_backbone('weights/last.pt')  # saved results as backbone.pt
-        opt.weights = 'weights/backbone.pt'  # assign backbone
+        create_backbone(last)  # saved results as backbone.pt
+        opt.weights = wdir + 'backbone.pt'  # assign backbone
         opt.prebias = False  # disable prebias
 
     if not opt.evolve:  # Train normally
