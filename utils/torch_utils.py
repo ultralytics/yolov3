@@ -4,7 +4,6 @@ import torch
 
 
 def init_seeds(seed=0):
-    torch.cuda.empty_cache()
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
