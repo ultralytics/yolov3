@@ -75,7 +75,7 @@ def train():
     nc = int(data_dict['classes'])  # number of classes
 
     # Remove previous results
-    for f in glob.glob('*_batch*.jpg') + glob.glob('results.txt'):
+    for f in glob.glob('*_batch*.jpg') + glob.glob(results_file):
         os.remove(f)
 
     # Initialize model
@@ -120,7 +120,7 @@ def train():
 
         # load results
         if chkpt.get('training_results') is not None:
-            with open('results.txt', 'w') as file:
+            with open(results_file, 'w') as file:
                 file.write(chkpt['training_results'])  # write results.txt
 
         start_epoch = chkpt['epoch'] + 1
