@@ -425,9 +425,17 @@ if __name__ == '__main__':
 
         for _ in range(1):  # generations to evolve
             if os.path.exists('evolve.txt'):  # if evolve.txt exists: select best hyps and mutate
-                # Get best hyperparameters
+                # Select parent(s)
                 x = np.loadtxt('evolve.txt', ndmin=2)
-                x = x[fitness(x).argmax()]  # select best fitness hyps
+                if len(x) > 1:
+                    parent = 'weighted'  # parent selection method: 'single' or 'weighted'
+                    if parent == 'single':
+                        x = x[fitness(x).argmax()]
+                    elif parent == 'weighted':  # weighted combination
+                        n = min(10, x.shape[0])  # number to merge
+                        x = x[np.argsort(-fitness(x))][:n]  # top n mutations
+                        w = fitness(x) - fitness(x).min()  # weights
+                        x = (x[:n] * w.reshape(n, 1)).sum(0) / w.sum()  # new parent
                 for i, k in enumerate(hyp.keys()):
                     hyp[k] = x[i + 7]
 
