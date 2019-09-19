@@ -6,7 +6,7 @@ from utils.datasets import *
 from utils.utils import *
 
 
-def detect(save_txt=False, save_img=False, stream_img=False):
+def detect(save_txt=False, save_img=False, view_img=False):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half = opt.output, opt.source, opt.weights, opt.half
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http')
@@ -47,11 +47,11 @@ def detect(save_txt=False, save_img=False, stream_img=False):
     # Set Dataloader
     vid_path, vid_writer = None, None
     if streams:
-        stream_img = False
+        view_img = False
         torch.backends.cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=img_size, half=half)
     elif webcam:
-        stream_img = True
+        view_img = True
         dataset = LoadWebcam(source, img_size=img_size, half=half)
     else:
         save_img = True
@@ -95,14 +95,14 @@ def detect(save_txt=False, save_img=False, stream_img=False):
                         with open(save_path + '.txt', 'a') as file:
                             file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
 
-                    if save_img or stream_img:  # Add bbox to image
+                    if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (classes[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
 
             print('%sDone. (%.3fs)' % (s, time.time() - t))
 
             # Stream results
-            if stream_img:
+            if view_img:
                 cv2.imshow(p, im0)
 
             # Save results (image with detections)
