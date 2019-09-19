@@ -100,6 +100,7 @@ def train():
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_fitness = 0.
+    attempt_download(weights)
     if weights.endswith('.pt'):  # pytorch format
         # possible weights are 'last.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt' etc.
         if opt.bucket:

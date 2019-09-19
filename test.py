@@ -27,6 +27,7 @@ def test(cfg,
         model = Darknet(cfg, img_size).to(device)
 
         # Load weights
+        attempt_download(weights)
         if weights.endswith('.pt'):  # pytorch format
             model.load_state_dict(torch.load(weights, map_location=device)['model'])
         else:  # darknet format
