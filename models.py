@@ -301,8 +301,6 @@ def load_darknet_weights(self, weights, cutoff=-1):
             gdrive_download(id='1oPCHKsM2JpM-zgyepQciGli9X0MTsJCO', name=weights)
         elif file == 'darknet53.conv.74':
             gdrive_download(id='18xqvs_uwAqfTXp-LJCYLYNHBOcrwbrp0', name=weights)
-        elif file == 'yolov3-spp.pt':
-            gdrive_download(id='1vFlbJ_dXPvtwaLLOu-twnjK4exdFiQ73', name=weights)
         else:
             try:  # download from pjreddie.com
                 url = 'https://pjreddie.com/media/files/' + file
