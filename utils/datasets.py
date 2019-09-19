@@ -186,11 +186,13 @@ class LoadWebcam:  # for inference
 
 
 class LoadStreams:  # multiple IP or RTSP cameras
-    def __init__(self, path='streams.txt', img_size=416, half=False):
+    def __init__(self, sources='streams.txt', img_size=416, half=False):
         self.img_size = img_size
         self.half = half  # half precision fp16 images
-        with open(path, 'r') as f:
-            sources = [x.strip() for x in f.read().splitlines() if len(x.strip())]
+
+        if os.path.isfile(sources):
+            with open(sources, 'r') as f:
+                sources = [x.strip() for x in f.read().splitlines() if len(x.strip())]
 
         n = len(sources)
         self.imgs = [None] * n
@@ -208,7 +210,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
             thread.start()
 
         print('')  # newline
-        time.sleep(0.5)
+        time.sleep(0.5)  # allow connections to start
 
     def update(self, index, cap):
         # Read next stream frame in a daemon thread
