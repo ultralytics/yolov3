@@ -405,7 +405,7 @@ def attempt_download(weights):
     # Attempt to download pretrained weights if not found locally
 
     msg = weights + ' missing, download from https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI'
-    if not os.path.isfile(weights):
+    if weights and not os.path.isfile(weights):
         file = Path(weights).name
 
         if file == 'yolov3-spp.weights':
@@ -430,4 +430,4 @@ def attempt_download(weights):
                 print(msg)
                 os.system('rm ' + weights)  # remove partial downloads
 
-    assert os.path.exists(weights), msg  # download missing weights from Google Drive
+        assert os.path.exists(weights), msg  # download missing weights from Google Drive
