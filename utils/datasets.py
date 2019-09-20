@@ -187,6 +187,7 @@ class LoadWebcam:  # for inference
 
 class LoadStreams:  # multiple IP or RTSP cameras
     def __init__(self, sources='streams.txt', img_size=416, half=False):
+        self.mode = 'images'
         self.img_size = img_size
         self.half = half  # half precision fp16 images
 
