@@ -313,8 +313,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         if cache_labels or image_weights:  # cache labels for faster training
             self.labels = [np.zeros((0, 5))] * n
             extract_bounding_boxes = False
+            create_datasubset = False
             pbar = tqdm(self.label_files, desc='Reading labels')
-            nm, nf, ne = 0, 0, 0  # number missing, number found, number empty
+            nm, nf, ne, ns = 0, 0, 0, 0  # number missing, number found, number empty, number datasubset
             for i, file in enumerate(pbar):
                 try:
                     with open(file, 'r') as f:
@@ -329,6 +330,18 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     assert (l[:, 1:] <= 1).all(), 'non-normalized or out of bounds coordinate labels: %s' % file
                     self.labels[i] = l
                     nf += 1  # file found
+
+                    # Create subdataset (a smaller dataset)
+                    if create_datasubset and ns < 1E4:
+                        if ns == 0:
+                            create_folder(path='./datasubset')
+                            os.makedirs('./datasubset/images')
+                        exclude_classes = 43
+                        if exclude_classes not in l[:, 0]:
+                            ns += 1
+                            # shutil.copy(src=self.img_files[i], dst='./datasubset/images/')  # copy image
+                            with open('./datasubset/images.txt', 'a') as f:
+                                f.write(self.img_files[i] + '\n')
 
                     # Extract object detection boxes for a second stage classifier
                     if extract_bounding_boxes:
@@ -669,3 +682,10 @@ def convert_images2bmp():
             '/Users/glennjocher/PycharmProjects/', '../')
         with open(label_path.replace('5k', '5k_bmp'), 'w') as file:
             file.write(lines)
+
+
+def create_folder(path='./new_folder'):
+    # Create folder
+    if os.path.exists(path):
+        shutil.rmtree(path)  # delete output folder
+    os.makedirs(path)  # make new output folder
