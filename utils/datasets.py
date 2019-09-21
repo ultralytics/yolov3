@@ -657,9 +657,11 @@ def cutout(image, labels):
     image[ymin:ymax, xmin:xmax] = mask_color
 
     # return unobscured labels
-    box = np.array([xmin, ymin, xmax, ymax], dtype=np.float32)
-    ioa = bbox_ioa(box, labels[:, 1:5])  # intersection over area
-    return labels[ioa < 0.90]  # > 90% obscured labels removed
+    if len(labels):
+        box = np.array([xmin, ymin, xmax, ymax], dtype=np.float32)
+        ioa = bbox_ioa(box, labels[:, 1:5])  # intersection over area
+        labels = labels[ioa < 0.90]  # remove >90% obscured labels
+    return labels
 
 
 def convert_images2bmp():
