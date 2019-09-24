@@ -208,12 +208,11 @@ class LoadStreams:  # multiple IP or RTSP cameras
             w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv2.CAP_PROP_FPS) % 100
-            print(' success (%gx%g at %.2f FPS).' % (w, h, fps))
+            _, self.imgs[i] = cap.read()  # guarantee first frame
             thread = Thread(target=self.update, args=([i, cap]), daemon=True)
+            print(' success (%gx%g at %.2f FPS).' % (w, h, fps))
             thread.start()
-
         print('')  # newline
-        time.sleep(0.5)  # allow connections to start
 
     def update(self, index, cap):
         # Read next stream frame in a daemon thread
