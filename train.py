@@ -443,7 +443,7 @@ if __name__ == '__main__':
 
                 # Mutate
                 np.random.seed(int(time.time()))
-                s = [.1, .1, .1, .1, .1, .1, .1, .0, .02, .2, .2, .2, .2, .2, .2, .2, .2]  # sigmas
+                s = [.2, .2, .2, .2, .2, .2, .2, .0, .02, .2, .2, .2, .2, .2, .2, .2, .2]  # sigmas
                 for i, k in enumerate(hyp.keys()):
                     x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                     hyp[k] *= float(x)  # vary by sigmas
