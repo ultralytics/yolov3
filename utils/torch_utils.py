@@ -15,6 +15,7 @@ def init_seeds(seed=0):
 
 
 def select_device(device='', apex=False):
+    # device = '' or 'cpu' or '0' or '0,1'
     if device.lower() == 'cpu':
         pass
     elif device:  # Set environment variable if device is specified
