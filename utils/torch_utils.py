@@ -15,33 +15,28 @@ def init_seeds(seed=0):
 
 
 def select_device(device='', apex=False):
-    # device = '' or 'cpu' or '0' or '0,1'
-    if device.lower() == 'cpu':
-        pass
-    elif device:  # Set environment variable if device is specified
-        assert torch.cuda.is_available(), 'CUDA unavailable, invalid device %s requested' % device
-        os.environ['CUDA_VISIBLE_DEVICES'] = device
+    # device = 'cpu' or '0' or '0,1,2,3'
+    cpu_request = device.lower() == 'cpu'
+    if device and not cpu_request:  # if device requested other than 'cpu'
+        os.environ['CUDA_VISIBLE_DEVICES'] = device  # set environment variable
+        assert torch.cuda.is_available(), 'CUDA unavailable, invalid device %s requested' % device  # check availablity
 
-    # apex if mixed precision training https://github.com/NVIDIA/apex
-    cuda = False if device == 'cpu' else torch.cuda.is_available()
-    device = torch.device('cuda:0' if cuda else 'cpu')
-
-    if not cuda:
-        print('Using CPU')
+    cuda = False if cpu_request else torch.cuda.is_available()
     if cuda:
         c = 1024 ** 2  # bytes to MB
         ng = torch.cuda.device_count()
         x = [torch.cuda.get_device_properties(i) for i in range(ng)]
-        cuda_str = 'Using CUDA ' + ('Apex ' if apex else '')
+        cuda_str = 'Using CUDA ' + ('Apex ' if apex else '')  # apex for mixed precision https://github.com/NVIDIA/apex
         for i in range(0, ng):
             if i == 1:
-                # torch.cuda.set_device(0)  # OPTIONAL: Set GPU ID
                 cuda_str = ' ' * len(cuda_str)
             print("%sdevice%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
                   (cuda_str, i, x[i].name, x[i].total_memory / c))
+    else:
+        print('Using CPU')
 
     print('')  # skip a line
-    return device
+    return torch.device('cuda:0' if cuda else 'cpu')
 
 
 def fuse_conv_and_bn(conv, bn):
