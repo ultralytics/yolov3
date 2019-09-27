@@ -69,6 +69,9 @@ def detect(save_txt=False, save_img=False):
             img = img.unsqueeze(0)
         pred, _ = model(img)
 
+        if opt.half:
+            pred = pred.float()
+
         for i, det in enumerate(non_max_suppression(pred, opt.conf_thres, opt.nms_thres)):  # detections per image
             if webcam:  # batch_size >= 1
                 p, s, im0 = path[i], '%g: ' % i, im0s[i]
