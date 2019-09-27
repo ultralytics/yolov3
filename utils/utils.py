@@ -451,7 +451,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
     min_wh = 2  # (pixels) minimum box width and height
 
     output = [None] * len(prediction)
-    for image_i, pred in enumerate(prediction.float()):
+    for image_i, pred in enumerate(prediction):
         # Experiment: Prior class size rejection
         # x, y, w, h = pred[:, 0], pred[:, 1], pred[:, 2], pred[:, 3]
         # a = w * h  # area
