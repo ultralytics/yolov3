@@ -218,7 +218,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
         # Read next stream frame in a daemon thread
         while cap.isOpened():
             _, self.imgs[index] = cap.read()
-        time.sleep(0.030)  # 33.3 FPS to keep buffer empty
+        time.sleep(0.01)  # 33.3 FPS to keep buffer empty
 
     def __iter__(self):
         self.count = -1
@@ -624,7 +624,6 @@ def cutout(image, labels):
         box2 = box2.transpose()
 
         # Get the coordinates of bounding boxes
-        # x1, y1, x2, y2 = box1
         b1_x1, b1_y1, b1_x2, b1_y2 = box1[0], box1[1], box1[2], box1[3]
         b2_x1, b2_y1, b2_x2, b2_y2 = box2[0], box2[1], box2[2], box2[3]
 
@@ -639,15 +638,13 @@ def cutout(image, labels):
         return inter_area / box2_area
 
     # random mask_size up to 50% image size
-    mask_h = random.randint(1, int(h * 0.5))
-    mask_w = random.randint(1, int(w * 0.5))
+    s = 0.5  # scale
+    mask_h = random.randint(1, int(h * s))
+    mask_w = random.randint(1, int(w * s))
 
-    # box center
-    cx = random.randint(0, h)
-    cy = random.randint(0, w)
-
-    xmin = max(0, cx - mask_w // 2)
-    ymin = max(0, cy - mask_h // 2)
+    # box
+    xmin = max(0, random.randint(0, w) - mask_w // 2)
+    ymin = max(0, random.randint(0, h) - mask_h // 2)
     xmax = min(w, xmin + mask_w)
     ymax = min(h, ymin + mask_h)
 
