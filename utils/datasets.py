@@ -232,7 +232,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
             raise StopIteration
 
         # Letterbox
-        img = [letterbox(x, new_shape=self.img_size)[0] for x in img0]
+        img = [letterbox(x, new_shape=self.img_size, interp=cv2.INTER_LINEAR)[0] for x in img0]
 
         # Stack
         img = np.stack(img, 0)
@@ -507,7 +507,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         return torch.stack(img, 0), torch.cat(label, 0), path, hw
 
 
-def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto'):
+def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto', interp=cv2.INTER_AREA):
     # Resize a rectangular image to a 32 pixel multiple rectangle
     # https://github.com/ultralytics/yolov3/issues/232
     shape = img.shape[:2]  # current shape [height, width]
@@ -535,7 +535,7 @@ def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto'):
         ratiow, ratioh = new_shape / shape[1], new_shape / shape[0]
 
     if shape[::-1] != new_unpad:  # resize
-        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_AREA)  # INTER_AREA is better, INTER_LINEAR is faster
+        img = cv2.resize(img, new_unpad, interpolation=interp)  # INTER_AREA is better, INTER_LINEAR is faster
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
