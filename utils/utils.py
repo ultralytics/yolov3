@@ -479,7 +479,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
 
         # Select predicted classes
         class_conf = class_conf[i]
-        class_pred = class_pred[i].unsqueeze(1).type_as(class_conf)
+        class_pred = class_pred[i].unsqueeze(1).float()
 
         # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         pred[:, :4] = xywh2xyxy(pred[:, :4])
