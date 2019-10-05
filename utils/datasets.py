@@ -644,7 +644,7 @@ def cutout(image, labels):
         return inter_area / box2_area
 
     # create random masks
-    scales = [0.5] * 1  # + [0.25] * 4 + [0.125] * 16  # image size fraction
+    scales = [0.5] * 1  # + [0.25] * 4 + [0.125] * 16 + [0.0625] * 64 + [0.03125] * 256  # image size fraction
     for s in scales:
         mask_h = random.randint(1, int(h * s))
         mask_w = random.randint(1, int(w * s))
@@ -660,7 +660,7 @@ def cutout(image, labels):
         image[ymin:ymax, xmin:xmax] = mask_color
 
         # return unobscured labels
-        if len(labels):
+        if len(labels) and s > 0.03:
             box = np.array([xmin, ymin, xmax, ymax], dtype=np.float32)
             ioa = bbox_ioa(box, labels[:, 1:5])  # intersection over area
             labels = labels[ioa < 0.90]  # remove >90% obscured labels
