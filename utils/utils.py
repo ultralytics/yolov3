@@ -657,7 +657,7 @@ def kmeans_targets(path='../coco/trainvalno5k.txt', n=9, img_size=416):  # from 
     from scipy import cluster
 
     # Get label wh
-    dataset = LoadImagesAndLabels(path, augment=True, rect=True)
+    dataset = LoadImagesAndLabels(path, augment=True, rect=True, cache_labels=True)
     for s, l in zip(dataset.shapes, dataset.labels):
         l[:, [1, 3]] *= s[0]  # normalized to pixels
         l[:, [2, 4]] *= s[1]
@@ -671,8 +671,7 @@ def kmeans_targets(path='../coco/trainvalno5k.txt', n=9, img_size=416):  # from 
     # Measure IoUs
     iou = torch.stack([wh_iou(torch.Tensor(wh).T, torch.Tensor(x).T) for x in k], 0)
     biou = iou.max(0)[0]  # closest anchor IoU
-
-    print((biou < 0.2635).float().mean())
+    print('Best possible recall: %.3f' % (biou > 0.2635).float().mean())  # BPR (best possible recall)
 
     # Print
     print('kmeans anchors (n=%g, img_size=%g, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
