@@ -560,9 +560,11 @@ def print_model_biases(model):
     multi_gpu = type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel)
     for l in model.yolo_layers:  # print pretrained biases
         if multi_gpu:
-            b = model.module.module_list[l - 1][0].bias.view(3, -1)  # bias 3x85
+            na = model.module.module_list[l].na  # number of anchors
+            b = model.module.module_list[l - 1][0].bias.view(na, -1)  # bias 3x85
         else:
-            b = model.module_list[l - 1][0].bias.view(3, -1)  # bias 3x85
+            na = model.module_list[l].na
+            b = model.module_list[l - 1][0].bias.view(na, -1)  # bias 3x85
         print('regression: %5.2f+/-%-5.2f ' % (b[:, :4].mean(), b[:, :4].std()),
               'objectness: %5.2f+/-%-5.2f ' % (b[:, 4].mean(), b[:, 4].std()),
               'classification: %5.2f+/-%-5.2f' % (b[:, 5:].mean(), b[:, 5:].std()))
