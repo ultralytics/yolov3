@@ -404,7 +404,6 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         img_path = self.img_files[index]
         label_path = self.label_files[index]
-        hyp = self.hyp
 
         mosaic = True  # load 4 images at a time into a mosaic
         if mosaic:
@@ -440,8 +439,10 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + padh
 
         if self.augment:
+            hyp = self.hyp
+
             # Augment colorspace
-            augment_hsv(img, hgain=hyp['hsv_h'], sgain=hyp['hsv_s'], vgain=0.0)
+            augment_hsv(img, hgain=hyp['hsv_h'], sgain=hyp['hsv_s'], vgain=hyp['hsv_v'])
 
             # Augment imagespace
             g = 0.0 if mosaic else 1.0  # do not augment mosaics
