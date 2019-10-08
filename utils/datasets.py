@@ -439,13 +439,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + padh
 
         if self.augment:
-            hyp = self.hyp
-
-            # Augment colorspace
-            augment_hsv(img, hgain=hyp['hsv_h'], sgain=hyp['hsv_s'], vgain=hyp['hsv_v'])
-
             # Augment imagespace
             g = 0.0 if mosaic else 1.0  # do not augment mosaics
+            hyp = self.hyp
             img, labels = random_affine(img, labels,
                                         degrees=hyp['degrees'] * g,
                                         translate=hyp['translate'] * g,
@@ -510,27 +506,39 @@ def load_image(self, index):
         if self.augment and r < 1:  # if training (NOT testing), downsize to inference shape
             h, w, _ = img.shape
             img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # _LINEAR fastest
+
+    # Augment colorspace
+    if self.augment:
+        augment_hsv(img, hgain=self.hyp['hsv_h'], sgain=self.hyp['hsv_s'], vgain=self.hyp['hsv_v'])
+
     return img
 
 
 def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
-    # SV augmentation by 50%
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # hue, sat, val
-    S = img_hsv[:, :, 1].astype(np.float32)  # saturation
-    V = img_hsv[:, :, 2].astype(np.float32)  # value
-
-    a = random.uniform(-1, 1) * sgain + 1
-    b = random.uniform(-1, 1) * vgain + 1
-    S *= a
-    V *= b
-
-    img_hsv[:, :, 1] = S if a < 1 else S.clip(None, 255)
-    img_hsv[:, :, 2] = V if b < 1 else V.clip(None, 255)
+    x = (np.random.uniform(-1, 1, 3) * np.array([hgain, sgain, vgain]) + 1).astype(np.float32)  # random gains
+    img_hsv = (cv2.cvtColor(img, cv2.COLOR_BGR2HSV) * x.reshape((1, 1, 3))).clip(None, 255).astype(np.uint8)
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
 
 
+# def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):  # original version
+#     # SV augmentation by 50%
+#     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # hue, sat, val
+#
+#     S = img_hsv[:, :, 1].astype(np.float32)  # saturation
+#     V = img_hsv[:, :, 2].astype(np.float32)  # value
+#
+#     a = random.uniform(-1, 1) * sgain + 1
+#     b = random.uniform(-1, 1) * vgain + 1
+#     S *= a
+#     V *= b
+#
+#     img_hsv[:, :, 1] = S if a < 1 else S.clip(None, 255)
+#     img_hsv[:, :, 2] = V if b < 1 else V.clip(None, 255)
+#     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
+
+
 def load_mosaic(self, index):
-    # loads up images in a mosaic
+    # loads images in a mosaic
 
     labels4 = []
     s = self.img_size
@@ -542,7 +550,7 @@ def load_mosaic(self, index):
         img = load_image(self, index)
         h, w, _ = img.shape
 
-        # merge img into img4
+        # place img in img4
         if i == 0:  # top left
             x1a, y1a, x2a, y2a = max(xc - w, 0), max(yc - h, 0), xc, yc  # xmin, ymin, xmax, ymax (large image)
             x1b, y1b, x2b, y2b = w - (x2a - x1a), h - (y2a - y1a), w, h  # xmin, ymin, xmax, ymax (small image)
