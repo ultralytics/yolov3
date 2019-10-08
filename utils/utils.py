@@ -260,7 +260,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False):
     if GIoU:  # Generalized IoU https://arxiv.org/pdf/1902.09630.pdf
         c_x1, c_x2 = torch.min(b1_x1, b2_x1), torch.max(b1_x2, b2_x2)
         c_y1, c_y2 = torch.min(b1_y1, b2_y1), torch.max(b1_y2, b2_y2)
-        c_area = (c_x2 - c_x1) * (c_y2 - c_y1)  # convex area
+        c_area = (c_x2 - c_x1) * (c_y2 - c_y1) + 1e-16  # convex area
         return iou - (c_area - union_area) / c_area  # GIoU
 
     return iou
