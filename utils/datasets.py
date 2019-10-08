@@ -357,10 +357,15 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                             f = '%s%sclassifier%s%g_%g_%s' % (p.parent.parent, os.sep, os.sep, x[0], j, p.name)
                             if not os.path.exists(Path(f).parent):
                                 os.makedirs(Path(f).parent)  # make new output folder
-                            box = xywh2xyxy(x[1:].reshape(-1, 4) * np.array([1, 1, 1.5, 1.5])).ravel()
-                            b = np.clip(box, 0, 1)  # clip boxes outside of image
-                            ret_val = cv2.imwrite(f, img[int(b[1] * h):int(b[3] * h), int(b[0] * w):int(b[2] * w)])
-                            assert ret_val, 'Failure extracting classifier boxes'
+
+                            b = x[1:] * np.array([w, h, w, h])  # box
+                            b[2:] = b[2:].max()  # rectangle to square
+                            b[2:] = b[2:] * 1.3 + 30  # pad
+                            b = xywh2xyxy(b.reshape(-1, 4)).ravel().astype(np.int)
+
+                            b[[0, 2]] = np.clip(b[[0, 2]], 0, w)  # clip boxes outside of image
+                            b[[1, 3]] = np.clip(b[[1, 3]], 0, h)
+                            assert cv2.imwrite(f, img[b[1]:b[3], b[0]:b[2]]), 'Failure extracting classifier boxes'
                 else:
                     ne += 1  # file empty
 

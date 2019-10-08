@@ -624,6 +624,29 @@ def select_best_evolve(path='evolve*.txt'):  # from utils.utils import *; select
         print(file, x[fitness(x).argmax()])
 
 
+def crop_images_random(path='../images/', scale=0.50):  # from utils.utils import *; crop_images_random()
+    # crops images into random squares up to scale fraction
+    # WARNING: overwrites images!
+    for file in tqdm(sorted(glob.glob('%s/*.*' % path))):
+        img = cv2.imread(file)  # BGR
+        if img is not None:
+            h, w = img.shape[:2]
+
+            # create random mask
+            a = 30  # minimum size (pixels)
+            mask_h = random.randint(a, int(max(a, h * scale)))  # mask height
+            mask_w = mask_h  # mask width
+
+            # box
+            xmin = max(0, random.randint(0, w) - mask_w // 2)
+            ymin = max(0, random.randint(0, h) - mask_h // 2)
+            xmax = min(w, xmin + mask_w)
+            ymax = min(h, ymin + mask_h)
+
+            # apply random color mask
+            cv2.imwrite(file, img[ymin:ymax, xmin:xmax])
+
+
 def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
     # Makes single-class coco datasets. from utils.utils import *; coco_single_class_labels()
     if os.path.exists('new/'):
