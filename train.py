@@ -32,7 +32,7 @@ hyp = {'giou': 1.582,  # giou loss gain
        'momentum': 0.97,  # SGD momentum
        'weight_decay': 0.0004569,  # optimizer weight decay
        'fl_gamma': 0.5,  # focal loss gamma
-       'hsv_h': 0.10,  # image HSV-Hue augmentation (fraction)
+       'hsv_h': 0.01,  # image HSV-Hue augmentation (fraction)
        'hsv_s': 0.5703,  # image HSV-Saturation augmentation (fraction)
        'hsv_v': 0.3174,  # image HSV-Value augmentation (fraction)
        'degrees': 1.113,  # image rotation (+/- deg)
