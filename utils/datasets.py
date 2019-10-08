@@ -405,7 +405,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img_path = self.img_files[index]
         label_path = self.label_files[index]
 
-        mosaic = True and not self.augment  # load 4 images at a time into a mosaic (only during training)
+        mosaic = True and self.augment  # load 4 images at a time into a mosaic (only during training)
         if mosaic:
             # Load mosaic
             img, labels = load_mosaic(self, index)
