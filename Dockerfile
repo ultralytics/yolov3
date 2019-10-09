@@ -55,6 +55,9 @@ COPY . /usr/src/app
 # Run with local directory access
 # sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0 python3 train.py
 
+# Pull and Run with local directory access
+# export tag=ultralytics/yolov3:v0 && sudo docker pull $tag && sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py
+
 # Build and Push
 # export tag=ultralytics/yolov3:v0 && sudo docker build -t $tag . && docker push $tag
 
