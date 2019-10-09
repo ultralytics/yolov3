@@ -444,6 +444,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + padh
 
         if self.augment:
+            # Augment colorspace
+            augment_hsv(img, hgain=self.hyp['hsv_h'], sgain=self.hyp['hsv_s'], vgain=self.hyp['hsv_v'])
+
             # Augment imagespace
             g = 0.0 if mosaic else 1.0  # do not augment mosaics
             hyp = self.hyp
@@ -511,11 +514,6 @@ def load_image(self, index):
         if self.augment and r < 1:  # if training (NOT testing), downsize to inference shape
             h, w, _ = img.shape
             img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # _LINEAR fastest
-
-    # Augment colorspace
-    if self.augment:
-        augment_hsv(img, hgain=self.hyp['hsv_h'], sgain=self.hyp['hsv_s'], vgain=self.hyp['hsv_v'])
-
     return img
 
 
