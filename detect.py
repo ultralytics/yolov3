@@ -27,6 +27,12 @@ def detect(save_txt=False, save_img=False):
     else:  # darknet format
         _ = load_darknet_weights(model, weights)
 
+    # Second-stage classifier
+    classify = False
+    if classify:
+        modelc = torch_utils.load_classifier(name='resnet101', n=2)  # initialize
+        modelc.load_state_dict(torch.load('resnet101.pt', map_location=device)['model'])  # load weights
+
     # Fuse Conv2d + BatchNorm2d layers
     # model.fuse()
 
@@ -67,12 +73,20 @@ def detect(save_txt=False, save_img=False):
         img = torch.from_numpy(img).to(device)
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
-        pred, _ = model(img)
+        pred = model(img)[0]
 
         if opt.half:
             pred = pred.float()
 
-        for i, det in enumerate(non_max_suppression(pred, opt.conf_thres, opt.nms_thres)):  # detections per image
+        # Apply NMS
+        pred = non_max_suppression(pred, opt.conf_thres, opt.nms_thres)
+
+        # Apply
+        if classify:
+            pred = apply_classifier(pred, modelc, img, im0s)
+
+        # Process detections
+        for i, det in enumerate(pred):  # detections per image
             if webcam:  # batch_size >= 1
                 p, s, im0 = path[i], '%g: ' % i, im0s[i]
             else:
