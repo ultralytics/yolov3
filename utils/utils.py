@@ -730,7 +730,7 @@ def apply_classifier(x, model, img, im0):
             # Reshape and pad cutouts
             b = xyxy2xywh(d[:, :4])  # boxes
             b[:, 2:] = b[:, 2:].max(1)[0].unsqueeze(1)  # rectangle to square
-            b[:, 2:] = b[:, 2:] * 1.0 + 0  # pad
+            b[:, 2:] = b[:, 2:] * 1.3 + 30  # pad
             d[:, :4] = xywh2xyxy(b).long()
 
             # Rescale boxes from img_size to im0 size
@@ -743,7 +743,7 @@ def apply_classifier(x, model, img, im0):
             for a in d:  # per item
                 j += 1
                 cutout = im0[int(a[1]):int(a[3]), int(a[0]):int(a[2])]
-                im = cv2.resize(cutout, (128, 128))  # BGR
+                im = cv2.resize(cutout, (224, 224))  # BGR
                 cv2.imwrite('test%i.jpg' % j, cutout)
 
                 im = im[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416

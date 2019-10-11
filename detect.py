@@ -32,6 +32,7 @@ def detect(save_txt=False, save_img=False):
     if classify:
         modelc = torch_utils.load_classifier(name='resnet101', n=2)  # initialize
         modelc.load_state_dict(torch.load('resnet101.pt', map_location=device)['model'])  # load weights
+        modelc.to(device).eval()
 
     # Fuse Conv2d + BatchNorm2d layers
     # model.fuse()
