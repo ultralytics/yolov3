@@ -739,23 +739,18 @@ def apply_classifier(x, model, img, im0):
             # Classes
             pred_cls1 = d[:, 6].long()
             ims = []
-            j = 0
-            for a in d:  # per item
-                j += 1
+            for j, a in enumerate(d):  # per item
                 cutout = im0[int(a[1]):int(a[3]), int(a[0]):int(a[2])]
                 im = cv2.resize(cutout, (224, 224))  # BGR
-                cv2.imwrite('test%i.jpg' % j, cutout)
+                # cv2.imwrite('test%i.jpg' % j, cutout)
 
                 im = im[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
-                im = np.expand_dims(im, axis=0)  # add batch dim
                 im = np.ascontiguousarray(im, dtype=np.float32)  # uint8 to float32
                 im /= 255.0  # 0 - 255 to 0.0 - 1.0
                 ims.append(im)
 
-            ims = torch.Tensor(np.concatenate(ims, 0))  # to torch
-            pred_cls2 = model(ims).argmax(1)  # classifier prediction
-
-            # x[i] = x[i][pred_cls1 == pred_cls2]  # retain matching class detections
+            pred_cls2 = model(torch.Tensor(ims).to(d.device)).argmax(1)  # classifier prediction
+            x[i] = x[i][pred_cls1 == pred_cls2]  # retain matching class detections
 
     return x
 
