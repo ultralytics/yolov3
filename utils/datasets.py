@@ -511,7 +511,7 @@ def load_image(self, index):
         img = cv2.imread(img_path)  # BGR
         assert img is not None, 'Image Not Found ' + img_path
         r = self.img_size / max(img.shape)  # size ratio
-        if self.augment and r < 1:  # if training (NOT testing), downsize to inference shape
+        if self.augment and r < 1.0:  # if training (NOT testing), downsize to inference shape
             h, w, _ = img.shape
             img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # _LINEAR fastest
     return img
@@ -644,7 +644,7 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10)
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
     # https://medium.com/uruvideo/dataset-augmentation-with-random-homographies-a8f4b44830d4
 
-    if targets is None:
+    if targets is None:  # targets = [cls, xyxy]
         targets = []
     border = 0  # width of added border (optional)
     height = img.shape[0] + border * 2
@@ -667,19 +667,18 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10)
     S[0, 1] = math.tan(random.uniform(-shear, shear) * math.pi / 180)  # x shear (deg)
     S[1, 0] = math.tan(random.uniform(-shear, shear) * math.pi / 180)  # y shear (deg)
 
-    M = S @ T @ R  # Combined rotation matrix. ORDER IS IMPORTANT HERE!!
-    imw = cv2.warpAffine(img, M[:2], dsize=(width, height), flags=cv2.INTER_AREA,
-                         borderValue=(128, 128, 128))  # BGR order borderValue
+    # Combined rotation matrix
+    M = S @ T @ R  # ORDER IS IMPORTANT HERE!!
+    changed = (border != 0) or (M != np.eye(3)).any()
+    if changed:
+        img = cv2.warpAffine(img, M[:2], dsize=(width, height), flags=cv2.INTER_AREA, borderValue=(128, 128, 128))
 
-    # Return warped points also
-    if len(targets) > 0:
-        n = targets.shape[0]
-        points = targets[:, 1:5].copy()
-        area0 = (points[:, 2] - points[:, 0]) * (points[:, 3] - points[:, 1])
-
+    # Transform label coordinates
+    n = len(targets)
+    if n:
         # warp points
         xy = np.ones((n * 4, 3))
-        xy[:, :2] = points[:, [0, 1, 2, 3, 0, 3, 2, 1]].reshape(n * 4, 2)  # x1y1, x2y2, x1y2, x2y1
+        xy[:, :2] = targets[:, [1, 2, 3, 4, 1, 4, 3, 2]].reshape(n * 4, 2)  # x1y1, x2y2, x1y2, x2y1
         xy = (xy @ M.T)[:, :2].reshape(n, 8)
 
         # create new boxes
@@ -702,13 +701,14 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10)
         w = xy[:, 2] - xy[:, 0]
         h = xy[:, 3] - xy[:, 1]
         area = w * h
+        area0 = (targets[:, 3] - targets[:, 1]) * (targets[:, 4] - targets[:, 2])
         ar = np.maximum(w / (h + 1e-16), h / (w + 1e-16))
         i = (w > 4) & (h > 4) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
 
         targets = targets[i]
         targets[:, 1:5] = xy[i]
 
-    return imw, targets
+    return img, targets
 
 
 def cutout(image, labels):
