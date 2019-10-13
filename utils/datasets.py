@@ -588,7 +588,8 @@ def load_mosaic(self, index):
                 labels[:, 4] = h * (x[:, 2] + x[:, 4] / 2) + padh
 
             labels4.append(labels)
-    labels4 = np.concatenate(labels4, 0)
+    if len(labels4):
+        labels4 = np.concatenate(labels4, 0)
 
     # hyp = self.hyp
     # img4, labels4 = random_affine(img4, labels4,
@@ -600,7 +601,8 @@ def load_mosaic(self, index):
     # Center crop
     a = s // 2
     img4 = img4[a:a + s, a:a + s]
-    labels4[:, 1:] -= a
+    if len(labels4):
+        labels4[:, 1:] -= a
 
     return img4, labels4
 
