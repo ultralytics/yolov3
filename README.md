@@ -69,7 +69,7 @@ Reflection | 50% probability (horizontal-only)
 H**S**V Saturation | +/- 50%
 HS**V** Intensity | +/- 50%
 
-<img src="https://user-images.githubusercontent.com/26833433/61579359-507b7d80-ab04-11e9-8a2a-bd6f59bbdfb4.jpg" width="900">
+<img src="https://user-images.githubusercontent.com/26833433/66699231-27beea80-ece5-11e9-9cad-bdf9d82c500a.jpg" width="900">
 
 ## Speed
 
@@ -125,14 +125,14 @@ To run a specific models:
 ## Darknet Conversion
 
 ```bash
-git clone https://github.com/ultralytics/yolov3 && cd yolov3
+$ git clone https://github.com/ultralytics/yolov3 && cd yolov3
 
 # convert darknet cfg/weights to pytorch model
-python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.weights')"
+$ python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.weights')"
 Success: converted 'weights/yolov3-spp.weights' to 'converted.pt'
 
 # convert cfg/pytorch model to darknet weights
-python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.pt')"
+$ python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.pt')"
 Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 ```
 
@@ -148,11 +148,11 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 <i></i>         | 320         | 416         | 608
 ---             | ---         | ---         | ---
 `YOLOv3`        | 51.8 (51.5) | 55.4 (55.3) | 58.2 (57.9)
-`YOLOv3-SPP`    | 52.4        | 56.8        | 60.7 (60.6)
+`YOLOv3-SPP`    | 52.6        | 57.0        | 60.7 (60.6)
 `YOLOv3-tiny`   | 29.0        | 32.9 (33.1) | 35.5
 
 ```bash
-python3 test.py --save-json --img-size 608
+$ python3 test.py --save-json --img-size 608
 Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', img_size=608, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3-spp.weights')
 Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
                 Class    Images   Targets         P         R       mAP        F1: 100% 313/313 [07:40<00:00,  2.34s/it]
@@ -170,23 +170,23 @@ Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.518
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.621
 
-python3 test.py --save-json --img-size 416
-Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3-spp.weights')
+$ python3 test.py --save-json --img-size 416
+Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3s-ultralytics.pt')
 Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
                 Class    Images   Targets         P         R       mAP        F1: 100% 313/313 [07:01<00:00,  1.41s/it]
-                  all     5e+03  3.58e+04     0.107     0.749     0.557     0.182
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.337 <---
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.568 <---
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.350
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.152
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.359
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.496
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.279
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.432
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.460
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.257
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.494
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.623
+                  all     5e+03  3.58e+04     0.099     0.743     0.561      0.17
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.364 <---
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.570 <---
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.379
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.167
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.394
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.516
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.305
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.472
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.493
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.272
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.530
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.664
 ```
 
 # Citation
