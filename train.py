@@ -100,7 +100,7 @@ def train():
 
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
-    best_fitness = 0.
+    best_fitness = float('inf')
     attempt_download(weights)
     if weights.endswith('.pt'):  # pytorch format
         # possible weights are 'last.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt' etc.
@@ -329,8 +329,8 @@ def train():
                 tb_writer.add_scalar(title, xi, epoch)
 
         # Update best mAP
-        fitness = results[2]  # mAP
-        if fitness > best_fitness:
+        fitness = sum(results[4:])  # total loss
+        if fitness < best_fitness:
             best_fitness = fitness
 
         # Save training results
