@@ -24,7 +24,7 @@ results_file = 'results.txt'
 hyp = {'giou': 3.31,  # giou loss gain
        'cls': 42.4,  # cls loss gain  (CE=~1.0, uCE=~20)
        'cls_pw': 1.0,  # cls BCELoss positive_weight
-       'obj': 50.0,  # obj loss gain (*=80 for uBCE with 80 classes)
+       'obj': 40.0,  # obj loss gain (*=80 for uBCE with 80 classes)
        'obj_pw': 1.0,  # obj BCELoss positive_weight
        'iou_t': 0.213,  # iou training threshold
        'lr0': 0.00261,  # initial learning rate (SGD=1E-3, Adam=9E-5)
