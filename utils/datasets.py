@@ -511,7 +511,7 @@ def load_image(self, index):
         img = cv2.imread(img_path)  # BGR
         assert img is not None, 'Image Not Found ' + img_path
         r = self.img_size / max(img.shape)  # size ratio
-        if self.augment and r < 1.0:  # if training (NOT testing), downsize to inference shape
+        if self.augment:  # if training (NOT testing), downsize to inference shape
             h, w, _ = img.shape
             img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # _LINEAR fastest
     return img
