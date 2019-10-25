@@ -22,9 +22,9 @@ results_file = 'results.txt'
 
 # Hyperparameters (k-series, 53.3 mAP yolov3-spp-320) https://github.com/ultralytics/yolov3/issues/310
 hyp = {'giou': 3.31,  # giou loss gain
-       'cls': 42.4,  # cls loss gain  (CE=~1.0, uCE=~20)
+       'cls': 42.4,  # cls loss gain
        'cls_pw': 1.0,  # cls BCELoss positive_weight
-       'obj': 40.0,  # obj loss gain (*=80 for uBCE with 80 classes)
+       'obj': 40.0,  # obj loss gain
        'obj_pw': 1.0,  # obj BCELoss positive_weight
        'iou_t': 0.213,  # iou training threshold
        'lr0': 0.00261,  # initial learning rate (SGD=1E-3, Adam=9E-5)
