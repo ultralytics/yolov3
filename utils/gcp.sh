@@ -5,7 +5,6 @@ rm -rf sample_data yolov3 darknet apex coco cocoapi knife knifec
 git clone https://github.com/ultralytics/yolov3
 # git clone https://github.com/AlexeyAB/darknet && cd darknet && make GPU=1 CUDNN=1 CUDNN_HALF=1 OPENCV=0 && wget -c https://pjreddie.com/media/files/darknet53.conv.74 && cd ..
 git clone https://github.com/NVIDIA/apex && cd apex && pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" . --user && cd .. && rm -rf apex
-# git clone https://github.com/cocodataset/cocoapi && cd cocoapi/PythonAPI && make && cd ../.. && cp -r cocoapi/PythonAPI/pycocotools yolov3
 sudo conda install -y -c conda-forge scikit-image tensorboard pycocotools
 python3 -c "
 from yolov3.utils.google_utils import gdrive_download
