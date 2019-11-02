@@ -352,7 +352,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     if extract_bounding_boxes:
                         p = Path(self.img_files[i])
                         img = cv2.imread(str(p))
-                        h, w, _ = img.shape
+                        h, w = img.shape[:2]
                         for j, x in enumerate(l):
                             f = '%s%sclassifier%s%g_%g_%s' % (p.parent.parent, os.sep, os.sep, x[0], j, p.name)
                             if not os.path.exists(Path(f).parent):
@@ -380,7 +380,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 assert img is not None, 'Image Not Found ' + img_path
                 r = self.img_size / max(img.shape)  # size ratio
                 if self.augment and r < 1:  # if training (NOT testing), downsize to inference shape
-                    h, w, _ = img.shape
+                    h, w = img.shape[:2]
                     img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # or INTER_AREA
                 self.imgs[i] = img
 
@@ -414,14 +414,14 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         if mosaic:
             # Load mosaic
             img, labels = load_mosaic(self, index)
-            h, w, _ = img.shape
+            h, w = img.shape[:2]
 
         else:
             # Load image
             img = load_image(self, index)
 
             # Letterbox
-            h, w, _ = img.shape
+            h, w = img.shape[:2]
             if self.rect:
                 img, ratio, padw, padh = letterbox(img, self.batch_shapes[self.batch[index]], mode='rect')
             else:
@@ -512,7 +512,7 @@ def load_image(self, index):
         assert img is not None, 'Image Not Found ' + img_path
         r = self.img_size / max(img.shape)  # size ratio
         if self.augment:  # if training (NOT testing), downsize to inference shape
-            h, w, _ = img.shape
+            h, w = img.shape[:2]
             img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # _LINEAR fastest
     return img
 
@@ -762,14 +762,28 @@ def cutout(image, labels):
     return labels
 
 
+def reduce_img_size(path='../data/sm3/images', img_size=1024):  # from utils.datasets import *; reduce_img_size()
+    # creates a new ./images_reduced folder with reduced size images of maximum size img_size
+    path_new = path + '_reduced'  # reduced images path
+    create_folder(path_new)
+    for f in tqdm(glob.glob('%s/*.*' % path)):
+        try:
+            img = cv2.imread(f)
+            h, w = img.shape[:2]
+            r = img_size / max(h, w)  # size ratio
+            if r < 1.0:
+                img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_AREA)  # _LINEAR fastest
+            cv2.imwrite(f.replace(path, path_new), img)
+        except:
+            print('WARNING: image failure %s' % f)
+
+
 def convert_images2bmp():
     # cv2.imread() jpg at 230 img/s, *.bmp at 400 img/s
     for path in ['../coco/images/val2014/', '../coco/images/train2014/']:
         folder = os.sep + Path(path).name
         output = path.replace(folder, folder + 'bmp')
-        if os.path.exists(output):
-            shutil.rmtree(output)  # delete output folder
-        os.makedirs(output)  # make new output folder
+        create_folder(output)
 
         for f in tqdm(glob.glob('%s*.jpg' % path)):
             save_name = f.replace('.jpg', '.bmp').replace(folder, folder + 'bmp')
