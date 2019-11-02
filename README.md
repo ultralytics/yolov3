@@ -148,7 +148,7 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 <i></i>         | 320         | 416         | 608
 ---             | ---         | ---         | ---
 `YOLOv3`        | 51.8 (51.5) | 55.4 (55.3) | 58.2 (57.9)
-`YOLOv3-SPP`    | 52.6        | 57.0        | 60.7 (60.6)
+`YOLOv3-SPP`    | 52.6        | 57.7        | 60.7 (60.6)
 `YOLOv3-tiny`   | 29.0        | 32.9 (33.1) | 35.5
 
 ```bash
@@ -174,19 +174,19 @@ $ python3 test.py --save-json --img-size 416
 Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', img_size=416, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='weights/yolov3s-ultralytics.pt')
 Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
                 Class    Images   Targets         P         R       mAP        F1: 100% 313/313 [07:01<00:00,  1.41s/it]
-                  all     5e+03  3.58e+04     0.099     0.743     0.561      0.17
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.364 <---
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.570 <---
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.379
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.167
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.394
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.516
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.305
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.472
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.493
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.272
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.530
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.664
+                  all     5e+03  3.58e+04      0.11     0.739     0.569     0.185
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.373
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.577
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.392
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.175
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.403
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.537
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.313
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.482
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.501
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.266
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.541
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.693
 ```
 
 # Citation
