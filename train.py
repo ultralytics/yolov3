@@ -364,7 +364,7 @@ def train():
         # end epoch ----------------------------------------------------------------------------------------------------
 
     # end training
-    if len(opt.name):
+    if len(opt.name) and not opt.prebias:
         os.rename('results.txt', 'results_%s.txt' % opt.name)
         os.rename(wdir + 'best.pt', wdir + 'best_%s.pt' % opt.name)
         os.rename(wdir + 'last.pt', wdir + 'last_%s.pt' % opt.name)
