@@ -148,7 +148,7 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 <i></i>         | 320         | 416         | 608
 ---             | ---         | ---         | ---
 `YOLOv3`        | 51.8 (51.5) | 55.4 (55.3) | 58.2 (57.9)
-`YOLOv3-SPP`    | 52.6        | 57.7        | 60.7 (60.6)
+`YOLOv3-SPP`    | 53.7        | 57.7        | 60.7 (60.6)
 `YOLOv3-tiny`   | 29.0        | 32.9 (33.1) | 35.5
 
 ```bash
