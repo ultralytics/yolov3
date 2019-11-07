@@ -799,6 +799,15 @@ def convert_images2bmp():
             file.write(lines)
 
 
+def imagelist2folder(path='../data/sm3/out_test.txt'):  # from utils.datasets import *; imagelist2folder()
+    # Copies all the images in a text file (list of images) into a folder
+    create_folder(path[:-4])
+    with open(path, 'r') as f:
+        for line in f.read().splitlines():
+            os.system('cp "%s" %s' % (line, path[:-4]))
+            print(line)
+
+
 def create_folder(path='./new_folder'):
     # Create folder
     if os.path.exists(path):
