@@ -60,6 +60,9 @@ def train():
         hyp['cls_pw'] = 1.
         hyp['obj_pw'] = 1.
 
+    if img_size > 320:  # scale hyp['obj'] by img_size (evolved at 320)
+        hyp['obj'] *= img_size / 320.
+
     # Initialize
     init_seeds()
     multi_scale = opt.multi_scale
@@ -407,7 +410,7 @@ if __name__ == '__main__':
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
     parser.add_argument('--img-weights', action='store_true', help='select training images by weight')
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
-    parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='initial weights')  # i.e. weights/darknet.53.conv.74
+    parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='initial weights')
     parser.add_argument('--arc', type=str, default='default', help='yolo architecture')  # defaultpw, uCE, uBCE
     parser.add_argument('--prebias', action='store_true', help='transfer-learn yolo biases prior to training')
     parser.add_argument('--name', default='', help='renames results.txt to results_name.txt if supplied')
