@@ -881,7 +881,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
     fig, ax = plt.subplots(2, 5, figsize=(14, 7))
     ax = ax.ravel()
     s = ['GIoU', 'Objectness', 'Classification', 'Precision', 'Recall',
-         'val GIoU', 'val Objectness', 'val Classification', 'mAP', 'F1']
+         'val GIoU', 'val Objectness', 'val Classification', 'mAP@0.5', 'F1']
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
         results = np.loadtxt(f, usecols=[2, 3, 4, 8, 9, 12, 13, 14, 10, 11], ndmin=2).T
         n = results.shape[1]  # number of rows
@@ -902,7 +902,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
 
 def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_results_overlay()
     # Plot training results files 'results*.txt', overlaying train and val losses
-    s = ['train', 'train', 'train', 'Precision', 'mAP', 'val', 'val', 'val', 'Recall', 'F1']  # legends
+    s = ['train', 'train', 'train', 'Precision', 'mAP@0.5', 'val', 'val', 'val', 'Recall', 'F1']  # legends
     t = ['GIoU', 'Objectness', 'Classification', 'P-R', 'mAP-F1']  # titles
     for f in sorted(glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')):
         results = np.loadtxt(f, usecols=[2, 3, 4, 8, 9, 12, 13, 14, 10, 11], ndmin=2).T
