@@ -154,7 +154,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
     parser.add_argument('--data', type=str, default='data/coco.data', help='coco.data file path')
-    parser.add_argument('--weights', type=str, default='weights/last49.pt', help='path to weights file')
+    parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
     parser.add_argument('--source', type=str, default='data/samples', help='source')  # input file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
