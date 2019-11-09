@@ -60,9 +60,6 @@ def train():
         hyp['cls_pw'] = 1.
         hyp['obj_pw'] = 1.
 
-    if img_size > 320:  # scale hyp['obj'] by img_size (evolved at 320)
-        hyp['obj'] *= img_size / 320.
-
     # Initialize
     init_seeds()
     multi_scale = opt.multi_scale
@@ -421,6 +418,9 @@ if __name__ == '__main__':
     opt.weights = last if opt.resume else opt.weights
     print(opt)
     device = torch_utils.select_device(opt.device, apex=mixed_precision)
+
+    # scale hyp['obj'] by img_size (evolved at 320)
+    hyp['obj'] *= opt.img_size / 320.
 
     tb_writer = None
     if not opt.evolve:  # Train normally
