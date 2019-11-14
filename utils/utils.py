@@ -864,7 +864,7 @@ def plot_evolution_results(hyp):  # from utils.utils import *; plot_evolution_re
     fig = plt.figure(figsize=(12, 10))
     matplotlib.rc('font', **{'size': 8})
     for i, (k, v) in enumerate(hyp.items()):
-        y = x[:, i + 5]
+        y = x[:, i + 7]
         # mu = (y * weights).sum() / weights.sum()  # best weighted result
         mu = y[f.argmax()]  # best single result
         plt.subplot(4, 5, i + 1)
