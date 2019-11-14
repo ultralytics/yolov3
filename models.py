@@ -429,6 +429,8 @@ def attempt_download(weights):
             gdrive_download(id='18xqvs_uwAqfTXp-LJCYLYNHBOcrwbrp0', name=weights)
         elif file == 'yolov3-tiny.conv.15':
             gdrive_download(id='140PnSedCsGGgu3rOD6Ez4oI6cdDzerLC', name=weights)
+        elif file == 'ultralytics49.pt':
+            gdrive_download(id='1GKy8hr0h41VlVX2QqURO9re7yKXhaPK7', name=weights)
 
         else:
             try:  # download from pjreddie.com
