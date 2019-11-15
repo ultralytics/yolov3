@@ -103,7 +103,7 @@ def train():
     best_fitness = float('inf')
     attempt_download(weights)
     if weights.endswith('.pt'):  # pytorch format
-        # possible weights are 'last.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt' etc.
+        # possible weights are '*.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt' etc.
         if opt.bucket:
             os.system('gsutil cp gs://%s/last.pt %s' % (opt.bucket, last))  # download from bucket
         chkpt = torch.load(weights, map_location=device)
@@ -129,7 +129,7 @@ def train():
         del chkpt
 
     elif len(weights) > 0:  # darknet format
-        # possible weights are 'yolov3.weights', 'yolov3-tiny.conv.15',  'darknet53.conv.74' etc.
+        # possible weights are '*.weights', 'yolov3-tiny.conv.15',  'darknet53.conv.74' etc.
         cutoff = load_darknet_weights(model, weights)
 
     if opt.transfer or opt.prebias:  # transfer learning edge (yolo) layers
