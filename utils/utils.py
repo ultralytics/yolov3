@@ -578,7 +578,8 @@ def print_model_biases(model):
 
 def strip_optimizer(f='weights/last.pt'):  # from utils.utils import *; strip_optimizer()
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
-    x = torch.load(f)
+    x = torch.load(f, map_location=torch.device('cpu'))
+    # x['epoch'] = 0  # uncomment to create a backbone
     x['optimizer'] = None
     torch.save(x, f)
 
