@@ -32,7 +32,7 @@ python3 test.py --save-json
 # Evolve
 for i in {0..500}
 do
-  python3 train.py --data data/coco.data --img-size 320 --epochs 1 --batch-size 64 --accumulate 1 --evolve --bucket yolov4
+  python3 train.py --data data/coco.data --img-size 512 --epochs 27 --batch-size 32 --accumulate 2 --evolve --weights '' --bucket yolov4
 done
 
 # Git pull
@@ -115,14 +115,58 @@ sudo shutdown
 
 #Docker
 sudo docker kill $(sudo docker ps -q)
-sudo docker pull ultralytics/yolov3:v1
-sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v1
+sudo docker pull ultralytics/yolov3:v0
+sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0
 
 clear
 while true
 do
-  python3 train.py --data data/coco.data --img-size 320 --batch-size 64 --accumulate 1 --evolve --epochs 1 --adam --bucket yolov4/adamdefaultpw_coco_1e --device 1
+  python3 train.py --weights '' --prebias --img-size 512 --batch-size 32 --accumulate 2 --evolve --epochs 27 --bucket yolov4/512_coco_27e --device 0
 done
 
 python3 train.py --data data/coco.data --img-size 320 --batch-size 64 --accumulate 1 --epochs 1 --adam --device 1 --prebias
 while true; do python3 train.py --data data/coco.data --img-size 320 --batch-size 64 --accumulate 1 --evolve --epochs 1 --adam --bucket yolov4/adamdefaultpw_coco_1e; done
+
+
+
+rm -rf yolov3  # Warning: remove existing
+git clone https://github.com/ultralytics/yolov3 && cd yolov3 # master
+python3 train.py --img-size 320 --data ../data/sm3/out.data --weights weights/yolov3-spp.weights --cfg cfg/yolov3-spp.cfg --prebias --epochs 300 --batch-size 32 --accumulate 2 --multi --name sm3b_yolov3_spp
+python3 train.py --img-size 320 --data ../data/sm3/out.data --weights weights/yolov3-tiny.weights --cfg cfg/yolov3-tiny.cfg --prebias --epochs 300 --batch-size 32 --accumulate 2 --multi --name sm3b_yolov3_tiny
+sudo shutdown
+
+
+rm -rf yolov3  # Warning: remove existing
+git clone https://github.com/ultralytics/yolov3 && cd yolov3 # master
+python3 train.py --data data/coco_64img.data --batch-size 16 --accumulate 1 --nosave --weights weights/yolov3-spp.weights --transfer --name yolov3-spp_transfer
+python3 train.py --data data/coco_64img.data --batch-size 16 --accumulate 1 --nosave --name from_scratch
+python3 train.py --data data/coco_64img.data --batch-size 16 --accumulate 1 --nosave --weights weights/darknet53.conv.74 --name darknet53_backbone
+python3 train.py --data data/coco_64img.data --batch-size 16 --accumulate 1 --nosave --weights weights/yolov3-spp.weights --name yolov3-spp_backbone
+sudo shutdown
+
+
+rm -rf yolov3  # Warning: remove existing
+git clone https://github.com/ultralytics/yolov3 && cd yolov3  # clone
+# bash yolov3/data/get_coco_dataset_gdrive.sh  # copy COCO2014 dataset (20GB)
+python3 train.py --data data/coco_1cls.data --batch-size 5 --accumulate 1 --weights weights/darknet53.conv.74 --nosave --cfg cfg/yolov3-spp.cfg --name 1cls
+python3 train.py --data data/coco_1cls.data --batch-size 5 --accumulate 1 --weights weights/darknet53.conv.74 --nosave --cfg cfg/yolov3-spp-1cls.cfg --name 1cls_1clscfg
+python3 -c "from utils import utils; utils.plot_results()"  # plot as 'results.png'
+
+
+clear
+python3 test.py --img-size 320 --save-json --weights weights/last.pt
+python3 test.py --img-size 416 --save-json --weights weights/last.pt
+python3 test.py --img-size 608 --save-json --weights weights/last.pt
+python3 test.py --img-size 640 --save-json --weights weights/last.pt --batch-size 8
+python3 test.py --img-size 800 --save-json --weights weights/last.pt --batch-size 8
+sudo shutdown
+
+
+clear
+rm -rf yolov3  # Warning: remove existing
+git clone https://github.com/ultralytics/yolov3 && cd yolov3  # clone
+python3 train.py --weights '' --img-size 512 --batch-size 32 --accumulate 2 --epochs 27 --prebias --nosave --notest --name 512default
+sudo shutdown
+
+
+
