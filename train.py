@@ -374,8 +374,8 @@ def train():
     torch.cuda.empty_cache()
 
     # save to cloud
-    # os.system(gsutil cp results.txt gs://...)
-    # os.system(gsutil cp weights/best.pt gs://...)
+    # os.system('gsutil cp results.txt gs://...')
+    # os.system('gsutil cp weights/best.pt gs://...')
 
     return results
 
