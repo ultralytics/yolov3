@@ -124,7 +124,7 @@ do
   python3 train.py --weights '' --prebias --img-size 512 --batch-size 32 --accumulate 2 --evolve --epochs 27 --bucket yolov4/512_coco_27e --device 0
 done
 
-python3 train.py --weights '' --prebias --img-size 512 --batch-size 8 --accumulate 8 --epochs 27 --device 0
+python3 train.py --weights '' --prebias --img-size 512 --batch-size 16 --accumulate 4 --epochs 27 --device 0
 while true; do python3 train.py --data data/coco.data --img-size 320 --batch-size 64 --accumulate 1 --evolve --epochs 1 --adam --bucket yolov4/adamdefaultpw_coco_1e; done
 
 
