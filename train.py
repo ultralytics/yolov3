@@ -104,8 +104,6 @@ def train():
     attempt_download(weights)
     if weights.endswith('.pt'):  # pytorch format
         # possible weights are '*.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt' etc.
-        if opt.bucket:
-            os.system('gsutil cp gs://%s/last.pt %s' % (opt.bucket, last))  # download from bucket
         chkpt = torch.load(weights, map_location=device)
 
         # load model
@@ -347,8 +345,6 @@ def train():
 
             # Save last checkpoint
             torch.save(chkpt, last)
-            if opt.bucket and not opt.prebias:
-                os.system('gsutil cp %s gs://%s' % (last, opt.bucket))  # upload to bucket
 
             # Save best checkpoint
             if best_fitness == fitness:
@@ -365,17 +361,20 @@ def train():
 
     # end training
     if len(opt.name) and not opt.prebias:
-        os.rename('results.txt', 'results_%s.txt' % opt.name)
-        os.rename(wdir + 'last.pt', wdir + 'last_%s.pt' % opt.name) if os.path.exists(wdir + 'last.pt') else None
-        os.rename(wdir + 'best.pt', wdir + 'best_%s.pt' % opt.name) if os.path.exists(wdir + 'best.pt') else None
+        fresults, flast, fbest = 'results%s.txt' % opt.name, 'last%s.pt' % opt.name, 'best%s.pt' % opt.name
+        os.rename('results.txt', fresults)
+        os.rename(wdir + 'last.pt', wdir + flast) if os.path.exists(wdir + 'last.pt') else None
+        os.rename(wdir + 'best.pt', wdir + fbest) if os.path.exists(wdir + 'best.pt') else None
+
+        # save to cloud
+        if opt.bucket:
+            os.system('gsutil cp %s gs://%s' % (fresults, opt.bucket))
+            os.system('gsutil cp %s gs://%s' % (wdir + flast, opt.bucket))
+
     plot_results()  # save as results.png
     print('%g epochs completed in %.3f hours.\n' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
     dist.destroy_process_group() if torch.cuda.device_count() > 1 else None
     torch.cuda.empty_cache()
-
-    # save to cloud
-    # os.system('gsutil cp results.txt gs://...')
-    # os.system('gsutil cp weights/best.pt gs://...')
 
     return results
 
