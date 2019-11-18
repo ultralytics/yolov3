@@ -115,7 +115,7 @@ def create_modules(module_defs, img_size, arc):
 
 class Swish(nn.Module):
     def __init__(self):
-        super(Swish, self).__init__()
+        super().__init__()
 
     def forward(self, x):
         return x.mul_(torch.sigmoid(x))
