@@ -368,8 +368,7 @@ def train():
 
         # save to cloud
         if opt.bucket:
-            os.system('gsutil cp %s gs://%s' % (fresults, opt.bucket))
-            os.system('gsutil cp %s gs://%s' % (wdir + flast, opt.bucket))
+            os.system('gsutil cp %s %s gs://%s' % (fresults, wdir + flast, opt.bucket))
 
     plot_results()  # save as results.png
     print('%g epochs completed in %.3f hours.\n' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
