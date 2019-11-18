@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 from utils.utils import xyxy2xywh, xywh2xyxy
 
-img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif']
+img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif', '.dng']
 vid_formats = ['.mov', '.avi', '.mp4']
 
 # Get orientation exif tag
