@@ -445,16 +445,20 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         if self.augment:
             # Augment colorspace
-            augment_hsv(img, hgain=self.hyp['hsv_h'], sgain=self.hyp['hsv_s'], vgain=self.hyp['hsv_v'])
+            hsv_augment = True
+            if hsv_augment and random.random() < 0.5:
+                augment_hsv(img, hgain=self.hyp['hsv_h'], sgain=self.hyp['hsv_s'], vgain=self.hyp['hsv_v'])
 
             # Augment imagespace
-            g = 0.0 if mosaic else 1.0  # do not augment mosaics
-            hyp = self.hyp
-            img, labels = random_affine(img, labels,
-                                        degrees=hyp['degrees'] * g,
-                                        translate=hyp['translate'] * g,
-                                        scale=hyp['scale'] * g,
-                                        shear=hyp['shear'] * g)
+            affine_augment = True
+            if affine_augment and random.random() < 0.5:
+                g = 0.0 if mosaic else 1.0  # do not augment mosaics
+                hyp = self.hyp
+                img, labels = random_affine(img, labels,
+                                            degrees=hyp['degrees'] * g,
+                                            translate=hyp['translate'] * g,
+                                            scale=hyp['scale'] * g,
+                                            shear=hyp['shear'] * g)
 
             # Apply cutouts
             # if random.random() < 0.9:
