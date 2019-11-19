@@ -45,7 +45,14 @@ f = glob.glob('hyp*.txt')
 if f:
     for k, v in zip(hyp.keys(), np.loadtxt(f[0])):
         hyp[k] = v
-
+        
+json_hypers = glob.glob("hyp*.json")
+if json_hypers:
+    import json
+    with open(json_hypers[0]) as f:
+        loaded_hyp = json.load(f)
+    for k, v in loaded_hyp.items():
+        hyp[k] = v
 
 def train():
     cfg = opt.cfg
