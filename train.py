@@ -173,7 +173,7 @@ def train():
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
 
     # Initialize distributed training
-    if torch.cuda.device_count() > 1:
+    if device.type != 'cpu' and torch.cuda.device_count() > 1:
         dist.init_process_group(backend='nccl',  # 'distributed backend'
                                 init_method='tcp://127.0.0.1:9999',  # distributed training init method
                                 world_size=1,  # number of nodes for distributed training
@@ -418,6 +418,8 @@ if __name__ == '__main__':
     opt.weights = last if opt.resume else opt.weights
     print(opt)
     device = torch_utils.select_device(opt.device, apex=mixed_precision)
+    if device.type == 'cpu':
+        mixed_precision = False
 
     # scale hyp['obj'] by img_size (evolved at 416)
     hyp['obj'] *= opt.img_size / 416.
