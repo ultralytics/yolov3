@@ -44,7 +44,7 @@ def load_classes(path):
 def labels_to_class_weights(labels, nc=80):
     # Get class weights (inverse frequency) from training labels
     if labels[0] is None:  # no labels loaded
-        return None
+        return torch.Tensor()
 
     labels = np.concatenate(labels, 0)  # labels.shape = (866643, 5) for COCO
     classes = labels[:, 0].astype(np.int)  # labels = [class xywh]
