@@ -318,7 +318,7 @@ def train():
         with open(results_file, 'a') as f:
             f.write(s + '%10.3g' * 7 % results + '\n')  # P, R, mAP, F1, test_losses=(GIoU, obj, cls)
         if len(opt.name) and opt.bucket and not opt.prebias:
-            os.system('gsutil cp results%s.txt gs://%s' % (opt.name, opt.bucket))
+            os.system('gsutil cp results.txt gs://%s/results%s.txt' % (opt.bucket, opt.name))
 
         # Write Tensorboard results
         if tb_writer:
