@@ -764,7 +764,7 @@ def cutout(image, labels):
     return labels
 
 
-def reduce_img_size(path='../data/sm3/images', img_size=1024):  # from utils.datasets import *; reduce_img_size()
+def reduce_img_size(path='../data/sm4/images', img_size=1024):  # from utils.datasets import *; reduce_img_size()
     # creates a new ./images_reduced folder with reduced size images of maximum size img_size
     path_new = path + '_reduced'  # reduced images path
     create_folder(path_new)
@@ -775,7 +775,8 @@ def reduce_img_size(path='../data/sm3/images', img_size=1024):  # from utils.dat
             r = img_size / max(h, w)  # size ratio
             if r < 1.0:
                 img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_AREA)  # _LINEAR fastest
-            cv2.imwrite(f.replace(path, path_new), img)
+            fnew = f.replace(path, path_new)  # .replace(Path(f).suffix, '.jpg')
+            cv2.imwrite(fnew, img)
         except:
             print('WARNING: image failure %s' % f)
 
