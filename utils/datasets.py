@@ -367,7 +367,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                             b[[1, 3]] = np.clip(b[[1, 3]], 0, h)
                             assert cv2.imwrite(f, img[b[1]:b[3], b[0]:b[2]]), 'Failure extracting classifier boxes'
                 else:
-                    ne += 1  # file empty
+                    ne += 1  # print('empty labels for image %s' % self.img_files[i])  # file empty
 
                 pbar.desc = 'Reading labels (%g found, %g missing, %g empty for %g images)' % (nf, nm, ne, n)
             assert nf > 0, 'No labels found. Recommend correcting image and label paths.'
