@@ -442,3 +442,6 @@ def attempt_download(weights):
                 os.system('rm ' + weights)  # remove partial downloads
 
         assert os.path.exists(weights), msg  # download missing weights from Google Drive
+        if os.path.getsize(weights) < 5E6:  # weights < 5MB (too small), download failed
+            os.remove(weights)  # delete corrupted weightsfile
+            print(msg)
