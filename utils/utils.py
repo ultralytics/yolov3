@@ -442,7 +442,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
         (x1, y1, x2, y2, object_conf, class_conf, class)
     """
 
-    min_wh = 2  # (pixels) minimum box width and height
+    min_wh, max_wh = 2, 30000  # (pixels) minimum and maximium box width and height
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
@@ -470,7 +470,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5):
         # pred[class_pred != 2, 4] = 0.0
 
         # Select only suitable predictions
-        i = (pred[:, 4] > conf_thres) & (pred[:, 2:4] > min_wh).all(1) & torch.isfinite(pred).all(1)
+        i = (pred[:, 4] > conf_thres) & (pred[:, 2:4] > min_wh).all(1) & (pred[:, 2:4] < max_wh).all(1) & \
+            torch.isfinite(pred).all(1)
         pred = pred[i]
 
         # If none are remaining => process next image
