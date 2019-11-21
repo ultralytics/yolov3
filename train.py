@@ -193,9 +193,10 @@ def train():
                                   cache_images=False if opt.prebias else opt.cache_images)
 
     # Dataloader
+    batch_size = min(batch_size, len(dataset))
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size,
-                                             num_workers=min([os.cpu_count(), batch_size, 16]),
+                                             num_workers=min([os.cpu_count(), batch_size if batch_size > 1 else 0, 16]),
                                              shuffle=not opt.rect,  # Shuffle=True unless rectangular training is used
                                              pin_memory=True,
                                              collate_fn=dataset.collate_fn)
