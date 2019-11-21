@@ -219,4 +219,4 @@ if __name__ == '__main__':
              opt.iou_thres,
              opt.conf_thres,
              opt.nms_thres,
-             opt.save_json)
+             opt.save_json or (opt.data == 'data/coco.data'))
