@@ -691,6 +691,14 @@ def kmeans_targets(path='../coco/trainvalno5k.txt', n=9, img_size=416):  # from 
     k, dist = cluster.vq.kmeans(wh, n)  # points, mean distance
     k = k[np.argsort(k.prod(1))]  # sort small to large
 
+    # # Plot
+    # k, d = [None] * 20, [None] * 20
+    # for i in tqdm(range(1, 21)):
+    #     k[i-1], d[i-1] = cluster.vq.kmeans(wh, i)  # points, mean distance
+    # fig, ax = plt.subplots(1, 2, figsize=(14, 7))
+    # ax = ax.ravel()
+    # ax[0].plot(np.arange(1, 21), np.array(d) ** 2, marker='.')
+
     # Measure IoUs
     iou = torch.stack([wh_iou(torch.Tensor(wh).T, torch.Tensor(x).T) for x in k], 0)
     biou = iou.max(0)[0]  # closest anchor IoU
