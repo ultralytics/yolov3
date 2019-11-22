@@ -688,7 +688,7 @@ def kmeans_targets(path='../coco/trainvalno5k.txt', n=9, img_size=416):  # from 
     wh = np.concatenate(dataset.labels, 0)[:, 3:5]  # wh from cxywh
 
     # Kmeans calculation
-    k = cluster.vq.kmeans(wh, n)[0]
+    k, dist = cluster.vq.kmeans(wh, n)  # points, mean distance
     k = k[np.argsort(k.prod(1))]  # sort small to large
 
     # Measure IoUs
