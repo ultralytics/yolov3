@@ -339,7 +339,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
 
             # GIoU
             pxy = torch.sigmoid(ps[:, 0:2])  # pxy = pxy * s - (s - 1) / 2,  s = 1.5  (scale_xy)
-            pbox = torch.cat((pxy, torch.exp(ps[:, 2:4]) * anchor_vec[i]), 1)  # predicted box
+            pbox = torch.cat((pxy, torch.exp(ps[:, 2:4]).clamp(max=1E2) * anchor_vec[i]), 1)  # predicted box
             giou = bbox_iou(pbox.t(), tbox[i], x1y1x2y2=False, GIoU=True)  # giou computation
             lbox += (1.0 - giou).mean()  # giou loss
 
