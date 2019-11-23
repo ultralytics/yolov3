@@ -1,7 +1,7 @@
 # pip3 install -U -r requirements.txt
 numpy
 opencv-python
-torch >= 1.2
+torch >= 1.3
 matplotlib
 pycocotools
 tqdm
