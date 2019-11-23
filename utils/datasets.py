@@ -802,7 +802,7 @@ def convert_images2bmp():
             file.write(lines)
 
 
-def imagelist2folder(path='../data/sm3/out_test.txt'):  # from utils.datasets import *; imagelist2folder()
+def imagelist2folder(path='data/coco_64img.txt'):  # from utils.datasets import *; imagelist2folder()
     # Copies all the images in a text file (list of images) into a folder
     create_folder(path[:-4])
     with open(path, 'r') as f:
