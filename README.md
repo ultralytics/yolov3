@@ -119,8 +119,7 @@ To run a specific models:
 
 # Pretrained Weights
 
-- Darknet `*.weights` format: https://pjreddie.com/media/files/yolov3.weights
-- PyTorch `*.pt` format: https://drive.google.com/drive/folders/1uxgUBemJVw9wZsdpboYbzUN4bcRhsuAI
+Download from: [https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0](https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0)
 
 ## Darknet Conversion
 
