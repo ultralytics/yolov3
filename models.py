@@ -419,6 +419,8 @@ def attempt_download(weights):
 
         if file == 'yolov3-spp.weights':
             gdrive_download(id='16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R', name=weights)
+        elif file == 'yolov3.weights':
+            gdrive_download(id='1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y', name=weights)
         elif file == 'yolov3-spp.pt':
             gdrive_download(id='1f6Ovy3BSq2wYq4UfvFUpxJFNDFfrIDcR', name=weights)
         elif file == 'yolov3.pt':
