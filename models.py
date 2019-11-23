@@ -36,7 +36,8 @@ def create_modules(module_defs, img_size, arc):
             if mdef['activation'] == 'leaky':  # TODO: activation study https://github.com/ultralytics/yolov3/issues/441
                 modules.add_module('activation', nn.LeakyReLU(0.1, inplace=True))
                 # modules.add_module('activation', nn.PReLU(num_parameters=1, init=0.10))
-                # modules.add_module('activation', Swish())
+            elif mdef['activation'] == 'swish':
+                modules.add_module('activation', Swish())
 
         elif mdef['type'] == 'maxpool':
             kernel_size = int(mdef['size'])
