@@ -20,7 +20,7 @@ def test(cfg,
          model=None):
     # Initialize/load model and set device
     if model is None:
-        device = torch_utils.select_device(opt.device)
+        device = torch_utils.select_device(opt.device, batch_size=batch_size)
         verbose = True
 
         # Initialize model

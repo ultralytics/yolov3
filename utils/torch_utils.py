@@ -14,7 +14,7 @@ def init_seeds(seed=0):
         torch.backends.cudnn.benchmark = False
 
 
-def select_device(device='', apex=False):
+def select_device(device='', apex=False, batch_size=None):
     # device = 'cpu' or '0' or '0,1,2,3'
     cpu_request = device.lower() == 'cpu'
     if device and not cpu_request:  # if device requested other than 'cpu'
@@ -25,11 +25,13 @@ def select_device(device='', apex=False):
     if cuda:
         c = 1024 ** 2  # bytes to MB
         ng = torch.cuda.device_count()
+        if ng > 1 and batch_size:  # check that batch_size is compatible with device_count
+            assert batch_size % ng == 0, 'batch-size %g not multiple of GPU count %g' % (batch_size, ng)
         x = [torch.cuda.get_device_properties(i) for i in range(ng)]
-        cuda_str = 'Using CUDA ' + ('Apex ' if apex else '')  # apex for mixed precision https://github.com/NVIDIA/apex
+        s = 'Using CUDA ' + ('Apex ' if apex else '')  # apex for mixed precision https://github.com/NVIDIA/apex
         for i in range(0, ng):
             if i == 1:
-                cuda_str = ' ' * len(cuda_str)
+                s = ' ' * len(s)
             print("%sdevice%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
                   (cuda_str, i, x[i].name, x[i].total_memory / c))
     else:

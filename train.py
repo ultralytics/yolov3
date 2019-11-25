@@ -423,7 +423,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     opt.weights = last if opt.resume else opt.weights
     print(opt)
-    device = torch_utils.select_device(opt.device, apex=mixed_precision)
+    device = torch_utils.select_device(opt.device, apex=mixed_precision, batch_size=opt.batch_size)
     if device.type == 'cpu':
         mixed_precision = False
 
