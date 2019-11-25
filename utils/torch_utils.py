@@ -33,7 +33,7 @@ def select_device(device='', apex=False, batch_size=None):
             if i == 1:
                 s = ' ' * len(s)
             print("%sdevice%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
-                  (cuda_str, i, x[i].name, x[i].total_memory / c))
+                  (s, i, x[i].name, x[i].total_memory / c))
     else:
         print('Using CPU')
 
