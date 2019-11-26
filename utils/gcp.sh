@@ -32,7 +32,7 @@ python3 test.py --save-json
 # Evolve
 for i in {0..500}
 do
-  python3 train.py --data data/coco.data --img-size 512 --epochs 27 --batch-size 32 --accumulate 2 --evolve --weights '' --bucket yolov4
+  python3 train.py --data data/coco.data --img-size 416 --epochs 27 --batch-size 32 --accumulate 2 --evolve --weights '' --bucket yolov4/416_coco_27e --device 0
 done
 
 # Git pull
@@ -90,7 +90,8 @@ rm -rf darknet && git clone https://github.com/AlexeyAB/darknet && cd darknet &&
 #Docker
 sudo docker kill $(sudo docker ps -q)
 sudo docker pull ultralytics/yolov3:v0
-sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v1
+sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0
+
 
 clear
 while true
@@ -99,9 +100,30 @@ do
 done
 
 
-export tag=ultralytics/yolov3:v1 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 32 --accumulate 2 --prebias --bucket yolov4 --name 63 --device 0
-export tag=ultralytics/yolov3:v2 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 32 --accumulate 2 --prebias --bucket yolov4 --name 64 --device 1
+export tag=ultralytics/yolov3:v70 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 273 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 70 --device 0 --multi
+export tag=ultralytics/yolov3:v0 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 273 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 71 --device 0 --multi --img-weights
 
+export tag=ultralytics/yolov3:v73 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 73 --device 5 --cfg cfg/yolov3s.cfg
+export tag=ultralytics/yolov3:v74 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 74 --device 0 --cfg cfg/yolov3s.cfg
+export tag=ultralytics/yolov3:v75 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 75 --device 7 --cfg cfg/yolov3s.cfg
+export tag=ultralytics/yolov3:v76 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 76 --device 0 --cfg cfg/yolov3s.cfg
+
+export tag=ultralytics/yolov3:v79 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 79 --device 5
+export tag=ultralytics/yolov3:v80 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 80 --device 0
+export tag=ultralytics/yolov3:v81 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 81 --device 7
+export tag=ultralytics/yolov3:v82 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py --weights '' --epochs 27 --batch-size 16 --accumulate 4 --prebias --bucket yolov4 --name 82 --device 0 --cfg cfg/yolov3s.cfg
+
+#SM4
+export tag=ultralytics/yolov3:v0 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/data,target=/usr/src/data $tag python3 train.py --weights 'ultralytics49.pt' --epochs 500 --img-size 320 --batch-size 32 --accumulate 2 --prebias --bucket yolov4 --name 78 --device 0 --multi --cfg cfg/yolov3-spp-3cls.cfg --data ../data/sm4/out.data
+
+
+export tag=ultralytics/yolov3:v2 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag
+clear
+sleep 120
+while true
+do
+  python3 train.py --weights '' --epochs 27 --batch-size 32 --accumulate 2 --prebias --evolve --device 7 --bucket yolov4/416_coco_27e
+done
 
 
 while true; do python3 train.py --data data/coco.data --img-size 320 --batch-size 64 --accumulate 1 --evolve --epochs 1 --adam --bucket yolov4/adamdefaultpw_coco_1e; done
