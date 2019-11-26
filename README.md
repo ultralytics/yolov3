@@ -141,13 +141,16 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 - `test.py --weights weights/last.pt` tests latest checkpoint.
 - Compare to darknet published results https://arxiv.org/abs/1804.02767.
 
+<!-- mAPs@0.5:0.95 obtained at --conf-thres 0.6 -->
+<!-- ultralytics model is last68.pt -->
 <i></i>                      | 320@0.5:0.95| 416@0.5:0.95| 608@0.5:0.95 
 ---                          | ---         | ---         | ---
 darknet `YOLOv3-tiny`        | 14.0        | 16.0        | 16.6
 darknet `YOLOv3`             | 28.7        | 31.1        | 33.0
-darknet `YOLOv3-SPP`         | 30.3        | 33.7        | 36.7
-**ultralytics** `YOLOv3-SPP` | **34.7**    | **38.2**    | **39.8**
+darknet `YOLOv3-SPP`         | 30.5        | 33.9        | 37.0
+**ultralytics** `YOLOv3-SPP` | **35.1**    | **38.6**    | **40.3**
 
+<!-- mAPs@0.5 obtained at --conf-thres 0.5 -->
 <i></i>                      | 320@0.5     | 416@0.5     | 608@0.5 
 ---                          | ---         | ---         | ---
 darknet `YOLOv3-tiny`        | 29.0        | 32.9        | 35.5
