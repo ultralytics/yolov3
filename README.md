@@ -143,7 +143,7 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 
 [ultralytics/yolov3](https://github.com/ultralytics/yolov3) mAP@0.5 vs. [darknet](https://arxiv.org/abs/1804.02767)-reported mAP@0.5
 
-<i></i>                    | 320         | 416         | 608
+<i></i>                    | 320@0.5     | 416@0.5     | 608@0.5 
 ---                        | ---         | ---         | ---
 darknet `YOLOv3-tiny`      | 29.0        | 33.1        | 35.5
 darknet `YOLOv3`           | 51.5        | 55.3        | 57.9
