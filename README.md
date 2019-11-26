@@ -141,14 +141,19 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 - `test.py --weights weights/last.pt` tests latest checkpoint.
 - Compare to darknet published results https://arxiv.org/abs/1804.02767.
 
-[ultralytics/yolov3](https://github.com/ultralytics/yolov3) mAP@0.5 vs. [darknet](https://arxiv.org/abs/1804.02767)-reported mAP@0.5
+<i></i>                      | 320@0.5:0.95| 416@0.5:0.95| 608@0.5:0.95 
+---                          | ---         | ---         | ---
+darknet `YOLOv3-tiny`        | -           | -           | -
+darknet `YOLOv3`             | 28.7        | -           | -
+darknet `YOLOv3-SPP`         | 30.3        | 33.7        | 36.7
+**ultralytics** `YOLOv3-SPP` | **34.7**    | **38.2**    | **39.8**
 
-<i></i>                    | 320@0.5     | 416@0.5     | 608@0.5 
----                        | ---         | ---         | ---
-darknet `YOLOv3-tiny`      | 29.0        | 33.1        | 35.5
-darknet `YOLOv3`           | 51.5        | 55.3        | 57.9
-darknet `YOLOv3-SPP`       | 52.3        | 56.8        | **60.6**
-ultralytics `YOLOv3-SPP`   | **53.9**    | **58.7**    | 60.1
+<i></i>                      | 320@0.5     | 416@0.5     | 608@0.5 
+---                          | ---         | ---         | ---
+darknet `YOLOv3-tiny`        | 29.0        | 33.1        | 35.5
+darknet `YOLOv3`             | 51.5        | 55.3        | 57.9
+darknet `YOLOv3-SPP`         | 52.3        | 56.8        | **60.6**
+**ultralytics** `YOLOv3-SPP` | **53.9**    | **58.7**    | 60.1
 
 ```bash
 $ python3 test.py --save-json --img-size 608 --weights ultralytics68.pt
