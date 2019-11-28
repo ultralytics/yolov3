@@ -140,7 +140,7 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 - `test.py --weights weights/yolov3.weights` tests official YOLOv3 weights.
 - `test.py --weights weights/last.pt` tests latest checkpoint.
 - mAPs on COCO2014 using pycocotools.
-- mAP@0.5 run at --iou-thres 0.5, mAP@0.5 run at --iou-thres 0.65
+- mAP@0.5 run at `--nms-thres 0.5`, mAP@0.5...0.95 run at `--nms-thres 0.65`.
 - YOLOv3-SPP ultralytics is `ultralytics68.pt` with `yolov3-spp.cfg`.
 - Darknet results published in https://arxiv.org/abs/1804.02767.
 
@@ -151,8 +151,8 @@ YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>
 YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.0<br>37.0<br>**40.4** |35.5<br>57.9<br>**60.6**<br>60.1
 
 ```bash
-$ python3 test.py --save-json --img-size 608 --iou-thres 0.65 --weights ultralytics68.pt
-Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', device='', img_size=608, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='ultralytics68.pt')
+$ python3 test.py --save-json --img-size 608 --nms-thres 0.65 --weights ultralytics68.pt
+Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', device='', img_size=608, iou_thres=0.5, nms_thres=0.65, save_json=True, weights='ultralytics68.pt')
 Using CUDA device0 _CudaDeviceProperties(name='Tesla T4', total_memory=15079MB)
 
                Class    Images   Targets         P         R   mAP@0.5        F1: 100% 313/313 [06:52<00:00,  1.24it/s]
