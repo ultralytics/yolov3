@@ -158,6 +158,12 @@ darknet `YOLOv3`             | 51.5        | 55.3        | 57.9
 darknet `YOLOv3-SPP`         | 52.3        | 56.8        | **60.6**
 **ultralytics** `YOLOv3-SPP` | **53.9**    | **58.7**    | 60.1
 
+<i></i>                      |resolution |mAP<br>0.5:0.95 |mAP<br>0.5 
+---                          | ---         | ---         | ---
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>YOLOv3-SPP ultralytics |320 |14.0<br>28.7<br>30.5<br>**35.2** |29.0<br>51.5<br>52.3<br>**53.9**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>YOLOv3-SPP ultralytics |416 |16.0<br>31.1<br>33.9<br>**38.8** |32.9<br>55.3<br>56.8<br>**58.7**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>YOLOv3-SPP ultralytics |608 |16.6<br>33.0<br>37.0<br>**40.4** |35.5<br>57.9<br>**60.6**<br>60.1
+
 ```bash
 $ python3 test.py --save-json --img-size 608 --weights ultralytics68.pt
 Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', device='', img_size=608, iou_thres=0.5, nms_thres=0.5, save_json=True, weights='ultralytics68.pt')
