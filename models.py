@@ -445,6 +445,8 @@ def attempt_download(weights):
             gdrive_download(id='1Bw0kCpplxUqyRYAJr9RY9SGnOJbo9nEj', name=weights)
         elif file == 'ultralytics49.pt':
             gdrive_download(id='158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq', name=weights)
+        elif file == 'ultralytics68.pt':
+            gdrive_download(id='1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG', name=weights)
         else:
             try:  # download from pjreddie.com
                 url = 'https://pjreddie.com/media/files/' + file
