@@ -62,11 +62,9 @@ def train():
 
     # Initialize
     init_seeds()
-    multi_scale = opt.multi_scale
-
-    if multi_scale:
-        img_sz_min = round(img_size / 32 / 1.5)
-        img_sz_max = round(img_size / 32 * 1.5)
+    if opt.multi_scale:
+        img_sz_min = round(img_size / 32 / 1.5) - 1
+        img_sz_max = round(img_size / 32 * 1.5) + 1
         img_size = img_sz_max * 32  # initiate with maximum multi_scale size
         print('Using multi-scale %g - %g' % (img_sz_min * 32, img_size))
 
@@ -241,7 +239,7 @@ def train():
             targets = targets.to(device)
 
             # Multi-Scale training
-            if multi_scale:
+            if opt.multi_scale:
                 if ni / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
                     img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
                 sf = img_size / max(imgs.shape[2:])  # scale factor
