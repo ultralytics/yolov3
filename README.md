@@ -140,15 +140,15 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 - `test.py --weights weights/yolov3.weights` tests official YOLOv3 weights.
 - `test.py --weights weights/last.pt` tests latest checkpoint.
 - mAPs on COCO2014 using pycocotools.
-- mAP@0.5 run at `--nms-thres 0.5`, mAP@0.5...0.95 run at `--nms-thres 0.65`.
+- mAP@0.5 run at `--nms-thres 0.5`, mAP@0.5...0.95 run at `--nms-thres 0.7`.
 - YOLOv3-SPP ultralytics is `ultralytics68.pt` with `yolov3-spp.cfg`.
 - Darknet results published in https://arxiv.org/abs/1804.02767.
 
 <i></i>                      |img-size |COCO mAP<br>@0.5...0.95 |COCO mAP<br>@0.5 
 ---                          | ---         | ---         | ---
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |320 |14.0<br>28.7<br>30.5<br>**35.2** |29.0<br>51.5<br>52.3<br>**53.9**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>31.1<br>33.9<br>**38.8** |32.9<br>55.3<br>56.8<br>**58.7**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.0<br>37.0<br>**40.6** |35.5<br>57.9<br>60.6<br>**60.7**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |320 |14.0<br>28.7<br>30.5<br>**35.4** |29.0<br>51.5<br>52.3<br>**54.3**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>31.1<br>33.9<br>**39.0** |32.9<br>55.3<br>56.8<br>**59.2**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.0<br>37.0<br>**40.7** |35.5<br>57.9<br>60.6<br>**60.7**
 
 ```bash
 $ python3 test.py --save-json --img-size 608 --nms-thres 0.65 --weights ultralytics68.pt
