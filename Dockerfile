@@ -62,7 +62,7 @@ COPY . /usr/src/app
 # export tag=ultralytics/yolov3:v0 && sudo docker build -t $tag . && sudo docker push $tag
 
 # Kill all
-# sudo docker kill $(sudo docker ps -q)
+# sudo docker kill "$(sudo docker ps -q)"
 
 # Run bash for loop
 # sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 while true; do python3 train.py --evolve; done
