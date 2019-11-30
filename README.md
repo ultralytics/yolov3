@@ -78,7 +78,8 @@ https://cloud.google.com/deep-learning-vm/
 **CPU platform:** Intel Skylake  
 **GPUs:** K80 ($0.20/hr), T4 ($0.35/hr), V100 ($0.83/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32  
 **HDD:** 100 GB SSD  
-**Dataset:** COCO train 2014 (117,263 images)
+**Dataset:** COCO train 2014 (117,263 images)  
+**Model:** `yolov3-spp.cfg`
 
 GPUs | `batch_size` | images/sec | epoch time | epoch cost
 --- |---| --- | --- | --- 
@@ -107,13 +108,13 @@ python3 detect.py --source ...
 
 To run a specific models:
 
-**YOLOv3:** `python3 detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.weights`
+**YOLOv3:** `python3 detect.py --cfg cfg/yolov3.cfg --weights weights/yolov3.weights`  
 <img src="https://user-images.githubusercontent.com/26833433/64067835-51d5b500-cc2f-11e9-982e-843f7f9a6ea2.jpg" width="500">
 
-**YOLOv3-tiny:** `python3 detect.py --cfg cfg/yolov3-tiny.cfg --weights weights/yolov3-tiny.weights`
+**YOLOv3-tiny:** `python3 detect.py --cfg cfg/yolov3-tiny.cfg --weights weights/yolov3-tiny.weights`  
 <img src="https://user-images.githubusercontent.com/26833433/64067834-51d5b500-cc2f-11e9-9357-c485b159a20b.jpg" width="500">
 
-**YOLOv3-SPP:** `python3 detect.py --cfg cfg/yolov3-spp.cfg --weights weights/yolov3-spp.weights`
+**YOLOv3-SPP:** `python3 detect.py --cfg cfg/yolov3-spp.cfg --weights weights/yolov3-spp.weights`  
 <img src="https://user-images.githubusercontent.com/26833433/64067833-51d5b500-cc2f-11e9-8208-6fe197809131.jpg" width="500">
 
 
