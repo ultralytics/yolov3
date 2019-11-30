@@ -53,10 +53,10 @@ COPY . /usr/src/app
 # sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 python3 detect.py
 
 # Run with local directory access
-# sudo nvidia-docker run --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco ultralytics/yolov3:v0 python3 train.py
+# sudo nvidia-docker run --ipc=host -v "$(pwd)"/coco:/usr/src/coco ultralytics/yolov3:v0 python3 train.py
 
 # Pull and Run with local directory access
-# export tag=ultralytics/yolov3:v0 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host --mount type=bind,source="$(pwd)"/coco,target=/usr/src/coco $tag python3 train.py
+# export tag=ultralytics/yolov3:v0 && sudo docker pull $tag && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $tag
 
 # Build and Push
 # export tag=ultralytics/yolov3:v0 && sudo docker build -t $tag . && sudo docker push $tag
