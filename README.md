@@ -151,6 +151,7 @@ YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>
 YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.0<br>37.0<br>**40.7** |35.5<br>57.9<br>60.6<br>**60.7**
 
 ```bash
+$ python3 test.py --save-json --img-size 608 --nms-thres 0.7 --weights ultralytics68.pt
 Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', device='', img_size=608, iou_thres=0.5, nms_thres=0.7, save_json=True, weights='ultralytics68.pt')
 Using CUDA device0 _CudaDeviceProperties(name='Tesla P100-PCIE-16GB', total_memory=16280MB)
 
