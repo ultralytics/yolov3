@@ -96,6 +96,9 @@ def train():
     optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
     del pg0, pg1
 
+    # https://github.com/alphadl/lookahead.pytorch
+    # optimizer = torch_utils.Lookahead(optimizer, k=5, alpha=0.5)
+
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_fitness = float('inf')
