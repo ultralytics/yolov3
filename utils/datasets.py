@@ -423,10 +423,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
             # Letterbox
             h, w = img.shape[:2]
-            if self.rect:
-                img, ratio, pad = letterbox(img, self.batch_shapes[self.batch[index]], mode='rect')
-            else:
-                img, ratio, pad = letterbox(img, self.img_size, mode='square')
+            shape = self.batch_shapes[self.batch[index]] if self.rect else self.img_size  # final letterboxed shape
+            img, ratio, pad = letterbox(img, shape, auto=False)
 
             # Load labels
             labels = []
@@ -610,7 +608,7 @@ def load_mosaic(self, index):
     return img4, labels4
 
 
-def letterbox(img, new_shape=(416, 416), color=(128, 128, 128), mode='auto', interp=cv2.INTER_AREA):
+def letterbox(img, new_shape=(416, 416), color=(128, 128, 128), auto=True, scaleFill=False, interp=cv2.INTER_AREA):
     # Resize a rectangular image to a 32 pixel multiple rectangle
     # https://github.com/ultralytics/yolov3/issues/232
     shape = img.shape[:2]  # current shape [height, width]
@@ -623,9 +621,9 @@ def letterbox(img, new_shape=(416, 416), color=(128, 128, 128), mode='auto', int
 
     # Compute padding
     dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
-    if mode is 'auto':  # minimum rectangle
+    if auto:  # minimum rectangle
         dw, dh = np.mod(dw, 32), np.mod(dh, 32)  # wh padding
-    elif mode is 'scaleFill':  # stretch
+    elif scaleFill:  # stretch
         dw, dh = 0.0, 0.0
         new_unpad = new_shape
         ratio = new_shape[0] / shape[1], new_shape[1] / shape[0]  # width, height ratios
