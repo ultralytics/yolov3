@@ -614,11 +614,15 @@ def letterbox(img, new_shape=(416, 416), color=(128, 128, 128), auto=True, scale
     if isinstance(new_shape, int):
         new_shape = (new_shape, new_shape)
 
-    r = max(new_shape) / max(shape)  # ratio  = new / old
-    ratio = r, r  # width, height ratios
-    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+    # Scale ratio (new / old)
+    scaleup_ok = True
+    r = max(new_shape) / max(shape)
+    if not scaleup_ok:  # only scale down
+        r = min(r, 1.0)
 
     # Compute padding
+    ratio = r, r  # width, height ratios
+    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
     dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
     if auto:  # minimum rectangle
         dw, dh = np.mod(dw, 32), np.mod(dh, 32)  # wh padding
