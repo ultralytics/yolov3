@@ -416,6 +416,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             # Load mosaic
             img, labels = load_mosaic(self, index)
             h, w = img.shape[:2]
+            ratio, pad = None, None
 
         else:
             # Load image
@@ -492,14 +493,14 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
-        return torch.from_numpy(img), labels_out, img_path, (h, w)
+        return torch.from_numpy(img), labels_out, img_path, ((h, w), (ratio, pad))
 
     @staticmethod
     def collate_fn(batch):
-        img, label, path, hw = list(zip(*batch))  # transposed
+        img, label, path, shapes = list(zip(*batch))  # transposed
         for i, l in enumerate(label):
             l[:, 0] = i  # add target image index for build_targets()
-        return torch.stack(img, 0), torch.cat(label, 0), path, hw
+        return torch.stack(img, 0), torch.cat(label, 0), path, shapes
 
 
 def load_image(self, index):
