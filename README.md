@@ -150,7 +150,7 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |320 |14.0<br>28.7<br>30.5<br>**35.4** |29.1<br>51.8<br>52.3<br>**54.3**
 YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>31.2<br>33.9<br>**39.0** |33.0<br>55.4<br>56.9<br>**59.2**
 YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |512 |16.6<br>32.7<br>35.6<br>**40.3** |34.9<br>57.7<br>59.5<br>**60.6**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.1<br>37.0<br>**40.7** |35.4<br>58.2<br>60.7<br>**60.9**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.1<br>37.0<br>**40.9** |35.4<br>58.2<br>60.7<br>**60.9**
 
 ```bash
 $ python3 test.py --save-json --img-size 608 --nms-thres 0.7 --weights ultralytics68.pt
