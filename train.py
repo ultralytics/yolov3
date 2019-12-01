@@ -24,7 +24,7 @@ results_file = 'results.txt'
 hyp = {'giou': 3.31,  # giou loss gain
        'cls': 42.4,  # cls loss gain
        'cls_pw': 1.0,  # cls BCELoss positive_weight
-       'obj': 52.0,  # obj loss gain (*=img_size/320 if img_size != 320)
+       'obj': 52.0,  # obj loss gain (*=img_size/416 if img_size != 416)
        'obj_pw': 1.0,  # obj BCELoss positive_weight
        'iou_t': 0.213,  # iou training threshold
        'lr0': 0.00261,  # initial learning rate (SGD=1E-3, Adam=9E-5)
