@@ -147,30 +147,31 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 
 <i></i>                      |Size |COCO mAP<br>@0.5...0.95 |COCO mAP<br>@0.5 
 ---                          | ---         | ---         | ---
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |320 |14.0<br>28.7<br>30.5<br>**35.4** |29.0<br>51.5<br>52.3<br>**54.3**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>31.1<br>33.9<br>**39.0** |32.9<br>55.3<br>56.8<br>**59.2**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.0<br>37.0<br>**40.7** |35.5<br>57.9<br>60.6<br>**60.7**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |320 |14.0<br>28.7<br>30.5<br>**35.4** |29.1<br>51.8<br>52.3<br>**54.3**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>31.2<br>33.9<br>**39.0** |33.0<br>55.4<br>56.9<br>**59.2**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |512 |16.6<br>32.7<br>35.6<br>**40.3** |34.9<br>57.7<br>59.5<br>**60.6**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.1<br>37.0<br>**40.7** |35.4<br>58.2<br>60.7<br>**60.9**
 
 ```bash
 $ python3 test.py --save-json --img-size 608 --nms-thres 0.7 --weights ultralytics68.pt
-Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', device='', img_size=608, iou_thres=0.5, nms_thres=0.7, save_json=True, weights='ultralytics68.pt')
-Using CUDA device0 _CudaDeviceProperties(name='Tesla P100-PCIE-16GB', total_memory=16280MB)
+Namespace(batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco.data', device='1', img_size=608, iou_thres=0.5, nms_thres=0.7, save_json=True, weights='ultralytics68.pt')
+Using CUDA device0 _CudaDeviceProperties(name='GeForce RTX 2080 Ti', total_memory=11019MB)
 
-Downloading https://drive.google.com/uc?export=download&id=1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG as ultralytics68.pt... Done (2.2s)
-               Class    Images   Targets         P         R   mAP@0.5        F1: 100% 313/313 [16:23<00:00,  1.59s/it]
-                 all     5e+03  3.58e+04    0.0465     0.831     0.586    0.0868
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.407
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.598
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.444
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.245
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.446
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.511
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.326
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.537
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.595
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.427
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.641
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.706
+               Class    Images   Targets         P         R   mAP@0.5        F1: 100%|███████████████████████████████████████████████████████████████████████████████████| 313/313 [09:46<00:00,  1.09it/s]
+                 all     5e+03  3.58e+04    0.0481     0.829     0.589    0.0894
+
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.40882
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.60026
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.44551
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.24343
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.45024
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.51362
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.32644
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.53629
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.59343
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.42207
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.63985
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.70688
 ```
 
 # Citation
