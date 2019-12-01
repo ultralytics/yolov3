@@ -424,9 +424,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             # Letterbox
             h, w = img.shape[:2]
             if self.rect:
-                img, ratio, padw, padh = letterbox(img, self.batch_shapes[self.batch[index]], mode='rect')
+                img, ratio, pad = letterbox(img, self.batch_shapes[self.batch[index]], mode='rect')
             else:
-                img, ratio, padw, padh = letterbox(img, self.img_size, mode='square')
+                img, ratio, pad = letterbox(img, self.img_size, mode='square')
 
             # Load labels
             labels = []
@@ -439,10 +439,10 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 if x.size > 0:
                     # Normalized xywh to pixel xyxy format
                     labels = x.copy()
-                    labels[:, 1] = ratio[0] * w * (x[:, 1] - x[:, 3] / 2) + padw
-                    labels[:, 2] = ratio[1] * h * (x[:, 2] - x[:, 4] / 2) + padh
-                    labels[:, 3] = ratio[0] * w * (x[:, 1] + x[:, 3] / 2) + padw
-                    labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + padh
+                    labels[:, 1] = ratio[0] * w * (x[:, 1] - x[:, 3] / 2) + pad[0]  # pad width
+                    labels[:, 2] = ratio[1] * h * (x[:, 2] - x[:, 4] / 2) + pad[1]
+                    labels[:, 3] = ratio[0] * w * (x[:, 1] + x[:, 3] / 2) + pad[0]
+                    labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + pad[1]
 
         if self.augment:
             # Augment colorspace
@@ -610,39 +610,35 @@ def load_mosaic(self, index):
     return img4, labels4
 
 
-def letterbox(img, new_shape=416, color=(128, 128, 128), mode='auto', interp=cv2.INTER_AREA):
+def letterbox(img, new_shape=(416, 416), color=(128, 128, 128), mode='auto', interp=cv2.INTER_AREA):
     # Resize a rectangular image to a 32 pixel multiple rectangle
     # https://github.com/ultralytics/yolov3/issues/232
     shape = img.shape[:2]  # current shape [height, width]
-
     if isinstance(new_shape, int):
-        r = float(new_shape) / max(shape)  # ratio  = new / old
-    else:
-        r = max(new_shape) / max(shape)
-    ratio = r, r  # width, height ratios
-    new_unpad = (int(round(shape[1] * r)), int(round(shape[0] * r)))
+        new_shape = (new_shape, new_shape)
 
-    # Compute padding https://github.com/ultralytics/yolov3/issues/232
+    r = max(new_shape) / max(shape)  # ratio  = new / old
+    ratio = r, r  # width, height ratios
+    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+
+    # Compute padding
+    dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
     if mode is 'auto':  # minimum rectangle
-        dw = np.mod(new_shape - new_unpad[0], 32) / 2  # width padding
-        dh = np.mod(new_shape - new_unpad[1], 32) / 2  # height padding
-    elif mode is 'square':  # square
-        dw = (new_shape - new_unpad[0]) / 2  # width padding
-        dh = (new_shape - new_unpad[1]) / 2  # height padding
-    elif mode is 'rect':  # square
-        dw = (new_shape[1] - new_unpad[0]) / 2  # width padding
-        dh = (new_shape[0] - new_unpad[1]) / 2  # height padding
-    elif mode is 'scaleFill':
+        dw, dh = np.mod(dw, 32), np.mod(dh, 32)  # wh padding
+    elif mode is 'scaleFill':  # stretch
         dw, dh = 0.0, 0.0
-        new_unpad = (new_shape, new_shape)
-        ratio = new_shape / shape[1], new_shape / shape[0]  # width, height ratios
+        new_unpad = new_shape
+        ratio = new_shape[0] / shape[1], new_shape[1] / shape[0]  # width, height ratios
+
+    dw /= 2  # divide padding into 2 sides
+    dh /= 2
 
     if shape[::-1] != new_unpad:  # resize
         img = cv2.resize(img, new_unpad, interpolation=interp)  # INTER_AREA is better, INTER_LINEAR is faster
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
-    return img, ratio, dw, dh
+    return img, ratio, (dw, dh)
 
 
 def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10):
