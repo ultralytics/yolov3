@@ -4,12 +4,17 @@ from sys import platform
 from models import *  # set ONNX_EXPORT in models.py
 from utils.datasets import *
 from utils.utils import *
+import json
 
 
-def detect(save_txt=False, save_img=False):
+def detect(save_txt=False, save_img=False, save_json=False):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half, view_img = opt.output, opt.source, opt.weights, opt.half, opt.view_img
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
+
+    # Create an a list of objects per frame
+    objects_per_frame = {}
+    objects_per_frame['frames'] = []
 
     # Initialize
     device = torch_utils.select_device(device='cpu' if ONNX_EXPORT else opt.device)
@@ -99,6 +104,7 @@ def detect(save_txt=False, save_img=False):
             else:
                 p, s, im0 = path, '', im0s
 
+            frame_objects = []
             save_path = str(Path(out) / Path(p).name)
             s += '%gx%g ' % img.shape[2:]  # print string
             if det is not None and len(det):
@@ -112,6 +118,11 @@ def detect(save_txt=False, save_img=False):
 
                 # Write results
                 for *xyxy, conf, _, cls in det:
+                    # Save objects to our object-by-frame list
+                    frame_objects.append({"coords": "%g %g %g %g" % (*xyxy,),
+                                          "class": "%s" % (classes[int(cls)]),
+                                          "confidence": "%g" % (conf)})
+
                     if save_txt:  # Write to file
                         with open(save_path + '.txt', 'a') as file:
                             file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
@@ -121,6 +132,9 @@ def detect(save_txt=False, save_img=False):
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
 
             print('%sDone. (%.3fs)' % (s, time.time() - t))
+
+            # Save object list to frame list
+            objects_per_frame['frames'].append(frame_objects)
 
             # Stream results
             if view_img:
@@ -141,6 +155,11 @@ def detect(save_txt=False, save_img=False):
                         h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (w, h))
                     vid_writer.write(im0)
+
+    if save_json: # Write json file
+        with open(save_path + '.json', 'w') as file:
+            json.dump(objects_per_frame, file)
+
 
     if save_txt or save_img:
         print('Results saved to %s' % os.getcwd() + os.sep + out)
@@ -164,8 +183,12 @@ if __name__ == '__main__':
     parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
     parser.add_argument('--view-img', action='store_true', help='display results')
+    parser.add_argument('--save-json', action='store_true', help='save a JSON results file')
+    parser.add_argument('--save-txt', action='store_true', help='save a text results file')
     opt = parser.parse_args()
     print(opt)
 
     with torch.no_grad():
-        detect()
+        detect(opt.save_txt,
+               False,
+               opt.save_json)
