@@ -411,6 +411,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img_path = self.img_files[index]
         label_path = self.label_files[index]
 
+        hyp = self.hyp
         mosaic = True and self.augment  # load 4 images at a time into a mosaic (only during training)
         if mosaic:
             # Load mosaic
@@ -444,17 +445,16 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     labels[:, 4] = ratio[1] * h * (x[:, 2] + x[:, 4] / 2) + pad[1]
 
         if self.augment:
-            # Augment colorspace
-            augment_hsv(img, hgain=self.hyp['hsv_h'], sgain=self.hyp['hsv_s'], vgain=self.hyp['hsv_v'])
-
             # Augment imagespace
-            g = 0.0 if mosaic else 1.0  # do not augment mosaics
-            hyp = self.hyp
-            img, labels = random_affine(img, labels,
-                                        degrees=hyp['degrees'] * g,
-                                        translate=hyp['translate'] * g,
-                                        scale=hyp['scale'] * g,
-                                        shear=hyp['shear'] * g)
+            if not mosaic:
+                img, labels = random_affine(img, labels,
+                                            degrees=hyp['degrees'],
+                                            translate=hyp['translate'],
+                                            scale=hyp['scale'],
+                                            shear=hyp['shear'])
+
+            # Augment colorspace
+            augment_hsv(img, hgain=hyp['hsv_h'], sgain=hyp['hsv_s'], vgain=hyp['hsv_v'])
 
             # Apply cutouts
             # if random.random() < 0.9:
@@ -573,21 +573,18 @@ def load_mosaic(self, index):
                 labels = np.zeros((0, 5), dtype=np.float32)
             labels4.append(labels)
 
+    # Concat/clip labels
     if len(labels4):
         labels4 = np.concatenate(labels4, 0)
+        np.clip(labels4[:, 1:], 0, 2 * s, out=labels4[:, 1:])
 
-    # hyp = self.hyp
-    # img4, labels4 = random_affine(img4, labels4,
-    #                               degrees=hyp['degrees'],
-    #                               translate=hyp['translate'],
-    #                               scale=hyp['scale'],
-    #                               shear=hyp['shear'])
-
-    # Center crop
-    a = s // 2
-    img4 = img4[a:a + s, a:a + s]
-    if len(labels4):
-        labels4[:, 1:] -= a
+    # Augment
+    img4, labels4 = random_affine(img4, labels4,
+                                  degrees=self.hyp['degrees'],
+                                  translate=self.hyp['translate'],
+                                  scale=self.hyp['scale'],
+                                  shear=self.hyp['shear'],
+                                  border=-s // 2)  # border to remove
 
     return img4, labels4
 
@@ -626,13 +623,12 @@ def letterbox(img, new_shape=(416, 416), color=(128, 128, 128),
     return img, ratio, (dw, dh)
 
 
-def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10):
+def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10, border=0):
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
     # https://medium.com/uruvideo/dataset-augmentation-with-random-homographies-a8f4b44830d4
 
     if targets is None:  # targets = [cls, xyxy]
         targets = []
-    border = 0  # width of added border (optional)
     height = img.shape[0] + border * 2
     width = img.shape[1] + border * 2
 
