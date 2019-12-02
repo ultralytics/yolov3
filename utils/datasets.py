@@ -523,23 +523,6 @@ def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
 
 
-# def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):  # original version
-#     # SV augmentation by 50%
-#     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # hue, sat, val
-#
-#     S = img_hsv[:, :, 1].astype(np.float32)  # saturation
-#     V = img_hsv[:, :, 2].astype(np.float32)  # value
-#
-#     a = random.uniform(-1, 1) * sgain + 1
-#     b = random.uniform(-1, 1) * vgain + 1
-#     S *= a
-#     V *= b
-#
-#     img_hsv[:, :, 1] = S if a < 1 else S.clip(None, 255)
-#     img_hsv[:, :, 2] = V if b < 1 else V.clip(None, 255)
-#     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
-
-
 def load_mosaic(self, index):
     # loads images in a mosaic
 
