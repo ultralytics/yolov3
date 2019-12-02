@@ -73,7 +73,11 @@ def detect(save_txt=False, save_img=False, save_json=False):
         dataset = LoadImages(source, img_size=img_size, half=half)
 
     # Get classes and colors
-    classes = load_classes(parse_data_cfg(opt.data)['names'])
+    if opt.names is None:
+        classes_path = parse_data_cfg(opt.data)['names']
+    else:
+        classes_path = opt.names
+    classes = load_classes(classes_path)
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(classes))]
 
     # Run inference
@@ -185,6 +189,7 @@ if __name__ == '__main__':
     parser.add_argument('--view-img', action='store_true', help='display results')
     parser.add_argument('--save-json', action='store_true', help='save a JSON results file')
     parser.add_argument('--save-txt', action='store_true', help='save a text results file')
+    parser.add_argument('--names', type=str, help='coco.names file path')
     opt = parser.parse_args()
     print(opt)
 
