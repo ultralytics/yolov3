@@ -1,13 +1,15 @@
-# pip3 install -U -r requirements.txt
+# pip install -U -r requirements.txt
 numpy
 opencv-python
 torch >= 1.3
 matplotlib
 pycocotools
 tqdm
-tb-nightly
-future
 Pillow
+
+# Tensorboard pip requirements -------------------------------------------------
+# tb-nightly
+# future
 
 # Equivalent conda commands ----------------------------------------------------
 # conda update -n base -c defaults conda
