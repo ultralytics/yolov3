@@ -449,7 +449,8 @@ def build_targets(model, targets):
         # Class
         tcls.append(c)
         if c.shape[0]:  # if any targets
-            assert c.max() <= model.nc, 'Target classes exceed model classes'
+            assert c.max() <= model.nc, 'Model accepts %g classes labeled from 0-%g, however you supplied a label %g. \
+                See https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data' % (model.nc, model.nc - 1, c.max())
 
     return tcls, tbox, indices, av
 
