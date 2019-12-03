@@ -261,4 +261,4 @@ Using CUDA device0 _CudaDeviceProperties(name='GeForce RTX 2080 Ti', total_memor
 
 # Contact
 
-Issues should be raised directly in the repository. For additional questions or comments please email Glenn Jocher at glenn.jocher@ultralytics.com or visit us at https://contact.ultralytics.com.
+**Issues should be raised directly in the repository.** For additional questions or comments please email Glenn Jocher at glenn.jocher@ultralytics.com or visit us at https://contact.ultralytics.com.
