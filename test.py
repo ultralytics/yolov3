@@ -17,7 +17,9 @@ def test(cfg,
          conf_thres=0.001,
          nms_thres=0.5,
          save_json=False,
-         model=None):
+         model=None,
+         names=None,
+         dataloader=None):
     # Initialize/load model and set device
     if model is None:
         device = torch_utils.select_device(opt.device, batch_size=batch_size)
@@ -40,6 +42,7 @@ def test(cfg,
         verbose = False
 
     # Configure run
+    if (dataloader and names) is not None:
     data = parse_data_cfg(data)
     nc = int(data['classes'])  # number of classes
     test_path = data['valid']  # path to test images
