@@ -376,14 +376,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         # Cache images into memory for faster training (~5GB)
         if cache_images and augment:  # if training
             for i in tqdm(range(min(len(self.img_files), 10000)), desc='Reading images'):  # max 10k images
-                img_path = self.img_files[i]
-                img = cv2.imread(img_path)  # BGR
-                assert img is not None, 'Image Not Found ' + img_path
-                r = self.img_size / max(img.shape)  # size ratio
-                if self.augment and r < 1:  # if training (NOT testing), downsize to inference shape
-                    h, w = img.shape[:2]
-                    img = cv2.resize(img, (int(w * r), int(h * r)), interpolation=cv2.INTER_LINEAR)  # or INTER_AREA
-                self.imgs[i] = img
+                self.imgs[i] = load_image(self, i)
 
         # Detect corrupted images https://medium.com/joelthchao/programmatically-detect-corrupted-image-8c1b2006c3d3
         detect_corrupted_images = False
