@@ -576,15 +576,19 @@ def load_mosaic(self, index):
     # Concat/clip labels
     if len(labels4):
         labels4 = np.concatenate(labels4, 0)
-        np.clip(labels4[:, 1:], 0, 2 * s, out=labels4[:, 1:])
+        # np.clip(labels4[:, 1:], 0, 2 * s, out=labels4[:, 1:])  # use before random_affine
+        np.clip(labels4[:, 1:], s / 2, 1.5 * s, out=labels4[:, 1:])
+        labels4[:, 1:] -= s / 2
 
-    # Augment
-    img4, labels4 = random_affine(img4, labels4,
-                                  degrees=self.hyp['degrees'],
-                                  translate=self.hyp['translate'],
-                                  scale=self.hyp['scale'],
-                                  shear=self.hyp['shear'],
-                                  border=-s // 2)  # border to remove
+    img4 = img4[s // 2: int(s * 1.5), s // 2:int(s * 1.5)]
+
+    # # Augment
+    # img4, labels4 = random_affine(img4, labels4,
+    #                               degrees=self.hyp['degrees'],
+    #                               translate=self.hyp['translate'],
+    #                               scale=self.hyp['scale'],
+    #                               shear=self.hyp['shear'],
+    #                               border=-s // 2)  # border to remove
 
     return img4, labels4
 
