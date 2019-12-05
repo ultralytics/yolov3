@@ -73,9 +73,9 @@ def train():
     data_dict = parse_data_cfg(data)
     train_path = data_dict['train']
     nc = int(data_dict['classes'])  # number of classes
-    names = load_classes(data['names'])
+    names = load_classes(data_dict['names'])
     
-    test_path = data['valid']  # path to test images
+    test_path = data_dict['valid']  # path to test images
     
     # Remove previous results
     for f in glob.glob('*_batch*.jpg') + glob.glob(results_file):
