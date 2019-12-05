@@ -42,16 +42,16 @@ def test(cfg,
         verbose = False
 
     # Configure run
-    if (dataloader and names) is not None:
-    data = parse_data_cfg(data)
-    nc = int(data['classes'])  # number of classes
-    test_path = data['valid']  # path to test images
-    names = load_classes(data['names'])  # class names
+    if (dataloader and names) is None:
+         data = parse_data_cfg(data)
+         nc = int(data['classes'])  # number of classes
+         test_path = data['valid']  # path to test images
+         names = load_classes(data['names'])  # class names
 
-    # Dataloader
-    dataset = LoadImagesAndLabels(test_path, img_size, batch_size)
-    batch_size = min(batch_size, len(dataset))
-    dataloader = DataLoader(dataset,
+         # Dataloader
+         dataset = LoadImagesAndLabels(test_path, img_size, batch_size)
+         batch_size = min(batch_size, len(dataset))
+         dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=min([os.cpu_count(), batch_size if batch_size > 1 else 0, 16]),
                             pin_memory=True,
