@@ -73,7 +73,10 @@ def train():
     data_dict = parse_data_cfg(data)
     train_path = data_dict['train']
     nc = int(data_dict['classes'])  # number of classes
-
+    names = load_classes(data_dict['names'])
+    
+    test_path = data_dict['valid']  # path to test images
+    
     # Remove previous results
     for f in glob.glob('*_batch*.jpg') + glob.glob(results_file):
         os.remove(f)
@@ -196,7 +199,9 @@ def train():
                                   image_weights=opt.img_weights,
                                   cache_labels=True if epochs > 10 else False,
                                   cache_images=False if opt.prebias else opt.cache_images)
-
+    
+    dataset_test = LoadImagesAndLabels(test_path, img_size, batch_size)
+    
     # Dataloader
     batch_size = min(batch_size, len(dataset))
     nw = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 16])  # number of workers
@@ -207,6 +212,12 @@ def train():
                                              shuffle=not opt.rect,  # Shuffle=True unless rectangular training is used
                                              pin_memory=True,
                                              collate_fn=dataset.collate_fn)
+    dataloader_test = DataLoader(dataset_test,
+                            batch_size=batch_size,
+                            num_workers=min([os.cpu_count(), batch_size if batch_size > 1 else 0, 16]),
+                            pin_memory=True,
+                            collate_fn=dataloader_test.collate_fn)
+    
 
     # Start training
     model.nc = nc  # attach number of classes to model
@@ -316,12 +327,14 @@ def train():
             if not (opt.notest or (opt.nosave and epoch < 10)) or final_epoch:
                 with torch.no_grad():
                     results, maps = test.test(cfg,
-                                              data,
+                                              data = None,
                                               batch_size=batch_size,
                                               img_size=opt.img_size,
                                               model=model,
                                               conf_thres=0.001 if final_epoch and epoch > 0 else 0.1,  # 0.1 for speed
-                                              save_json=final_epoch and epoch > 0 and 'coco.data' in data)
+                                              save_json=final_epoch and epoch > 0 and 'coco.data' in data,
+                                              names = names,
+                                              dataloader = dataloader_test)
 
         # Write epoch results
         with open(results_file, 'a') as f:

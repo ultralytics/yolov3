@@ -17,7 +17,9 @@ def test(cfg,
          conf_thres=0.001,
          nms_thres=0.5,
          save_json=False,
-         model=None):
+         model=None,
+         names=None,
+         dataloader=None):
     # Initialize/load model and set device
     if model is None:
         device = torch_utils.select_device(opt.device, batch_size=batch_size)
@@ -40,15 +42,16 @@ def test(cfg,
         verbose = False
 
     # Configure run
-    data = parse_data_cfg(data)
-    nc = int(data['classes'])  # number of classes
-    test_path = data['valid']  # path to test images
-    names = load_classes(data['names'])  # class names
+    if (dataloader and names) is None:
+         data = parse_data_cfg(data)
+         nc = int(data['classes'])  # number of classes
+         test_path = data['valid']  # path to test images
+         names = load_classes(data['names'])  # class names
 
-    # Dataloader
-    dataset = LoadImagesAndLabels(test_path, img_size, batch_size)
-    batch_size = min(batch_size, len(dataset))
-    dataloader = DataLoader(dataset,
+         # Dataloader
+         dataset = LoadImagesAndLabels(test_path, img_size, batch_size)
+         batch_size = min(batch_size, len(dataset))
+         dataloader = DataLoader(dataset,
                             batch_size=batch_size,
                             num_workers=min([os.cpu_count(), batch_size if batch_size > 1 else 0, 16]),
                             pin_memory=True,
