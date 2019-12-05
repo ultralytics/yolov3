@@ -72,6 +72,7 @@ def train():
     # Configure run
     data_dict = parse_data_cfg(data)
     train_path = data_dict['train']
+    test_path = data_dict['valid']
     nc = int(data_dict['classes'])  # number of classes
 
     # Remove previous results
@@ -187,19 +188,17 @@ def train():
         model.yolo_layers = model.module.yolo_layers  # move yolo layer indices to top level
 
     # Dataset
-    dataset = LoadImagesAndLabels(train_path,
-                                  img_size,
-                                  batch_size,
+    dataset = LoadImagesAndLabels(train_path, img_size, batch_size,
                                   augment=True,
                                   hyp=hyp,  # augmentation hyperparameters
                                   rect=opt.rect,  # rectangular training
                                   image_weights=opt.img_weights,
-                                  cache_labels=True if epochs > 10 else False,
-                                  cache_images=False if opt.prebias else opt.cache_images)
+                                  cache_labels=epochs > 10,
+                                  cache_images=opt.cache_images and not opt.prebias)
 
     # Dataloader
     batch_size = min(batch_size, len(dataset))
-    nw = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 16])  # number of workers
+    nw = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8])  # number of workers
     print('Using %g dataloader workers' % nw)
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size,
@@ -208,13 +207,23 @@ def train():
                                              pin_memory=True,
                                              collate_fn=dataset.collate_fn)
 
+    # Test Dataloader
+    if not opt.prebias:
+        testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, img_size, batch_size, hyp=hyp,
+                                                                     cache_labels=True,
+                                                                     cache_images=opt.cache_images),
+                                                 batch_size=batch_size,
+                                                 num_workers=nw,
+                                                 pin_memory=True,
+                                                 collate_fn=dataset.collate_fn)
+
     # Start training
+    nb = len(dataloader)
     model.nc = nc  # attach number of classes to model
     model.arc = opt.arc  # attach yolo architecture
     model.hyp = hyp  # attach hyperparameters to model
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
     torch_utils.model_info(model, report='summary')  # 'full' or 'summary'
-    nb = len(dataloader)
     maps = np.zeros(nc)  # mAP per class
     # torch.autograd.set_detect_anomaly(True)
     results = (0, 0, 0, 0, 0, 0, 0)  # 'P', 'R', 'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification'
@@ -321,7 +330,8 @@ def train():
                                               img_size=opt.img_size,
                                               model=model,
                                               conf_thres=0.001 if final_epoch and epoch > 0 else 0.1,  # 0.1 for speed
-                                              save_json=final_epoch and epoch > 0 and 'coco.data' in data)
+                                              save_json=final_epoch and epoch > 0 and 'coco.data' in data,
+                                              dataloader=testloader)
 
         # Write epoch results
         with open(results_file, 'a') as f:

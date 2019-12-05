@@ -17,7 +17,8 @@ def test(cfg,
          conf_thres=0.001,
          nms_thres=0.5,
          save_json=False,
-         model=None):
+         model=None,
+         dataloader=None):
     # Initialize/load model and set device
     if model is None:
         device = torch_utils.select_device(opt.device, batch_size=batch_size)
@@ -46,13 +47,14 @@ def test(cfg,
     names = load_classes(data['names'])  # class names
 
     # Dataloader
-    dataset = LoadImagesAndLabels(test_path, img_size, batch_size)
-    batch_size = min(batch_size, len(dataset))
-    dataloader = DataLoader(dataset,
-                            batch_size=batch_size,
-                            num_workers=min([os.cpu_count(), batch_size if batch_size > 1 else 0, 16]),
-                            pin_memory=True,
-                            collate_fn=dataset.collate_fn)
+    if dataloader is None:
+        dataset = LoadImagesAndLabels(test_path, img_size, batch_size, rect=True)
+        batch_size = min(batch_size, len(dataset))
+        dataloader = DataLoader(dataset,
+                                batch_size=batch_size,
+                                num_workers=min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8]),
+                                pin_memory=True,
+                                collate_fn=dataset.collate_fn)
 
     seen = 0
     model.eval()
@@ -167,7 +169,7 @@ def test(cfg,
 
     # Save JSON
     if save_json and map and len(jdict):
-        imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataset.img_files]
+        imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataloader.dataset.img_files]
         with open('results.json', 'w') as file:
             json.dump(jdict, file)
 
