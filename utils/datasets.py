@@ -758,24 +758,28 @@ def reduce_img_size(path='../data/sm4/images', img_size=1024):  # from utils.dat
             print('WARNING: image failure %s' % f)
 
 
-def convert_images2bmp():
-    # cv2.imread() jpg at 230 img/s, *.bmp at 400 img/s
-    for path in ['../coco/images/val2014/', '../coco/images/train2014/']:
-        folder = os.sep + Path(path).name
-        output = path.replace(folder, folder + 'bmp')
-        create_folder(output)
+def convert_images2bmp():  # from utils.datasets import *; convert_images2bmp()
+    # Save images
+    formats = [x.lower() for x in img_formats] + [x.upper() for x in img_formats]
+    # for path in ['../coco/images/val2014', '../coco/images/train2014']:
+    for path in ['../data/sm4/images', '../data/sm4/background']:
+        create_folder(path + 'bmp')
+        for ext in formats:  # ['.bmp', '.jpg', '.jpeg', '.png', '.tif', '.dng']
+            for f in tqdm(glob.glob('%s/*%s' % (path, ext)), desc='Converting %s' % ext):
+                cv2.imwrite(f.replace(ext.lower(), '.bmp').replace(path, path + 'bmp'), cv2.imread(f))
 
-        for f in tqdm(glob.glob('%s*.jpg' % path)):
-            save_name = f.replace('.jpg', '.bmp').replace(folder, folder + 'bmp')
-            cv2.imwrite(save_name, cv2.imread(f))
-
-    for label_path in ['../coco/trainvalno5k.txt', '../coco/5k.txt']:
-        with open(label_path, 'r') as file:
-            lines = file.read()
-        lines = lines.replace('2014/', '2014bmp/').replace('.jpg', '.bmp').replace(
-            '/Users/glennjocher/PycharmProjects/', '../')
-        with open(label_path.replace('5k', '5k_bmp'), 'w') as file:
-            file.write(lines)
+    # Save labels
+    # for path in ['../coco/trainvalno5k.txt', '../coco/5k.txt']:
+    for file in ['../data/sm4/out_train.txt', '../data/sm4/out_test.txt']:
+        with open(file, 'r') as f:
+            lines = f.read()
+            # lines = f.read().replace('2014/', '2014bmp/')  # coco
+            lines = lines.replace('/images', '/imagesbmp')
+            lines = lines.replace('/background', '/backgroundbmp')
+        for ext in formats:
+            lines = lines.replace(ext, '.bmp')
+        with open(file.replace('.txt', 'bmp.txt'), 'w') as f:
+            f.write(lines)
 
 
 def imagelist2folder(path='data/coco_64img.txt'):  # from utils.datasets import *; imagelist2folder()
