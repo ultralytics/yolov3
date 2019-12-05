@@ -214,7 +214,7 @@ def train():
                             batch_size=batch_size,
                             num_workers=min([os.cpu_count(), batch_size if batch_size > 1 else 0, 16]),
                             pin_memory=True,
-                            collate_fn=dataset.collate_fn)
+                            collate_fn=dataloader_test.collate_fn)
     
 
     # Start training
