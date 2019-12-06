@@ -438,7 +438,6 @@ def attempt_download(weights):
     # Attempt to download pretrained weights if not found locally
     msg = weights + ' missing, try downloading from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0'
 
-    r = 1  # error value
     if weights and not os.path.isfile(weights):
         d = {'yolov3-spp.weights': '16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R',
              'yolov3.weights': '1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y',
@@ -459,7 +458,7 @@ def attempt_download(weights):
             print('Downloading ' + url)
             r = os.system('curl -f ' + url + ' -o ' + weights)
 
-    # Error check
-    if not (r == 0 and os.path.exists(weights) and os.path.getsize(weights) > 1E6):  # weights exist and > 1MB
-        os.system('rm ' + weights)  # remove partial downloads
-        raise Exception(msg)
+        # Error check
+        if not (r == 0 and os.path.exists(weights) and os.path.getsize(weights) > 1E6):  # weights exist and > 1MB
+            os.system('rm ' + weights)  # remove partial downloads
+            raise Exception(msg)
