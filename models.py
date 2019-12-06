@@ -440,29 +440,21 @@ def attempt_download(weights):
     msg = weights + ' missing, download from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0'
     if weights and not os.path.isfile(weights):
         file = Path(weights).name
+        d = {'yolov3-spp.weights': '16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R',
+             'yolov3.weights': '1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y',
+             'yolov3-tiny.weights': '1CCF-iNIIkYesIDzaPvdwlcf7H9zSsKZQ',
+             'yolov3-spp.pt': '1f6Ovy3BSq2wYq4UfvFUpxJFNDFfrIDcR',
+             'yolov3.pt': '1SHNFyoe5Ni8DajDNEqgB2oVKBb_NoEad',
+             'yolov3-tiny.pt': '10m_3MlpQwRtZetQxtksm9jqHrPTHZ6vo',
+             'darknet53.conv.74': '1WUVBid-XuoUBmvzBVUCBl_ELrzqwA8dJ',
+             'yolov3-tiny.conv.15': '1Bw0kCpplxUqyRYAJr9RY9SGnOJbo9nEj',
+             'ultralytics49.pt': '158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq',
+             'ultralytics68.pt': '1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG'}
 
-        if file == 'yolov3-spp.weights':
-            gdrive_download(id='16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R', name=weights)
-        elif file == 'yolov3.weights':
-            gdrive_download(id='1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y', name=weights)
-        elif file == 'yolov3-tiny.weights':
-            gdrive_download(id='1CCF-iNIIkYesIDzaPvdwlcf7H9zSsKZQ', name=weights)
-        elif file == 'yolov3-spp.pt':
-            gdrive_download(id='1f6Ovy3BSq2wYq4UfvFUpxJFNDFfrIDcR', name=weights)
-        elif file == 'yolov3.pt':
-            gdrive_download(id='1SHNFyoe5Ni8DajDNEqgB2oVKBb_NoEad', name=weights)
-        elif file == 'yolov3-tiny.pt':
-            gdrive_download(id='10m_3MlpQwRtZetQxtksm9jqHrPTHZ6vo', name=weights)
-        elif file == 'darknet53.conv.74':
-            gdrive_download(id='1WUVBid-XuoUBmvzBVUCBl_ELrzqwA8dJ', name=weights)
-        elif file == 'yolov3-tiny.conv.15':
-            gdrive_download(id='1Bw0kCpplxUqyRYAJr9RY9SGnOJbo9nEj', name=weights)
-        elif file == 'ultralytics49.pt':
-            gdrive_download(id='158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq', name=weights)
-        elif file == 'ultralytics68.pt':
-            gdrive_download(id='1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG', name=weights)
-        else:
-            try:  # download from pjreddie.com
+        if weights in d:
+            gdrive_download(id=d[weights], name=weights)
+        else:  # download from pjreddie.com
+            try:
                 url = 'https://pjreddie.com/media/files/' + file
                 print('Downloading ' + url)
                 os.system('curl -f ' + url + ' -o ' + weights)
