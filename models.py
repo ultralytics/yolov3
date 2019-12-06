@@ -436,10 +436,11 @@ def convert(cfg='cfg/yolov3-spp.cfg', weights='weights/yolov3-spp.weights'):
 
 def attempt_download(weights):
     # Attempt to download pretrained weights if not found locally
+    file = Path(weights).name
+    msg = weights + ' missing, try downloading from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0'
+    r = 1  # error value
 
-    msg = weights + ' missing, download from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0'
     if weights and not os.path.isfile(weights):
-        file = Path(weights).name
         d = {'yolov3-spp.weights': '16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R',
              'yolov3.weights': '1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y',
              'yolov3-tiny.weights': '1CCF-iNIIkYesIDzaPvdwlcf7H9zSsKZQ',
@@ -451,17 +452,14 @@ def attempt_download(weights):
              'ultralytics49.pt': '158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq',
              'ultralytics68.pt': '1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG'}
 
-        if weights in d:
-            gdrive_download(id=d[weights], name=weights)
+        if file in d:
+            r = gdrive_download(id=d[file], name=weights)
         else:  # download from pjreddie.com
-            try:
-                url = 'https://pjreddie.com/media/files/' + file
-                print('Downloading ' + url)
-                os.system('curl -f ' + url + ' -o ' + weights)
-            except IOError:
-                print(msg)
-                os.system('rm ' + weights)  # remove partial downloads
+            url = 'https://pjreddie.com/media/files/' + file
+            print('Downloading ' + url)
+            r = os.system('curl -f ' + url + ' -o ' + weights)
 
-        if os.path.getsize(weights) < 5E6:  # weights < 5MB (too small), download failed
-            os.remove(weights)  # delete corrupted weightsfile
-        assert os.path.exists(weights), msg  # download missing weights from Google Drive
+    # Error check
+    if not (r == 0 and os.path.exists(weights) and os.path.getsize(weights) > 1E6):  # weights exist and > 1MB
+        os.system('rm ' + weights)  # remove partial downloads
+        raise Exception(msg)

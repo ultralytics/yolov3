@@ -30,11 +30,11 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
         s = 'curl -f -L -o %s https://drive.google.com/uc?export=download&id=%s' % (name, id)
         r = os.system(s)
 
-    # Check for errors
+    # Error check
     if r != 0:
         os.system('rm ' + name)  # remove partial downloads
-        print('ERROR: Download failure. ')
-        return
+        print('ERROR: Download failure ')
+        return r
 
     # Unzip if archive
     if name.endswith('.zip'):
@@ -43,6 +43,7 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
         os.remove(name)  # remove zip to free space
 
     print('Done (%.1fs)' % (time.time() - t))
+    return r
 
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
