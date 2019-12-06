@@ -436,10 +436,9 @@ def convert(cfg='cfg/yolov3-spp.cfg', weights='weights/yolov3-spp.weights'):
 
 def attempt_download(weights):
     # Attempt to download pretrained weights if not found locally
-    file = Path(weights).name
     msg = weights + ' missing, try downloading from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0'
-    r = 1  # error value
 
+    r = 1  # error value
     if weights and not os.path.isfile(weights):
         d = {'yolov3-spp.weights': '16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R',
              'yolov3.weights': '1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y',
@@ -452,6 +451,7 @@ def attempt_download(weights):
              'ultralytics49.pt': '158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq',
              'ultralytics68.pt': '1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG'}
 
+        file = Path(weights).name
         if file in d:
             r = gdrive_download(id=d[file], name=weights)
         else:  # download from pjreddie.com
