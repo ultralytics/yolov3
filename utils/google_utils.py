@@ -23,12 +23,18 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
          "curl -Lb ./cookie -s \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
              id, name),
          'rm ./cookie']
-    [os.system(x) for x in s]  # run commands
+    r = sum([os.system(x) for x in s])  # run commands, get return zeros
 
     # Attempt small file download
     if not os.path.exists(name):  # file size < 40MB
         s = 'curl -f -L -o %s https://drive.google.com/uc?export=download&id=%s' % (name, id)
-        os.system(s)
+        r = os.system(s)
+
+    # Check for errors
+    if r != 0:
+        os.system('rm ' + name)  # remove partial downloads
+        print('ERROR: Download failure. ')
+        return
 
     # Unzip if archive
     if name.endswith('.zip'):
