@@ -21,24 +21,24 @@ best = wdir + 'best.pt'
 results_file = 'results.txt'
 
 # Hyperparameters (results68: 59.2 mAP@0.5 yolov3-spp-416) https://github.com/ultralytics/yolov3/issues/310
-hyp = {'giou': 3.31,  # giou loss gain
-       'cls': 42.4,  # cls loss gain
+hyp = {'giou': 3.54,  # giou loss gain
+       'cls': 37.4,  # cls loss gain
        'cls_pw': 1.0,  # cls BCELoss positive_weight
-       'obj': 52.0,  # obj loss gain (*=img_size/416 if img_size != 416)
+       'obj': 64.3,  # obj loss gain (*=img_size/416 if img_size != 416)
        'obj_pw': 1.0,  # obj BCELoss positive_weight
-       'iou_t': 0.213,  # iou training threshold
-       'lr0': 0.00261,  # initial learning rate (SGD=1E-3, Adam=9E-5)
+       'iou_t': 0.225,  # iou training threshold
+       'lr0': 0.00579,  # initial learning rate (SGD=1E-3, Adam=9E-5)
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.949,  # SGD momentum
-       'weight_decay': 0.000489,  # optimizer weight decay
+       'momentum': 0.937,  # SGD momentum
+       'weight_decay': 0.000484,  # optimizer weight decay
        'fl_gamma': 0.5,  # focal loss gamma
-       'hsv_h': 0.0103,  # image HSV-Hue augmentation (fraction)
-       'hsv_s': 0.691,  # image HSV-Saturation augmentation (fraction)
-       'hsv_v': 0.433,  # image HSV-Value augmentation (fraction)
-       'degrees': 1.43,  # image rotation (+/- deg)
-       'translate': 0.0663,  # image translation (+/- fraction)
+       'hsv_h': 0.0138,  # image HSV-Hue augmentation (fraction)
+       'hsv_s': 0.678,  # image HSV-Saturation augmentation (fraction)
+       'hsv_v': 0.36,  # image HSV-Value augmentation (fraction)
+       'degrees': 1.98,  # image rotation (+/- deg)
+       'translate': 0.0779,  # image translation (+/- fraction)
        'scale': 0.11,  # image scale (+/- gain)
-       'shear': 0.384}  # image shear (+/- deg)
+       'shear': 0.641}  # image shear (+/- deg)
 
 # Overwrite hyp with hyp*.txt (optional)
 f = glob.glob('hyp*.txt')
