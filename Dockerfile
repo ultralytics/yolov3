@@ -58,7 +58,7 @@ COPY . /usr/src/app
 # export t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t
 
 # Build and Push
-# export t=ultralytics/yolov3:v0 && sudo docker build -t $t . && sudo docker push $t
+# export t=ultralytics/yolov3:v112 && sudo docker build -t $t . && sudo docker push $t
 
 # Kill all
 # sudo docker kill "$(sudo docker ps -q)"
