@@ -21,6 +21,7 @@ best = wdir + 'best.pt'
 results_file = 'results.txt'
 
 # Hyperparameters (results68: 59.2 mAP@0.5 yolov3-spp-416) https://github.com/ultralytics/yolov3/issues/310
+
 hyp = {'giou': 3.54,  # giou loss gain
        'cls': 37.4,  # cls loss gain
        'cls_pw': 1.0,  # cls BCELoss positive_weight
@@ -37,7 +38,7 @@ hyp = {'giou': 3.54,  # giou loss gain
        'hsv_v': 0.36,  # image HSV-Value augmentation (fraction)
        'degrees': 1.98,  # image rotation (+/- deg)
        'translate': 0.0779,  # image translation (+/- fraction)
-       'scale': 0.11,  # image scale (+/- gain)
+       'scale': 0.10,  # image scale (+/- gain)
        'shear': 0.641}  # image shear (+/- deg)
 
 # Overwrite hyp with hyp*.txt (optional)
