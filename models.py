@@ -51,7 +51,6 @@ def create_modules(module_defs, img_size, arc):
 
         elif mdef['type'] == 'upsample':
             modules = nn.Upsample(scale_factor=int(mdef['stride']), mode='nearest')
-            # modules = Upsample(scale_factor=int(mdef['stride']))
 
         elif mdef['type'] == 'route':  # nn.Sequential() placeholder for 'route' layer
             layers = [int(x) for x in mdef['layers'].split(',')]
@@ -140,16 +139,6 @@ class Swish(nn.Module):
 class Mish(nn.Module):  # https://github.com/digantamisra98/Mish
     def forward(self, x):
         return x.mul_(F.softplus(x).tanh())
-
-
-class Upsample(nn.Module):
-    def __init__(self, scale_factor):
-        super(Upsample, self).__init__()
-        self.scale = scale_factor
-
-    def forward(self, x):
-        h, w = x.shape[2:]
-        return F.interpolate(x, size=(int(h * self.scale), int(w * self.scale)))
 
 
 class YOLOLayer(nn.Module):
