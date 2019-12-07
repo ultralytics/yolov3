@@ -782,6 +782,26 @@ def convert_images2bmp():  # from utils.datasets import *; convert_images2bmp()
             f.write(lines)
 
 
+def recursive_dataset2bmp(dataset='../data/sm4_bmp'):  # from utils.datasets import *; recursive_dataset2bmp()
+    # Converts dataset to bmp (for faster training)
+    formats = [x.lower() for x in img_formats] + [x.upper() for x in img_formats]
+    for a, b, files in os.walk(dataset):
+        for file in tqdm(files, desc=a):
+            p = a + '/' + file
+            s = Path(file).suffix
+            if s == '.txt':  # replace text
+                with open(p, 'r') as f:
+                    lines = f.read()
+                for f in formats:
+                    lines = lines.replace(f, '.bmp')
+                with open(p, 'w') as f:
+                    f.write(lines)
+            elif s in formats:  # replace image
+                cv2.imwrite(p.replace(s, '.bmp'), cv2.imread(p))
+                if s != '.bmp':
+                    os.system("rm '%s'" % p)
+
+
 def imagelist2folder(path='data/coco_64img.txt'):  # from utils.datasets import *; imagelist2folder()
     # Copies all the images in a text file (list of images) into a folder
     create_folder(path[:-4])
