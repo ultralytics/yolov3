@@ -1,6 +1,0 @@
-classes=80
-train=./data/coco_500img.txt
-valid=./data/coco_500val.txt
-names=data/coco.names
-backup=backup/
-eval=coco
