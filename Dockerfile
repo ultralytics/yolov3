@@ -36,10 +36,9 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app
 
 # Copy weights
-#RUN python3 -c "from utils.google_utils import *; \
-#    gdrive_download(id='18xqvs_uwAqfTXp-LJCYLYNHBOcrwbrp0', name='weights/darknet53.conv.74'); \
-#    gdrive_download(id='1oPCHKsM2JpM-zgyepQciGli9X0MTsJCO', name='weights/yolov3-spp.weights'); \
-#    gdrive_download(id='1vFlbJ_dXPvtwaLLOu-twnjK4exdFiQ73', name='weights/yolov3-spp.pt)"
+#RUN python3 -c "from models import *; \
+#attempt_download('weights/yolov3.pt'); \
+#attempt_download('weights/yolov3-spp.pt')"
 
 
 # ---------------------------------------------------  Extras Below  ---------------------------------------------------
