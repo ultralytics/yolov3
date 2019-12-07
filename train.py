@@ -37,8 +37,8 @@ hyp = {'giou': 3.54,  # giou loss gain
        'hsv_s': 0.678,  # image HSV-Saturation augmentation (fraction)
        'hsv_v': 0.36,  # image HSV-Value augmentation (fraction)
        'degrees': 1.98,  # image rotation (+/- deg)
-       'translate': 0.0779,  # image translation (+/- fraction)
-       'scale': 0.10,  # image scale (+/- gain)
+       'translate': 0.05,  # image translation (+/- fraction)
+       'scale': 0.05,  # image scale (+/- gain)
        'shear': 0.641}  # image shear (+/- deg)
 
 # Overwrite hyp with hyp*.txt (optional)
