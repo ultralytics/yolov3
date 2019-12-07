@@ -321,8 +321,8 @@ def train():
         if opt.prebias:
             print_model_biases(model)
         else:
-            # Calculate mAP (always test final epoch, skip first 10 if opt.nosave)
-            if not (opt.notest or (opt.nosave and epoch < 10)) or final_epoch:
+            # Calculate mAP
+            if not opt.notest or final_epoch:
                 with torch.no_grad():
                     results, maps = test.test(cfg,
                                               data,
