@@ -43,22 +43,14 @@ COPY . /usr/src/app
 
 # ---------------------------------------------------  Extras Below  ---------------------------------------------------
 
-# Build
-# rm -rf yolov3  # Warning: remove existing
-# git clone https://github.com/ultralytics/yolov3 && cd yolov3 && python3 detect.py
-# sudo docker image prune -af && sudo docker build -t ultralytics/yolov3:v0 .
+# Build and Push
+# export t=ultralytics/yolov3:v0 && sudo docker build -t $t . && sudo docker push $t
 
 # Run
 # sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 python3 detect.py
 
-# Run with local directory access
-# sudo nvidia-docker run --ipc=host -it -v "$(pwd)"/coco:/usr/src/coco ultralytics/yolov3:v0
-
 # Pull and Run with local directory access
 # export t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t
-
-# Build and Push
-# export t=ultralytics/yolov3:v112 && sudo docker build -t $t . && sudo docker push $t
 
 # Kill all
 # sudo docker kill "$(sudo docker ps -q)"
