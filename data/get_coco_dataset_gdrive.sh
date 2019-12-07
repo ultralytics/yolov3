@@ -1,6 +1,4 @@
 #!/bin/bash
-# https://stackoverflow.com/questions/48133080/how-to-download-a-google-drive-url-via-curl-or-wget/48133859
-
 # Zip coco folder
 # zip -r coco.zip coco
 # tar -czvf coco.tar.gz coco
