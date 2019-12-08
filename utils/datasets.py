@@ -677,8 +677,8 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10,
         # xy = np.concatenate((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).reshape(4, n).T
 
         # reject warped points outside of image
-        xy[:, [0, 2]] = xy[:, [0, 2]].clip(0, width)
-        xy[:, [1, 3]] = xy[:, [1, 3]].clip(0, height)
+        np.clip(xy[:, [0, 2]], 0, width, out=xy[:, [0, 2]])
+        np.clip(xy[:, [1, 3]], 0, height, out=xy[:, [1, 3]])
         w = xy[:, 2] - xy[:, 0]
         h = xy[:, 3] - xy[:, 1]
         area = w * h
