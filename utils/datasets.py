@@ -683,7 +683,7 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10,
         h = xy[:, 3] - xy[:, 1]
         area = w * h
         area0 = (targets[:, 3] - targets[:, 1]) * (targets[:, 4] - targets[:, 2])
-        ar = np.maximum(w / (h + 1e-16), h / (w + 1e-16))
+        ar = np.maximum(w / (h + 1e-16), h / (w + 1e-16))  # aspect ratio
         i = (w > 4) & (h > 4) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
 
         targets = targets[i]
