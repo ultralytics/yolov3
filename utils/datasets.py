@@ -487,8 +487,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
-        img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
-        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        img = np.ascontiguousarray(img)
 
         return torch.from_numpy(img), labels_out, img_path, ((h, w), (ratio, pad))
 
