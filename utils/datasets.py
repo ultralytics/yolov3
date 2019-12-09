@@ -101,8 +101,8 @@ class LoadImages:  # for inference
         # Padded resize
         img = letterbox(img0, new_shape=self.img_size)[0]
 
-        # Normalize RGB
-        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
+        # Convert
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)  # uint8 to fp16/fp32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
@@ -174,8 +174,8 @@ class LoadWebcam:  # for inference
         # Padded resize
         img = letterbox(img0, new_shape=self.img_size)[0]
 
-        # Normalize RGB
-        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
+        # Convert
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)  # uint8 to fp16/fp32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
@@ -243,9 +243,9 @@ class LoadStreams:  # multiple IP or RTSP cameras
         # Stack
         img = np.stack(img, 0)
 
-        # Normalize RGB
-        img = img[:, :, :, ::-1].transpose(0, 3, 1, 2)  # BGR to RGB
-        img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)  # uint8 to fp16/fp32
+        # Convert
+        img = img[:, :, :, ::-1].transpose(0, 3, 1, 2)  # BGR to RGB, to 3x416x416, uint8 to float32
+        img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
         return self.sources, img, img0, None
@@ -485,7 +485,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         if nL:
             labels_out[:, 1:] = torch.from_numpy(labels)
 
-        # Normalize
+        # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img, dtype=np.float32)  # uint8 to float32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
