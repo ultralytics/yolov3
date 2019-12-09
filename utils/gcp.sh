@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # New VM
-rm -rf sample_data yolov3 darknet apex coco cocoapi knife knifec
+rm -rf sample_data yolov3
 git clone https://github.com/ultralytics/yolov3
 git clone https://github.com/NVIDIA/apex && cd apex && pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" . --user && cd .. && rm -rf apex
 sudo conda install -yc conda-forge scikit-image pycocotools
