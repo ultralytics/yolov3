@@ -82,15 +82,12 @@ https://cloud.google.com/deep-learning-vm/
 **Model:** `yolov3-spp.cfg`  
 **Command:**  `python3 train.py --img 416 --batch 32 --accum 2`
 
-GPUs | `batch_size` | images/sec | epoch time | epoch cost
---- |---| --- | --- | --- 
-K80 | 64 (32x2) | 11  | 175 min  | $0.58
-T4 | 64 (32x2) | 40  | 49 min  | $0.29
-T4 x2 | 64 (64x1) | 61  | 32 min  | $0.36
-V100 | 64 (32x2) | 122 | 16 min | $0.23
-V100 x2 | 64 (64x1) | 178 | 11 min | $0.31
-2080Ti | 64 (32x2) | 81  | 24 min  | - 
-2080Ti x2 | 64 (64x1) | 140  | 14 min  | - 
+GPU |n| `--batch --accum` | img/s | epoch<br>time | epoch<br>cost
+--- |--- |--- |--- |--- |---
+K80    |1| 32 x 2 | 11  | 175 min  | $0.58
+T4     |1<br>2| 32 x 2<br>64 x 1 | 41<br>61 | 48 min<br>32 min | $0.28<br>$0.36
+V100   |1<br>2| 32 x 2<br>64 x 1 | 122<br>**178** | 16 min<br>**11 min** | **$0.23**<br>$0.31
+2080Ti |1<br>2| 32 x 2<br>64 x 1 | 81<br>140 | 24 min<br>14 min | -<br>-
 
 # Inference
 
