@@ -23,11 +23,18 @@ def parse_model_cfg(path):
             else:
                 mdefs[-1][key] = val.strip()
 
-    # Print cfg fields
-    # f = []
-    # for x in mdefs[1:]:
-    #     [f.append(k) for k in x if k not in f]
+    # Check all fields are supported
+    supported = ['type', 'batch_normalize', 'filters', 'size', 'stride', 'pad', 'activation', 'layers', 'groups',
+                 'from', 'mask', 'anchors', 'classes', 'num', 'jitter', 'ignore_thresh', 'truth_thresh', 'random',
+                 'stride_x', 'stride_y']
+
+    f = []
+    for x in mdefs[1:]:
+        [f.append(k) for k in x if k not in f]
     # print(len(f), f)
+    for x in f:
+        assert x in supported, "Unsupported field '%s' in %s. See https://github.com/ultralytics/yolov3/issues/631" % \
+                               (x, path)
 
     return mdefs
 
