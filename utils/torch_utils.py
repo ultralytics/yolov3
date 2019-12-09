@@ -101,6 +101,7 @@ def load_classifier(name='resnet101', n=2):
 from collections import defaultdict
 from torch.optim import Optimizer
 
+
 class Lookahead(Optimizer):
     def __init__(self, optimizer, k=5, alpha=0.5):
         self.optimizer = optimizer
