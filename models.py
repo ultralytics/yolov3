@@ -30,6 +30,7 @@ def create_modules(module_defs, img_size, arc):
                                                    kernel_size=size,
                                                    stride=stride,
                                                    padding=pad,
+                                                   groups=int(mdef['groups']) if 'groups' in mdef else 1,
                                                    bias=not bn))
             if bn:
                 modules.add_module('BatchNorm2d', nn.BatchNorm2d(filters, momentum=0.1))
