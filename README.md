@@ -74,12 +74,13 @@ HS**V** Intensity | +/- 50%
 ## Speed
 
 https://cloud.google.com/deep-learning-vm/  
-**Machine type:** n1-standard-8 (8 vCPUs, 30 GB memory)  
+**Machine type:** [n1-standard-16](https://cloud.google.com/compute/docs/machine-types) (16 vCPUs, 60 GB memory)   
 **CPU platform:** Intel Skylake  
 **GPUs:** K80 ($0.20/hr), T4 ($0.35/hr), V100 ($0.83/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32  
-**HDD:** 100 GB SSD  
+**HDD:** 1 TB SSD  
 **Dataset:** COCO train 2014 (117,263 images)  
-**Model:** `yolov3-spp.cfg`
+**Model:** `yolov3-spp.cfg`  
+**Command:**  `python3 train.py --img 416 --batch 32 --accum 2`
 
 GPUs | `batch_size` | images/sec | epoch time | epoch cost
 --- |---| --- | --- | --- 
@@ -87,7 +88,7 @@ K80 | 64 (32x2) | 11  | 175 min  | $0.58
 T4 | 64 (32x2) | 40  | 49 min  | $0.29
 T4 x2 | 64 (64x1) | 61  | 32 min  | $0.36
 V100 | 64 (32x2) | 122 | 16 min | $0.23
-V100 x2 | 64 (64x1) | 150 | 13 min | $0.36
+V100 x2 | 64 (64x1) | 178 | 11 min | $0.31
 2080Ti | 64 (32x2) | 81  | 24 min  | - 
 2080Ti x2 | 64 (64x1) | 140  | 14 min  | - 
 
