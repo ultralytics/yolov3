@@ -74,7 +74,7 @@ HS**V** Intensity | +/- 50%
 ## Speed
 
 https://cloud.google.com/deep-learning-vm/  
-**Machine type:** [n1-standard-16](https://cloud.google.com/compute/docs/machine-types) (16 vCPUs, 60 GB memory)   
+**Machine type:** preemptible [n1-standard-16](https://cloud.google.com/compute/docs/machine-types) (16 vCPUs, 60 GB memory)   
 **CPU platform:** Intel Skylake  
 **GPUs:** K80 ($0.20/hr), T4 ($0.35/hr), V100 ($0.83/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32  
 **HDD:** 1 TB SSD  
