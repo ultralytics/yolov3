@@ -427,12 +427,11 @@ def build_targets(model, targets):
                 a = torch.arange(na).view((-1, 1)).repeat([1, nt]).view(-1)
                 t = targets.repeat([na, 1])
                 gwh = gwh.repeat([na, 1])
-                iou = iou.view(-1)  # use all ious
 
             # reject anchors below iou_thres (OPTIONAL, increases P, lowers R)
             reject = True
             if reject:
-                j = iou > model.hyp['iou_t']  # iou threshold hyperparameter
+                j = iou.view(-1) > model.hyp['iou_t']  # iou threshold hyperparameter
                 t, a, gwh = t[j], a[j], gwh[j]
 
         # Indices
