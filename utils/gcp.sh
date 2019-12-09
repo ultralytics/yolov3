@@ -4,10 +4,10 @@
 rm -rf sample_data yolov3 darknet apex coco cocoapi knife knifec
 git clone https://github.com/ultralytics/yolov3
 git clone https://github.com/NVIDIA/apex && cd apex && pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" . --user && cd .. && rm -rf apex
-conda install -yc conda-forge scikit-image pycocotools
+sudo conda install -yc conda-forge scikit-image pycocotools
 python3 -c "
 from yolov3.utils.google_utils import gdrive_download
-gdrive_download('1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO','coco.zip')"
+gdrive_download('1WQT6SOktSe8Uw6r10-2JhbEhMY5DJaph','coco.zip')"
 sudo shutdown
 
 # Re-clone
