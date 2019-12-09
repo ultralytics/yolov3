@@ -23,6 +23,12 @@ def parse_model_cfg(path):
             else:
                 mdefs[-1][key] = val.strip()
 
+    # Print cfg fields
+    # f = []
+    # for x in mdefs[1:]:
+    #     [f.append(k) for k in x if k not in f]
+    # print(len(f), f)
+
     return mdefs
 
 
