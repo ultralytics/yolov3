@@ -970,7 +970,7 @@ def plot_results(start=0, stop=0):  # from utils.utils import *; plot_results()
             y = results[i, x]
             if i in [0, 1, 2, 5, 6, 7]:
                 y[y == 0] = np.nan  # dont show zero loss values
-            ax[i].plot(x, y, marker='.', label=f.replace('.txt', ''))
+            ax[i].plot(x, y, marker='.', label=Path(f).stem)
             ax[i].set_title(s[i])
             if i in [5, 6, 7]:  # share train and val loss y axes
                 ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
