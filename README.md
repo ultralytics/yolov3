@@ -254,6 +254,15 @@ Using CUDA device0 _CudaDeviceProperties(name='GeForce RTX 2080 Ti', total_memor
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.707
 ```
 
+# Reproduce Our Results
+
+This command reproduces our mAP results above training `yolov3-spp.cfg` from scratch.
+
+```bash
+$ python3 train.py --weights '' --cfg yolov3-spp.cfg --epochs 273 --batch 16 --accum 4 --multi --pre
+```
+
+
 # Citation
 
 [![DOI](https://zenodo.org/badge/146165888.svg)](https://zenodo.org/badge/latestdoi/146165888)
