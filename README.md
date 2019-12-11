@@ -256,7 +256,7 @@ Using CUDA device0 _CudaDeviceProperties(name='GeForce RTX 2080 Ti', total_memor
 
 # Reproduce Our Results
 
-This command reproduces our mAP results above by training `yolov3-spp.cfg` from scratch. Training takes about one week on a 2080Ti.
+This command trains `yolov3-spp.cfg` from scratch to our mAP above. Training takes about one week on a 2080Ti.
 ```bash
 $ python3 train.py --weights '' --cfg yolov3-spp.cfg --epochs 273 --batch 16 --accum 4 --multi --pre
 ```
