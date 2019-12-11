@@ -262,6 +262,13 @@ $ python3 train.py --weights '' --cfg yolov3-spp.cfg --epochs 273 --batch 16 --a
 ```
 <img src="https://user-images.githubusercontent.com/26833433/70661588-76bbca00-1c19-11ea-86f9-23350d8c3193.png" width="900">
 
+# Reproduce Our Environment
+
+To access an up-to-date working environment (with all dependencies including CUDA/CUDNN, Python and PyTorch preinstalled), consider a:
+
+- **GCP** Deep Learning VM with $300 free credit offer: See our [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) 
+- **Google Colab Notebook** with 12 hours of free GPU time: [Google Colab Notebook](https://colab.research.google.com/drive/1G8T-VFxQkjDe4idzN8F-hbIBqkkkQnxw)
+- **Docker Image** from https://hub.docker.com/r/ultralytics/yolov3. See [Docker Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/Docker-Quickstart) 
 # Citation
 
 [![DOI](https://zenodo.org/badge/146165888.svg)](https://zenodo.org/badge/latestdoi/146165888)
