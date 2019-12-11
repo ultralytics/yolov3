@@ -1,10 +1,17 @@
+import os
+
 import numpy as np
 
 
 def parse_model_cfg(path):
-    # Parses the yolo-v3 layer configuration file and returns module definitions
-    file = open(path, 'r')
-    lines = file.read().split('\n')
+    # Parse the yolo *.cfg file and return module definitions path may be 'cfg/yolov3.cfg', 'yolov3.cfg', or 'yolov3'
+    if not path.endswith('.cfg'):  # add .cfg suffix if omitted
+        path += '.cfg'
+    if not os.path.exists(path) and not path.startswith('cfg' + os.sep):  # add cfg/ prefix if omitted
+        path = 'cfg' + os.sep + path
+
+    with open(path, 'r') as f:
+        lines = f.read().split('\n')
     lines = [x for x in lines if x and not x.startswith('#')]
     lines = [x.rstrip().lstrip() for x in lines]  # get rid of fringe whitespaces
     mdefs = []  # module definitions
