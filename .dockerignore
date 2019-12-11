@@ -1,0 +1,2 @@
+# prevent data from being added to build context
+coco/
