@@ -7,7 +7,7 @@ def parse_model_cfg(path):
     # Parse the yolo *.cfg file and return module definitions path may be 'cfg/yolov3.cfg', 'yolov3.cfg', or 'yolov3'
     if not path.endswith('.cfg'):  # add .cfg suffix if omitted
         path += '.cfg'
-    if not os.path.exists(path) and not path.startswith('cfg' + os.sep):  # add cfg/ prefix if omitted
+    if not os.path.exists(path) and os.path.exists('cfg' + os.sep + path):  # add cfg/ prefix if omitted
         path = 'cfg' + os.sep + path
 
     with open(path, 'r') as f:
@@ -46,10 +46,13 @@ def parse_model_cfg(path):
 
 def parse_data_cfg(path):
     # Parses the data configuration file
-    options = dict()
-    with open(path, 'r') as fp:
-        lines = fp.readlines()
+    if not os.path.exists(path) and os.path.exists('data' + os.sep + path):  # add data/ prefix if omitted
+        path = 'data' + os.sep + path
 
+    with open(path, 'r') as f:
+        lines = f.readlines()
+
+    options = dict()
     for line in lines:
         line = line.strip()
         if line == '' or line.startswith('#'):
