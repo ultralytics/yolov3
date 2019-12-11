@@ -136,12 +136,13 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 
 # mAP
 
-- `test.py --weights weights/yolov3.weights` tests official YOLOv3 weights.
-- `test.py --weights weights/last.pt` tests latest checkpoint.
-- mAPs on COCO2014 using pycocotools.
-- mAP@0.5 run at `--nms-thres 0.5`, mAP@0.5...0.95 run at `--nms-thres 0.7`.
-- YOLOv3-SPP ultralytics is `ultralytics68.pt` with `yolov3-spp.cfg`.
-- Darknet results published in https://arxiv.org/abs/1804.02767.
+```bash
+python3 test.py --weights ... --cfg ...
+```
+
+- mAP@0.5 run at `--nms-thres 0.5`, mAP@0.5...0.95 run at `--nms-thres 0.7`
+- YOLOv3-SPP ultralytics is `ultralytics68.pt` with `yolov3-spp.cfg`
+- Darknet results: https://arxiv.org/abs/1804.02767
 
 <i></i>                      |Size |COCO mAP<br>@0.5...0.95 |COCO mAP<br>@0.5 
 ---                          | ---         | ---         | ---
