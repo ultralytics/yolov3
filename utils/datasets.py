@@ -320,7 +320,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             extract_bounding_boxes = False
             create_datasubset = False
             pbar = tqdm(self.label_files, desc='Caching labels')
-            nm, nf, ne, ns = 0, 0, 0, 0  # number missing, number found, number empty, number datasubset
+            nm, nf, ne, ns, nd = 0, 0, 0, 0, 0  # number missing, found, empty, datasubset, duplicate
             for i, file in enumerate(pbar):
                 try:
                     with open(file, 'r') as f:
@@ -333,6 +333,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     assert l.shape[1] == 5, '> 5 label columns: %s' % file
                     assert (l >= 0).all(), 'negative labels: %s' % file
                     assert (l[:, 1:] <= 1).all(), 'non-normalized or out of bounds coordinate labels: %s' % file
+                    if np.unique(l, axis=0).shape[0] < l.shape[0]:  # duplicate rows
+                        nd += 1  # print('WARNING: duplicate rows in %s' % self.label_files[i])  # duplicate rows
+
                     self.labels[i] = l
                     nf += 1  # file found
 
@@ -370,7 +373,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     ne += 1  # print('empty labels for image %s' % self.img_files[i])  # file empty
                     # os.system("rm '%s' '%s'" % (self.img_files[i], self.label_files[i]))  # remove
 
-                pbar.desc = 'Caching labels (%g found, %g missing, %g empty for %g images)' % (nf, nm, ne, n)
+                pbar.desc = 'Caching labels (%g found, %g missing, %g empty, %g duplicate, for %g images)' % (
+                    nf, nm, ne, nd, n)
             assert nf > 0, 'No labels found. Recommend correcting image and label paths.'
 
         # Cache images into memory for faster training (WARNING: Large datasets may exceed system RAM)
