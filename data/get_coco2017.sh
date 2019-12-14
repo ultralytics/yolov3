@@ -13,6 +13,7 @@ rm ./cookie
 # Unzip labels
 unzip -q ${filename}  # for coco.zip
 # tar -xzf ${filename}  # for coco.tar.gz
+rm ${filename}
 
 # Download images
 cd coco/images
@@ -24,7 +25,7 @@ unzip -q train2017.zip
 unzip -q val2017.zip
 
 # (optional) Delete zip files
-rm -rf *.zip ../*.zip
+rm -rf *.zip
 
 # cd out
 cd ../..
