@@ -658,7 +658,7 @@ def coco_class_count(path='../coco/labels/train2014/'):
         print(i, len(files))
 
 
-def coco_only_people(path='../coco/labels/val2014/'):
+def coco_only_people(path='../coco/labels/train2017/'):  # from utils.utils import *; coco_only_people()
     # Find images with only people
     files = sorted(glob.glob('%s/*.*' % path))
     for i, file in enumerate(files):

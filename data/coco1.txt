@@ -1,0 +1,1 @@
+../coco/images/train2017/000000109622.jpg

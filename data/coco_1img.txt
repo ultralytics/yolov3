@@ -1,1 +1,0 @@
-../coco/images/COCO_val2014_000000581886.jpg
