@@ -17,8 +17,8 @@ rm ${filename}
 
 # Download images
 cd coco/images
-wget -c http://images.cocodataset.org/zips/train2017.zip
-wget -c http://images.cocodataset.org/zips/val2017.zip
+curl http://images.cocodataset.org/zips/train2017.zip -o train2017.zip
+curl http://images.cocodataset.org/zips/val2017.zip -o val2017.zip
 
 # Unzip images
 unzip -q train2017.zip
