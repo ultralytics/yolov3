@@ -5,6 +5,7 @@
 runs
 output
 coco
+storage.googleapis.com
 
 data/samples/*
 !data/samples/zidane.jpg
