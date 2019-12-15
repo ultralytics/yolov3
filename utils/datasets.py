@@ -16,6 +16,7 @@ from tqdm import tqdm
 
 from utils.utils import xyxy2xywh, xywh2xyxy
 
+help_url = 'https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data'
 img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif', '.dng']
 vid_formats = ['.mov', '.avi', '.mp4']
 
@@ -258,14 +259,15 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False,
                  cache_labels=False, cache_images=False):
         path = str(Path(path))  # os-agnostic
+        assert os.path.isfile(path), 'File not found %s. See %s' % (path, help_url)
         with open(path, 'r') as f:
             self.img_files = [x.replace('/', os.sep) for x in f.read().splitlines()  # os-agnostic
                               if os.path.splitext(x)[-1].lower() in img_formats]
 
         n = len(self.img_files)
+        assert n > 0, 'No images found in %s. See %s' % (path, help_url)
         bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
         nb = bi[-1] + 1  # number of batches
-        assert n > 0, 'No images found in %s' % path
 
         self.n = n
         self.batch = bi  # batch index of image
@@ -375,7 +377,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
                 pbar.desc = 'Caching labels (%g found, %g missing, %g empty, %g duplicate, for %g images)' % (
                     nf, nm, ne, nd, n)
-            assert nf > 0, 'No labels found. Recommend correcting image and label paths.'
+            assert nf > 0, 'No labels found. See %s' % help_url
 
         # Cache images into memory for faster training (WARNING: Large datasets may exceed system RAM)
         if cache_images:  # if training
