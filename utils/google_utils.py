@@ -23,18 +23,12 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
          "curl -Lb ./cookie -s \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
              id, name),
          'rm ./cookie']
-    r = sum([os.system(x) for x in s])  # run commands, get return zeros
+    [os.system(x) for x in s]  # run commands
 
     # Attempt small file download
     if not os.path.exists(name):  # file size < 40MB
         s = 'curl -f -L -o %s https://drive.google.com/uc?export=download&id=%s' % (name, id)
-        r = os.system(s)
-
-    # Error check
-    if r != 0:
-        os.system('rm ' + name)  # remove partial downloads
-        print('ERROR: Download failure ')
-        return r
+        os.system(s)
 
     # Unzip if archive
     if name.endswith('.zip'):
@@ -43,7 +37,6 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
         os.remove(name)  # remove zip to free space
 
     print('Done (%.1fs)' % (time.time() - t))
-    return r
 
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):

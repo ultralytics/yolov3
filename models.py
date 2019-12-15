@@ -22,15 +22,14 @@ def create_modules(module_defs, img_size, arc):
         if mdef['type'] == 'convolutional':
             bn = int(mdef['batch_normalize'])
             filters = int(mdef['filters'])
-            size = int(mdef['size'])
+            kernel_size = int(mdef['size'])
             stride = int(mdef['stride']) if 'stride' in mdef else (int(mdef['stride_y']), int(mdef['stride_x']))
-            pad = (size - 1) // 2 if int(mdef['pad']) else 0
+            pad = (kernel_size - 1) // 2 if int(mdef['pad']) else 0
             modules.add_module('Conv2d', nn.Conv2d(in_channels=output_filters[-1],
                                                    out_channels=filters,
-                                                   kernel_size=size,
+                                                   kernel_size=kernel_size,
                                                    stride=stride,
                                                    padding=pad,
-                                                   groups=int(mdef['groups']) if 'groups' in mdef else 1,
                                                    bias=not bn))
             if bn:
                 modules.add_module('BatchNorm2d', nn.BatchNorm2d(filters, momentum=0.1))
@@ -41,10 +40,10 @@ def create_modules(module_defs, img_size, arc):
                 modules.add_module('activation', Swish())
 
         elif mdef['type'] == 'maxpool':
-            size = int(mdef['size'])
+            kernel_size = int(mdef['size'])
             stride = int(mdef['stride'])
-            maxpool = nn.MaxPool2d(kernel_size=size, stride=stride, padding=int((size - 1) // 2))
-            if size == 2 and stride == 1:  # yolov3-tiny
+            maxpool = nn.MaxPool2d(kernel_size=kernel_size, stride=stride, padding=int((kernel_size - 1) // 2))
+            if kernel_size == 2 and stride == 1:  # yolov3-tiny
                 modules.add_module('ZeroPad2d', nn.ZeroPad2d((0, 1, 0, 1)))
                 modules.add_module('MaxPool2d', maxpool)
             else:
@@ -163,7 +162,7 @@ class YOLOLayer(nn.Module):
         if ONNX_EXPORT:
             bs = 1  # batch size
         else:
-            bs, _, ny, nx = p.shape  # bs, 255, 13, 13
+            bs, ny, nx = p.shape[0], p.shape[-2], p.shape[-1]
             if (self.nx, self.ny) != (nx, ny):
                 create_grids(self, img_size, (nx, ny), p.device, p.dtype)
 
@@ -175,19 +174,18 @@ class YOLOLayer(nn.Module):
 
         elif ONNX_EXPORT:
             # Constants CAN NOT BE BROADCAST, ensure correct shape!
-            m = self.na * self.nx * self.ny
-            ngu = self.ng.repeat((1, m, 1))
-            grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view(1, m, 2)
-            anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view(1, m, 2) / ngu
+            ngu = self.ng.repeat((1, self.na * self.nx * self.ny, 1))
+            grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view((1, -1, 2))
+            anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view((1, -1, 2)) / ngu
 
-            p = p.view(m, 5 + self.nc)
+            p = p.view(-1, 5 + self.nc)
             xy = torch.sigmoid(p[..., 0:2]) + grid_xy[0]  # x, y
             wh = torch.exp(p[..., 2:4]) * anchor_wh[0]  # width, height
             p_conf = torch.sigmoid(p[:, 4:5])  # Conf
-            p_cls = F.softmax(p[:, 5:5 + self.nc], 1) * p_conf  # SSD-like conf
+            p_cls = F.softmax(p[:, 5:85], 1) * p_conf  # SSD-like conf
             return torch.cat((xy / ngu[0], wh, p_conf, p_cls), 1).t()
 
-            # p = p.view(1, m, 5 + self.nc)
+            # p = p.view(1, -1, 5 + self.nc)
             # xy = torch.sigmoid(p[..., 0:2]) + grid_xy  # x, y
             # wh = torch.exp(p[..., 2:4]) * anchor_wh  # width, height
             # p_conf = torch.sigmoid(p[..., 4:5])  # Conf
@@ -269,7 +267,7 @@ class Darknet(nn.Module):
         elif ONNX_EXPORT:
             output = torch.cat(output, 1)  # cat 3 layers 85 x (507, 2028, 8112) to 85 x 10647
             nc = self.module_list[self.yolo_layers[0]].nc  # number of classes
-            return output[5:5 + nc].t(), output[0:4].t()  # ONNX scores, boxes
+            return output[5:5 + nc].t(), output[:4].t()  # ONNX scores, boxes
         else:
             io, p = list(zip(*output))  # inference output, training output
             return torch.cat(io, 1), p
@@ -426,29 +424,36 @@ def convert(cfg='cfg/yolov3-spp.cfg', weights='weights/yolov3-spp.weights'):
 
 def attempt_download(weights):
     # Attempt to download pretrained weights if not found locally
-    msg = weights + ' missing, try downloading from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0'
 
+    msg = weights + ' missing, download from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0'
     if weights and not os.path.isfile(weights):
-        d = {'yolov3-spp.weights': '16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R',
-             'yolov3.weights': '1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y',
-             'yolov3-tiny.weights': '1CCF-iNIIkYesIDzaPvdwlcf7H9zSsKZQ',
-             'yolov3-spp.pt': '1f6Ovy3BSq2wYq4UfvFUpxJFNDFfrIDcR',
-             'yolov3.pt': '1SHNFyoe5Ni8DajDNEqgB2oVKBb_NoEad',
-             'yolov3-tiny.pt': '10m_3MlpQwRtZetQxtksm9jqHrPTHZ6vo',
-             'darknet53.conv.74': '1WUVBid-XuoUBmvzBVUCBl_ELrzqwA8dJ',
-             'yolov3-tiny.conv.15': '1Bw0kCpplxUqyRYAJr9RY9SGnOJbo9nEj',
-             'ultralytics49.pt': '158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq',
-             'ultralytics68.pt': '1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG'}
-
         file = Path(weights).name
-        if file in d:
-            r = gdrive_download(id=d[file], name=weights)
-        else:  # download from pjreddie.com
-            url = 'https://pjreddie.com/media/files/' + file
-            print('Downloading ' + url)
-            r = os.system('curl -f ' + url + ' -o ' + weights)
 
-        # Error check
-        if not (r == 0 and os.path.exists(weights) and os.path.getsize(weights) > 1E6):  # weights exist and > 1MB
-            os.system('rm ' + weights)  # remove partial downloads
-            raise Exception(msg)
+        if file == 'yolov3-spp.weights':
+            gdrive_download(id='16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R', name=weights)
+        elif file == 'yolov3.weights':
+            gdrive_download(id='1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y', name=weights)
+        elif file == 'yolov3-spp.pt':
+            gdrive_download(id='1f6Ovy3BSq2wYq4UfvFUpxJFNDFfrIDcR', name=weights)
+        elif file == 'yolov3.pt':
+            gdrive_download(id='1SHNFyoe5Ni8DajDNEqgB2oVKBb_NoEad', name=weights)
+        elif file == 'yolov3-tiny.pt':
+            gdrive_download(id='10m_3MlpQwRtZetQxtksm9jqHrPTHZ6vo', name=weights)
+        elif file == 'darknet53.conv.74':
+            gdrive_download(id='1WUVBid-XuoUBmvzBVUCBl_ELrzqwA8dJ', name=weights)
+        elif file == 'yolov3-tiny.conv.15':
+            gdrive_download(id='1Bw0kCpplxUqyRYAJr9RY9SGnOJbo9nEj', name=weights)
+        elif file == 'ultralytics49.pt':
+            gdrive_download(id='158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq', name=weights)
+        else:
+            try:  # download from pjreddie.com
+                url = 'https://pjreddie.com/media/files/' + file
+                print('Downloading ' + url)
+                os.system('curl -f ' + url + ' -o ' + weights)
+            except IOError:
+                print(msg)
+                os.system('rm ' + weights)  # remove partial downloads
+
+        if os.path.getsize(weights) < 5E6:  # weights < 5MB (too small), download failed
+            os.remove(weights)  # delete corrupted weightsfile
+        assert os.path.exists(weights), msg  # download missing weights from Google Drive

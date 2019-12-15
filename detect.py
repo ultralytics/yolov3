@@ -43,7 +43,7 @@ def detect(save_txt=False, save_img=False):
     # Export mode
     if ONNX_EXPORT:
         img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
-        torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=10)
+        torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=11)
 
         # Validate exported model
         import onnx
@@ -67,9 +67,9 @@ def detect(save_txt=False, save_img=False):
         save_img = True
         dataset = LoadImages(source, img_size=img_size, half=half)
 
-    # Get names and colors
-    names = load_classes(opt.names)
-    colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(names))]
+    # Get classes and colors
+    classes = load_classes(parse_data_cfg(opt.data)['names'])
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(classes))]
 
     # Run inference
     t0 = time.time()
@@ -108,7 +108,7 @@ def detect(save_txt=False, save_img=False):
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
-                    s += '%g %ss, ' % (n, names[int(c)])  # add to string
+                    s += '%g %ss, ' % (n, classes[int(c)])  # add to string
 
                 # Write results
                 for *xyxy, conf, _, cls in det:
@@ -117,7 +117,7 @@ def detect(save_txt=False, save_img=False):
                             file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
 
                     if save_img or view_img:  # Add bbox to image
-                        label = '%s %.2f' % (names[int(cls)], conf)
+                        label = '%s %.2f' % (classes[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
 
             print('%sDone. (%.3fs)' % (s, time.time() - t))
@@ -125,8 +125,6 @@ def detect(save_txt=False, save_img=False):
             # Stream results
             if view_img:
                 cv2.imshow(p, im0)
-                if cv2.waitKey(1) == ord('q'):  # q to quit
-                    raise StopIteration
 
             # Save results (image with detections)
             if save_img:
@@ -154,8 +152,8 @@ def detect(save_txt=False, save_img=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
-    parser.add_argument('--names', type=str, default='data/coco.names', help='*.names path')
+    parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='cfg file path')
+    parser.add_argument('--data', type=str, default='data/coco.data', help='coco.data file path')
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
     parser.add_argument('--source', type=str, default='data/samples', help='source')  # input file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='output', help='output folder')  # output folder
