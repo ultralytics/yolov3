@@ -13,7 +13,6 @@ def test(cfg,
          weights=None,
          batch_size=16,
          img_size=416,
-         iou_thres=0.5,
          conf_thres=0.001,
          nms_thres=0.5,
          save_json=False,
@@ -49,6 +48,9 @@ def test(cfg,
     nc = int(data['classes'])  # number of classes
     test_path = data['valid']  # path to test images
     names = load_classes(data['names'])  # class names
+    iou_thres = torch.linspace(0.5, 0.95, 10).to(device)  # for mAP@0.5:0.95
+    iou_thres = iou_thres[0].view(1)  # for mAP@0.5
+    niou = iou_thres.numel()
 
     # Dataloader
     if dataloader is None:
@@ -120,7 +122,7 @@ def test(cfg,
             clip_coords(pred, (height, width))
 
             # Assign all predictions as incorrect
-            correct = [0] * len(pred)
+            correct = torch.zeros(len(pred), niou)
             if nl:
                 detected = []
                 tcls_tensor = labels[:, 0]
@@ -143,12 +145,13 @@ def test(cfg,
 
                     # Best iou, index between pred and targets
                     m = (pcls == tcls_tensor).nonzero().view(-1)
-                    iou, bi = bbox_iou(pbox, tbox[m]).max(0)
+                    iou, j = bbox_iou(pbox, tbox[m]).max(0)
+                    m = m[j]
 
-                    # If iou > threshold and class is correct mark as correct
-                    if iou > iou_thres and m[bi] not in detected:  # and pcls == tcls[bi]:
-                        correct[i] = 1
-                        detected.append(m[bi])
+                    # Per iou_thres 'correct' vector
+                    if iou > iou_thres[0] and m not in detected:
+                        detected.append(m)
+                        correct[i] = iou > iou_thres
 
             # Append statistics (correct, conf, pcls, tcls)
             stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls))
@@ -157,6 +160,8 @@ def test(cfg,
     stats = [np.concatenate(x, 0) for x in list(zip(*stats))]  # to numpy
     if len(stats):
         p, r, ap, f1, ap_class = ap_per_class(*stats)
+        # if niou > 1:
+        #       p, r, ap, f1 = p[:, 0], r[:, 0], ap[:, 0], ap.mean(1)  # average across ious
         mp, mr, map, mf1 = p.mean(), r.mean(), ap.mean(), f1.mean()
         nt = np.bincount(stats[3].astype(np.int64), minlength=nc)  # number of targets per class
     else:
@@ -208,7 +213,6 @@ if __name__ == '__main__':
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
-    parser.add_argument('--iou-thres', type=float, default=0.5, help='iou threshold required to qualify as detected')
     parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
     parser.add_argument('--save-json', action='store_true', help='save a cocoapi-compatible JSON results file')
@@ -222,7 +226,6 @@ if __name__ == '__main__':
              opt.weights,
              opt.batch_size,
              opt.img_size,
-             opt.iou_thres,
              opt.conf_thres,
              opt.nms_thres,
              opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]))

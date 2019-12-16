@@ -152,10 +152,10 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
     """ Compute the average precision, given the recall and precision curves.
     Source: https://github.com/rafaelpadilla/Object-Detection-Metrics.
     # Arguments
-        tp:    True positives (list).
-        conf:  Objectness value from 0-1 (list).
-        pred_cls: Predicted object classes (list).
-        target_cls: True object classes (list).
+        tp:    True positives (nparray, nx1 or nx10).
+        conf:  Objectness value from 0-1 (nparray).
+        pred_cls: Predicted object classes (nparray).
+        target_cls: True object classes (nparray).
     # Returns
         The average precision as computed in py-faster-rcnn.
     """
@@ -168,46 +168,41 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
     unique_classes = np.unique(target_cls)
 
     # Create Precision-Recall curve and compute AP for each class
-    ap, p, r = [], [], []
-    for c in unique_classes:
+    s = [len(unique_classes), tp.shape[1]]  # number class, number iou thresholds (i.e. 10 for mAP0.5...0.95)
+    ap, p, r = np.zeros(s), np.zeros(s), np.zeros(s)
+    for ci, c in enumerate(unique_classes):
         i = pred_cls == c
-        n_gt = (target_cls == c).sum()  # Number of ground truth objects
-        n_p = i.sum()  # Number of predicted objects
+        n_gt = sum(target_cls == c)  # Number of ground truth objects
+        n_p = sum(i)  # Number of predicted objects
 
-        if n_p == 0 and n_gt == 0:
+        if n_p == 0 or n_gt == 0:
             continue
-        elif n_p == 0 or n_gt == 0:
-            ap.append(0)
-            r.append(0)
-            p.append(0)
         else:
             # Accumulate FPs and TPs
-            fpc = (1 - tp[i]).cumsum()
-            tpc = (tp[i]).cumsum()
+            fpc = (1 - tp[i]).cumsum(0)
+            tpc = tp[i].cumsum(0)
 
             # Recall
             recall = tpc / (n_gt + 1e-16)  # recall curve
-            r.append(recall[-1])
+            r[ci] = recall[-1]
 
             # Precision
             precision = tpc / (tpc + fpc)  # precision curve
-            p.append(precision[-1])
+            p[ci] = precision[-1]
 
             # AP from recall-precision curve
-            ap.append(compute_ap(recall, precision))
+            for j in range(tp.shape[1]):
+                ap[ci, j] = compute_ap(recall[:, j], precision[:, j])
 
             # Plot
             # fig, ax = plt.subplots(1, 1, figsize=(4, 4))
             # ax.plot(np.concatenate(([0.], recall)), np.concatenate(([0.], precision)))
-            # ax.set_xlabel('YOLOv3-SPP')
-            # ax.set_xlabel('Recall')
-            # ax.set_ylabel('Precision')
+            # ax.set_title('YOLOv3-SPP'); ax.set_xlabel('Recall'); ax.set_ylabel('Precision')
             # ax.set_xlim(0, 1)
             # fig.tight_layout()
             # fig.savefig('PR_curve.png', dpi=300)
 
     # Compute F1 score (harmonic mean of precision and recall)
-    p, r, ap = np.array(p), np.array(r), np.array(ap)
     f1 = 2 * p * r / (p + r + 1e-16)
 
     return p, r, ap, f1, unique_classes.astype('int32')
