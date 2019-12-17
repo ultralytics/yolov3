@@ -197,7 +197,7 @@ def test(cfg,
         cocoEval.evaluate()
         cocoEval.accumulate()
         cocoEval.summarize()
-        map = cocoEval.stats[1]  # update mAP to pycocotools mAP
+        mf1, map = cocoEval.stats[:2]  # update to pycocotools results (mAP@0.5:0.95, mAP@0.5)
 
     # Return results
     maps = np.zeros(nc) + map
