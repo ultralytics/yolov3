@@ -97,7 +97,7 @@ def test(cfg,
 
             if pred is None:
                 if nl:
-                    stats.append(([], torch.Tensor(), torch.Tensor(), tcls))
+                    stats.append((torch.zeros(0, 1), torch.Tensor(), torch.Tensor(), tcls))
                 continue
 
             # Append to text file
