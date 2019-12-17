@@ -810,7 +810,7 @@ def apply_classifier(x, model, img, im0):
 
 def fitness(x):
     # Returns fitness (for use with results.txt or evolve.txt)
-    return x[:, 2] * 0.5 + x[:, 3] * 0.5  # weighted combination of x=[p, r, mAP@0.5, F1 or mAP@0.5:0.95]
+    return x[:, 2] * 0.1 + x[:, 3] * 0.9  # weighted combination of x=[p, r, mAP@0.5, F1 or mAP@0.5:0.95]
 
 
 # Plotting functions ---------------------------------------------------------------------------------------------------
