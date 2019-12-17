@@ -86,7 +86,7 @@ def create_modules(module_defs, img_size, arc):
                 elif arc == 'default':  # default no pw (40 cls, 80 obj)
                     b = [-5.5, -5.0]
                 elif arc == 'uBCE':  # unified BCE (80 classes)
-                    b = [0, -8.5]
+                    b = [0, -9.0]
                 elif arc == 'uCE':  # unified CE (1 background + 80 classes)
                     b = [10, -0.1]
                 elif arc == 'Fdefault':  # Focal default no pw (28 cls, 21 obj, no pw)
