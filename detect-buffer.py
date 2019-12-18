@@ -47,8 +47,6 @@ def detect_buffer(buffer):
         'containers': []
     }
 
-    print("Before inference time: ", int((time.time() - t_start) * 1000), "ms")
-
     # Run inference
     t0 = time.time()
     for path, img, im0s, _ in dataset:
@@ -88,7 +86,8 @@ def detect_buffer(buffer):
                         'confidence': conf.tolist()
                     })
 
-    # TODO: Sort the results by confidence.
+    results['containers'] = sorted(results['containers'], key = lambda res: res['confidence'], reverse=True)
+
     results['time_ms'] = int((time.time() - t0) * 1000)
     print(json.dumps(results))
     
