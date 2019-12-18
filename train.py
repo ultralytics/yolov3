@@ -472,7 +472,7 @@ if __name__ == '__main__':
             if os.path.exists('evolve.txt'):  # if evolve.txt exists: select best hyps and mutate
                 # Select parent(s)
                 x = np.loadtxt('evolve.txt', ndmin=2)
-                parent = 'weighted'  # parent selection method: 'single' or 'weighted'
+                parent = 'single'  # parent selection method: 'single' or 'weighted'
                 if parent == 'single' or len(x) == 1:
                     x = x[fitness(x).argmax()]
                 elif parent == 'weighted':  # weighted combination
@@ -485,9 +485,10 @@ if __name__ == '__main__':
 
                 # Mutate
                 np.random.seed(int(time.time()))
-                s = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) * 0.2  # sigmas
+                s = np.random.random() * 0.3  # sigma
+                g = [1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # gains
                 for i, k in enumerate(hyp.keys()):
-                    x = (np.random.randn(1) * s[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
+                    x = (np.random.randn() * s * g[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                     hyp[k] *= float(x)  # vary by sigmas
 
             # Clip to limits
