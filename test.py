@@ -223,26 +223,29 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     print(opt)
 
-    # Test
-    test(opt.cfg,
-         opt.data,
-         opt.weights,
-         opt.batch_size,
-         opt.img_size,
-         opt.conf_thres,
-         opt.nms_thres,
-         opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]))
+    study = False
+    if not study:
+        # Test
+        test(opt.cfg,
+             opt.data,
+             opt.weights,
+             opt.batch_size,
+             opt.img_size,
+             opt.conf_thres,
+             opt.nms_thres,
+             opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]))
+    else:
+        # Parameter study
+        y = []
+        x = np.arange(0.4, 0.81, 0.1)
+        for v in x:
+            y.append(test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, 0.1, v, True)[0])
+        y = np.stack(y, 0)
 
-    # # Parameter study
-    # y = []
-    # x = np.arange(0.4, 0.81, 0.1)
-    # for v in x:
-    #     y.append(test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, 0.1, v, True)[0])
-    # y = np.stack(y, 0)
-    #
-    # fig, ax = plt.subplots(1, 1, figsize=(12, 6))
-    # ax.plot(x, y[:, 2], marker='.', label='mAP@0.5')
-    # ax.plot(x, y[:, 3], marker='.', label='mAP@0.5:0.95')
-    # ax.legend()
-    # fig.tight_layout()
-    # plt.savefig('parameters.jpg', dpi=200)
+        # Plot
+        fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+        ax.plot(x, y[:, 2], marker='.', label='mAP@0.5')
+        ax.plot(x, y[:, 3], marker='.', label='mAP@0.5:0.95')
+        ax.legend()
+        fig.tight_layout()
+        plt.savefig('parameters.jpg', dpi=200)
