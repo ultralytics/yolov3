@@ -238,7 +238,7 @@ if __name__ == '__main__':
     else:
         # Parameter study
         y = []
-        x = np.arange(0.3, 0.9, 0.1)
+        x = np.arange(0.3, 0.9, 0.05)
         for v in x:
             t = time.time()
             r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, v, opt.save_json)[0]
