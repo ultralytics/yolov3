@@ -221,6 +221,7 @@ if __name__ == '__main__':
     parser.add_argument('--save-json', action='store_true', help='save a cocoapi-compatible JSON results file')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
     opt = parser.parse_args()
+    opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
     print(opt)
 
     study = False
@@ -233,13 +234,16 @@ if __name__ == '__main__':
              opt.img_size,
              opt.conf_thres,
              opt.nms_thres,
-             opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]))
+             opt.save_json)
     else:
         # Parameter study
         y = []
         x = np.arange(0.3, 0.9, 0.02)
         for v in x:
-            y.append(test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, 0.1, v, True)[0])
+            t = time.time()
+            r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, v, opt.save_json)[0]
+            dt = [time.time() - t]
+            y.append(r + dt)
         y = np.stack(y, 0)
 
         # Plot
