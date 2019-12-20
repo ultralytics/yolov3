@@ -111,7 +111,7 @@ def detect(save_txt=False, save_img=False):
                     s += '%g %ss, ' % (n, names[int(c)])  # add to string
 
                 # Write results
-                for *xyxy, conf, _, cls in det:
+                for *xyxy, conf, cls in det:
                     if save_txt:  # Write to file
                         with open(save_path + '.txt', 'a') as file:
                             file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))

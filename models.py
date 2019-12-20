@@ -149,8 +149,10 @@ class YOLOLayer(nn.Module):
         self.anchors = torch.Tensor(anchors)
         self.na = len(anchors)  # number of anchors (3)
         self.nc = nc  # number of classes (80)
+        self.no = nc + 5  # number of outputs
         self.nx = 0  # initialize number of x gridpoints
         self.ny = 0  # initialize number of y gridpoints
+        self.oi = [0, 1, 2, 3] + list(range(5, self.no))  # output indices
         self.arc = arc
 
         if ONNX_EXPORT:  # grids must be computed in __init__
@@ -168,7 +170,7 @@ class YOLOLayer(nn.Module):
                 create_grids(self, img_size, (nx, ny), p.device, p.dtype)
 
         # p.view(bs, 255, 13, 13) -- > (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
-        p = p.view(bs, self.na, self.nc + 5, self.ny, self.nx).permute(0, 1, 3, 4, 2).contiguous()  # prediction
+        p = p.view(bs, self.na, self.no, self.ny, self.nx).permute(0, 1, 3, 4, 2).contiguous()  # prediction
 
         if self.training:
             return p
@@ -180,18 +182,18 @@ class YOLOLayer(nn.Module):
             grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view(1, m, 2)
             anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view(1, m, 2) / ngu
 
-            p = p.view(m, 5 + self.nc)
+            p = p.view(m, self.no)
             xy = torch.sigmoid(p[..., 0:2]) + grid_xy[0]  # x, y
             wh = torch.exp(p[..., 2:4]) * anchor_wh[0]  # width, height
             p_conf = torch.sigmoid(p[:, 4:5])  # Conf
-            p_cls = F.softmax(p[:, 5:5 + self.nc], 1) * p_conf  # SSD-like conf
+            p_cls = F.softmax(p[:, 5:self.no], 1) * p_conf  # SSD-like conf
             return torch.cat((xy / ngu[0], wh, p_conf, p_cls), 1).t()
 
-            # p = p.view(1, m, 5 + self.nc)
+            # p = p.view(1, m, self.no)
             # xy = torch.sigmoid(p[..., 0:2]) + grid_xy  # x, y
             # wh = torch.exp(p[..., 2:4]) * anchor_wh  # width, height
             # p_conf = torch.sigmoid(p[..., 4:5])  # Conf
-            # p_cls = p[..., 5:5 + self.nc]
+            # p_cls = p[..., 5:self.no]
             # # Broadcasting only supported on first dimension in CoreML. See onnx-coreml/_operators.py
             # # p_cls = F.softmax(p_cls, 2) * p_conf  # SSD-like conf
             # p_cls = torch.exp(p_cls).permute((2, 1, 0))
@@ -219,8 +221,11 @@ class YOLOLayer(nn.Module):
             if self.nc == 1:
                 io[..., 5] = 1  # single-class model https://github.com/ultralytics/yolov3/issues/235
 
-            # reshape from [1, 3, 13, 13, 85] to [1, 507, 85]
-            return io.view(bs, -1, 5 + self.nc), p
+            # compute conf
+            io[..., 5:] *= io[..., 4:5]  # conf = obj_conf * cls_conf
+
+            # reshape from [1, 3, 13, 13, 85] to [1, 507, 84], remove obj_conf
+            return io[..., self.oi].view(bs, -1, self.no - 1), p
 
 
 class Darknet(nn.Module):

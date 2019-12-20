@@ -114,7 +114,7 @@ def test(cfg,
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
                 for di, d in enumerate(pred):
                     jdict.append({'image_id': image_id,
-                                  'category_id': coco91class[int(d[6])],
+                                  'category_id': coco91class[int(d[5])],
                                   'bbox': [floatn(x, 3) for x in box[di]],
                                   'score': floatn(d[4], 5)})
 
@@ -133,7 +133,7 @@ def test(cfg,
                 tbox[:, [1, 3]] *= height
 
                 # Search for correct predictions
-                for i, (*pbox, pconf, pcls_conf, pcls) in enumerate(pred):
+                for i, (*pbox, _, pcls) in enumerate(pred):
 
                     # Break if all targets already located in image
                     if len(detected) == nl:
@@ -154,7 +154,7 @@ def test(cfg,
                         correct[i] = iou > iou_thres
 
             # Append statistics (correct, conf, pcls, tcls)
-            stats.append((correct, pred[:, 4].cpu(), pred[:, 6].cpu(), tcls))
+            stats.append((correct, pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
 
     # Compute statistics
     stats = [np.concatenate(x, 0) for x in list(zip(*stats))]  # to numpy
@@ -209,7 +209,7 @@ def test(cfg,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
-    parser.add_argument('--data', type=str, default='data/coco2017.data', help='*.data path')
+    parser.add_argument('--data', type=str, default='data/coco2014.data', help='*.data path')
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
