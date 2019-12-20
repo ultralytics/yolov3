@@ -323,16 +323,15 @@ def train():
         if opt.prebias:
             print_model_biases(model)
         elif not opt.notest or final_epoch:  # Calculate mAP
-            with torch.no_grad():
-                is_coco = any([x in data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]) and model.nc == 80
-                results, maps = test.test(cfg,
-                                          data,
-                                          batch_size=batch_size,
-                                          img_size=opt.img_size,
-                                          model=model,
-                                          conf_thres=0.001 if final_epoch else 0.1,  # 0.1 for speed
-                                          save_json=final_epoch and is_coco,
-                                          dataloader=testloader)
+            is_coco = any([x in data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]) and model.nc == 80
+            results, maps = test.test(cfg,
+                                      data,
+                                      batch_size=batch_size,
+                                      img_size=opt.img_size,
+                                      model=model,
+                                      conf_thres=0.001 if final_epoch else 0.1,  # 0.1 for speed
+                                      save_json=final_epoch and is_coco,
+                                      dataloader=testloader)
 
         # Write epoch results
         with open(results_file, 'a') as f:
