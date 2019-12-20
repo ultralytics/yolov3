@@ -46,7 +46,7 @@ def test(cfg,
     # Configure run
     data = parse_data_cfg(data)
     nc = int(data['classes'])  # number of classes
-    test_path = data['valid']  # path to test images
+    path = data['valid']  # path to test images
     names = load_classes(data['names'])  # class names
     iou_thres = torch.linspace(0.5, 0.95, 10).to(device)  # for mAP@0.5:0.95
     iou_thres = iou_thres[0].view(1)  # for mAP@0.5
@@ -54,7 +54,7 @@ def test(cfg,
 
     # Dataloader
     if dataloader is None:
-        dataset = LoadImagesAndLabels(test_path, img_size, batch_size, rect=True)
+        dataset = LoadImagesAndLabels(path, img_size, batch_size, rect=True)
         batch_size = min(batch_size, len(dataset))
         dataloader = DataLoader(dataset,
                                 batch_size=batch_size,
