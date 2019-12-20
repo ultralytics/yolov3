@@ -244,7 +244,7 @@ if __name__ == '__main__':
             r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, v, opt.save_json)[0]
             y.append(r + (time.time() - t,))
         y = np.stack(y, 0)
-        np.savetxt('study.txt', y, fmt='%10.4g')
+        np.savetxt('study.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
 
         # Plot
         fig, ax = plt.subplots(3, 1, figsize=(6, 6))
