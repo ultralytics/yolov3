@@ -237,7 +237,7 @@ if __name__ == '__main__':
     else:
         # Parameter study
         y = []
-        x = np.arange(0.4, 0.81, 0.1)
+        x = np.arange(0.3, 0.9, 0.02)
         for v in x:
             y.append(test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, 0.1, v, True)[0])
         y = np.stack(y, 0)
@@ -247,5 +247,7 @@ if __name__ == '__main__':
         ax.plot(x, y[:, 2], marker='.', label='mAP@0.5')
         ax.plot(x, y[:, 3], marker='.', label='mAP@0.5:0.95')
         ax.legend()
+        ax.set_xlabel('nms_thr')
+        ax.set_ylabel('mAP')
         fig.tight_layout()
         plt.savefig('parameters.jpg', dpi=200)
