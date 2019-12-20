@@ -238,7 +238,7 @@ if __name__ == '__main__':
     else:
         # Parameter study
         y = []
-        x = np.arange(0.3, 0.9, 0.05)
+        x = np.arange(0.4, 0.9, 0.05)
         for v in x:
             t = time.time()
             r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, v, opt.save_json)[0]
@@ -247,14 +247,15 @@ if __name__ == '__main__':
         np.savetxt('study.txt', y, fmt='%10.4g')
 
         # Plot
-        fig, ax = plt.subplots(2, 1, figsize=(6, 6))
+        fig, ax = plt.subplots(3, 1, figsize=(6, 6))
         ax[0].plot(x, y[:, 2], marker='.', label='mAP@0.5')
-        ax[0].plot(x, y[:, 3], marker='.', label='mAP@0.5:0.95')
-        ax[0].legend()
-        ax[0].set_xlabel('nms_thr')
         ax[0].set_ylabel('mAP')
-        ax[1].plot(x, y[:, -1], marker='.', label='time')
-        ax[1].set_xlabel('nms_thr')
-        ax[1].set_ylabel('time (s)')
+        ax[1].plot(x, y[:, 3], marker='.', label='mAP@0.5:0.95')
+        ax[1].set_ylabel('mAP')
+        ax[2].plot(x, y[:, -1], marker='.', label='time')
+        ax[2].set_ylabel('time (s)')
+        for i in range(3):
+            ax[i].legend()
+            ax[i].set_xlabel('nms_thr')
         fig.tight_layout()
         plt.savefig('study.jpg', dpi=200)
