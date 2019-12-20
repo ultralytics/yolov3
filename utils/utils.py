@@ -739,6 +739,7 @@ def kmeans_targets(path='../coco/trainvalno5k.txt', n=9, img_size=416):  # from 
 
     # Plot
     # plt.hist(biou.numpy().ravel(), 100)
+    return k
 
 
 def print_mutation(hyp, results, bucket=''):
