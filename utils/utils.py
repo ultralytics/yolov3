@@ -172,8 +172,8 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
     ap, p, r = np.zeros(s), np.zeros(s), np.zeros(s)
     for ci, c in enumerate(unique_classes):
         i = pred_cls == c
-        n_gt = sum(target_cls == c)  # Number of ground truth objects
-        n_p = sum(i)  # Number of predicted objects
+        n_gt = (target_cls == c).sum()  # Number of ground truth objects
+        n_p = i.sum()  # Number of predicted objects
 
         if n_p == 0 or n_gt == 0:
             continue
