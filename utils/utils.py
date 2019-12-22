@@ -466,8 +466,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5, multi_cls=Tru
     Returns detections with shape:
         (x1, y1, x2, y2, object_conf, conf, class)
     """
-    # NMS method https://github.com/ultralytics/yolov3/issues/679 'or', 'and', 'merge', 'vision', 'vision_batch'
-    # method = 'merge' if conf_thres <= 0.01 else 'vision'  # MERGE is highest mAP, VISION is fastest
+    # NMS methods https://github.com/ultralytics/yolov3/issues/679 'or', 'and', 'merge', 'vision', 'vision_batch'
 
     # Box constraints
     min_wh, max_wh = 2, 10000  # (pixels) minimum and maximium box width and height
