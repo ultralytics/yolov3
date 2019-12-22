@@ -88,8 +88,8 @@ def test(cfg,
             if hasattr(model, 'hyp'):  # if model has loss hyperparameters
                 loss += compute_loss(train_out, targets, model)[1][:3].cpu()  # GIoU, obj, cls
 
-        # Run NMS
-        output = non_max_suppression(inf_out, conf_thres=conf_thres, nms_thres=nms_thres)
+            # Run NMS
+            output = non_max_suppression(inf_out, conf_thres=conf_thres, nms_thres=nms_thres)
 
         # Statistics per image
         for si, pred in enumerate(output):
