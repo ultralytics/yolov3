@@ -444,7 +444,7 @@ def build_targets(model, targets):
         gi, gj = gxy.long().t()  # grid x, y indices
         indices.append((b, a, gj, gi))
 
-        # GIoU
+        # Box
         gxy -= gxy.floor()  # xy
         tbox.append(torch.cat((gxy, gwh), 1))  # xywh (grids)
         av.append(anchor_vec[a])  # anchor vec
