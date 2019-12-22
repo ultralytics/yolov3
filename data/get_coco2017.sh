@@ -22,4 +22,3 @@ f="val2017.zip" && curl http://images.cocodataset.org/zips/$f -o $f && unzip -q 
 
 # cd out
 cd ../..
-
