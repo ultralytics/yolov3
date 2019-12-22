@@ -25,7 +25,7 @@ results_file = 'results.txt'
 hyp = {'giou': 3.54,  # giou loss gain
        'cls': 37.4,  # cls loss gain
        'cls_pw': 1.0,  # cls BCELoss positive_weight
-       'obj': 64.3,  # obj loss gain (*=img_size/416 if img_size != 416)
+       'obj': 49.5,  # obj loss gain (*=img_size/320 if img_size != 320)
        'obj_pw': 1.0,  # obj BCELoss positive_weight
        'iou_t': 0.225,  # iou training threshold
        'lr0': 0.00579,  # initial learning rate (SGD=1E-3, Adam=9E-5)
@@ -445,8 +445,8 @@ if __name__ == '__main__':
     if device.type == 'cpu':
         mixed_precision = False
 
-    # scale hyp['obj'] by img_size (evolved at 416)
-    hyp['obj'] *= opt.img_size / 416.
+    # scale hyp['obj'] by img_size (evolved at 320)
+    hyp['obj'] *= opt.img_size / 320.
 
     tb_writer = None
     if not opt.evolve:  # Train normally
