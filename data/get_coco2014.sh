@@ -16,18 +16,10 @@ unzip -q ${filename}  # for coco.zip
 # tar -xzf ${filename}  # for coco.tar.gz
 rm ${filename}
 
-# Download images
+# Download and unzip images
 cd coco/images
-curl http://images.cocodataset.org/zips/train2014.zip -o train2014.zip
-curl http://images.cocodataset.org/zips/val2014.zip -o val2014.zip
-
-# Unzip images
-unzip -q train2014.zip
-unzip -q val2014.zip
-
-# (optional) Delete zip files
-rm -rf *.zip
+f="train2014.zip" && curl http://images.cocodataset.org/zips/$f -o $f && unzip -q $f && rm $f
+f="val2014.zip" && curl http://images.cocodataset.org/zips/$f -o $f && unzip -q $f && rm $f
 
 # cd out
 cd ../..
-
