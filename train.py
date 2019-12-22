@@ -446,7 +446,7 @@ if __name__ == '__main__':
         mixed_precision = False
 
     # scale hyp['obj'] by img_size (evolved at 416)
-    hyp['obj'] *= opt.img_size / 416.
+    hyp['obj'] *= opt.img_size / 320.
 
     tb_writer = None
     if not opt.evolve:  # Train normally
