@@ -284,21 +284,46 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False):
     return iou
 
 
+def box_iou(boxes1, boxes2):
+    # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
+    """
+    Return intersection-over-union (Jaccard index) of boxes.
+    Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
+    Arguments:
+        boxes1 (Tensor[N, 4])
+        boxes2 (Tensor[M, 4])
+    Returns:
+        iou (Tensor[N, M]): the NxM matrix containing the pairwise
+            IoU values for every element in boxes1 and boxes2
+    """
+
+    def box_area(boxes):
+        return (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+
+    area1 = box_area(boxes1)
+    area2 = box_area(boxes2)
+
+    lt = torch.max(boxes1[:, None, :2], boxes2[:, :2])  # [N,M,2]
+    rb = torch.min(boxes1[:, None, 2:], boxes2[:, 2:])  # [N,M,2]
+
+    wh = (rb - lt).clamp(min=0)  # [N,M,2]
+    inter = wh[:, :, 0] * wh[:, :, 1]  # [N,M]
+
+    iou = inter / (area1[:, None] + area2 - inter)
+    return iou
+
+
 def wh_iou(box1, box2):
-    # Returns the IoU of wh1 to wh2. wh1 is 2, wh2 is nx2
-    box2 = box2.t()
+    # Returns the IoU of wh1 to wh2. wh1 is 2, wh2 is 2xn
 
     # w, h = box1
     w1, h1 = box1[0], box1[1]
     w2, h2 = box2[0], box2[1]
 
     # Intersection area
-    inter_area = torch.min(w1, w2) * torch.min(h1, h2)
+    inter = torch.min(w1, w2) * torch.min(h1, h2)
 
-    # Union Area
-    union_area = (w1 * h1 + 1e-16) + w2 * h2 - inter_area
-
-    return inter_area / union_area  # iou
+    return inter / (w1 * h1 + w2 * h2 - inter)  # iou = inter / (area1 + area2 - inter)
 
 
 class FocalLoss(nn.Module):
@@ -422,8 +447,9 @@ def build_targets(model, targets):
         # iou of targets-anchors
         t, a = targets, []
         gwh = t[:, 4:6] * ng
+        gwht = gwh.t()
         if nt:
-            iou = torch.stack([wh_iou(x, gwh) for x in anchor_vec], 0)
+            iou = torch.stack([wh_iou(x, gwht) for x in anchor_vec], 0)
 
             if use_all_anchors:
                 na = len(anchor_vec)  # number of anchors
