@@ -315,8 +315,6 @@ def box_iou(boxes1, boxes2):
 
 def wh_iou(box1, box2):
     # Returns the IoU of wh1 to wh2. wh1 is 2, wh2 is 2xn
-
-    # w, h = box1
     w1, h1 = box1[0], box1[1]
     w2, h2 = box2[0], box2[1]
 
