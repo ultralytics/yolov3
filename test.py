@@ -80,7 +80,6 @@ def test(cfg,
 
         # Disable gradients
         with torch.no_grad():
-
             # Run model
             inf_out, train_out = model(imgs)  # inference and training outputs
 
