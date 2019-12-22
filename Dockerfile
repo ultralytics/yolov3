@@ -44,13 +44,13 @@ COPY . /usr/src/app
 # ---------------------------------------------------  Extras Below  ---------------------------------------------------
 
 # Build and Push
-# export t=ultralytics/yolov3:v0 && sudo docker build -t $t . && sudo docker push $t
+# t=ultralytics/yolov3:v0 && sudo docker build -t $t . && sudo docker push $t
 
 # Run
 # sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 python3 detect.py
 
 # Pull and Run with local directory access
-# export t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t
+# t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t
 
 # Kill all
 # sudo docker kill "$(sudo docker ps -q)"
