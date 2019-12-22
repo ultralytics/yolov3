@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #for i in 1 2 3 4 5 6 7
 #do
 #  t=ultralytics/yolov3:v139 && sudo docker pull $t && sudo nvidia-docker run --d --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t utils/evolve.sh $i
