@@ -152,7 +152,6 @@ class YOLOLayer(nn.Module):
         self.no = nc + 5  # number of outputs
         self.nx = 0  # initialize number of x gridpoints
         self.ny = 0  # initialize number of y gridpoints
-        self.oi = [0, 1, 2, 3] + list(range(5, self.no))  # output indices
         self.arc = arc
 
         if ONNX_EXPORT:  # grids must be computed in __init__
@@ -210,7 +209,7 @@ class YOLOLayer(nn.Module):
             io[..., :4] *= self.stride
 
             if 'default' in self.arc:  # seperate obj and cls
-                torch.sigmoid_(io[..., 4:])
+                torch.sigmoid_(io[..., 4])
             elif 'BCE' in self.arc:  # unified BCE (80 classes)
                 torch.sigmoid_(io[..., 5:])
                 io[..., 4] = 1
@@ -221,11 +220,8 @@ class YOLOLayer(nn.Module):
             if self.nc == 1:
                 io[..., 5] = 1  # single-class model https://github.com/ultralytics/yolov3/issues/235
 
-            # compute conf
-            io[..., 5:] *= io[..., 4:5]  # conf = obj_conf * cls_conf
-
             # reshape from [1, 3, 13, 13, 85] to [1, 507, 84], remove obj_conf
-            return io[..., self.oi].view(bs, -1, self.no - 1), p
+            return io.view(bs, -1, self.no), p
 
 
 class Darknet(nn.Module):
