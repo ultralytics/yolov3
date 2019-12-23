@@ -487,7 +487,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5, multi_cls=Tru
     # NMS methods https://github.com/ultralytics/yolov3/issues/679 'or', 'and', 'merge', 'vision', 'vision_batch'
 
     # Box constraints
-    min_wh, max_wh = 2, 10000  # (pixels) minimum and maximium box width and height
+    min_wh, max_wh = 2, 4096  # (pixels) minimum and maximium box width and height
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
@@ -524,8 +524,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5, multi_cls=Tru
 
         # Batched NMS
         if method == 'vision_batch':
-            i = torchvision.ops.boxes.batched_nms(pred[:, :4], pred[:, 4], pred[:, 5], nms_thres)
-            output[image_i] = pred[i]
+            output[image_i] = pred[torchvision.ops.boxes.batched_nms(pred[:, :4], pred[:, 4], pred[:, 5], nms_thres)]
             continue
 
         # All other NMS methods
@@ -541,8 +540,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5, multi_cls=Tru
                 dc = dc[:500]  # limit to first 500 boxes: https://github.com/ultralytics/yolov3/issues/117
 
             if method == 'vision':
-                i = torchvision.ops.boxes.nms(dc[:, :4], dc[:, 4], nms_thres)
-                det_max.append(dc[i])
+                det_max.append(dc[torchvision.ops.boxes.nms(dc[:, :4], dc[:, 4], nms_thres)])
 
             elif method == 'or':  # default
                 # METHOD1
