@@ -491,12 +491,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5, multi_cls=Tru
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
-        # Retain > conf
+        # Apply conf constraint
         pred = pred[pred[:, 4] > conf_thres]
-
-        # Compute conf
-        torch.sigmoid_(pred[..., 5:])
-        pred[..., 5:] *= pred[..., 4:5]  # conf = obj_conf * cls_conf
 
         # Apply width-height constraint
         pred = pred[(pred[:, 2:4] > min_wh).all(1) & (pred[:, 2:4] < max_wh).all(1)]
@@ -504,6 +500,10 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5, multi_cls=Tru
         # If none remain process next image
         if len(pred) == 0:
             continue
+
+        # Compute conf
+        torch.sigmoid_(pred[..., 5:])
+        pred[..., 5:] *= pred[..., 4:5]  # conf = obj_conf * cls_conf
 
         # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         box = xywh2xyxy(pred[:, :4])
