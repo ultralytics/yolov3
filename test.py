@@ -130,9 +130,7 @@ def test(cfg,
                 tcls_tensor = labels[:, 0]
 
                 # target boxes
-                tbox = xywh2xyxy(labels[:, 1:5])
-                tbox[:, [0, 2]] *= width
-                tbox[:, [1, 3]] *= height
+                tbox = xywh2xyxy(labels[:, 1:5]) * torch.Tensor([width, height, width, height]).to(device)
 
                 # Per target class
                 for cls in torch.unique(tcls_tensor):
