@@ -494,14 +494,14 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5, multi_cls=Tru
         # Retain > conf
         pred = pred[pred[:, 4] > conf_thres]
 
-        # compute conf
+        # Compute conf
         torch.sigmoid_(pred[..., 5:])
         pred[..., 5:] *= pred[..., 4:5]  # conf = obj_conf * cls_conf
 
         # Apply width-height constraint
         pred = pred[(pred[:, 2:4] > min_wh).all(1) & (pred[:, 2:4] < max_wh).all(1)]
 
-        # If none are remaining => process next image
+        # If none remain process next image
         if len(pred) == 0:
             continue
 
@@ -528,7 +528,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5, multi_cls=Tru
             output[image_i] = pred[i]
             continue
 
-        # Non-maximum suppression
+        # All other NMS methods
         det_max = []
         cls = pred[:, -1]
         for c in cls.unique():
