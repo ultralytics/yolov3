@@ -528,8 +528,9 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.5, multi_cls=Tru
 
         # Non-maximum suppression
         det_max = []
-        for c in j.unique():
-            dc = pred[j == c]  # select class c
+        cls = pred[:, -1]
+        for c in cls.unique():
+            dc = pred[cls == c]  # select class c
             n = len(dc)
             if n == 1:
                 det_max.append(dc)  # No NMS required if only 1 prediction
