@@ -484,7 +484,7 @@ if __name__ == '__main__':
 
                 # Mutate
                 np.random.seed(int(time.time()))
-                s = np.random.random() * 0.10  # sigma
+                s = np.random.random() * 0.2  # sigma
                 g = [1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # gains
                 for i, k in enumerate(hyp.keys()):
                     x = (np.random.randn() * s * g[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
