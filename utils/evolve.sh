@@ -5,7 +5,6 @@
 #  sleep 30
 # done
 
-while true
-do
-  python3 train.py --data coco2014.data --img-size 320 --epochs 27 --batch-size 64 --accumulate 1 --evolve --weights '' --pre --bucket yolov4/320_coco2014_27e --device $1
+while true; do
+python3 train.py --data coco2014.data --img-size 320 --epochs 27 --batch-size 64 --accumulate 1 --evolve --weights '' --pre --bucket yolov4/320_coco2014_27e --device $1
 done
