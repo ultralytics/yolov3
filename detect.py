@@ -88,7 +88,7 @@ def detect(save_txt=False, save_img=False):
         # Apply NMS
         pred = non_max_suppression(pred, opt.conf_thres, opt.nms_thres)
 
-        # Apply
+        # Apply Classifier
         if classify:
             pred = apply_classifier(pred, modelc, img, im0s)
 
@@ -105,6 +105,9 @@ def detect(save_txt=False, save_img=False):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
+                # Print time (inference + NMS)
+                print('%sDone. (%.3fs)' % (s, time.time() - t))
+
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
@@ -119,8 +122,6 @@ def detect(save_txt=False, save_img=False):
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
-
-            print('%sDone. (%.3fs)' % (s, time.time() - t))
 
             # Stream results
             if view_img:
