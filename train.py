@@ -213,7 +213,7 @@ def train():
                                                                      rect=True,
                                                                      cache_labels=True,
                                                                      cache_images=opt.cache_images),
-                                                 batch_size=batch_size,
+                                                 batch_size=batch_size * 2,
                                                  num_workers=nw,
                                                  pin_memory=True,
                                                  collate_fn=dataset.collate_fn)
@@ -326,7 +326,7 @@ def train():
             is_coco = any([x in data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]) and model.nc == 80
             results, maps = test.test(cfg,
                                       data,
-                                      batch_size=batch_size,
+                                      batch_size=batch_size * 2,
                                       img_size=opt.img_size,
                                       model=model,
                                       conf_thres=0.001 if final_epoch else 0.1,  # 0.1 for speed
