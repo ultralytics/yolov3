@@ -223,8 +223,7 @@ def compute_ap(recall, precision):
     mpre = np.concatenate(([0.], precision, [0.]))
 
     # Compute the precision envelope
-    for i in range(mpre.size - 1, 0, -1):
-        mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
+    mpre = np.flip(np.maximum.accumulate(np.flip(mpre)))
 
     # Integrate area under curve
     method = 'interp'  # methods: 'continuous', 'interp'
