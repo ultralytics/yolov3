@@ -105,13 +105,13 @@ def detect(save_txt=False, save_img=False):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
-                # Print time (inference + NMS)
-                print('%sDone. (%.3fs)' % (s, time.time() - t))
-
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += '%g %ss, ' % (n, names[int(c)])  # add to string
+
+                # Print time (inference + NMS)
+                print('%sDone. (%.3fs)' % (s, time.time() - t))
 
                 # Write results
                 for *xyxy, conf, cls in det:
