@@ -219,8 +219,8 @@ if __name__ == '__main__':
     opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
     print(opt)
 
-    study = False
-    if not study:
+    task = 'test'  # 'test', 'study', 'benchmark'
+    if task == 'test':
         # Test
         test(opt.cfg,
              opt.data,
@@ -230,7 +230,18 @@ if __name__ == '__main__':
              opt.conf_thres,
              opt.nms_thres,
              opt.save_json)
-    else:
+
+    elif task == 'benchmark':
+        # mAPs at 320-608 at conf 0.5 and 0.7
+        y = []
+        for i in [320, 416, 512, 608]:
+            for j in [0.5, 0.7]:
+                t = time.time()
+                r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, i, opt.conf_thres, j, opt.save_json)[0]
+                y.append(r + (time.time() - t,))
+        np.savetxt('benchmark.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
+
+    elif task == 'study':
         # Parameter study
         y = []
         x = np.arange(0.4, 0.9, 0.05)
@@ -238,11 +249,11 @@ if __name__ == '__main__':
             t = time.time()
             r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, v, opt.save_json)[0]
             y.append(r + (time.time() - t,))
-        y = np.stack(y, 0)
         np.savetxt('study.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
 
         # Plot
         fig, ax = plt.subplots(3, 1, figsize=(6, 6))
+        y = np.stack(y, 0)
         ax[0].plot(x, y[:, 2], marker='.', label='mAP@0.5')
         ax[0].set_ylabel('mAP')
         ax[1].plot(x, y[:, 3], marker='.', label='mAP@0.5:0.95')
