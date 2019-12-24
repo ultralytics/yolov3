@@ -126,6 +126,26 @@ def xywh2xyxy(x):
     return y
 
 
+# def xywh2xyxy(box):
+#     # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2]
+#     if isinstance(box, torch.Tensor):
+#         x, y, w, h = box.t()
+#         return torch.stack((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).t()
+#     else:  # numpy
+#         x, y, w, h = box.T
+#         return np.stack((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).T
+#
+#
+# def xyxy2xywh(box):
+#     # Convert nx4 boxes from [x1, y1, x2, y2] to [x, y, w, h]
+#     if isinstance(box, torch.Tensor):
+#         x1, y1, x2, y2 = box.t()
+#         return torch.stack(((x1 + x2) / 2, (y1 + y2) / 2, x2 - x1, y2 - y1)).t()
+#     else:  # numpy
+#         x1, y1, x2, y2 = box.T
+#         return np.stack(((x1 + x2) / 2, (y1 + y2) / 2, x2 - x1, y2 - y1)).T
+
+
 def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
     # Rescale coords (xyxy) from img1_shape to img0_shape
     if ratio_pad is None:  # calculate from img0_shape
