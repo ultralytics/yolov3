@@ -214,13 +214,13 @@ if __name__ == '__main__':
     parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
     parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
     parser.add_argument('--save-json', action='store_true', help='save a cocoapi-compatible JSON results file')
+    parser.add_argument('--task', default='test', help="'test', 'study', 'benchmark'")
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
     opt = parser.parse_args()
     opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
     print(opt)
 
-    task = 'test'  # 'test', 'study', 'benchmark'
-    if task == 'test':
+    if opt.task == 'test':  # task = 'test', 'study', 'benchmark'
         # Test
         test(opt.cfg,
              opt.data,
@@ -231,7 +231,7 @@ if __name__ == '__main__':
              opt.nms_thres,
              opt.save_json)
 
-    elif task == 'benchmark':
+    elif opt.task == 'benchmark':
         # mAPs at 320-608 at conf 0.5 and 0.7
         y = []
         for i in [320, 416, 512, 608]:
@@ -241,7 +241,7 @@ if __name__ == '__main__':
                 y.append(r + (time.time() - t,))
         np.savetxt('benchmark.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
 
-    elif task == 'study':
+    elif opt.task == 'study':
         # Parameter study
         y = []
         x = np.arange(0.4, 0.9, 0.05)
