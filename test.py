@@ -21,7 +21,7 @@ def test(cfg,
     # Initialize/load model and set device
     if model is None:
         device = torch_utils.select_device(opt.device, batch_size=batch_size)
-        verbose = True
+        verbose = opt.task == 'test'
 
         # Remove previous
         for f in glob.glob('test_batch*.jpg'):
