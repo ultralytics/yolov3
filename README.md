@@ -151,7 +151,6 @@ YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>
 YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |512 |16.6<br>32.7<br>35.6<br>**40.5** |34.9<br>57.7<br>59.5<br>**61.4**
 YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.1<br>37.0<br>**41.1** |35.4<br>58.2<br>60.7<br>**61.5**
 
-
 ```bash
 $ python3 test.py --img-size 608 --iou-thr 0.5 --weights ultralytics68.pt --cfg yolov3-spp.cfg
 
