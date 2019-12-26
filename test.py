@@ -14,7 +14,7 @@ def test(cfg,
          batch_size=16,
          img_size=416,
          conf_thres=0.001,
-         nms_thres=0.5,
+         iou_thres=0.5,
          save_json=False,
          model=None,
          dataloader=None):
@@ -88,7 +88,7 @@ def test(cfg,
                 loss += compute_loss(train_out, targets, model)[1][:3].cpu()  # GIoU, obj, cls
 
             # Run NMS
-            output = non_max_suppression(inf_out, conf_thres=conf_thres, nms_thres=nms_thres)
+            output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)
 
         # Statistics per image
         for si, pred in enumerate(output):
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
-    parser.add_argument('--nms-thres', type=float, default=0.5, help='iou threshold for non-maximum suppression')
+    parser.add_argument('--iou-thres', type=float, default=0.5, help='IOU threshold for NMS')
     parser.add_argument('--save-json', action='store_true', help='save a cocoapi-compatible JSON results file')
     parser.add_argument('--task', default='test', help="'test', 'study', 'benchmark'")
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
@@ -228,7 +228,7 @@ if __name__ == '__main__':
              opt.batch_size,
              opt.img_size,
              opt.conf_thres,
-             opt.nms_thres,
+             opt.iou_thres,
              opt.save_json)
 
     elif opt.task == 'benchmark':
@@ -262,6 +262,6 @@ if __name__ == '__main__':
         ax[2].set_ylabel('time (s)')
         for i in range(3):
             ax[i].legend()
-            ax[i].set_xlabel('nms_thr')
+            ax[i].set_xlabel('iou_thr')
         fig.tight_layout()
         plt.savefig('study.jpg', dpi=200)
