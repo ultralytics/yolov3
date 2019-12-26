@@ -208,7 +208,7 @@ def train():
 
     # Test Dataloader
     if not opt.prebias:
-        testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, opt.img_size, batch_size,
+        testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, opt.img_size, batch_size * 2,
                                                                      hyp=hyp,
                                                                      rect=True,
                                                                      cache_labels=True,
