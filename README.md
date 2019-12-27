@@ -152,24 +152,24 @@ YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |512 |16.6<br>
 YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.1<br>37.0<br>**41.1** |35.4<br>58.2<br>60.7<br>**61.5**
 
 ```bash
-$ python3 test.py --img-size 608 --iou-thr 0.5 --weights ultralytics68.pt --cfg yolov3-spp.cfg
+$ python3 test.py --img-size 608 --iou-thr 0.6 --weights ultralytics68.pt --cfg yolov3-spp.cfg
 
-Namespace(batch_size=32, cfg='yolov3-spp.cfg', conf_thres=0.001, data='data/coco2014.data', device='', img_size=608, iou_thres=0.5, save_json=True, task='test', weights='ultralytics68.pt')
-Using CUDA device0 _CudaDeviceProperties(name='Tesla P100-PCIE-16GB', total_memory=16280MB)
-               Class    Images   Targets         P         R   mAP@0.5        F1: 100% 157/157 [04:13<00:00,  1.16it/s]
-                 all     5e+03  3.51e+04    0.0437      0.88     0.607    0.0822
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.406
+Namespace(batch_size=32, cfg='yolov3-spp.cfg', conf_thres=0.001, data='data/coco2014.data', device='', img_size=608, iou_thres=0.6, save_json=True, task='test', weights='ultralytics68.pt')
+Using CUDA device0 _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', total_memory=16130MB)
+               Class    Images   Targets         P         R   mAP@0.5        F1: 100% 157/157 [03:30<00:00,  1.16it/s]
+                 all     5e+03  3.51e+04    0.0353     0.891     0.606    0.0673
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.615
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.431
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.238
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.444
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.516
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.437
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.242
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.448
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.519
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.337
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.548
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.592
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.418
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.635
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.729
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.557
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.612
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.438
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.658
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.746
 ```
 
 # Reproduce Our Results
