@@ -142,9 +142,9 @@ def train():
         if opt.prebias:
             for p in optimizer.param_groups:
                 # lower param count allows more aggressive training settings: i.e. SGD ~0.1 lr0, ~0.9 momentum
-                p['lr'] *= 100  # lr gain
+                p['lr'] = 0.1  # learning rate
                 if p.get('momentum') is not None:  # for SGD but not Adam
-                    p['momentum'] *= 0.9
+                    p['momentum'] = 0.9
 
         for p in model.parameters():
             if opt.prebias and p.numel() == nf:  # train (yolo biases)
