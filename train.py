@@ -403,15 +403,15 @@ def train():
 def prebias():
     # trains output bias layers for 1 epoch and creates new backbone
     if opt.prebias:
-        a = opt.img_weights  # save settings
-        opt.img_weights = False  # disable settings
+        # opt_0 = opt  # save settings
+        # opt.rect = False  # update settings (if any)
 
         train()  # transfer-learn yolo biases for 1 epoch
         create_backbone(last)  # saved results as backbone.pt
 
+        # opt = opt_0  # reset settings
         opt.weights = wdir + 'backbone.pt'  # assign backbone
         opt.prebias = False  # disable prebias
-        opt.img_weights = a  # reset settings
 
 
 if __name__ == '__main__':
