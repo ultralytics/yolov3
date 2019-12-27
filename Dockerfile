@@ -55,5 +55,8 @@ COPY . /usr/src/app
 # Kill all
 # sudo docker kill "$(sudo docker ps -q)"
 
+# Kill all image-based
+# sudo docker kill $(sudo docker ps -a -q --filter ancestor=ultralytics/yolov3:v0)
+
 # Run bash for loop
 # sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 while true; do python3 train.py --evolve; done
