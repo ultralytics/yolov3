@@ -48,9 +48,9 @@ def test(cfg,
     nc = int(data['classes'])  # number of classes
     path = data['valid']  # path to test images
     names = load_classes(data['names'])  # class names
-    iou_thres = torch.linspace(0.5, 0.95, 10).to(device)  # for mAP@0.5:0.95
-    iou_thres = iou_thres[0].view(1)  # for mAP@0.5
-    niou = iou_thres.numel()
+    # iou_thres = torch.linspace(0.5, 0.95, 10).to(device)  # for mAP@0.5:0.95
+    # iou_thres = iou_thres[0].view(1)  # for mAP@0.5
+    niou = 1  # len(iou_thres)
 
     # Dataloader
     if dataloader is None:
@@ -245,9 +245,9 @@ if __name__ == '__main__':
         # Parameter study
         y = []
         x = np.arange(0.4, 0.9, 0.05)
-        for v in x:
+        for i in x:
             t = time.time()
-            r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, v, opt.save_json)[0]
+            r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, i, opt.save_json)[0]
             y.append(r + (time.time() - t,))
         np.savetxt('study.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
 
