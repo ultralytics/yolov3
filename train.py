@@ -471,7 +471,7 @@ if __name__ == '__main__':
             if os.path.exists('evolve.txt'):  # if evolve.txt exists: select best hyps and mutate
                 # Select parent(s)
                 x = np.loadtxt('evolve.txt', ndmin=2)
-                parent = 'single'  # parent selection method: 'single' or 'weighted'
+                parent = 'weighted'  # parent selection method: 'single' or 'weighted'
                 if parent == 'single' or len(x) == 1:
                     x = x[fitness(x).argmax()]
                 elif parent == 'weighted':  # weighted combination
