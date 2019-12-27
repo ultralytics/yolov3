@@ -436,7 +436,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     lcls *= h['cls']
     if red == 'sum':
         lbox *= 3 / ng
-        lobj *= 3 / np
+        lobj *= 3 / np * 2
         lcls *= 3 / ng / model.nc
 
     loss = lbox + lobj + lcls
