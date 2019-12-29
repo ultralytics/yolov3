@@ -13,7 +13,7 @@ def create_modules(module_defs, img_size, arc):
     hyperparams = module_defs.pop(0)
     output_filters = [int(hyperparams['channels'])]
     module_list = nn.ModuleList()
-    routs = []  # list of layers which rout to deeper layes
+    routs = []  # list of layers which rout to deeper layers
     yolo_index = -1
 
     for i, mdef in enumerate(module_defs):
