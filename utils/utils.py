@@ -507,7 +507,7 @@ def non_max_suppression(prediction, conf_thres=0.5, iou_thres=0.5, multi_cls=Tru
     # NMS methods https://github.com/ultralytics/yolov3/issues/679 'or', 'and', 'merge', 'vision', 'vision_batch'
 
     # Box constraints
-    min_wh, max_wh = 2, 4096  # (pixels) minimum and maximium box width and height
+    min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
 
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
