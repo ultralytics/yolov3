@@ -260,8 +260,7 @@ class Darknet(nn.Module):
             elif mtype == 'shortcut':
                 x = x + layer_outputs[int(mdef['from'])]
             elif mtype == 'yolo':
-                x = module(x, img_size)
-                output.append(x)
+                output.append(module(x, img_size))
             layer_outputs.append(x if i in self.routs else [])
 
         if self.training:
