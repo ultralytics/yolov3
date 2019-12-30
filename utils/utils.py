@@ -435,8 +435,9 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     lobj *= h['obj']
     lcls *= h['cls']
     if red == 'sum':
+        bs = tobj.shape[0]  # batch size
         lbox *= 3 / ng
-        lobj *= 3 / np * 2
+        lobj *= 3 / (6300 * bs) * 2  # 3 / np * 2
         lcls *= 3 / ng / model.nc
 
     loss = lbox + lobj + lcls
