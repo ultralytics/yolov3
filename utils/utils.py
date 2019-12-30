@@ -762,7 +762,8 @@ def kmean_anchors(path='data/coco64.txt', n=9, img_size=(288, 640)):  # from uti
 
     # Measure IoUs
     iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
-    biou = iou.max(0)[0]  # closest anchor IoU
+    biou = iou.max(1)[0]  # closest anchor IoU
+    print(biou.shape)
     print('Best Possible Recall (BPR): %.3f' % (biou > 0.225).float().mean())  # BPR (best possible recall)
 
     # Print
