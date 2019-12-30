@@ -734,7 +734,7 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmean_anchors(path='data/coco64.txt', n=9, img_size=(288, 640)):  # from utils.utils import *; kmean_anchors()
+def kmean_anchors(path='../coco/train2017.txt', n=12, img_size=(320, 640)):  # from utils.utils import *; kmean_anchors()
     # Produces a list of target kmeans suitable for use in *.cfg files
     from utils.datasets import LoadImagesAndLabels
     from scipy import cluster
@@ -762,12 +762,14 @@ def kmean_anchors(path='data/coco64.txt', n=9, img_size=(288, 640)):  # from uti
 
     # Measure IoUs
     iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
-    biou = iou.max(1)[0]  # closest anchor IoU
-    print('Best Possible Recall (BPR): %.3f' % (biou > 0.225).float().mean())  # BPR (best possible recall)
+    max_iou = iou.max(1)[0]  # best IoU
+    min_iou = iou.min(1)[0]  # worst IoU
+    print('Best Possible Recall (BPR): %.3f' % (max_iou > 0.225).float().mean())  # BPR (best possible recall)
+    print('Mean anchors over threshold: %.3f' % ((iou > 0.225).float().mean() * n))  # BPR (best possible recall)
 
     # Print
     print('kmeans anchors (n=%g, img_size=%s, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
-          (n, img_size, biou.min(), iou.mean(), biou.mean()), end='')
+          (n, img_size, min_iou.mean(), iou.mean(), max_iou.mean()), end='')
     for i, x in enumerate(k):
         print('%i,%i' % (round(x[0]), round(x[1])), end=',  ' if i < len(k) - 1 else '\n')  # use in *.cfg
 
