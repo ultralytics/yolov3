@@ -744,7 +744,9 @@ def kmeans_targets(path='data/coco64.txt', n=9, img_size=416):  # from utils.uti
     for s, l in zip(dataset.shapes, dataset.labels):
         l[:, [1, 3]] *= s[0]  # normalized to pixels
         l[:, [2, 4]] *= s[1]
-        l[:, 1:] *= img_size / max(s) * random.uniform(0.5, 1.5)  # nominal img_size for training
+        l[:, 1:] *= img_size / max(s)
+        l = l.repeat(10, axis=0)  # augment 10x
+        l *= np.random.uniform(0.5, 1.5, size=(l.shape[0], 1))  # multi-scale box
     wh = np.concatenate(dataset.labels, 0)[:, 3:5]  # wh from cxywh
 
     # Kmeans calculation
@@ -762,7 +764,7 @@ def kmeans_targets(path='data/coco64.txt', n=9, img_size=416):  # from utils.uti
     # Measure IoUs
     iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
     biou = iou.max(0)[0]  # closest anchor IoU
-    print('Best Possible Recall (BPR): %.3f' % (biou > 0.2635).float().mean())  # BPR (best possible recall)
+    print('Best Possible Recall (BPR): %.3f' % (biou > 0.225).float().mean())  # BPR (best possible recall)
 
     # Print
     print('kmeans anchors (n=%g, img_size=%g, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
