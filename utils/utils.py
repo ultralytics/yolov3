@@ -734,7 +734,7 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmeans_targets(path='../coco/trainvalno5k.txt', n=9, img_size=416):  # from utils.utils import *; kmeans_targets()
+def kmeans_targets(path='data/coco64.txt', n=9, img_size=416):  # from utils.utils import *; kmeans_targets()
     # Produces a list of target kmeans suitable for use in *.cfg files
     from utils.datasets import LoadImagesAndLabels
     from scipy import cluster
@@ -762,7 +762,7 @@ def kmeans_targets(path='../coco/trainvalno5k.txt', n=9, img_size=416):  # from 
     # Measure IoUs
     iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
     biou = iou.max(0)[0]  # closest anchor IoU
-    print('Best possible recall: %.3f' % (biou > 0.2635).float().mean())  # BPR (best possible recall)
+    print('Best Possible Recall (BPR): %.3f' % (biou > 0.2635).float().mean())  # BPR (best possible recall)
 
     # Print
     print('kmeans anchors (n=%g, img_size=%g, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
