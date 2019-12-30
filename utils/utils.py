@@ -746,7 +746,7 @@ def kmeans_targets(path='data/coco64.txt', n=9, img_size=416):  # from utils.uti
         l[:, [2, 4]] *= s[1]
         l[:, 1:] *= img_size / max(s)
         l = l.repeat(10, axis=0)  # augment 10x
-        l *= np.random.uniform(0.5, 1.5, size=(l.shape[0], 1))  # multi-scale box
+        l *= np.random.uniform(288, 640, size=(l.shape[0], 1)) / img_size  # multi-scale box
     wh = np.concatenate(dataset.labels, 0)[:, 3:5]  # wh from cxywh
 
     # Kmeans calculation
