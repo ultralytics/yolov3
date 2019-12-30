@@ -734,7 +734,7 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmeans_targets(path='data/coco64.txt', n=9, img_size=416):  # from utils.utils import *; kmeans_targets()
+def kmean_anchors(path='data/coco64.txt', n=9, img_size=(288, 640)):  # from utils.utils import *; kmean_anchors()
     # Produces a list of target kmeans suitable for use in *.cfg files
     from utils.datasets import LoadImagesAndLabels
     from scipy import cluster
