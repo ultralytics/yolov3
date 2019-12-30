@@ -760,7 +760,7 @@ def kmeans_targets(path='../coco/trainvalno5k.txt', n=9, img_size=416):  # from 
     # ax[0].plot(np.arange(1, 21), np.array(d) ** 2, marker='.')
 
     # Measure IoUs
-    iou = torch.stack([wh_iou(torch.Tensor(wh).T, torch.Tensor(x).T) for x in k], 0)
+    iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
     biou = iou.max(0)[0]  # closest anchor IoU
     print('Best possible recall: %.3f' % (biou > 0.2635).float().mean())  # BPR (best possible recall)
 
