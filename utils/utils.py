@@ -740,14 +740,14 @@ def kmeans_targets(path='data/coco64.txt', n=9, img_size=416):  # from utils.uti
     from scipy import cluster
 
     # Get label wh
+    wh = []
     dataset = LoadImagesAndLabels(path, augment=True, rect=True, cache_labels=True)
     for s, l in zip(dataset.shapes, dataset.labels):
-        l[:, [1, 3]] *= s[0]  # normalized to pixels
-        l[:, [2, 4]] *= s[1]
-        l[:, 1:] *= img_size / max(s)
+        l = l[:, 3:5] * (s / max(s))  # image normalized to letterbox normalized wh
         l = l.repeat(10, axis=0)  # augment 10x
-        l *= np.random.uniform(288, 640, size=(l.shape[0], 1)) / img_size  # multi-scale box
-    wh = np.concatenate(dataset.labels, 0)[:, 3:5]  # wh from cxywh
+        l *= np.random.uniform(img_size[0], img_size[1], size=(l.shape[0], 1))  # normalized to pixels (multi-scale)
+        wh.append(l)
+    wh = np.concatenate(wh, 0)  # wh from cxywh
 
     # Kmeans calculation
     k, dist = cluster.vq.kmeans(wh, n)  # points, mean distance
@@ -767,7 +767,7 @@ def kmeans_targets(path='data/coco64.txt', n=9, img_size=416):  # from utils.uti
     print('Best Possible Recall (BPR): %.3f' % (biou > 0.225).float().mean())  # BPR (best possible recall)
 
     # Print
-    print('kmeans anchors (n=%g, img_size=%g, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
+    print('kmeans anchors (n=%g, img_size=%s, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
           (n, img_size, biou.min(), iou.mean(), biou.mean()), end='')
     for i, x in enumerate(k):
         print('%i,%i' % (round(x[0]), round(x[1])), end=',  ' if i < len(k) - 1 else '\n')  # use in *.cfg
