@@ -735,7 +735,8 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmean_anchors(path='../coco/train2017.txt', n=12, img_size=(320, 640)):  # from utils.utils import *; kmean_anchors()
+def kmean_anchors(path='data/coco64.txt', n=12, img_size=(320, 640)):
+    # from utils.utils import *; _ = kmean_anchors(n=9)
     # Produces a list of target kmeans suitable for use in *.cfg files
     from utils.datasets import LoadImagesAndLabels
     from scipy import cluster
@@ -763,10 +764,10 @@ def kmean_anchors(path='../coco/train2017.txt', n=12, img_size=(320, 640)):  # f
 
     # Measure IoUs
     iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
-    max_iou = iou.max(1)[0]  # best IoU
-    min_iou = iou.min(1)[0]  # worst IoU
-    print('Best Possible Recall (BPR): %.3f' % (max_iou > 0.225).float().mean())  # BPR (best possible recall)
-    print('Mean anchors over threshold: %.3f' % ((iou > 0.225).float().mean() * n))  # BPR (best possible recall)
+    min_iou, max_iou = iou.min(1)[0], iou.max(1)[0]
+    for x in [0.10, 0.15, 0.20, 0.25, 0.30, 0.35]:  # iou thresholds
+        print('%.2f iou_thr: %.3f best possible recall, %.3f anchors > thr' %
+              (x, (max_iou > x).float().mean(), (iou > x).float().mean() * n))  # BPR (best possible recall)
 
     # Print
     print('kmeans anchors (n=%g, img_size=%s, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
