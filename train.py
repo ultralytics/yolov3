@@ -137,7 +137,7 @@ def train():
         cutoff = load_darknet_weights(model, weights)
 
     if opt.transfer or opt.prebias:  # transfer learning edge (yolo) layers
-        nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
+        nf = [int(model.module_defs[x - 1]['filters']) for x in model.yolo_layers]  # yolo layer size (i.e. 255)
 
         if opt.prebias:
             for p in optimizer.param_groups:
@@ -147,9 +147,9 @@ def train():
                     p['momentum'] = 0.9
 
         for p in model.parameters():
-            if opt.prebias and p.numel() == nf:  # train (yolo biases)
+            if opt.prebias and p.numel() in nf:  # train (yolo biases)
                 p.requires_grad = True
-            elif opt.transfer and p.shape[0] == nf:  # train (yolo biases+weights)
+            elif opt.transfer and p.shape[0] in nf:  # train (yolo biases+weights)
                 p.requires_grad = True
             else:  # freeze layer
                 p.requires_grad = False
