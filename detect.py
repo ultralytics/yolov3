@@ -86,7 +86,7 @@ def detect(save_txt=False, save_img=False):
             pred = pred.float()
 
         # Apply NMS
-        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres)
+        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes)
 
         # Apply Classifier
         if classify:
@@ -110,9 +110,6 @@ def detect(save_txt=False, save_img=False):
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += '%g %ss, ' % (n, names[int(c)])  # add to string
 
-                # Print time (inference + NMS)
-                print('%sDone. (%.3fs)' % (s, time.time() - t))
-
                 # Write results
                 for *xyxy, conf, cls in det:
                     if save_txt:  # Write to file
@@ -122,6 +119,9 @@ def detect(save_txt=False, save_img=False):
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
+
+            # Print time (inference + NMS)
+            print('%sDone. (%.3fs)' % (s, time.time() - t))
 
             # Stream results
             if view_img:
@@ -167,6 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
     parser.add_argument('--view-img', action='store_true', help='display results')
+    parser.add_argument('--classes', nargs='+', type=int, help='filter by class')
     opt = parser.parse_args()
     print(opt)
 
