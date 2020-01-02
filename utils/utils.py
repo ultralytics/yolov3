@@ -770,7 +770,7 @@ def kmean_anchors(path='data/coco64.txt', n=12, img_size=(320, 640)):
     iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
     min_iou, max_iou = iou.min(1)[0], iou.max(1)[0]
     for x in [0.10, 0.15, 0.20, 0.25, 0.30, 0.35]:  # iou thresholds
-        print('%.2f iou_thr: %.3f best possible recall, %.3f anchors > thr' %
+        print('%.2f iou_thr: %.3f best possible recall, %.1f anchors > thr' %
               (x, (max_iou > x).float().mean(), (iou > x).float().mean() * n))  # BPR (best possible recall)
 
     # Print
