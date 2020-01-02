@@ -739,29 +739,31 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmean_anchors(path='data/coco64.txt', n=12, img_size=(320, 640)):
+def kmean_anchors(path='data/coco64.txt', n=9, img_size=(320, 640)):
     # from utils.utils import *; _ = kmean_anchors(n=9)
     # Produces a list of target kmeans suitable for use in *.cfg files
     from utils.datasets import LoadImagesAndLabels
-    from scipy import cluster
+    from scipy.cluster.vq import kmeans
 
     # Get label wh
     wh = []
     dataset = LoadImagesAndLabels(path, augment=True, rect=True, cache_labels=True)
+    nr = 1 if img_size[0] == img_size[1] else 10  # number augmentation repetitions
     for s, l in zip(dataset.shapes, dataset.labels):
         wh.append(l[:, 3:5] * (s / s.max()))  # image normalized to letterbox normalized wh
-    wh = np.concatenate(wh, 0).repeat(10, axis=0)  # augment 10x
+    wh = np.concatenate(wh, 0).repeat(nr, axis=0)  # augment 10x
     wh *= np.random.uniform(img_size[0], img_size[1], size=(wh.shape[0], 1))  # normalized to pixels (multi-scale)
 
     # Kmeans calculation
     print('Running kmeans...')
-    k, dist = cluster.vq.kmeans(wh, n)  # points, mean distance
-    k = k[np.argsort(k.prod(1))]  # sort small to large
+    s = wh.std(0)  # sigmas for whitening
+    k, dist = kmeans(wh / s, n, iter=30)  # points, mean distance
+    k = k[np.argsort(k.prod(1))] * s  # sort small to large
 
     # # Plot
     # k, d = [None] * 20, [None] * 20
     # for i in tqdm(range(1, 21)):
-    #     k[i-1], d[i-1] = cluster.vq.kmeans(wh, i)  # points, mean distance
+    #     k[i-1], d[i-1] = kmeans(wh / s, i)  # points, mean distance
     # fig, ax = plt.subplots(1, 2, figsize=(14, 7))
     # ax = ax.ravel()
     # ax[0].plot(np.arange(1, 21), np.array(d) ** 2, marker='.')
@@ -769,8 +771,8 @@ def kmean_anchors(path='data/coco64.txt', n=12, img_size=(320, 640)):
     # Measure IoUs
     iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
     min_iou, max_iou = iou.min(1)[0], iou.max(1)[0]
-    for x in [0.10, 0.15, 0.20, 0.25, 0.30, 0.35]:  # iou thresholds
-        print('%.2f iou_thr: %.3f best possible recall, %.1f anchors > thr' %
+    for x in [0.10, 0.20, 0.30]:  # iou thresholds
+        print('%.2f iou_thr: %.3f best possible recall, %.2f anchors > thr' %
               (x, (max_iou > x).float().mean(), (iou > x).float().mean() * n))  # BPR (best possible recall)
 
     # Print
