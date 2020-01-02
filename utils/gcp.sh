@@ -23,6 +23,7 @@ sudo mkfs.ext4 -F /dev/nvme0n1
 sudo mkdir -p /mnt/disks/nvme0n1
 sudo mount /dev/nvme0n1 /mnt/disks/nvme0n1
 sudo chmod a+w /mnt/disks/nvme0n1
+cp -r coco /mnt/disks/nvme0n1
 
 # Train
 python3 train.py
@@ -41,7 +42,8 @@ t=ultralytics/yolov3:v179
 sudo docker kill $(sudo docker ps -a -q --filter ancestor=$t)
 for i in 0
 do
-  sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t bash utils/evolve.sh $i
+  # sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t bash utils/evolve.sh $i
+  sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v /mnt/disks/nvme0n1/coco:/usr/src/coco $t bash utils/evolve.sh $i
   sleep 10
 done
 
@@ -228,3 +230,6 @@ t=ultralytics/yolov3:v179 && sudo docker pull $t && sudo nvidia-docker run -it -
 t=ultralytics/yolov3:v143 && sudo docker build -t $t . && sudo docker push $t
 
 t=ultralytics/yolov3:v179 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 detect.py
+t=ultralytics/yolov3:v179 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host $t python3 detect.py
+
+
