@@ -755,7 +755,7 @@ def kmean_anchors(path='data/coco64.txt', n=9, img_size=(320, 640)):
     wh *= np.random.uniform(img_size[0], img_size[1], size=(wh.shape[0], 1))  # normalized to pixels (multi-scale)
 
     # Kmeans calculation
-    print('Running kmeans...')
+    print('Running kmeans on %g boxes...' % len(wh))
     s = wh.std(0)  # sigmas for whitening
     k, dist = kmeans(wh / s, n, iter=30)  # points, mean distance
     k = k[np.argsort(k.prod(1))] * s  # sort small to large
