@@ -42,8 +42,8 @@ t=ultralytics/yolov3:v179
 sudo docker kill $(sudo docker ps -a -q --filter ancestor=$t)
 for i in 0
 do
-  # sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t bash utils/evolve.sh $i
-  sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v /mnt/disks/nvme0n1/coco:/usr/src/coco $t bash utils/evolve.sh $i
+  sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t bash utils/evolve.sh $i
+  # sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v /mnt/disks/nvme0n1/coco:/usr/src/coco $t bash utils/evolve.sh $i
   sleep 10
 done
 
@@ -229,7 +229,12 @@ t=ultralytics/yolov3:v179 && sudo docker pull $t && sudo nvidia-docker run -it -
 
 t=ultralytics/yolov3:v143 && sudo docker build -t $t . && sudo docker push $t
 
-t=ultralytics/yolov3:v179 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 detect.py
-t=ultralytics/yolov3:v179 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host $t python3 detect.py
+t=ultralytics/yolov3:v179 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 640 --epochs 10 --batch-size 22 --accumulate 3 --weights '' --arc defaultpw --pre --multi --bucket yolov4 --name 179
+t=ultralytics/yolov3:v180 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 640 --epochs 10 --batch-size 22 --accumulate 3 --weights '' --arc defaultpw --pre --multi --bucket yolov4 --name 180
+t=ultralytics/yolov3:v183 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 640 --epochs 10 --batch-size 22 --accumulate 3 --weights '' --arc defaultpw --pre --multi --bucket yolov4 --name 181 --cfg yolov3s9a-640.cfg
+t=ultralytics/yolov3:v183 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 640 --epochs 10 --batch-size 22 --accumulate 3 --weights '' --arc defaultpw --pre --multi --bucket yolov4 --name 182 --cfg yolov3s9a-320-640.cfg
+t=ultralytics/yolov3:v183 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 640 --epochs 10 --batch-size 22 --accumulate 3 --weights '' --arc defaultpw --pre --multi --bucket yolov4 --name 183 --cfg yolov3s15a-640.cfg
 
+t=ultralytics/yolov3:v185 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 640 --epochs 10 --batch-size 22 --accumulate 3 --weights '' --arc defaultpw --pre --multi --bucket yolov4 --name 185
+t=ultralytics/yolov3:v186 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 640 --epochs 10 --batch-size 22 --accumulate 3 --weights '' --arc defaultpw --pre --multi --bucket yolov4 --name 186
 
