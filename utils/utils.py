@@ -367,7 +367,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     tcls, tbox, indices, anchor_vec = build_targets(model, targets)
     h = model.hyp  # hyperparameters
     arc = model.arc  # # (default, uCE, uBCE) detection architectures
-    red = 'mean'  # Loss reduction (sum or mean)
+    red = 'sum'  # Loss reduction (sum or mean)
 
     # Define criteria
     BCEcls = nn.BCEWithLogitsLoss(pos_weight=ft([h['cls_pw']]), reduction=red)
@@ -399,7 +399,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             pbox = torch.cat((pxy, pwh), 1)  # predicted box
             giou = bbox_iou(pbox.t(), tbox[i], x1y1x2y2=False, GIoU=True)  # giou computation
             lbox += (1.0 - giou).sum() if red == 'sum' else (1.0 - giou).mean()  # giou loss
-            tobj[b, a, gj, gi] = 1.0  # giou.detach().type(tobj.dtype)
+            tobj[b, a, gj, gi] = giou.detach().type(tobj.dtype)
 
             if 'default' in arc and model.nc > 1:  # cls loss (only if multiple classes)
                 t = torch.zeros_like(ps[:, 5:])  # targets
@@ -739,11 +739,28 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmean_anchors(path='data/coco64.txt', n=9, img_size=(320, 640)):
-    # from utils.utils import *; _ = kmean_anchors(n=9)
+def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
+    # from utils.utils import *; _ = kmean_anchors()
     # Produces a list of target kmeans suitable for use in *.cfg files
     from utils.datasets import LoadImagesAndLabels
-    from scipy.cluster.vq import kmeans
+    thr = 0.20  # IoU threshold
+
+    def print_results(thr, wh, k):
+        k = k[np.argsort(k.prod(1))]  # sort small to large
+        iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
+        max_iou, min_iou = iou.max(1)[0], iou.min(1)[0]
+        bpr, aat = (max_iou > thr).float().mean(), (iou > thr).float().mean() * n  # best possible recall, anch > thr
+        print('%.2f iou_thr: %.3f best possible recall, %.2f anchors > thr' % (thr, bpr, aat))
+        print('kmeans anchors (n=%g, img_size=%s, IoU=%.3f/%.3f/%.3f-min/mean/best): ' %
+              (n, img_size, min_iou.mean(), iou.mean(), max_iou.mean()), end='')
+        for i, x in enumerate(k):
+            print('%i,%i' % (round(x[0]), round(x[1])), end=',  ' if i < len(k) - 1 else '\n')  # use in *.cfg
+        return k
+
+    def fitness(thr, wh, k):  # mutation fitness
+        iou = wh_iou(wh, torch.Tensor(k)).max(1)[0]  # max iou
+        bpr = (iou > thr).float().mean()  # best possible recall
+        return iou.mean() * 0.80 + bpr * 0.20  # weighted combination
 
     # Get label wh
     wh = []
@@ -754,11 +771,18 @@ def kmean_anchors(path='data/coco64.txt', n=9, img_size=(320, 640)):
     wh = np.concatenate(wh, 0).repeat(nr, axis=0)  # augment 10x
     wh *= np.random.uniform(img_size[0], img_size[1], size=(wh.shape[0], 1))  # normalized to pixels (multi-scale)
 
-    # Kmeans calculation
-    print('Running kmeans on %g points...' % len(wh))
-    s = wh.std(0)  # sigmas for whitening
-    k, dist = kmeans(wh / s, n, iter=30)  # points, mean distance
-    k = k[np.argsort(k.prod(1))] * s  # sort small to large
+    # Darknet yolov3.cfg anchors
+    if n == 9:
+        k = np.array([[10, 13], [16, 30], [33, 23], [30, 61], [62, 45], [59, 119], [116, 90], [156, 198], [373, 326]])
+        k = print_results(thr, wh, k)
+    else:
+        # Kmeans calculation
+        from scipy.cluster.vq import kmeans
+        print('Running kmeans on %g points...' % len(wh))
+        s = wh.std(0)  # sigmas for whitening
+        k, dist = kmeans(wh / s, n, iter=20)  # points, mean distance
+        k *= s
+        k = print_results(thr, wh, k)
 
     # # Plot
     # k, d = [None] * 20, [None] * 20
@@ -768,21 +792,17 @@ def kmean_anchors(path='data/coco64.txt', n=9, img_size=(320, 640)):
     # ax = ax.ravel()
     # ax[0].plot(np.arange(1, 21), np.array(d) ** 2, marker='.')
 
-    # Measure IoUs
-    iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
-    min_iou, max_iou = iou.min(1)[0], iou.max(1)[0]
-    for x in [0.10, 0.20, 0.30]:  # iou thresholds
-        print('%.2f iou_thr: %.3f best possible recall, %.2f anchors > thr' %
-              (x, (max_iou > x).float().mean(), (iou > x).float().mean() * n))  # BPR (best possible recall)
+    # Evolve
+    wh = torch.Tensor(wh)
+    f, ng = fitness(thr, wh, k), 1000  # fitness, generations
+    for _ in tqdm(range(ng), desc='Evolving anchors'):
+        kg = (k.copy() * (1 + np.random.random() * np.random.randn(*k.shape) * 0.20)).clip(min=2.0)
+        fg = fitness(thr, wh, kg)
+        if fg > f:
+            f, k = fg, kg.copy()
+            print(fg, list(k.round().reshape(-1)))
+    k = print_results(thr, wh, k)
 
-    # Print
-    print('kmeans anchors (n=%g, img_size=%s, IoU=%.2f/%.2f/%.2f-min/mean/best): ' %
-          (n, img_size, min_iou.mean(), iou.mean(), max_iou.mean()), end='')
-    for i, x in enumerate(k):
-        print('%i,%i' % (round(x[0]), round(x[1])), end=',  ' if i < len(k) - 1 else '\n')  # use in *.cfg
-
-    # Plot
-    # plt.hist(biou.numpy().ravel(), 100)
     return k
 
 
