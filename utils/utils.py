@@ -778,7 +778,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
     else:
         # Kmeans calculation
         from scipy.cluster.vq import kmeans
-        print('Running kmeans on %g points...' % len(wh))
+        print('Running kmeans for %g anchors on %g points...' % (n, len(wh)))
         s = wh.std(0)  # sigmas for whitening
         k, dist = kmeans(wh / s, n, iter=20)  # points, mean distance
         k *= s
@@ -800,7 +800,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
         fg = fitness(thr, wh, kg)
         if fg > f:
             f, k = fg, kg.copy()
-            print(fg, list(k.round().reshape(-1)))
+            print_results(thr, wh, k)
     k = print_results(thr, wh, k)
 
     return k
