@@ -65,8 +65,8 @@ def train():
     # Initialize
     init_seeds()
     if opt.multi_scale:
-        img_sz_min = round(img_size / 32 / 1.5)
-        img_sz_max = round(img_size / 32 * 1.5)
+        img_sz_min = 9  # round(img_size / 32 / 1.5)
+        img_sz_max = 21  # round(img_size / 32 * 1.5)
         img_size = img_sz_max * 32  # initiate with maximum multi_scale size
         print('Using multi-scale %g - %g' % (img_sz_min * 32, img_size))
 
@@ -136,23 +136,15 @@ def train():
         # possible weights are '*.weights', 'yolov3-tiny.conv.15',  'darknet53.conv.74' etc.
         cutoff = load_darknet_weights(model, weights)
 
-    if opt.transfer or opt.prebias:  # transfer learning edge (yolo) layers
-        nf = [int(model.module_defs[x - 1]['filters']) for x in model.yolo_layers]  # yolo layer size (i.e. 255)
+    if opt.prebias:
+        # Update params (bias-only training allows more aggressive settings: i.e. SGD ~0.1 lr0, ~0.9 momentum)
+        for p in optimizer.param_groups:
+            p['lr'] = 0.1  # learning rate
+            if p.get('momentum') is not None:  # for SGD but not Adam
+                p['momentum'] = 0.9
 
-        if opt.prebias:
-            for p in optimizer.param_groups:
-                # lower param count allows more aggressive training settings: i.e. SGD ~0.1 lr0, ~0.9 momentum
-                p['lr'] = 0.1  # learning rate
-                if p.get('momentum') is not None:  # for SGD but not Adam
-                    p['momentum'] = 0.9
-
-        for p in model.parameters():
-            if opt.prebias and p.numel() in nf:  # train (yolo biases)
-                p.requires_grad = True
-            elif opt.transfer and p.shape[0] in nf:  # train (yolo biases+weights)
-                p.requires_grad = True
-            else:  # freeze layer
-                p.requires_grad = False
+        for name, p in model.named_parameters():
+            p.requires_grad = True if name.endswith('.bias') else False
 
     # Scheduler https://github.com/ultralytics/yolov3/issues/238
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
@@ -234,13 +226,6 @@ def train():
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
         model.train()
         print(('\n' + '%10s' * 8) % ('Epoch', 'gpu_mem', 'GIoU', 'obj', 'cls', 'total', 'targets', 'img_size'))
-
-        # Freeze backbone at epoch 0, unfreeze at epoch 1 (optional)
-        freeze_backbone = False
-        if freeze_backbone and epoch < 2:
-            for name, p in model.named_parameters():
-                if int(name.split('.')[1]) < cutoff:  # if layer < 75
-                    p.requires_grad = False if epoch == 0 else True
 
         # Update image weights (optional)
         if dataset.image_weights:
@@ -406,7 +391,7 @@ def prebias():
         # opt_0 = opt  # save settings
         # opt.rect = False  # update settings (if any)
 
-        train()  # transfer-learn yolo biases for 1 epoch
+        train()  # train model biases
         create_backbone(last)  # saved results as backbone.pt
 
         # opt = opt_0  # reset settings
@@ -425,7 +410,6 @@ if __name__ == '__main__':
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
     parser.add_argument('--resume', action='store_true', help='resume training from last.pt')
-    parser.add_argument('--transfer', action='store_true', help='transfer learning')
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
@@ -433,7 +417,7 @@ if __name__ == '__main__':
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--weights', type=str, default='weights/ultralytics68.pt', help='initial weights')
     parser.add_argument('--arc', type=str, default='default', help='yolo architecture')  # defaultpw, uCE, uBCE
-    parser.add_argument('--prebias', action='store_true', help='transfer-learn yolo biases prior to training')
+    parser.add_argument('--prebias', action='store_true', help='pretrain model biases')
     parser.add_argument('--name', default='', help='renames results.txt to results_name.txt if supplied')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1 or cpu)')
     parser.add_argument('--adam', action='store_true', help='use adam optimizer')
