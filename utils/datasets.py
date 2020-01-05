@@ -689,7 +689,7 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10,
         area = w * h
         area0 = (targets[:, 3] - targets[:, 1]) * (targets[:, 4] - targets[:, 2])
         ar = np.maximum(w / (h + 1e-16), h / (w + 1e-16))  # aspect ratio
-        i = (w > 4) & (h > 4) & (area / (area0 + 1e-16) > 0.1) & (ar < 10)
+        i = (w > 4) & (h > 4) & (area / (area0 + 1e-16) > 0.2) & (ar < 10)
 
         targets = targets[i]
         targets[:, 1:5] = xy[i]
@@ -703,7 +703,7 @@ def cutout(image, labels):
     # https://towardsdatascience.com/when-conventional-wisdom-fails-revisiting-data-augmentation-for-self-driving-cars-4831998c5509
     h, w = image.shape[:2]
 
-    def bbox_ioa(box1, box2, x1y1x2y2=True):
+    def bbox_ioa(box1, box2):
         # Returns the intersection over box2 area given box1, box2. box1 is 4, box2 is nx4. boxes are x1y1x2y2
         box2 = box2.transpose()
 
