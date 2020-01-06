@@ -782,7 +782,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
         from scipy.cluster.vq import kmeans
         print('Running kmeans for %g anchors on %g points...' % (n, len(wh)))
         s = wh.std(0)  # sigmas for whitening
-        k, dist = kmeans(wh / s, n, iter=20)  # points, mean distance
+        k, dist = kmeans(wh / s, n, iter=30)  # points, mean distance
         k *= s
         k = print_results(thr, wh, k)
 
@@ -798,7 +798,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
     wh = torch.Tensor(wh)
     f, ng = fitness(thr, wh, k), 1000  # fitness, generations
     for _ in tqdm(range(ng), desc='Evolving anchors'):
-        kg = (k.copy() * (1 + np.random.random() * np.random.randn(*k.shape) * 0.20)).clip(min=2.0)
+        kg = (k.copy() * (1 + np.random.random() * np.random.randn(*k.shape) * 0.30)).clip(min=2.0)
         fg = fitness(thr, wh, kg)
         if fg > f:
             f, k = fg, kg.copy()
