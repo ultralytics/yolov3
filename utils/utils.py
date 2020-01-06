@@ -776,7 +776,6 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
     use_darknet = False
     if use_darknet:
         k = np.array([[10, 13], [16, 30], [33, 23], [30, 61], [62, 45], [59, 119], [116, 90], [156, 198], [373, 326]])
-        k = print_results(thr, wh, k)
     else:
         # Kmeans calculation
         from scipy.cluster.vq import kmeans
@@ -784,7 +783,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
         s = wh.std(0)  # sigmas for whitening
         k, dist = kmeans(wh / s, n, iter=30)  # points, mean distance
         k *= s
-        k = print_results(thr, wh, k)
+    k = print_results(thr, wh, k)
 
     # # Plot
     # k, d = [None] * 20, [None] * 20
