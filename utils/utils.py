@@ -761,7 +761,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
     def fitness(thr, wh, k):  # mutation fitness
         iou = wh_iou(wh, torch.Tensor(k)).max(1)[0]  # max iou
         bpr = (iou > thr).float().mean()  # best possible recall
-        return iou.mean() * 0.80 + bpr * 0.20  # weighted combination
+        return iou.mean() * bpr  # product
 
     # Get label wh
     wh = []
