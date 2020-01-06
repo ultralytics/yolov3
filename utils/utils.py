@@ -773,7 +773,8 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
     wh *= np.random.uniform(img_size[0], img_size[1], size=(wh.shape[0], 1))  # normalized to pixels (multi-scale)
 
     # Darknet yolov3.cfg anchors
-    if n == 9:
+    use_darknet = False
+    if use_darknet:
         k = np.array([[10, 13], [16, 30], [33, 23], [30, 61], [62, 45], [59, 119], [116, 90], [156, 198], [373, 326]])
         k = print_results(thr, wh, k)
     else:
