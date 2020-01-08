@@ -540,7 +540,7 @@ def non_max_suppression(prediction, conf_thres=0.5, iou_thres=0.5, multi_cls=Tru
 
         # Filter by class
         if classes:
-            pred = pred[(j.view(-1, 1) == torch.Tensor(classes)).any(1)]
+            pred = pred[(j.view(-1, 1) == torch.tensor(classes, device=j.device)).any(1)]
 
         # Apply finite constraint
         if not torch.isfinite(pred).all():
