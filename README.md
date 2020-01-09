@@ -26,12 +26,11 @@ The https://github.com/ultralytics/yolov3 repo contains inference and training c
 
 # Requirements
 
-Python 3.7 or later with the following `pip3 install -U -r requirements.txt` packages:
+Python 3.7 or later with the following `pip3 install -U -r requirements.txt` packages, including:
 
-- `numpy`
 - `torch >= 1.3`
 - `opencv-python`
-- `tqdm`
+- `Pillow`
 
 # Tutorials
 
