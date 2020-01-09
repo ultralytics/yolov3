@@ -99,7 +99,7 @@ def test(cfg,
 
             if pred is None:
                 if nl:
-                    stats.append((torch.zeros(0, 1), torch.Tensor(), torch.Tensor(), tcls))
+                    stats.append((torch.zeros(0, niou, dtype=torch.bool), torch.Tensor(), torch.Tensor(), tcls))
                 continue
 
             # Append to text file
@@ -147,7 +147,7 @@ def test(cfg,
                             d = ti[i[j]]  # detected target
                             if d not in detected:
                                 detected.append(d)
-                                correct[pi[j]] = ious[j] > iouv  # iou_thres is 1xn
+                                correct[pi[j]] = (ious[j] > iouv).cpu()  # iou_thres is 1xn
                                 if len(detected) == nl:  # all targets already located in image
                                     break
 
