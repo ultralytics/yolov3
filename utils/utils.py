@@ -840,13 +840,13 @@ def apply_classifier(x, model, img, im0):
             d[:, :4] = xywh2xyxy(b).long()
 
             # Rescale boxes from img_size to im0 size
-            scale_coords(img.shape[2:], d[:, :4], im0.shape)
+            scale_coords(img.shape[2:], d[:, :4], im0[i].shape)
 
             # Classes
-            pred_cls1 = d[:, 6].long()
+            pred_cls1 = d[:, 5].long()
             ims = []
             for j, a in enumerate(d):  # per item
-                cutout = im0[int(a[1]):int(a[3]), int(a[0]):int(a[2])]
+                cutout = im0[i][int(a[1]):int(a[3]), int(a[0]):int(a[2])]
                 im = cv2.resize(cutout, (224, 224))  # BGR
                 # cv2.imwrite('test%i.jpg' % j, cutout)
 
