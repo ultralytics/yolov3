@@ -283,7 +283,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         if self.rect:
-            # Read image shapes
+            # Read image shapes (wh)
             sp = path.replace('.txt', '.shapes')  # shapefile path
             try:
                 with open(sp, 'r') as f:  # read existing shapefile
@@ -299,7 +299,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             i = ar.argsort()
             self.img_files = [self.img_files[i] for i in i]
             self.label_files = [self.label_files[i] for i in i]
-            self.shapes = s[i]
+            self.shapes = s[i]  # wh
             ar = ar[i]
 
             # Set training image shapes
