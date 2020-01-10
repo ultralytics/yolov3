@@ -420,7 +420,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         if mosaic:
             # Load mosaic
             img, labels = load_mosaic(self, index)
-            h0, w0, ratio, pad = None, None, None, None
+            shapes = None
 
         else:
             # Load image
@@ -429,6 +429,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             # Letterbox
             shape = self.batch_shapes[self.batch[index]] if self.rect else self.img_size  # final letterboxed shape
             img, ratio, pad = letterbox(img, shape, auto=False, scaleup=self.augment)
+            shapes = (h0, w0), ((h / h0, w / w0), pad)  # for COCO mAP rescaling
 
             # Load labels
             labels = []
@@ -494,7 +495,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img)
 
-        return torch.from_numpy(img), labels_out, img_path, ((h0, w0), (ratio, pad))
+        return torch.from_numpy(img), labels_out, img_path, shapes
 
     @staticmethod
     def collate_fn(batch):
