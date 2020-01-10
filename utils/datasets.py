@@ -506,17 +506,18 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
 def load_image(self, index):
     # loads 1 image from dataset, returns img, original hw, resized hw
-    if self.imgs[index] is None:  # not cached
+    img = self.imgs[index]
+    if img is None:  # not cached
         img_path = self.img_files[index]
         img = cv2.imread(img_path)  # BGR
         assert img is not None, 'Image Not Found ' + img_path
         h0, w0 = img.shape[:2]  # orig hw
         r = self.img_size / max(h0, w0)  # resize image to img_size
-        if self.augment and (r != 1):  # always resize down, only resize up if training with augmentation
-            h, w = int(h0 * r), int(w0 * r)
-            return cv2.resize(img, (w, h), interpolation=cv2.INTER_LINEAR), (h0, w0), (h, w)  # _LINEAR fastest
-    else:  # cached
-        return self.imgs[index], self.img_hw0[index], self.img_hw[index]  # img, hw
+        if r < 1 or (self.augment and (r != 1)):  # always resize down, only resize up if training with augmentation
+            img = cv2.resize(img, (int(w0 * r), int(h0 * r)), interpolation=cv2.INTER_LINEAR)  # _LINEAR fastest
+        return img, (h0, w0), img.shape[:2]  # img, hw_original, hw_resized
+    else:
+        return self.imgs[index], self.img_hw0[index], self.img_hw[index]  # img, hw_original, hw_resized
 
 
 def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
