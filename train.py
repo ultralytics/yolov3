@@ -470,7 +470,7 @@ if __name__ == '__main__':
 
                 # Mutate
                 np.random.seed(int(time.time()))
-                s = np.random.random() * 0.15  # sigma
+                s = np.random.random() * 0.2  # sigma
                 g = [1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # gains
                 for i, k in enumerate(hyp.keys()):
                     x = (np.random.randn() * s * g[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
@@ -478,7 +478,7 @@ if __name__ == '__main__':
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay', 'hsv_s', 'hsv_v', 'translate', 'scale', 'fl_gamma']
-            limits = [(1e-5, 1e-2), (0.00, 0.70), (0.60, 0.98), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9), (0, 3)]
+            limits = [(1e-5, 1e-2), (0.00, 0.70), (0.60, 0.99), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9), (0, 3)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
