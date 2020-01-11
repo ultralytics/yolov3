@@ -155,7 +155,7 @@ def test(cfg,
             stats.append((correct, pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
 
     # Compute statistics
-    stats = [np.concatenate(x, 0) for x in list(zip(*stats))]  # to numpy
+    stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
     if len(stats):
         p, r, ap, f1, ap_class = ap_per_class(*stats)
         if niou > 1:
