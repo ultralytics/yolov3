@@ -451,24 +451,22 @@ if __name__ == '__main__':
                 if parent == 'single' or len(x) == 1:
                     x = x[fitness(x).argmax()]
                 elif parent == 'weighted':  # weighted combination
-                    n = min(10, x.shape[0])  # number to merge
+                    n = min(10, len(x))  # number to merge
                     x = x[np.argsort(-fitness(x))][:n]  # top n mutations
                     w = fitness(x) - fitness(x).min()  # weights
-                    x = (x[:n] * w.reshape(n, 1)).sum(0) / w.sum()  # new parent
-                for i, k in enumerate(hyp.keys()):
-                    hyp[k] = x[i + 7]
+                    x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # new parent
 
                 # Mutate
                 np.random.seed(int(time.time()))
                 s = np.random.random() * 0.2  # sigma
                 g = [1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # gains
+                g = (np.random.randn(len(g)) * np.array(g) * s + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                 for i, k in enumerate(hyp.keys()):
-                    x = (np.random.randn() * s * g[i] + 1) ** 2.0  # plt.hist(x.ravel(), 300)
-                    hyp[k] *= float(x)  # vary by sigmas
+                    hyp[k] = x[i + 7] * g[i]  # mutate parent
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay', 'hsv_s', 'hsv_v', 'translate', 'scale', 'fl_gamma']
-            limits = [(1e-5, 1e-2), (0.00, 0.70), (0.60, 0.99), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9), (0, 3)]
+            limits = [(1e-5, 1e-2), (0.00, 0.70), (0.60, 0.98), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9), (0, 3)]
             for k, v in zip(keys, limits):
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
