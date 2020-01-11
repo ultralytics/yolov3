@@ -49,7 +49,7 @@ def test(cfg,
     path = data['valid']  # path to test images
     names = load_classes(data['names'])  # class names
     iouv = torch.linspace(0.5, 0.95, 10).to(device)  # iou vector for mAP@0.5:0.95
-    iouv = iouv[0].view(1)  # for mAP@0.5
+    iouv = iouv[0].view(1)  # comment for mAP@0.5:0.95
     niou = iouv.numel()
 
     # Dataloader
