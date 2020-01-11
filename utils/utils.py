@@ -633,7 +633,7 @@ def get_yolo_layers(model):
 
 def print_model_biases(model):
     # prints the bias neurons preceding each yolo layer
-    print('\nModel Bias Summary (per output layer):')
+    print('\nModel Bias Summary:')
     multi_gpu = type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel)
     for l in model.yolo_layers:  # print pretrained biases
         if multi_gpu:
@@ -642,7 +642,7 @@ def print_model_biases(model):
         else:
             na = model.module_list[l].na
             b = model.module_list[l - 1][0].bias.view(na, -1)  # bias 3x85
-        print('regression: %5.2f+/-%-5.2f ' % (b[:, :4].mean(), b[:, :4].std()),
+        print('layer %3g regression: %5.2f+/-%-5.2f ' % (l, b[:, :4].mean(), b[:, :4].std()),
               'objectness: %5.2f+/-%-5.2f ' % (b[:, 4].mean(), b[:, 4].std()),
               'classification: %5.2f+/-%-5.2f' % (b[:, 5:].mean(), b[:, 5:].std()))
 

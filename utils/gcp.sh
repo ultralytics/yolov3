@@ -40,12 +40,13 @@ python3 test.py --save-json
 # Evolve
 t=ultralytics/yolov3:v206
 sudo docker kill $(sudo docker ps -a -q --filter ancestor=$t)
-for i in 0 1 2 3 4 5 6 7
+for i in 0 1 2 3
 do
-  sudo docker pull $t && sudo nvidia-docker run -d --ipc=host -v "$(pwd)"/data:/usr/src/data $t bash utils/evolve.sh $i
+  sudo docker pull $t && sudo docker run --gpus all -d --ipc=host -v "$(pwd)"/data:/usr/src/data $t bash utils/evolve.sh $i
+  # sudo docker pull $t && sudo docker run --gpus all -d --ipc=host -v "$(pwd)"/out:/usr/src/out $t bash utils/evolve.sh $i
   # sudo docker pull $t && sudo nvidia-docker run -d --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t bash utils/evolve.sh $i
   # sudo docker pull $t && sudo nvidia-docker run -d --ipc=host -v /mnt/disks/nvme0n1/coco:/usr/src/coco $t bash utils/evolve.sh $i
-  sleep 1
+  sleep 120
 done
 
 
@@ -257,6 +258,7 @@ n=198 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo nvidia-docker r
 n=199 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo nvidia-docker run --ipc=host -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 100 --batch 8 --accum 8 --weights ultralytics68.pt --arc defaultpw --pre --multi --bucket ultralytics/athena --name $n --device 0
 n=200 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo nvidia-docker run --ipc=host -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 100 --batch 8 --accum 8 --weights ultralytics68.pt --arc defaultpw --pre --multi --bucket ultralytics/athena --name $n --device 6
 n=207 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo nvidia-docker run --ipc=host -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 100 --batch 8 --accum 8 --weights ultralytics68.pt --arc defaultpw --pre --multi --bucket ultralytics/athena --name $n --device 7
+n=208 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo docker run --gpus all --ipc=host -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 10 --batch 8 --accum 8 --weights ultralytics68.pt --arc defaultpw --pre --multi --device 0
 
 # sm4
 n=201 && t=ultralytics/yolov3:v201 && sudo docker pull $t && sudo nvidia-docker run -d --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 1000 --batch 64 --accum 1 --weights yolov3-tiny.pt --arc defaultpw --pre --multi --bucket ult/wer --name $n --device 0 --cfg yolov3-tiny-3cls.cfg
@@ -265,3 +267,4 @@ n=203 && t=ultralytics/yolov3:v201 && sudo docker pull $t && sudo nvidia-docker 
 n=204 && t=ultralytics/yolov3:v202 && sudo docker pull $t && sudo nvidia-docker run -d --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 1000 --batch 64 --accum 1 --weights yolov3-tiny.pt --arc defaultpw --pre --multi --bucket ult/wer --name $n --device 3 --cfg yolov3-tiny-3cls-sm4.cfg
 n=205 && t=ultralytics/yolov3:v202 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 1000 --batch 64 --accum 1 --weights '' --arc defaultpw --pre --multi --bucket ult/wer --name $n --device 4 --cfg yolov3-tiny-3cls-sm4.cfg
 
+n=206 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo docker run --gpus all -it --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 100 --batch 64 --accum 1 --weights yolov3-tiny.pt --arc defaultpw --pre --multi --notest --nosave --cache --device 0 --cfg yolov3-tiny-3cls.cfg
