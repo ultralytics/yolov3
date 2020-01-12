@@ -446,7 +446,7 @@ if __name__ == '__main__':
             if os.path.exists('evolve.txt'):  # if evolve.txt exists: select best hyps and mutate
                 # Select parent(s)
                 x = np.loadtxt('evolve.txt', ndmin=2)
-                parent = 'weighted'  # parent selection method: 'single' or 'weighted'
+                parent = 'single'  # parent selection method: 'single' or 'weighted'
                 if parent == 'single' or len(x) == 1:
                     x = x[fitness(x).argmax()]
                 elif parent == 'weighted':  # weighted combination
@@ -456,12 +456,21 @@ if __name__ == '__main__':
                     x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # new parent
 
                 # Mutate
+                mutate_version = 2
                 np.random.seed(int(time.time()))
-                s = np.random.random() * 0.2  # sigma
-                g = [1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # gains
-                g = (np.random.randn(len(g)) * np.array(g) * s + 1) ** 2.0  # plt.hist(x.ravel(), 300)
+                s = 0.2  # 20% sigma
+                g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 1, 1, 1, 1, 1, 1, 1, 1])  # gains
+                ng = len(g)
+                if mutate_version == 1:
+                    s *= np.random.random()  # sigma
+                    v = (np.random.randn(ng) * g * s + 1) ** 2.0  # plt.hist(x.ravel(), 300)
+                else:
+                    v = np.ones(ng)
+                    while all(v == 1):  # mutate untill a change occurs (prevent duplicates)
+                        r = (np.random.random(ng) < 0.1) * np.random.randn(ng)  # 10% mutation probability
+                        v = (g * s * r + 1) ** 2.0  # plt.hist(x.ravel(), 300)
                 for i, k in enumerate(hyp.keys()):
-                    hyp[k] = x[i + 7] * g[i]  # mutate parent
+                    hyp[k] = x[i + 7] * v[i]  # mutate
 
             # Clip to limits
             keys = ['lr0', 'iou_t', 'momentum', 'weight_decay', 'hsv_s', 'hsv_v', 'translate', 'scale', 'fl_gamma']
