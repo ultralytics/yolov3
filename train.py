@@ -174,8 +174,7 @@ def train():
                                   augment=True,
                                   hyp=hyp,  # augmentation hyperparameters
                                   rect=opt.rect,  # rectangular training
-                                  image_weights=False,
-                                  cache_labels=epochs > 10,
+                                  cache_labels=True,
                                   cache_images=opt.cache_images)
 
     # Dataloader
