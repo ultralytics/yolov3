@@ -460,7 +460,7 @@ if __name__ == '__main__':
                 mutate_version = 2
                 np.random.seed(int(time.time()))
                 s = 0.2  # 20% sigma
-                g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 1, 1, 1, 1, 1, 1, 1, 1])  # gains
+                g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 0, 1, 1, 1, 1, 1, 1, 1])  # gains
                 ng = len(g)
                 if mutate_version == 1:
                     s *= np.random.random()  # sigma
