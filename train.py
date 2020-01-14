@@ -1,3 +1,4 @@
+import os
 import argparse
 
 import torch.distributed as dist
@@ -15,36 +16,39 @@ try:  # Mixed precision training https://github.com/NVIDIA/apex
 except:
     mixed_precision = False  # not installed
 
-wdir = 'weights' + os.sep  # weights dir
+wdir = os.path.join(os.environ['SM_MODEL_DIR'], 'weights' + os.sep) # weights dir
+results_file = os.path.join(os.environ['SM_MODEL_DIR'], 'results.txt')
 last = wdir + 'last.pt'
 best = wdir + 'best.pt'
-results_file = 'results.txt'
 
-# Hyperparameters (results68: 59.2 mAP@0.5 yolov3-spp-416) https://github.com/ultralytics/yolov3/issues/310
+# Create weights folder if it doesn't already exist.
+if not os.path.exists(wdir):
+    os.makedirs(wdir)
+    print("Weight directory created:", wdir)
 
-hyp = {'giou': 3.54,  # giou loss gain
-       'cls': 37.4,  # cls loss gain
+# Hyperparameters (k-series, 57.7 mAP yolov3-spp-416) https://github.com/ultralytics/yolov3/issues/310
+hyp = {'giou': 3.31,  # giou loss gain
+       'cls': 42.4,  # cls loss gain
        'cls_pw': 1.0,  # cls BCELoss positive_weight
        'obj': 49.5,  # obj loss gain (*=img_size/320 if img_size != 320)
        'obj_pw': 1.0,  # obj BCELoss positive_weight
-       'iou_t': 0.225,  # iou training threshold
-       'lr0': 0.00579,  # initial learning rate (SGD=1E-3, Adam=9E-5)
+       'iou_t': 0.213,  # iou training threshold
+       'lr0': 0.00261,  # initial learning rate (SGD=1E-3, Adam=9E-5)
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
-       'momentum': 0.937,  # SGD momentum
-       'weight_decay': 0.000484,  # optimizer weight decay
+       'momentum': 0.949,  # SGD momentum
+       'weight_decay': 0.000489,  # optimizer weight decay
        'fl_gamma': 0.5,  # focal loss gamma
-       'hsv_h': 0.0138,  # image HSV-Hue augmentation (fraction)
-       'hsv_s': 0.678,  # image HSV-Saturation augmentation (fraction)
-       'hsv_v': 0.36,  # image HSV-Value augmentation (fraction)
-       'degrees': 1.98,  # image rotation (+/- deg)
-       'translate': 0.05,  # image translation (+/- fraction)
-       'scale': 0.05,  # image scale (+/- gain)
-       'shear': 0.641}  # image shear (+/- deg)
+       'hsv_h': 0.0103,  # image HSV-Hue augmentation (fraction)
+       'hsv_s': 0.691,  # image HSV-Saturation augmentation (fraction)
+       'hsv_v': 0.433,  # image HSV-Value augmentation (fraction)
+       'degrees': 1.43,  # image rotation (+/- deg)
+       'translate': 0.0663,  # image translation (+/- fraction)
+       'scale': 0.11,  # image scale (+/- gain)
+       'shear': 0.384}  # image shear (+/- deg)
 
 # Overwrite hyp with hyp*.txt (optional)
 f = glob.glob('hyp*.txt')
 if f:
-    print('Using %s' % f[0])
     for k, v in zip(hyp.keys(), np.loadtxt(f[0])):
         hyp[k] = v
 
@@ -64,7 +68,9 @@ def train():
 
     # Initialize
     init_seeds()
-    if opt.multi_scale:
+    multi_scale = opt.multi_scale
+
+    if multi_scale:
         img_sz_min = round(img_size / 32 / 1.5)
         img_sz_max = round(img_size / 32 * 1.5)
         img_size = img_sz_max * 32  # initiate with maximum multi_scale size
@@ -73,7 +79,6 @@ def train():
     # Configure run
     data_dict = parse_data_cfg(data)
     train_path = data_dict['train']
-    test_path = data_dict['valid']
     nc = int(data_dict['classes'])  # number of classes
 
     # Remove previous results
@@ -99,9 +104,6 @@ def train():
     optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
     del pg0, pg1
 
-    # https://github.com/alphadl/lookahead.pytorch
-    # optimizer = torch_utils.Lookahead(optimizer, k=5, alpha=0.5)
-
     cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_fitness = float('inf')
@@ -114,6 +116,7 @@ def train():
         try:
             chkpt['model'] = {k: v for k, v in chkpt['model'].items() if model.state_dict()[k].numel() == v.numel()}
             model.load_state_dict(chkpt['model'], strict=False)
+            # model.load_state_dict(chkpt['model'])
         except KeyError as e:
             s = "%s is not compatible with %s. Specify --weights '' or specify a --cfg compatible with %s. " \
                 "See https://github.com/ultralytics/yolov3/issues/657" % (opt.weights, opt.cfg, opt.weights)
@@ -170,7 +173,10 @@ def train():
         model.yolo_layers = model.module.yolo_layers  # move yolo layer indices to top level
 
     # Dataset
-    dataset = LoadImagesAndLabels(train_path, img_size, batch_size,
+    # TODO (sno6): Possibly have to edit this to pull from S3?
+    dataset = LoadImagesAndLabels(train_path,
+                                  img_size,
+                                  batch_size,
                                   augment=True,
                                   hyp=hyp,  # augmentation hyperparameters
                                   rect=opt.rect,  # rectangular training
@@ -179,10 +185,9 @@ def train():
 
     # Dataloader
     batch_size = min(batch_size, len(dataset))
-    nw = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8])  # number of workers
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size,
-                                             num_workers=nw,
+                                             num_workers=min([os.cpu_count(), batch_size if batch_size > 1 else 0, 16]),
                                              shuffle=not opt.rect,  # Shuffle=True unless rectangular training is used
                                              pin_memory=True,
                                              collate_fn=dataset.collate_fn)
@@ -199,11 +204,12 @@ def train():
                                              collate_fn=dataset.collate_fn)
 
     # Start training
-    nb = len(dataloader)
     model.nc = nc  # attach number of classes to model
     model.arc = opt.arc  # attach yolo architecture
     model.hyp = hyp  # attach hyperparameters to model
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
+    torch_utils.model_info(model, report='summary')  # 'full' or 'summary'
+    nb = len(dataloader)
     maps = np.zeros(nc)  # mAP per class
     # torch.autograd.set_detect_anomaly(True)
     results = (0, 0, 0, 0, 0, 0, 0)  # 'P', 'R', 'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification'
@@ -240,11 +246,11 @@ def train():
         pbar = tqdm(enumerate(dataloader), total=nb)  # progress bar
         for i, (imgs, targets, paths, _) in pbar:  # batch -------------------------------------------------------------
             ni = i + nb * epoch  # number integrated batches (since train start)
-            imgs = imgs.to(device).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
+            imgs = imgs.to(device)
             targets = targets.to(device)
 
             # Multi-Scale training
-            if opt.multi_scale:
+            if multi_scale:
                 if ni / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
                     img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
                 sf = img_size / max(imgs.shape[2:])  # scale factor
@@ -361,8 +367,8 @@ def train():
             if best_fitness == fitness:
                 torch.save(chkpt, best)
 
-            # Save backup every 10 epochs (optional)
-            if epoch > 0 and epoch % 10 == 0:
+            # Save backup every 100 epochs (optional)
+            if epoch > 0 and epoch % 100 == 0:
                 torch.save(chkpt, wdir + 'backup%g.pt' % epoch)
 
             # Delete checkpoint
@@ -375,7 +381,7 @@ def train():
     if len(n):
         n = '_' + n if not n.isnumeric() else n
         fresults, flast, fbest = 'results%s.txt' % n, 'last%s.pt' % n, 'best%s.pt' % n
-        os.rename('results.txt', fresults)
+        os.rename(results_file, os.path.join(os.environ['SM_MODEL_DIR'], fresults))
         os.rename(wdir + 'last.pt', wdir + flast) if os.path.exists(wdir + 'last.pt') else None
         os.rename(wdir + 'best.pt', wdir + fbest) if os.path.exists(wdir + 'best.pt') else None
 
@@ -397,8 +403,8 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=273)  # 500200 batches at bs 16, 117263 COCO images = 273 epochs
     parser.add_argument('--batch-size', type=int, default=16)  # effective bs = batch_size * accumulate = 16 * 4 = 64
     parser.add_argument('--accumulate', type=int, default=4, help='batches to accumulate before optimizing')
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
-    parser.add_argument('--data', type=str, default='data/coco2017.data', help='*.data path')
+    parser.add_argument('--cfg', type=str, default=os.path.join(os.environ['SM_CHANNEL_CONFIG'], 'yolov3-container.cfg'), help='cfg file path')
+    parser.add_argument('--data', type=str, default=os.path.join(os.environ['SM_CHANNEL_CONFIG'], 'container.data'), help='*.data file path')
     parser.add_argument('--multi-scale', action='store_true', help='adjust (67% - 150%) img_size every 10 batches')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
@@ -408,13 +414,18 @@ if __name__ == '__main__':
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
-    parser.add_argument('--weights', type=str, default='weights/ultralytics68.pt', help='initial weights')
+    parser.add_argument('--weights', type=str, default=os.path.join(os.environ['SM_CHANNEL_CONFIG'], 'darknet53.conv.74'), help='initial weights')
     parser.add_argument('--arc', type=str, default='default', help='yolo architecture')  # defaultpw, uCE, uBCE
     parser.add_argument('--prebias', action='store_true', help='pretrain model biases')
     parser.add_argument('--name', default='', help='renames results.txt to results_name.txt if supplied')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1 or cpu)')
     parser.add_argument('--adam', action='store_true', help='use adam optimizer')
     parser.add_argument('--var', type=float, help='debug variable')
+
+    # Custom parameters for Amazon Sagemaker.
+    parser.add_argument('--output-data-dir', type=str, default=os.environ['SM_OUTPUT_DATA_DIR']) # Extra data output.
+    parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR']) # Results output.
+
     opt = parser.parse_args()
     opt.weights = last if opt.resume else opt.weights
     print(opt)

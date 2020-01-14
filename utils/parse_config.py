@@ -1,17 +1,10 @@
-import os
-
 import numpy as np
 
 
 def parse_model_cfg(path):
-    # Parse the yolo *.cfg file and return module definitions path may be 'cfg/yolov3.cfg', 'yolov3.cfg', or 'yolov3'
-    if not path.endswith('.cfg'):  # add .cfg suffix if omitted
-        path += '.cfg'
-    if not os.path.exists(path) and os.path.exists('cfg' + os.sep + path):  # add cfg/ prefix if omitted
-        path = 'cfg' + os.sep + path
-
-    with open(path, 'r') as f:
-        lines = f.read().split('\n')
+    # Parses the yolo-v3 layer configuration file and returns module definitions
+    file = open(path, 'r')
+    lines = file.read().split('\n')
     lines = [x for x in lines if x and not x.startswith('#')]
     lines = [x.rstrip().lstrip() for x in lines]  # get rid of fringe whitespaces
     mdefs = []  # module definitions
@@ -30,29 +23,15 @@ def parse_model_cfg(path):
             else:
                 mdefs[-1][key] = val.strip()
 
-    # Check all fields are supported
-    supported = ['type', 'batch_normalize', 'filters', 'size', 'stride', 'pad', 'activation', 'layers', 'groups',
-                 'from', 'mask', 'anchors', 'classes', 'num', 'jitter', 'ignore_thresh', 'truth_thresh', 'random',
-                 'stride_x', 'stride_y']
-
-    f = []  # fields
-    for x in mdefs[1:]:
-        [f.append(k) for k in x if k not in f]
-    u = [x for x in f if x not in supported]  # unsupported fields
-    assert not any(u), "Unsupported fields %s in %s. See https://github.com/ultralytics/yolov3/issues/631" % (u, path)
-
     return mdefs
 
 
 def parse_data_cfg(path):
     # Parses the data configuration file
-    if not os.path.exists(path) and os.path.exists('data' + os.sep + path):  # add data/ prefix if omitted
-        path = 'data' + os.sep + path
-
-    with open(path, 'r') as f:
-        lines = f.readlines()
-
     options = dict()
+    with open(path, 'r') as fp:
+        lines = fp.readlines()
+
     for line in lines:
         line = line.strip()
         if line == '' or line.startswith('#'):
