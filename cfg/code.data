@@ -1,0 +1,5 @@
+classes=1
+train=./cfg/code-train.txt
+valid=./cfg/code-train.txt
+names=./cfg/code.names
+backup=backup/
