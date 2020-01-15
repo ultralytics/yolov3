@@ -457,7 +457,7 @@ if __name__ == '__main__':
                     x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # new parent
 
                 # Mutate
-                method = 2
+                method = 3
                 s = 0.2  # 20% sigma
                 np.random.seed(int(time.time()))
                 g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 0, 1, 1, 1, 1, 1, 1, 1])  # gains
