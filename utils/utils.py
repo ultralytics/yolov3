@@ -1015,6 +1015,7 @@ def plot_results(start=0, stop=0, bucket='', id=()):  # from utils.utils import 
     s = ['GIoU', 'Objectness', 'Classification', 'Precision', 'Recall',
          'val GIoU', 'val Objectness', 'val Classification', 'mAP@0.5', 'F1']
     if bucket:
+        os.system('rm -rf storage.googleapis.com')
         files = ['https://storage.googleapis.com/%s/results%g.txt' % (bucket, x) for x in id]
     else:
         files = glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')
