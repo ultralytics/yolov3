@@ -215,6 +215,12 @@ class LoadStreams:  # multiple IP or RTSP cameras
             thread.start()
         print('')  # newline
 
+        # check for common shapes
+        s = np.stack([letterbox(x, new_shape=self.img_size)[0].shape for x in self.imgs], 0)  # inference shapes
+        self.rect = np.unique(s, axis=0).shape[0] == 1  # rect inference if all shapes equal
+        if not self.rect:
+            print('WARNING: Different stream shapes detected. For optimal performance supply similarly-shaped streams.')
+
     def update(self, index, cap):
         # Read next stream frame in a daemon thread
         n = 0
@@ -239,7 +245,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
             raise StopIteration
 
         # Letterbox
-        img = [letterbox(x, new_shape=self.img_size, interp=cv2.INTER_LINEAR)[0] for x in img0]
+        img = [letterbox(x, new_shape=self.img_size, auto=self.rect, interp=cv2.INTER_LINEAR)[0] for x in img0]
 
         # Stack
         img = np.stack(img, 0)
