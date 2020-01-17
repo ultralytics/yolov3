@@ -351,8 +351,6 @@ def load_darknet_weights(self, weights, cutoff=-1):
             conv_layer.weight.data.copy_(conv_w)
             ptr += num_w
 
-    return cutoff
-
 
 def save_weights(self, path='model.weights', cutoff=-1):
     # Converts a PyTorch model to Darket format (*.pt to *.weights)

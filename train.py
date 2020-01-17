@@ -84,12 +84,15 @@ def train():
     model = Darknet(cfg, arc=opt.arc).to(device)
 
     # Optimizer
-    pg0, pg1 = [], []  # optimizer parameter groups
+    pg0, pg1, pg2 = [], [], []  # optimizer parameter groups
     for k, v in dict(model.named_parameters()).items():
-        if 'Conv2d.weight' in k:
-            pg1 += [v]  # parameter group 1 (apply weight_decay)
+        print(k)
+        if '.bias' in k:
+            pg2 += [v]  # biases
+        elif 'Conv2d.weight' in k:
+            pg1 += [v]  # apply weight_decay
         else:
-            pg0 += [v]  # parameter group 0
+            pg0 += [v]  # all else
 
     if opt.adam:
         optimizer = optim.Adam(pg0, lr=hyp['lr0'])
@@ -97,12 +100,12 @@ def train():
     else:
         optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
     optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
-    del pg0, pg1
+    optimizer.add_param_group({'params': pg2})  # add pg2
+    del pg0, pg1, pg2
 
     # https://github.com/alphadl/lookahead.pytorch
     # optimizer = torch_utils.Lookahead(optimizer, k=5, alpha=0.5)
 
-    cutoff = -1  # backbone reaches to cutoff layer
     start_epoch = 0
     best_fitness = float('inf')
     attempt_download(weights)
@@ -134,7 +137,7 @@ def train():
 
     elif len(weights) > 0:  # darknet format
         # possible weights are '*.weights', 'yolov3-tiny.conv.15',  'darknet53.conv.74' etc.
-        cutoff = load_darknet_weights(model, weights)
+        load_darknet_weights(model, weights)
 
     # Scheduler https://github.com/ultralytics/yolov3/issues/238
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero

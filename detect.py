@@ -25,7 +25,7 @@ def detect(save_img=False):
     if weights.endswith('.pt'):  # pytorch format
         model.load_state_dict(torch.load(weights, map_location=device)['model'])
     else:  # darknet format
-        _ = load_darknet_weights(model, weights)
+        load_darknet_weights(model, weights)
 
     # Second-stage classifier
     classify = False
