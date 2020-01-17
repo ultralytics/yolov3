@@ -86,7 +86,6 @@ def train():
     # Optimizer
     pg0, pg1, pg2 = [], [], []  # optimizer parameter groups
     for k, v in dict(model.named_parameters()).items():
-        print(k)
         if '.bias' in k:
             pg2 += [v]  # biases
         elif 'Conv2d.weight' in k:
