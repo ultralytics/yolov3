@@ -99,7 +99,7 @@ def train():
     else:
         optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
     optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
-    optimizer.add_param_group({'params': pg2})  # add pg2
+    optimizer.add_param_group({'params': pg2})  # add pg2 (biases)
     del pg0, pg1, pg2
 
     # https://github.com/alphadl/lookahead.pytorch
