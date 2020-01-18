@@ -195,7 +195,7 @@ class YOLOLayer(nn.Module):
             io[..., :4] *= self.stride
 
             if 'default' in self.arc:  # seperate obj and cls
-                torch.sigmoid_(io[..., 4])
+                torch.sigmoid_(io[..., 4:])
             elif 'BCE' in self.arc:  # unified BCE (80 classes)
                 torch.sigmoid_(io[..., 5:])
                 io[..., 4] = 1
