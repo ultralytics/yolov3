@@ -16,9 +16,9 @@ def test(cfg,
          conf_thres=0.001,
          iou_thres=0.5,  # for nms
          save_json=False,
+         single_cls=False,
          model=None,
-         dataloader=None,
-         single_cls=False):
+         dataloader=None):
     # Initialize/load model and set device
     if model is None:
         device = torch_utils.select_device(opt.device, batch_size=batch_size)

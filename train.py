@@ -319,8 +319,8 @@ def train():
                                       conf_thres=0.001 if final_epoch else 0.1,  # 0.1 for speed
                                       iou_thres=0.6 if final_epoch and is_coco else 0.5,
                                       save_json=final_epoch and is_coco,
-                                      dataloader=testloader,
-                                      single_cls=opt.single_cls)
+                                      single_cls=opt.single_cls,
+                                      dataloader=testloader)
 
         # Update scheduler
         scheduler.step()
