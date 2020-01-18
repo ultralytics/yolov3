@@ -593,10 +593,10 @@ def load_mosaic(self, index):
     # Augment
     # img4 = img4[s // 2: int(s * 1.5), s // 2:int(s * 1.5)]  # center crop (WARNING, requires box pruning)
     img4, labels4 = random_affine(img4, labels4,
-                                  degrees=self.hyp['degrees'] * 0,
-                                  translate=self.hyp['translate'] * 0,
-                                  scale=self.hyp['scale'] * 0,
-                                  shear=self.hyp['shear'] * 0,
+                                  degrees=self.hyp['degrees'] * 1,
+                                  translate=self.hyp['translate'] * 1,
+                                  scale=self.hyp['scale'] * 1,
+                                  shear=self.hyp['shear'] * 1,
                                   border=-s // 2)  # border to remove
 
     return img4, labels4

@@ -221,7 +221,7 @@ def train():
 
         # Prebias
         if prebias:
-            if epoch < 20:  # prebias
+            if epoch < 1:  # prebias
                 ps = 0.1, 0.9  # prebias settings (lr=0.1, momentum=0.9)
             else:  # normal training
                 ps = hyp['lr0'], hyp['momentum']  # normal training settings
