@@ -221,7 +221,7 @@ def train():
 
         # Prebias
         if prebias:
-            if epoch < 3:  # prebias
+            if epoch < 1:  # prebias
                 ps = 0.1, 0.9  # prebias settings (lr=0.1, momentum=0.9)
             else:  # normal training
                 ps = hyp['lr0'], hyp['momentum']  # normal training settings
@@ -278,7 +278,7 @@ def train():
             pred = model(imgs)
 
             # Compute loss
-            loss, loss_items = compute_loss(pred, targets, model)
+            loss, loss_items = compute_loss(pred, targets, model, not prebias)
             if not torch.isfinite(loss):
                 print('WARNING: non-finite loss, ending training ', loss_items)
                 return results

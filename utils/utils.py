@@ -361,7 +361,7 @@ class FocalLoss(nn.Module):
             return loss
 
 
-def compute_loss(p, targets, model):  # predictions, targets, model
+def compute_loss(p, targets, model, giou_flag=True):  # predictions, targets, model
     ft = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
     lcls, lbox, lobj = ft([0]), ft([0]), ft([0])
     tcls, tbox, indices, anchor_vec = build_targets(model, targets)
@@ -399,7 +399,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             pbox = torch.cat((pxy, pwh), 1)  # predicted box
             giou = bbox_iou(pbox.t(), tbox[i], x1y1x2y2=False, GIoU=True)  # giou computation
             lbox += (1.0 - giou).sum() if red == 'sum' else (1.0 - giou).mean()  # giou loss
-            tobj[b, a, gj, gi] = giou.detach().type(tobj.dtype)
+            tobj[b, a, gj, gi] = giou.detach().type(tobj.dtype) if giou_flag else 1.0
 
             if 'default' in arc and model.nc > 1:  # cls loss (only if multiple classes)
                 t = torch.zeros_like(ps[:, 5:])  # targets
