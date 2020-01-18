@@ -52,7 +52,7 @@ if f:
 def train():
     cfg = opt.cfg
     data = opt.data
-    img_size = opt.img_size
+    img_size, img_size_test = opt.img_size if len(opt.img_size) == 2 else opt.img_size * 2  # train, test sizes
     epochs = opt.epochs  # 500200 batches at bs 64, 117263 images = 273 epochs
     batch_size = opt.batch_size
     accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
@@ -191,7 +191,7 @@ def train():
                                              collate_fn=dataset.collate_fn)
 
     # Testloader
-    testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, opt.img_size, batch_size * 2,
+    testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, img_size_test, batch_size * 2,
                                                                  hyp=hyp,
                                                                  rect=True,
                                                                  cache_labels=True,
@@ -221,7 +221,7 @@ def train():
 
         # Prebias
         if prebias:
-            if epoch < 1:  # prebias
+            if epoch < 3:  # prebias
                 ps = 0.1, 0.9  # prebias settings (lr=0.1, momentum=0.9)
             else:  # normal training
                 ps = hyp['lr0'], hyp['momentum']  # normal training settings
@@ -314,10 +314,10 @@ def train():
             results, maps = test.test(cfg,
                                       data,
                                       batch_size=batch_size * 2,
-                                      img_size=opt.img_size,
+                                      img_size=img_size_test,
                                       model=model,
-                                      conf_thres=0.001 if final_epoch else 0.1,  # 0.1 for speed
-                                      iou_thres=0.6 if final_epoch and is_coco else 0.5,
+                                      conf_thres=0.001 if final_epoch and is_coco else 0.1,  # 0.1 for speed
+                                      iou_thres=0.6,
                                       save_json=final_epoch and is_coco,
                                       single_cls=opt.single_cls,
                                       dataloader=testloader)
@@ -402,7 +402,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
     parser.add_argument('--data', type=str, default='data/coco2017.data', help='*.data path')
     parser.add_argument('--multi-scale', action='store_true', help='adjust (67% - 150%) img_size every 10 batches')
-    parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
+    parser.add_argument('--img-size', nargs='+', type=int, default=[416], help='train and test image-sizes')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
     parser.add_argument('--resume', action='store_true', help='resume training from last.pt')
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
@@ -425,7 +425,7 @@ if __name__ == '__main__':
         mixed_precision = False
 
     # scale hyp['obj'] by img_size (evolved at 320)
-    # hyp['obj'] *= opt.img_size / 320.
+    # hyp['obj'] *= opt.img_size[0] / 320.
 
     tb_writer = None
     if not opt.evolve:  # Train normally
