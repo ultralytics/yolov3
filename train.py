@@ -74,7 +74,7 @@ def train():
     data_dict = parse_data_cfg(data)
     train_path = data_dict['train']
     test_path = data_dict['valid']
-    nc = int(data_dict['classes'])  # number of classes
+    nc = 1 if opt.single_cls else int(data_dict['classes'])  # number of classes
 
     # Remove previous results
     for f in glob.glob('*_batch*.jpg') + glob.glob(results_file):
@@ -177,7 +177,8 @@ def train():
                                   hyp=hyp,  # augmentation hyperparameters
                                   rect=opt.rect,  # rectangular training
                                   cache_labels=True,
-                                  cache_images=opt.cache_images)
+                                  cache_images=opt.cache_images,
+                                  single_cls=opt.single_cls)
 
     # Dataloader
     batch_size = min(batch_size, len(dataset))
@@ -194,7 +195,8 @@ def train():
                                                                  hyp=hyp,
                                                                  rect=True,
                                                                  cache_labels=True,
-                                                                 cache_images=opt.cache_images),
+                                                                 cache_images=opt.cache_images,
+                                                                 single_cls=opt.single_cls),
                                              batch_size=batch_size * 2,
                                              num_workers=nw,
                                              pin_memory=True,
@@ -202,6 +204,7 @@ def train():
 
     # Start training
     nb = len(dataloader)
+    prebias = start_epoch == 0
     model.nc = nc  # attach number of classes to model
     model.arc = opt.arc  # attach yolo architecture
     model.hyp = hyp  # attach hyperparameters to model
@@ -213,24 +216,22 @@ def train():
     torch_utils.model_info(model, report='summary')  # 'full' or 'summary'
     print('Using %g dataloader workers' % nw)
     print('Starting training for %g epochs...' % epochs)
-    for epoch in range(start_epoch - 1 if opt.prebias else start_epoch, epochs):  # epoch ------------------------------
+    for epoch in range(start_epoch, epochs):  # epoch ------------------------------
         model.train()
-        print(('\n' + '%10s' * 8) % ('Epoch', 'gpu_mem', 'GIoU', 'obj', 'cls', 'total', 'targets', 'img_size'))
 
         # Prebias
-        if opt.prebias:
-            if epoch < 0:  # prebias
-                ps = 0.1, 0.9, False  # prebias settings (lr=0.1, momentum=0.9, requires_grad=False)
+        if prebias:
+            if epoch < 20:  # prebias
+                ps = 0.1, 0.9  # prebias settings (lr=0.1, momentum=0.9)
             else:  # normal training
-                ps = hyp['lr0'], hyp['momentum'], True  # normal training settings
-                opt.prebias = False
+                ps = hyp['lr0'], hyp['momentum']  # normal training settings
+                print_model_biases(model)
+                prebias = False
 
-            for p in optimizer.param_groups:
-                p['lr'] = ps[0]  # learning rate
-                if p.get('momentum') is not None:  # for SGD but not Adam
-                    p['momentum'] = ps[1]
-            for name, p in model.named_parameters():
-                p.requires_grad = True if name.endswith('.bias') else ps[2]
+            # Bias optimizer settings
+            optimizer.param_groups[2]['lr'] = ps[0]
+            if optimizer.param_groups[2].get('momentum') is not None:  # for SGD but not Adam
+                optimizer.param_groups[2]['momentum'] = ps[1]
 
         # Update image weights (optional)
         if dataset.image_weights:
@@ -239,6 +240,7 @@ def train():
             dataset.indices = random.choices(range(dataset.n), weights=image_weights, k=dataset.n)  # rand weighted idx
 
         mloss = torch.zeros(4).to(device)  # mean losses
+        print(('\n' + '%10s' * 8) % ('Epoch', 'gpu_mem', 'GIoU', 'obj', 'cls', 'total', 'targets', 'img_size'))
         pbar = tqdm(enumerate(dataloader), total=nb)  # progress bar
         for i, (imgs, targets, paths, _) in pbar:  # batch -------------------------------------------------------------
             ni = i + nb * epoch  # number integrated batches (since train start)
@@ -307,10 +309,7 @@ def train():
 
         # Process epoch results
         final_epoch = epoch + 1 == epochs
-        if opt.prebias:
-            print_model_biases(model)
-            continue
-        elif not opt.notest or final_epoch:  # Calculate mAP
+        if not opt.notest or final_epoch:  # Calculate mAP
             is_coco = any([x in data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]) and model.nc == 80
             results, maps = test.test(cfg,
                                       data,
@@ -320,7 +319,8 @@ def train():
                                       conf_thres=0.001 if final_epoch else 0.1,  # 0.1 for speed
                                       iou_thres=0.6 if final_epoch and is_coco else 0.5,
                                       save_json=final_epoch and is_coco,
-                                      dataloader=testloader)
+                                      dataloader=testloader,
+                                      single_cls=opt.single_cls)
 
         # Update scheduler
         scheduler.step()
@@ -412,10 +412,10 @@ if __name__ == '__main__':
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--weights', type=str, default='weights/ultralytics68.pt', help='initial weights')
     parser.add_argument('--arc', type=str, default='default', help='yolo architecture')  # defaultpw, uCE, uBCE
-    parser.add_argument('--prebias', action='store_true', help='pretrain model biases')
     parser.add_argument('--name', default='', help='renames results.txt to results_name.txt if supplied')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1 or cpu)')
     parser.add_argument('--adam', action='store_true', help='use adam optimizer')
+    parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
     parser.add_argument('--var', type=float, help='debug variable')
     opt = parser.parse_args()
     opt.weights = last if opt.resume else opt.weights
