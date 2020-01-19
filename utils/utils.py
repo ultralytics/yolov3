@@ -513,7 +513,7 @@ def non_max_suppression(prediction, conf_thres=0.5, iou_thres=0.5, multi_cls=Tru
 
     method = 'vision_batch'
     nc = prediction[0].shape[1] - 5  # number of classes
-    multi_cls = multi_cls and (nc > 1)
+    multi_cls = multi_cls and (nc > 1)  # allow multiple classes per anchor
     output = [None] * len(prediction)
     for image_i, pred in enumerate(prediction):
         # Apply conf constraint
