@@ -471,7 +471,7 @@ if __name__ == '__main__':
                     v = (np.random.randn(ng) * np.random.random(ng) * g * s + 1) ** 2.0
                 elif method == 3:
                     v = np.ones(ng)
-                    while all(v == 1):  # mutate untill a change occurs (prevent duplicates)
+                    while all(v == 1):  # mutate until a change occurs (prevent duplicates)
                         r = (np.random.random(ng) < 0.1) * np.random.randn(ng)  # 10% mutation probability
                         v = (g * s * r + 1) ** 2.0
                 for i, k in enumerate(hyp.keys()):  # plt.hist(v.ravel(), 300)
