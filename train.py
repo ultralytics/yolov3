@@ -463,7 +463,7 @@ if __name__ == '__main__':
                 method = 3
                 s = 0.2  # 20% sigma
                 np.random.seed(int(time.time()))
-                g = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])  # gains
+                g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 0, 1, 1, 1, 1, 1, 1, 1])  # gains
                 ng = len(g)
                 if method == 1:
                     v = (np.random.randn(ng) * np.random.random() * g * s + 1) ** 2.0
