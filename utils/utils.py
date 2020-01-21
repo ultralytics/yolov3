@@ -905,7 +905,7 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
     fig.savefig('comparison.png', dpi=200)
 
 
-def plot_images(imgs, targets, paths=None, fname='images.jpg'):
+def plot_images(imgs, targets, paths=None, fname='images.jpg', image_channels=3):
     # Plots training images overlaid with targets
     imgs = imgs.cpu().numpy()
     targets = targets.cpu().numpy()
@@ -920,7 +920,10 @@ def plot_images(imgs, targets, paths=None, fname='images.jpg'):
         boxes = xywh2xyxy(targets[targets[:, 0] == i, 2:6]).T
         boxes[[0, 2]] *= w
         boxes[[1, 3]] *= h
-        plt.subplot(ns, ns, i + 1).imshow(imgs[i].transpose(1, 2, 0))
+        if image_channels == 1:
+            plt.subplot(ns, ns, i + 1).imshow(imgs[i][0,:,:].transpose(0,1),cmap='gray') #grayscale
+        else:
+            plt.subplot(ns, ns, i + 1).imshow(imgs[i].transpose(1, 2, 0)) #BGR
         plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
         plt.axis('off')
         if paths is not None:
