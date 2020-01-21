@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from models import *
 from utils.datasets import *
 from utils.utils import *
+from utils.parse_config import *
 
 
 def test(cfg,
@@ -20,6 +21,10 @@ def test(cfg,
          model=None,
          dataloader=None):
     # Initialize/load model and set device
+    cfgsettings = parse_model_cfg(cfg)
+    hyperparams = cfgsettings.pop(0)
+    input_channels = int(hyperparams['channels'])
+    
     if model is None:
         device = torch_utils.select_device(opt.device, batch_size=batch_size)
         verbose = opt.task == 'test'
@@ -55,7 +60,7 @@ def test(cfg,
 
     # Dataloader
     if dataloader is None:
-        dataset = LoadImagesAndLabels(path, img_size, batch_size, rect=True)
+        dataset = LoadImagesAndLabels(path, img_size, batch_size, rect=True, image_channels=input_channels)
         batch_size = min(batch_size, len(dataset))
         dataloader = DataLoader(dataset,
                                 batch_size=batch_size,
@@ -77,7 +82,7 @@ def test(cfg,
 
         # Plot images with bounding boxes
         if batch_i == 0 and not os.path.exists('test_batch0.jpg'):
-            plot_images(imgs=imgs, targets=targets, paths=paths, fname='test_batch0.jpg')
+            plot_images(imgs=imgs, targets=targets, paths=paths, fname='test_batch0.jpg', image_channels=input_channels)
 
         # Disable gradients
         with torch.no_grad():
