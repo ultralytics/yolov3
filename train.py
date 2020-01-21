@@ -8,6 +8,7 @@ import test  # import test.py to get mAP after each epoch
 from models import *
 from utils.datasets import *
 from utils.utils import *
+from utils.parse_config import *
 
 mixed_precision = True
 try:  # Mixed precision training https://github.com/NVIDIA/apex
@@ -51,6 +52,9 @@ if f:
 
 def train():
     cfg = opt.cfg
+    cfgsettings = parse_model_cfg(cfg)
+    hyperparams = cfgsettings.pop(0)
+    input_channels = int(hyperparams['channels'])
     data = opt.data
     img_size, img_size_test = opt.img_size if len(opt.img_size) == 2 else opt.img_size * 2  # train, test sizes
     epochs = opt.epochs  # 500200 batches at bs 64, 117263 images = 273 epochs
@@ -179,7 +183,8 @@ def train():
                                   rect=opt.rect,  # rectangular training
                                   cache_labels=True,
                                   cache_images=opt.cache_images,
-                                  single_cls=opt.single_cls)
+                                  single_cls=opt.single_cls,
+                                  image_channels=input_channels)
 
     # Dataloader
     batch_size = min(batch_size, len(dataset))
@@ -197,7 +202,8 @@ def train():
                                                                  rect=True,
                                                                  cache_labels=True,
                                                                  cache_images=opt.cache_images,
-                                                                 single_cls=opt.single_cls),
+                                                                 single_cls=opt.single_cls,
+                                                                 image_channels=input_channels),
                                              batch_size=batch_size * 2,
                                              num_workers=nw,
                                              pin_memory=True,
@@ -250,7 +256,7 @@ def train():
 
             # Multi-Scale training
             if opt.multi_scale:
-                if ni / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
+                if ni / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
                     img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
                 sf = img_size / max(imgs.shape[2:])  # scale factor
                 if sf != 1:
@@ -260,7 +266,7 @@ def train():
             # Plot images with bounding boxes
             if ni == 0:
                 fname = 'train_batch%g.jpg' % i
-                plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname)
+                plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname, image_channels=input_channels)
                 if tb_writer:
                     tb_writer.add_image(fname, cv2.imread(fname)[:, :, ::-1], dataformats='HWC')
 
