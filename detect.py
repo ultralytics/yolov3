@@ -4,9 +4,15 @@ from sys import platform
 from models import *  # set ONNX_EXPORT in models.py
 from utils.datasets import *
 from utils.utils import *
+from utils.parse_config import *
 
 
 def detect(save_img=False):
+    cfg = opt.cfg
+    cfgsettings = parse_model_cfg(cfg)
+    hyperparams = cfgsettings.pop(0)
+    input_channels = int(hyperparams['channels'])
+    
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half, view_img, save_txt = opt.output, opt.source, opt.weights, opt.half, opt.view_img, opt.save_txt
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
@@ -65,7 +71,7 @@ def detect(save_img=False):
         dataset = LoadStreams(source, img_size=img_size, half=half)
     else:
         save_img = True
-        dataset = LoadImages(source, img_size=img_size, half=half)
+        dataset = LoadImages(source, img_size=img_size, half=half, image_channels=input_channels)
 
     # Get names and colors
     names = load_classes(opt.names)
@@ -142,8 +148,14 @@ def detect(save_img=False):
                         fps = vid_cap.get(cv2.CAP_PROP_FPS)
                         w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                         h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (w, h))
-                    vid_writer.write(im0)
+                        if input_channels == 1:
+                            vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (w, h),0)
+                        else:
+                            vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (w, h))
+                    if input_channels == 1:
+                        vid_writer.write(im0[:,:,0])
+                    else:
+                        vid_writer.write(im0)
 
     if save_txt or save_img:
         print('Results saved to %s' % os.getcwd() + os.sep + out)
