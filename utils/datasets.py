@@ -9,6 +9,7 @@ from threading import Thread
 
 import cv2
 import numpy as np
+from numpy import newaxis
 import torch
 from PIL import Image, ExifTags
 from torch.utils.data import Dataset
@@ -42,7 +43,8 @@ def exif_size(img):
 
 
 class LoadImages:  # for inference
-    def __init__(self, path, img_size=416, half=False):
+    def __init__(self, path, img_size=416, half=False, image_channels=3):
+        print("Number of Image Channels: {}".format(image_channels))
         path = str(Path(path))  # os-agnostic
         files = []
         if os.path.isdir(path):
@@ -55,6 +57,7 @@ class LoadImages:  # for inference
         nI, nV = len(images), len(videos)
 
         self.img_size = img_size
+        self.image_channels = image_channels
         self.files = images + videos
         self.nF = nI + nV  # number of files
         self.video_flag = [False] * nI + [True] * nV
@@ -79,6 +82,15 @@ class LoadImages:  # for inference
             # Read video
             self.mode = 'video'
             ret_val, img0 = self.cap.read()
+
+            if self.image_channels == 1:
+                if ret_val:
+                    if img0.ndim == 2:
+                        img0 = np.expand_dims(img0, axis=2) #grayscale
+                    else:
+                        gray = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
+                        img0 = np.expand_dims(gray, axis=2) #grayscale
+
             if not ret_val:
                 self.count += 1
                 self.cap.release()
@@ -88,6 +100,13 @@ class LoadImages:  # for inference
                     path = self.files[self.count]
                     self.new_video(path)
                     ret_val, img0 = self.cap.read()
+                    
+                    if self.image_channels == 1: 
+                        if img0.ndim == 2:
+                            img0 = np.expand_dims(img0, axis=2) #grayscale
+                        else:
+                            gray = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
+                            img0 = np.expand_dims(gray, axis=2) #grayscale
 
             self.frame += 1
             print('video %g/%g (%g/%g) %s: ' % (self.count + 1, self.nF, self.frame, self.nframes, path), end='')
@@ -95,7 +114,12 @@ class LoadImages:  # for inference
         else:
             # Read image
             self.count += 1
-            img0 = cv2.imread(path)  # BGR
+            
+            if self.image_channels == 1:
+                img0 = np.expand_dims(cv2.imread(path, cv2.IMREAD_GRAYSCALE), axis=2) #grayscale
+            else:
+                img0 = cv2.imread(path) #BGR
+                
             assert img0 is not None, 'Image Not Found ' + path
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
@@ -103,7 +127,10 @@ class LoadImages:  # for inference
         img = letterbox(img0, new_shape=self.img_size)[0]
 
         # Convert
-        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        if img.ndim == 2:
+            img = np.expand_dims(img, axis=2) #grayscale
+
+        img = img[:, :, ::-1].transpose(2, 0, 1)
         img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)  # uint8 to fp16/fp32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
@@ -263,7 +290,8 @@ class LoadStreams:  # multiple IP or RTSP cameras
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False,
-                 cache_labels=False, cache_images=False, single_cls=False):
+                 cache_labels=False, cache_images=False, single_cls=False, image_channels=3):
+        print("Number of Image Channels: {}".format(image_channels))
         path = str(Path(path))  # os-agnostic
         assert os.path.isfile(path), 'File not found %s. See %s' % (path, help_url)
         with open(path, 'r') as f:
@@ -282,6 +310,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.hyp = hyp
         self.image_weights = image_weights
         self.rect = False if image_weights else rect
+        self.image_channels = image_channels
 
         # Define labels
         self.label_files = [x.replace('images', 'labels').replace(os.path.splitext(x)[-1], '.txt')
@@ -363,7 +392,10 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     # Extract object detection boxes for a second stage classifier
                     if extract_bounding_boxes:
                         p = Path(self.img_files[i])
-                        img = cv2.imread(str(p))
+                        if self.image_channels == 1:
+                            img = np.expand_dims(cv2.imread(str(p), cv2.IMREAD_GRAYSCALE), axis=2) #grayscale
+                        else:
+                            img = cv2.imread(str(p)) #BGR
                         h, w = img.shape[:2]
                         for j, x in enumerate(l):
                             f = '%s%sclassifier%s%g_%g_%s' % (p.parent.parent, os.sep, os.sep, x[0], j, p.name)
@@ -392,7 +424,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             pbar = tqdm(range(len(self.img_files)), desc='Caching images')
             self.img_hw0, self.img_hw = [None] * n, [None] * n
             for i in pbar:  # max 10k images
-                self.imgs[i], self.img_hw0[i], self.img_hw[i] = load_image(self, i)  # img, hw_original, hw_resized
+                self.imgs[i], self.img_hw0[i], self.img_hw[i] = load_image(self, i, self.image_channels)  # img, hw_original, hw_resized
                 gb += self.imgs[i].nbytes
                 pbar.desc = 'Caching images (%.1fGB)' % (gb / 1E9)
 
@@ -423,15 +455,15 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         label_path = self.label_files[index]
 
         hyp = self.hyp
-        mosaic = True and self.augment  # load 4 images at a time into a mosaic (only during training)
+        mosaic = True and self.augment # load 4 images at a time into a mosaic (only during training)
         if mosaic:
             # Load mosaic
-            img, labels = load_mosaic(self, index)
+            img, labels = load_mosaic(self, index, self.image_channels)
             shapes = None
 
         else:
             # Load image
-            img, (h0, w0), (h, w) = load_image(self, index)
+            img, (h0, w0), (h, w) = load_image(self, index, self.image_channels)
 
             # Letterbox
             shape = self.batch_shapes[self.batch[index]] if self.rect else self.img_size  # final letterboxed shape
@@ -464,7 +496,11 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                                             shear=hyp['shear'])
 
             # Augment colorspace
-            augment_hsv(img, hgain=hyp['hsv_h'], sgain=hyp['hsv_s'], vgain=hyp['hsv_v'])
+            if self.image_channels == 1:
+                img = augment_v(img, vgain=hyp['hsv_v']) #grayscale
+            else:
+                augment_hsv(img, hgain=hyp['hsv_h'], sgain=hyp['hsv_s'], vgain=hyp['hsv_v']) #BGR
+            
 
             # Apply cutouts
             # if random.random() < 0.9:
@@ -499,10 +535,13 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             labels_out[:, 1:] = torch.from_numpy(labels)
 
         # Convert
-        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        if img.ndim == 2:
+            img = np.expand_dims(img, axis=2) #grayscale
+
+        img = img[:, :, ::-1].transpose(2, 0, 1)
         img = np.ascontiguousarray(img)
 
-        return torch.from_numpy(img), labels_out, img_path, shapes
+        return torch.from_numpy(img.copy()), labels_out, img_path, shapes
 
     @staticmethod
     def collate_fn(batch):
@@ -512,12 +551,15 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         return torch.stack(img, 0), torch.cat(label, 0), path, shapes
 
 
-def load_image(self, index):
+def load_image(self, index, image_channels=3):
     # loads 1 image from dataset, returns img, original hw, resized hw
     img = self.imgs[index]
     if img is None:  # not cached
         img_path = self.img_files[index]
-        img = cv2.imread(img_path)  # BGR
+        if image_channels == 1:
+            img = np.expand_dims(cv2.imread(img_path, cv2.IMREAD_GRAYSCALE), axis=2) #grayscale
+        else:
+            img = cv2.imread(img_path) #BGR
         assert img is not None, 'Image Not Found ' + img_path
         h0, w0 = img.shape[:2]  # orig hw
         r = self.img_size / max(h0, w0)  # resize image to img_size
@@ -533,19 +575,32 @@ def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
     x = (np.random.uniform(-1, 1, 3) * np.array([hgain, sgain, vgain]) + 1).astype(np.float32)  # random gains
     img_hsv = (cv2.cvtColor(img, cv2.COLOR_BGR2HSV) * x.reshape((1, 1, 3))).clip(None, 255).astype(np.uint8)
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
+    
+    
+def augment_v(img, vgain=0.5):
+    x = (np.random.uniform(-1, 1, 1) * np.array([vgain]) + 1).astype(np.float32)  # random gains
+    img_v = (np.expand_dims(img, axis=2) * x.reshape((1, 1, 1))).clip(None, 255).astype(np.uint8)
+    return img_v
 
-
-def load_mosaic(self, index):
+    
+def load_mosaic(self, index, image_channels=3):
     # loads images in a mosaic
 
     labels4 = []
     s = self.img_size
     xc, yc = [int(random.uniform(s * 0.5, s * 1.5)) for _ in range(2)]  # mosaic center x, y
-    img4 = np.zeros((s * 2, s * 2, 3), dtype=np.uint8) + 128  # base image with 4 tiles
+    
+    if image_channels ==1:
+        img4 = np.zeros((s * 2, s * 2, 1), dtype=np.uint8) + 128  #grayscale base image with 4 tiles
+    else:
+        img4 = np.zeros((s * 2, s * 2, 3), dtype=np.uint8) + 128  #BGR base image with 4 tiles
+    
     indices = [index] + [random.randint(0, len(self.labels) - 1) for _ in range(3)]  # 3 additional image indices
     for i, index in enumerate(indices):
         # Load image
-        img, _, (h, w) = load_image(self, index)
+        img, _, (h, w) = load_image(self, index, image_channels)
+        if image_channels == 1:
+            img = np.expand_dims(img, axis=2) #grayscale
 
         # place img in img4
         if i == 0:  # top left
@@ -755,13 +810,16 @@ def cutout(image, labels):
     return labels
 
 
-def reduce_img_size(path='../data/sm4/images', img_size=1024):  # from utils.datasets import *; reduce_img_size()
+def reduce_img_size(path='../data/sm4/images', img_size=1024, image_channels=3):  # from utils.datasets import *; reduce_img_size()
     # creates a new ./images_reduced folder with reduced size images of maximum size img_size
     path_new = path + '_reduced'  # reduced images path
     create_folder(path_new)
     for f in tqdm(glob.glob('%s/*.*' % path)):
         try:
-            img = cv2.imread(f)
+            if image_channels == 1:
+                img = np.expand_dims(cv2.imread(f, cv2.IMREAD_GRAYSCALE), axis=2) #grayscale
+            else:
+                img = cv2.imread(f) #BGR
             h, w = img.shape[:2]
             r = img_size / max(h, w)  # size ratio
             if r < 1.0:
