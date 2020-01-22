@@ -365,8 +365,8 @@ def train():
                 torch.save(chkpt, best)
 
             # Save backup every 10 epochs (optional)
-            if epoch > 0 and epoch % 10 == 0:
-                torch.save(chkpt, wdir + 'backup%g.pt' % epoch)
+            # if epoch > 0 and epoch % 10 == 0:
+            #     torch.save(chkpt, wdir + 'backup%g.pt' % epoch)
 
             # Delete checkpoint
             del chkpt
@@ -384,7 +384,8 @@ def train():
 
         # save to cloud
         if opt.bucket:
-            os.system('gsutil cp %s %s gs://%s' % (fresults, wdir + flast, opt.bucket))
+            os.system('gsutil cp %s gs://%s/results' % (fresults, opt.bucket))
+            os.system('gsutil cp %s gs://%s/weights' % (wdir + flast, opt.bucket))
 
     if not opt.evolve:
         plot_results()  # save as results.png
