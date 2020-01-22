@@ -58,10 +58,6 @@ def train():
     accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
     weights = opt.weights  # initial training weights
 
-    if 'pw' not in opt.arc:  # remove BCELoss positive weights
-        hyp['cls_pw'] = 1.
-        hyp['obj_pw'] = 1.
-
     # Initialize
     init_seeds()
     if opt.multi_scale:
@@ -413,7 +409,7 @@ if __name__ == '__main__':
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--weights', type=str, default='weights/ultralytics68.pt', help='initial weights')
-    parser.add_argument('--arc', type=str, default='default', help='yolo architecture')  # defaultpw, uCE, uBCE
+    parser.add_argument('--arc', type=str, default='default', help='yolo architecture')  # default, uCE, uBCE
     parser.add_argument('--name', default='', help='renames results.txt to results_name.txt if supplied')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1 or cpu)')
     parser.add_argument('--adam', action='store_true', help='use adam optimizer')

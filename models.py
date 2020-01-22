@@ -81,17 +81,13 @@ def create_modules(module_defs, img_size, arc):
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
-                if arc == 'defaultpw' or arc == 'Fdefaultpw':  # default with positive weights
+                if arc == 'default' or arc == 'Fdefault':  # default
                     b = [-5.0, -5.0]  # obj, cls
-                elif arc == 'default':  # default no pw (40 cls, 80 obj)
-                    b = [-5.0, -5.0]
                 elif arc == 'uBCE':  # unified BCE (80 classes)
                     b = [0, -9.0]
                 elif arc == 'uCE':  # unified CE (1 background + 80 classes)
                     b = [10, -0.1]
-                elif arc == 'Fdefault':  # Focal default no pw (28 cls, 21 obj, no pw)
-                    b = [-2.1, -1.8]
-                elif arc == 'uFBCE' or arc == 'uFBCEpw':  # unified FocalBCE (5120 obj, 80 classes)
+                elif arc == 'uFBCE':  # unified FocalBCE (5120 obj, 80 classes)
                     b = [0, -6.5]
                 elif arc == 'uFCE':  # unified FocalCE (64 cls, 1 background + 80 classes)
                     b = [7.7, -1.1]
