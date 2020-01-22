@@ -452,9 +452,9 @@ if __name__ == '__main__':
                 x = x[np.argsort(-fitness(x))][:n]  # top n mutations
                 if parent == 'single' or len(x) == 1:
                     x = x[random.randint(0, n - 1)]  # select one of the top n
-                elif parent == 'weighted':  # weighted combination
+                elif parent == 'weighted':
                     w = fitness(x) - fitness(x).min()  # weights
-                    x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # new parent
+                    x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # select weighted combination
 
                 # Mutate
                 method = 3
