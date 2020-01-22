@@ -1,11 +1,9 @@
 #!/bin/bash
-#for i in 1 2 3 4 5 6 7
+#for i in 0 1 2 3
 #do
 #  t=ultralytics/yolov3:v139 && sudo docker pull $t && sudo nvidia-docker run -d --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t utils/evolve.sh $i
 #  sleep 30
-# done
-#
-#t=ultralytics/yolov3:v199 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 672 --epochs 10 --batch 16 --accum 4 --weights '' --arc defaultpw --device 0 --multi
+#done
 
 while true; do
   # python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 100 --batch 64 --accum 1 --weights yolov3-tiny.pt --multi --bucket ult/wer --evolve --cache --device $1 --cfg yolov3-tiny-1cls.cfg --single --adam
