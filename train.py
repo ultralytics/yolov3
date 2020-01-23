@@ -448,13 +448,14 @@ if __name__ == '__main__':
                 # Select parent(s)
                 parent = 'single'  # parent selection method: 'single' or 'weighted'
                 x = np.loadtxt('evolve.txt', ndmin=2)
-                n = min(5, len(x))  # number of previous results to consider
+                n = min(8, len(x))  # number of previous results to consider
                 x = x[np.argsort(-fitness(x))][:n]  # top n mutations
+                w = fitness(x) - fitness(x).min()  # weights
                 if parent == 'single' or len(x) == 1:
-                    x = x[random.randint(0, n - 1)]  # select one of the top n
+                    # x = x[random.randint(0, n - 1)]  # random selection
+                    x = x[random.choices(range(n), weights=w)[0]]  # weighted selection
                 elif parent == 'weighted':
-                    w = fitness(x) - fitness(x).min()  # weights
-                    x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # select weighted combination
+                    x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # weighted combination
 
                 # Mutate
                 method = 3
