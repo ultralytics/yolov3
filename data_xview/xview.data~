@@ -1,0 +1,4 @@
+classes=95
+train=/home/zisheng/Capstone/Data/chipped/xview_img.txt
+valid=/home/zisheng/Capstone/Data/chipped/xview_img.txt
+labels=/home/zisheng/Capstone/Data/chipped/labels.txt

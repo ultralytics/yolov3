@@ -1,0 +1,60 @@
+11:Fixed-wing Aircraft
+12:Small Aircraft
+13:Cargo Plane
+15:Helicopter
+17:Passenger Vehicle
+18:Small Car
+19:Bus
+20:Pickup Truck
+21:Utility Truck
+23:Truck
+24:Cargo Truck
+25:Truck w/Box
+26:Truck Tractor
+27:Trailer
+28:Truck w/Flatbed
+29:Truck w/Liquid
+32:Crane Truck
+33:Railway Vehicle
+34:Passenger Car
+35:Cargo Car
+36:Flat Car
+37:Tank car
+38:Locomotive
+40:Maritime Vessel
+41:Motorboat
+42:Sailboat
+44:Tugboat
+45:Barge
+47:Fishing Vessel
+49:Ferry
+50:Yacht
+51:Container Ship
+52:Oil Tanker
+53:Engineering Vehicle
+54:Tower crane
+55:Container Crane
+56:Reach Stacker
+57:Straddle Carrier
+59:Mobile Crane
+60:Dump Truck
+61:Haul Truck
+62:Scraper/Tractor
+63:Front loader/Bulldozer
+64:Excavator
+65:Cement Mixer
+66:Ground Grader
+71:Hut/Tent
+72:Shed
+73:Building
+74:Aircraft Hangar
+76:Damaged Building
+77:Facility
+79:Construction Site
+83:Vehicle Lot
+84:Helipad
+86:Storage Tank
+89:Shipping container lot
+91:Shipping Container
+93:Pylon
+94:Tower

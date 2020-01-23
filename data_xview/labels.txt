@@ -1,0 +1,95 @@
+  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Fixed-wing Aircraft
+Small Aircraft
+Passenger/Cargo Plane
+ 
+Helicopter
+ 
+Passenger Vehicle
+Small Car
+Bus
+Pickup Truck
+Utility Truck
+ 
+Truck
+Cargo Truck
+Truck Tractor w/ Box Trailer
+Truck Tractor
+Trailer
+Truck Tractor w/ Flatbed Trailer
+Truck Tractor w/ Liquid Tank
+ 
+ 
+Crane Truck
+Railway Vehicle
+Passenger Car
+Cargo/Container Car
+Flat Car
+Tank car
+Locomotive
+ 
+Maritime Vessel
+Motorboat
+Sailboat
+ 
+Tugboat
+Barge
+ 
+Fishing Vessel
+ 
+Ferry
+Yacht
+Container Ship
+Oil Tanker
+Engineering Vehicle
+Tower crane
+Container Crane
+Reach Stacker
+Straddle Carrier
+ 
+Mobile Crane
+Dump Truck
+Haul Truck
+Scraper/Tractor
+Front loader/Bulldozer
+Excavator
+Cement Mixer
+Ground Grader
+ 
+ 
+ 
+ 
+Hut/Tent
+Shed
+Building
+Aircraft Hangar
+ 
+Damaged Building
+Facility
+ 
+Construction Site
+ 
+ 
+ 
+Vehicle Lot
+Helipad
+ 
+Storage Tank
+ 
+ 
+Shipping container lot
+ 
+Shipping Container
+ 
+Pylon
+Tower
