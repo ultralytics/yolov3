@@ -328,8 +328,10 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             extract_bounding_boxes = False
             create_datasubset = False
             pbar = tqdm(self.label_files, desc='Caching labels')
+
             nm, nf, ne, ns, nd = 0, 0, 0, 0, 0  # number missing, found, empty, datasubset, duplicate
             for i, file in enumerate(pbar):
+
                 try:
                     with open(file, 'r') as f:
                         l = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
@@ -384,6 +386,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
                 pbar.desc = 'Caching labels (%g found, %g missing, %g empty, %g duplicate, for %g images)' % (
                     nf, nm, ne, nd, n)
+
             assert nf > 0, 'No labels found. See %s' % help_url
 
         # Cache images into memory for faster training (WARNING: large datasets may exceed system RAM)
