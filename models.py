@@ -222,8 +222,7 @@ class Darknet(nn.Module):
 
     def forward(self, x, var=None):
         img_size = x.shape[-2:]
-        layer_outputs = []
-        output = []
+        output, layer_outputs = [], []
         verbose = False
         if verbose:
             print('0', x.shape)
