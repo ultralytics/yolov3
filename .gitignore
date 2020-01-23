@@ -1,5 +1,5 @@
 # Repo-specific GitIgnore ----------------------------------------------------------------------------------------------
-#*.jpg
+*.jpg
 *.png
 *.bmp
 *.tif
@@ -21,6 +21,7 @@
 storage.googleapis.com
 runs/*
 data/*
+!data_xview/
 !data/samples/zidane.jpg
 !data/samples/bus.jpg
 !data/coco.names
