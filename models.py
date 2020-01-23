@@ -224,6 +224,9 @@ class Darknet(nn.Module):
         img_size = x.shape[-2:]
         layer_outputs = []
         output = []
+        verbose = False
+        if verbose:
+            print('0', x.shape)
 
         for i, (mdef, module) in enumerate(zip(self.module_defs, self.module_list)):
             mtype = mdef['type']
@@ -241,10 +244,15 @@ class Darknet(nn.Module):
                         x = torch.cat([layer_outputs[i] for i in layers], 1)
                     # print(''), [print(layer_outputs[i].shape) for i in layers], print(x.shape)
             elif mtype == 'shortcut':
-                x = x + layer_outputs[int(mdef['from'])]
+                j = int(mdef['from'])
+                if verbose:
+                    print('shortcut adding layer %g-%s to %g-%s' % (j, layer_outputs[j].shape, i - 1, x.shape))
+                x = x + layer_outputs[j]
             elif mtype == 'yolo':
                 output.append(module(x, img_size))
             layer_outputs.append(x if i in self.routs else [])
+            if verbose:
+                print(i, x.shape)
 
         if self.training:
             return output
