@@ -398,7 +398,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=16)  # effective bs = batch_size * accumulate = 16 * 4 = 64
     parser.add_argument('--accumulate', type=int, default=4, help='batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
-    parser.add_argument('--data', type=str, default='data_xview/xview_data.txt', help='*.data path')
+    parser.add_argument('--data', type=str, default='/data/zjc4/chipped/xview.txt', help='*.data path')
     parser.add_argument('--multi-scale', action='store_true', help='adjust (67% - 150%) img_size every 10 batches')
     parser.add_argument('--img-size', nargs='+', type=int, default=[416], help='train and test image-sizes')
     parser.add_argument('--rect', action='store_true', help='rectangular training')

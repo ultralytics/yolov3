@@ -415,7 +415,6 @@ def compute_loss(p, targets, model, giou_flag=True):  # predictions, targets, mo
             # Append targets to text file
             # with open('targets.txt', 'a') as file:
             #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
-        print(nb)
         if 'default' in arc:  # separate obj and cls
             lobj += BCEobj(pi[..., 4], tobj)  # obj loss
 
