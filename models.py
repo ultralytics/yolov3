@@ -233,6 +233,8 @@ class Darknet(nn.Module):
                 x = module(x)
             elif mtype == 'route':
                 layers = [int(x) for x in mdef['layers'].split(',')]
+                if verbose:
+                    print('route concatenating %s' % ([layer_outputs[i].shape for i in layers]))
                 if len(layers) == 1:
                     x = layer_outputs[layers[0]]
                 else:
