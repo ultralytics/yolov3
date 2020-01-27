@@ -1,4 +1,7 @@
-import glob
+"""
+This class converts images from xView into chipped images
+for input into Darknet format
+"""
 import aug_util as aug
 import wv_util as wv
 import matplotlib.pyplot as plt
@@ -6,11 +9,6 @@ from PIL import Image
 import numpy as np
 import csv
 import tqdm
-
-"""
-This class converts images from xView into chipped images
-for input into Darknet format
-"""
 
 fdir = '/data/zjc4/'
 #Load an image
@@ -20,9 +18,9 @@ arr = wv.get_image(chip_name)
 
 #Loading our labels
 coords1, chips1, classes1 = wv.get_labels(fdir+'xView_train.geojson')
-
-
+import glob
 all_images = glob.glob(fdir+'train_images/*.tif')
+
 
 #Load the class number -> class string label map
 labels = {}
@@ -33,12 +31,10 @@ with open('xview_class_labels.txt') as f:
     pass
 
 i = 0
-for chip_name in tqdm.tqdm(all_images):
-    i+=1
-    if i > 500: break
+for chip_name in tqdm.tqdm(all_images[:300]):
     chip_name = (chip_name.split("/")[-1])
     img_name = chip_name.split(".")[0]
-
+    
     coords = coords1[chips1==chip_name]
     classes = classes1[chips1==chip_name].astype(np.int64)
     
@@ -66,12 +62,22 @@ for chip_name in tqdm.tqdm(all_images):
         nx,ny = np.round(nx,6),np.round(ny,6)
         
         h_cls = c_cls[c_idx]
+        
+        classes = [[11,12],[13],[17,18,20,21],\
+                   [19,23,24,25,28,29,60,61,65,26],[41,42,50,40,44,45,47,49]]
+        matching_cls_idxs = np.copy(np.isin(h_cls,classes[0])) # init class idx
+        for idx,c in enumerate(classes):
+            idx_filter = np.isin(h_cls,c)
+            h_cls[idx_filter] = idx
+            matching_cls_idxs = np.copy(np.logical_or(matching_cls_idxs,idx_filter))
+
         data_labels = np.vstack((h_cls,nx,ny,nwidths,nheights)).T
         # Select only valid labels
         y_valid = np.logical_and(nx-nwidths > 0.1,nx+nwidths < 0.9)
         x_valid = np.logical_and(ny-nheights > 0.1,ny+nheights < 0.9)
-        cls_valid = (h_cls<30)
-        valid = np.logical_and(x_valid,np.logical_and(y_valid,cls_valid))
+        
+        valid = np.logical_and(x_valid,np.logical_and(y_valid,matching_cls_idxs))
+        
         data_labels = data_labels[valid,:]
         
         # Break if there are no valid labels(o.w. empty label == error)
@@ -82,8 +88,7 @@ for chip_name in tqdm.tqdm(all_images):
         img = Image.fromarray(c_img[c_idx])
         ff_i = "{}images/{}.jpg".format(cdir,c_name)
         img.save(ff_i)
-        
-# export all image paths into file
+
 lines = glob.glob(cdir+"images/*")
 with open(fdir+"chipped/xview_img.txt", mode='w', encoding='utf-8') as myfile:
     myfile.write('\n'.join(lines))
