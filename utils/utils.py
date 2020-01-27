@@ -798,9 +798,10 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
 
     # Evolve
     wh = torch.Tensor(wh)
-    f, ng = fitness(thr, wh, k), 1000  # fitness, generations
+    f, ng = fitness(thr, wh, k), 1000  # fitness, mutation probability, generations
     for _ in tqdm(range(ng), desc='Evolving anchors'):
-        kg = (k.copy() * (1 + np.random.random() * np.random.randn(*k.shape) * 0.30)).clip(min=2.0)
+        v = ((np.random.random(n) < 0.1) * np.random.randn(n) * 0.3 + 1) ** 2.0  # 0.1 mutation probability, 0.3 sigma
+        kg = (k.copy() * v).clip(min=2.0)
         fg = fitness(thr, wh, kg)
         if fg > f:
             f, k = fg, kg.copy()

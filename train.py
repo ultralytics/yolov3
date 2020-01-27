@@ -459,7 +459,7 @@ if __name__ == '__main__':
 
                 # Mutate
                 method = 3
-                s = 0.3  # 20% sigma
+                s = 0.3  # 30% sigma
                 np.random.seed(int(time.time()))
                 g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 0, 1, 1, 1, 1, 1, 1, 1])  # gains
                 ng = len(g)
