@@ -449,7 +449,7 @@ if __name__ == '__main__':
                 # Select parent(s)
                 parent = 'single'  # parent selection method: 'single' or 'weighted'
                 x = np.loadtxt('evolve.txt', ndmin=2)
-                n = min(8, len(x))  # number of previous results to consider
+                n = min(5, len(x))  # number of previous results to consider
                 x = x[np.argsort(-fitness(x))][:n]  # top n mutations
                 w = fitness(x) - fitness(x).min()  # weights
                 if parent == 'single' or len(x) == 1:
@@ -459,20 +459,20 @@ if __name__ == '__main__':
                     x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # weighted combination
 
                 # Mutate
-                method = 3
-                s = 0.3  # 30% sigma
-                np.random.seed(int(time.time()))
+                method, mp, s = 3, 0.9, 0.1  # method, mutation probability, sigma
+                npr = np.random
+                npr.seed(int(time.time()))
                 g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 0, 1, 1, 1, 1, 1, 1, 1])  # gains
                 ng = len(g)
                 if method == 1:
-                    v = (np.random.randn(ng) * np.random.random() * g * s + 1) ** 2.0
+                    v = (npr.randn(ng) * npr.random() * g * s + 1) ** 2.0
                 elif method == 2:
-                    v = (np.random.randn(ng) * np.random.random(ng) * g * s + 1) ** 2.0
+                    v = (npr.randn(ng) * npr.random(ng) * g * s + 1) ** 2.0
                 elif method == 3:
                     v = np.ones(ng)
                     while all(v == 1):  # mutate until a change occurs (prevent duplicates)
-                        r = (np.random.random(ng) < 0.1) * np.random.randn(ng)  # 10% mutation probability
-                        v = (g * s * r + 1) ** 2.0
+                        # v = (g * (npr.random(ng) < mp) * npr.randn(ng) * s + 1) ** 2.0
+                        v = (g * (npr.random(ng) < mp) * npr.randn(ng) * npr.random() * s + 1).clip(0.3, 3.0)
                 for i, k in enumerate(hyp.keys()):  # plt.hist(v.ravel(), 300)
                     hyp[k] = x[i + 7] * v[i]  # mutate
 
