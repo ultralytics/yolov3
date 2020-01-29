@@ -216,9 +216,11 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
 
             # Plot
             # fig, ax = plt.subplots(1, 1, figsize=(4, 4))
-            # ax.plot(np.concatenate(([0.], recall)), np.concatenate(([0.], precision)))
-            # ax.set_title('YOLOv3-SPP'); ax.set_xlabel('Recall'); ax.set_ylabel('Precision')
-            # ax.set_xlim(0, 1)
+            # ax.plot(recall, precision)
+            # ax.set_xlabel('Recall')
+            # ax.set_ylabel('Precision')
+            # ax.set_xlim(0, 1.01)
+            # ax.set_ylim(0, 1.01)
             # fig.tight_layout()
             # fig.savefig('PR_curve.png', dpi=300)
 
