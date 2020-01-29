@@ -11,3 +11,9 @@ while true; do
 
   python3 train.py --data coco2014.data --img-size 416 608 --epochs 27 --batch 16 --accum 4 --evolve --weights '' --bucket ult/coco --device $1 --cfg yolov3-spp.cfg --multi
 done
+
+
+# coco epoch times --img-size 416 608 --epochs 27 --batch 16 --accum 4
+# 36:34 2080ti
+# 21:58 V100
+# 63:00 T4

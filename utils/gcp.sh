@@ -65,11 +65,11 @@ done
 
 # Evolve coco
 sudo -s
-t=ultralytics/yolov3:v256
+t=ultralytics/yolov3:v189
 docker kill $(docker ps -a -q --filter ancestor=$t)
-for i in 0
+for i in 0 1 2 3 4 5 6 7
 do
-  docker pull $t && docker run --gpus all -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t bash utils/evolve.sh $i
+  docker pull $t && docker run --gpus all -d --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t bash utils/evolve.sh $i
   sleep 120
 done
 
@@ -278,7 +278,7 @@ n=197 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo nvidia-docker r
 n=198 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo nvidia-docker run -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 640 --epochs 273 --batch 22 --accum 3 --weights '' --arc defaultpw --pre --multi --bucket yolov4 --name $n
 
 
-# knife
+# athena
 n=199 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo nvidia-docker run -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 100 --batch 8 --accum 8 --weights ultralytics68.pt --arc defaultpw --pre --multi --bucket ultralytics/athena --name $n --device 0
 n=200 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo nvidia-docker run -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 100 --batch 8 --accum 8 --weights ultralytics68.pt --arc defaultpw --pre --multi --bucket ultralytics/athena --name $n --device 6
 n=207 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo nvidia-docker run -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 100 --batch 8 --accum 8 --weights ultralytics68.pt --arc defaultpw --pre --multi --bucket ultralytics/athena --name $n --device 7
@@ -318,7 +318,7 @@ n=254 && t=ultralytics/yolov3:v245 && sudo docker pull $t && sudo docker run -d 
 n=255 && t=ultralytics/yolov3:v245 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 60 --batch 8 --accum 8 --weights darknet53.conv.74 --arc defaultpw --multi --device 2 --bucket ult/athena --name $n --nosave --cfg yolov3-spp3-1cls.cfg
 
 
-# sm4
+# wer
 n=201 && t=ultralytics/yolov3:v201 && sudo docker pull $t && sudo nvidia-docker run -d -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 1000 --batch 64 --accum 1 --weights yolov3-tiny.pt --arc defaultpw --pre --multi --bucket ult/wer --name $n --device 0 --cfg yolov3-tiny-3cls.cfg
 n=202 && t=ultralytics/yolov3:v201 && sudo docker pull $t && sudo nvidia-docker run -d -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 1000 --batch 64 --accum 1 --weights yolov3-tiny.pt --arc defaultpw --pre --multi --bucket ult/wer --name $n --device 1 --cfg yolov3-tiny-3cls-sm4.cfg
 n=203 && t=ultralytics/yolov3:v201 && sudo docker pull $t && sudo nvidia-docker run -d -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 1000 --batch 64 --accum 1 --weights '' --arc defaultpw --pre --multi --bucket ult/wer --name $n --device 2 --cfg yolov3-tiny-3cls-sm4.cfg
@@ -344,13 +344,25 @@ n=257 && t=ultralytics/yolov3:v$n && sudo docker pull $t && sudo docker run -it 
 
 
 #coco
-n=3 && t=ultralytics/coco:v$n && sudo docker pull $t && sudo docker run -d --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 384 --epochs 30 --batch 32 --accum 2 --weights '' --device 0 --cfg yolov3.cfg --nosave --bucket ult/coco --name $n
-n=4 && t=ultralytics/coco:v3 && sudo docker pull $t && sudo docker run -d --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 384 --epochs 30 --batch 32 --accum 2 --weights '' --device 1 --cfg yolov3-spp.cfg --nosave --bucket ult/coco --name $n
-n=5 && t=ultralytics/coco:v3 && sudo docker pull $t && sudo docker run -d --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 384 --epochs 30 --batch 32 --accum 2 --weights '' --device 2 --cfg yolov3-spp3.cfg --nosave --bucket ult/coco --name $n
+n=3 && t=ultralytics/coco:v$n && sudo docker pull $t && sudo docker run -d --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 384 --epochs 27 --batch 32 --accum 2 --weights '' --device 1 --cfg yolov3.cfg --nosave --bucket ult/coco --name $n
+n=4 && t=ultralytics/coco:v3 && sudo docker pull $t && sudo docker run -d --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 384 --epochs 27 --batch 32 --accum 2 --weights '' --device 2 --cfg yolov3-spp.cfg --nosave --bucket ult/coco --name $n
+n=5 && t=ultralytics/coco:v3 && sudo docker pull $t && sudo docker run -d --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 384 --epochs 27 --batch 32 --accum 2 --weights '' --device 3 --cfg yolov3-spp3.cfg --nosave --bucket ult/coco --name $n
+n=6 && t=ultralytics/coco:v3 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 384 --epochs 27 --batch 32 --accum 2 --weights '' --device 0 --cfg yolov4.cfg --nosave --bucket ult/coco --name $n
+n=7 && t=ultralytics/coco:v3 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 384 --epochs 27 --batch 32 --accum 2 --weights '' --device 1 --cfg yolov4s.cfg --nosave --bucket ult/coco --name $n
+n=8 && t=ultralytics/coco:v8 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 384 --epochs 27 --batch 32 --accum 2 --weights '' --device 0 --cfg yolov4.cfg --nosave --bucket ult/coco --name $n
+n=9 && t=ultralytics/coco:v9 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 416 608 --epochs 27 --batch 22 --accum 3 --weights '' --device 0 --cfg yolov4a.cfg --nosave --bucket ult/coco --name $n --multi
+n=10 && t=ultralytics/coco:v9 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 416 608 --epochs 27 --batch 22 --accum 3 --weights '' --device 0 --cfg yolov4b.cfg --nosave --bucket ult/coco --name $n --multi
+
+
 sudo shutdown
 
 
-# sm4
+# athena
+n=32 && t=ultralytics/athena:v32 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 100 --batch 8 --accum 8 --weights ultralytics68.pt --multi --device 0 --bucket ult/athena --name $n --nosave --cfg yolov3-spp-1cls.cfg
+n=33 && t=ultralytics/athena:v33 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/out:/usr/src/out $t python3 train.py --data ../out/data.data --img-size 608 --epochs 100 --batch 8 --accum 8 --weights darknet53.conv.74 --multi --device 1 --bucket ult/athena --name $n --nosave --cfg yolov3-spp-1cls.cfg
+
+
+# wer
 n=18 && t=ultralytics/wer:v18 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 100 --batch 64 --accum 1 --weights yolov3-tiny.conv.15 --multi --bucket ult/wer --name $n --nosave --cache --device 0 --cfg yolov3-tiny-1cls.cfg --single --adam
 n=19 && t=ultralytics/wer:v18 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 100 --batch 64 --accum 1 --weights yolov3-tiny.conv.15 --multi --bucket ult/wer --name $n --nosave --cache --device 1 --cfg yolov3-tiny-3l-1cls.cfg --single --adam
 n=20 && t=ultralytics/wer:v18 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 100 --batch 64 --accum 1 --weights yolov3-tiny.conv.15 --multi --bucket ult/wer --name $n --nosave --cache --device 2 --cfg yolov3-tiny-prnc-1cls.cfg --single --adam
@@ -360,5 +372,4 @@ n=23 && t=ultralytics/wer:v18 && sudo docker pull $t && sudo docker run -it --gp
 n=24 && t=ultralytics/wer:v24 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 100 --batch 64 --accum 1 --weights '' --multi --bucket ult/wer --name $n --nosave --cache --device 3 --cfg yolov3-tiny-3l-1cls.cfg --single --adam
 n=25 && t=ultralytics/wer:v25 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 100 --batch 64 --accum 1 --weights yolov3-tiny.pt --multi --bucket ult/wer --name $n --nosave --cache --device 2 --cfg yolov3-tiny3-1cls.cfg --single --adam
 n=26 && t=ultralytics/wer:v$n && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/data:/usr/src/data $t python3 train.py --data ../data/sm4/out.data --img-size 320 --epochs 1000 --batch 64 --accum 1 --weights yolov3-tiny.pt --multi --bucket ult/wer --name $n --nosave --cache --device 0 --cfg yolov3-tiny3-1cls.cfg --single --adam
-
 

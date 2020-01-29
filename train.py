@@ -103,7 +103,7 @@ def train():
     # optimizer = torch_utils.Lookahead(optimizer, k=5, alpha=0.5)
 
     start_epoch = 0
-    best_fitness = float('inf')
+    best_fitness = 0.0
     attempt_download(weights)
     if weights.endswith('.pt'):  # pytorch format
         # possible weights are '*.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt' etc.
@@ -337,9 +337,9 @@ def train():
                 tb_writer.add_scalar(title, xi, epoch)
 
         # Update best mAP
-        fitness = sum(results[4:])  # total loss
-        if fitness < best_fitness:
-            best_fitness = fitness
+        fi = fitness(np.array(results).reshape(1, -1))  # fitness_i = weighted combination of [P, R, mAP, F1]
+        if fi > best_fitness:
+            best_fitness = fi
 
         # Save training results
         save = (not opt.nosave) or (final_epoch and not opt.evolve)
@@ -357,7 +357,7 @@ def train():
             torch.save(chkpt, last)
 
             # Save best checkpoint
-            if best_fitness == fitness:
+            if best_fitness == fi:
                 torch.save(chkpt, best)
 
             # Save backup every 10 epochs (optional)
@@ -382,6 +382,7 @@ def train():
         if opt.bucket:
             os.system('gsutil cp %s gs://%s/results' % (fresults, opt.bucket))
             os.system('gsutil cp %s gs://%s/weights' % (wdir + flast, opt.bucket))
+            os.system('gsutil cp %s gs://%s/weights' % (wdir + fbest, opt.bucket))
 
     if not opt.evolve:
         plot_results()  # save as results.png
