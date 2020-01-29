@@ -459,7 +459,7 @@ if __name__ == '__main__':
                     x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # weighted combination
 
                 # Mutate
-                method, mp, s = 3, 0.9, 0.1  # method, mutation probability, sigma
+                method, mp, s = 3, 0.9, 0.2  # method, mutation probability, sigma
                 npr = np.random
                 npr.seed(int(time.time()))
                 g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 0, 1, 1, 1, 1, 1, 1, 1])  # gains
