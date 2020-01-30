@@ -73,7 +73,7 @@ def train():
     nc = 1 if opt.single_cls else int(data_dict['classes'])  # number of classes
 
     # Remove previous results
-    for f in glob.glob('*_batch*.jpg') + glob.glob(results_file):
+    for f in glob.glob('*_batch*.png') + glob.glob(results_file):
         os.remove(f)
 
     # Initialize model
@@ -255,7 +255,7 @@ def train():
 
             # Plot images with bounding boxes
             if ni == 0:
-                fname = 'train_batch%g.jpg' % i
+                fname = 'train_batch%g.png' % i
                 plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname)
                 if tb_writer:
                     tb_writer.add_image(fname, cv2.imread(fname)[:, :, ::-1], dataformats='HWC')

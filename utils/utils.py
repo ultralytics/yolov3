@@ -911,7 +911,8 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
     fig.savefig('comparison.png', dpi=200)
 
 
-def plot_images(imgs, targets, paths=None, fname='images.jpg'):
+
+def plot_images(imgs, targets, paths=None, fname='images.png'):
     # Plots training images overlaid with targets
     imgs = imgs.cpu().numpy()
     targets = targets.cpu().numpy()
@@ -947,13 +948,13 @@ def plot_test_txt():  # from utils.utils import *; plot_test()
     ax.hist2d(cx, cy, bins=600, cmax=10, cmin=0)
     ax.set_aspect('equal')
     fig.tight_layout()
-    plt.savefig('hist2d.jpg', dpi=300)
+    plt.savefig('hist2d.png', dpi=300)
 
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
     ax[0].hist(cx, bins=600)
     ax[1].hist(cy, bins=600)
     fig.tight_layout()
-    plt.savefig('hist1d.jpg', dpi=200)
+    plt.savefig('hist1d.png', dpi=200)
 
 
 def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
