@@ -36,14 +36,16 @@ def detect(save_img=False):
 
     # Fuse Conv2d + BatchNorm2d layers
     # model.fuse()
+    # torch_utils.model_info(model, report='summary')  # 'full' or 'summary'
 
     # Eval mode
     model.to(device).eval()
 
     # Export mode
     if ONNX_EXPORT:
+        model.fuse()
         img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
-        torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=10)
+        torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=11)
 
         # Validate exported model
         import onnx
