@@ -51,7 +51,11 @@ def create_modules(module_defs, img_size, arc):
                 modules = maxpool
 
         elif mdef['type'] == 'upsample':
-            modules = nn.Upsample(scale_factor=int(mdef['stride']), mode='nearest')
+            if ONNX_EXPORT:  # explicitly state size, avoid scale_factor
+                g = (yolo_index + 1) * 2
+                modules = nn.Upsample(size=(10 * g, 6 * g), mode='nearest')  # assume img_size = (320, 192)
+            else:
+                modules = nn.Upsample(scale_factor=int(mdef['stride']), mode='nearest')
 
         elif mdef['type'] == 'route':  # nn.Sequential() placeholder for 'route' layer
             layers = [int(x) for x in mdef['layers'].split(',')]
