@@ -52,7 +52,7 @@ def create_modules(module_defs, img_size, arc):
 
         elif mdef['type'] == 'upsample':
             if ONNX_EXPORT:  # explicitly state size, avoid scale_factor
-                g = (yolo_index + 1) * 2
+                g = (yolo_index + 1) * 2  # gain
                 modules = nn.Upsample(size=(10 * g, 6 * g), mode='nearest')  # assume img_size = (320, 192)
             else:
                 modules = nn.Upsample(scale_factor=int(mdef['stride']), mode='nearest')
