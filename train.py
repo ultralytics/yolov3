@@ -168,7 +168,7 @@ def train(
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
 
     # Remove old results
-    for f in glob.glob('*_batch*.jpg') + glob.glob('results.txt'):
+    for f in glob.glob('*_batch*.png') + glob.glob('results.txt'):
         os.remove(f)
 
     # Start training
@@ -205,7 +205,7 @@ def train(
 
             # Plot images with bounding boxes
             if epoch == 0 and i == 0:
-                plot_images(imgs=imgs, targets=targets, fname='train_batch0.jpg')
+                plot_images(imgs=imgs, targets=targets, fname='train_batch0.png')
 
             # SGD burn-in
             if epoch == 0 and i <= n_burnin:

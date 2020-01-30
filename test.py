@@ -63,8 +63,8 @@ def test(
         _, _, height, width = imgs.shape  # batch size, channels, height, width
 
         # Plot images with bounding boxes
-        if batch_i == 0 and not os.path.exists('test_batch0.jpg'):
-            plot_images(imgs=imgs, targets=targets, fname='test_batch0.jpg')
+        if batch_i == 0 and not os.path.exists('test_batch0.png'):
+            plot_images(imgs=imgs, targets=targets, fname='test_batch0.png')
 
         # Run model
         inf_out, train_out = model(imgs)  # inference and training outputs
