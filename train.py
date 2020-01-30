@@ -382,7 +382,7 @@ def train():
         if opt.bucket:
             os.system('gsutil cp %s gs://%s/results' % (fresults, opt.bucket))
             os.system('gsutil cp %s gs://%s/weights' % (wdir + flast, opt.bucket))
-            os.system('gsutil cp %s gs://%s/weights' % (wdir + fbest, opt.bucket))
+            # os.system('gsutil cp %s gs://%s/weights' % (wdir + fbest, opt.bucket))
 
     if not opt.evolve:
         plot_results()  # save as results.png
