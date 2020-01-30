@@ -377,9 +377,7 @@ def train():
         os.rename('results.txt', fresults)
         os.rename(wdir + 'last.pt', wdir + flast) if os.path.exists(wdir + 'last.pt') else None
         os.rename(wdir + 'best.pt', wdir + fbest) if os.path.exists(wdir + 'best.pt') else None
-
-        # save to cloud
-        if opt.bucket:
+        if opt.bucket:  # save to cloud
             os.system('gsutil cp %s gs://%s/results' % (fresults, opt.bucket))
             os.system('gsutil cp %s gs://%s/weights' % (wdir + flast, opt.bucket))
             # os.system('gsutil cp %s gs://%s/weights' % (wdir + fbest, opt.bucket))
