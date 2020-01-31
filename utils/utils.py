@@ -911,7 +911,6 @@ def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
     fig.savefig('comparison.png', dpi=200)
 
 
-
 def plot_images(imgs, targets, paths=None, fname='images.png'):
     # Plots training images overlaid with targets
     imgs = imgs.cpu().numpy()
