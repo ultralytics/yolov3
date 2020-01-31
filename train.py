@@ -313,7 +313,7 @@ def train():
                                       batch_size=batch_size * 2,
                                       img_size=img_size_test,
                                       model=model,
-                                      conf_thres=0.001 if final_epoch and is_coco else 0.1,  # 0.1 for speed
+                                      conf_thres=1E-3 if opt.evolve or (final_epoch and is_coco) else 0.1,  # 0.1 faster
                                       iou_thres=0.6,
                                       save_json=final_epoch and is_coco,
                                       single_cls=opt.single_cls,
