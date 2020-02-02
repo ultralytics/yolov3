@@ -751,22 +751,22 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
     from utils.datasets import LoadImagesAndLabels
     thr = 0.20  # IoU threshold
 
-    def print_results(thr, wh, k):
+    def print_results(wh, k):
         k = k[np.argsort(k.prod(1))]  # sort small to large
         iou = wh_iou(torch.Tensor(wh), torch.Tensor(k))
-        max_iou, min_iou = iou.max(1)[0], iou.min(1)[0]
+        max_iou = iou.max(1)[0]
         bpr, aat = (max_iou > thr).float().mean(), (iou > thr).float().mean() * n  # best possible recall, anch > thr
         print('%.2f iou_thr: %.3f best possible recall, %.2f anchors > thr' % (thr, bpr, aat))
-        print('kmeans anchors (n=%g, img_size=%s, IoU=%.3f/%.3f/%.3f-min/mean/best): ' %
-              (n, img_size, min_iou.mean(), iou.mean(), max_iou.mean()), end='')
+        print('n=%g, img_size=%s, IoU_all=%.3f/%.3f-mean/best, IoU>thr=%.3f-mean: ' %
+              (n, img_size, iou.mean(), max_iou.mean(), iou[iou > thr].mean()), end='')
         for i, x in enumerate(k):
             print('%i,%i' % (round(x[0]), round(x[1])), end=',  ' if i < len(k) - 1 else '\n')  # use in *.cfg
         return k
 
-    def fitness(thr, wh, k):  # mutation fitness
-        iou = wh_iou(wh, torch.Tensor(k)).max(1)[0]  # max iou
-        bpr = (iou > thr).float().mean()  # best possible recall
-        return iou.mean() * bpr  # product
+    def fitness(wh, k):  # mutation fitness
+        iou = wh_iou(wh, torch.Tensor(k))  # iou
+        max_iou = iou.max(1)[0]
+        return max_iou.mean()  # product
 
     # Get label wh
     wh = []
@@ -776,6 +776,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
         wh.append(l[:, 3:5] * (s / s.max()))  # image normalized to letterbox normalized wh
     wh = np.concatenate(wh, 0).repeat(nr, axis=0)  # augment 10x
     wh *= np.random.uniform(img_size[0], img_size[1], size=(wh.shape[0], 1))  # normalized to pixels (multi-scale)
+    wh = wh[(wh > 2.0).all(1)]  # remove below threshold boxes (< 2 pixels wh)
 
     # Darknet yolov3.cfg anchors
     use_darknet = False
@@ -788,7 +789,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
         s = wh.std(0)  # sigmas for whitening
         k, dist = kmeans(wh / s, n, iter=30)  # points, mean distance
         k *= s
-    k = print_results(thr, wh, k)
+    k = print_results(wh, k)
 
     # # Plot
     # k, d = [None] * 20, [None] * 20
@@ -797,21 +798,26 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(320, 640)):
     # fig, ax = plt.subplots(1, 2, figsize=(14, 7))
     # ax = ax.ravel()
     # ax[0].plot(np.arange(1, 21), np.array(d) ** 2, marker='.')
+    # fig, ax = plt.subplots(1, 2, figsize=(14, 7))  # plot wh
+    # ax[0].hist(wh[wh[:, 0]<100, 0],400)
+    # ax[1].hist(wh[wh[:, 1]<100, 1],400)
+    # fig.tight_layout()
+    # fig.savefig('wh.png', dpi=200)
 
     # Evolve
     npr = np.random
     wh = torch.Tensor(wh)
-    f, sh, ng, mp, s = fitness(thr, wh, k), k.shape, 1000, 0.9, 0.1  # fitness, generations, mutation probability, sigma
+    f, sh, ng, mp, s = fitness(wh, k), k.shape, 1000, 0.9, 0.1  # fitness, generations, mutation prob, sigma
     for _ in tqdm(range(ng), desc='Evolving anchors'):
         v = np.ones(sh)
         while (v == 1).all():  # mutate until a change occurs (prevent duplicates)
             v = ((npr.random(sh) < mp) * npr.random() * npr.randn(*sh) * s + 1).clip(0.3, 3.0)  # 98.6, 61.6
         kg = (k.copy() * v).clip(min=2.0)
-        fg = fitness(thr, wh, kg)
+        fg = fitness(wh, kg)
         if fg > f:
             f, k = fg, kg.copy()
-            print_results(thr, wh, k)
-    k = print_results(thr, wh, k)
+            print_results(wh, k)
+    k = print_results(wh, k)
 
     return k
 
