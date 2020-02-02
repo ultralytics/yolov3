@@ -18,6 +18,8 @@ def create_modules(module_defs, img_size, arc):
 
     for i, mdef in enumerate(module_defs):
         modules = nn.Sequential()
+        # if i == 0:
+        #     modules.add_module('BatchNorm2d_0', nn.BatchNorm2d(output_filters[-1], momentum=0.1))
 
         if mdef['type'] == 'convolutional':
             bn = int(mdef['batch_normalize'])
