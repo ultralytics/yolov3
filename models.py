@@ -268,7 +268,7 @@ class Darknet(nn.Module):
             x = [torch.cat(x, 0) for x in zip(*output)]
             return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
         else:
-            io, p = list(zip(*output))  # inference output, training output
+            io, p = zip(*output)  # inference output, training output
             return torch.cat(io, 1), p
 
     def fuse(self):
