@@ -244,22 +244,6 @@ def train():
             imgs = imgs.to(device).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
             targets = targets.to(device)
 
-            # Multi-Scale training
-            if opt.multi_scale:
-                if ni / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
-                    img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
-                sf = img_size / max(imgs.shape[2:])  # scale factor
-                if sf != 1:
-                    ns = [math.ceil(x * sf / 32.) * 32 for x in imgs.shape[2:]]  # new shape (stretched to 32-multiple)
-                    imgs = F.interpolate(imgs, size=ns, mode='bilinear', align_corners=False)
-
-            # Plot images with bounding boxes
-            if ni == 0:
-                fname = 'train_batch%g.png' % i
-                plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname)
-                if tb_writer:
-                    tb_writer.add_image(fname, cv2.imread(fname)[:, :, ::-1], dataformats='HWC')
-
             # Hyperparameter burn-in
             # n_burn = nb - 1  # min(nb // 5 + 1, 1000)  # number of burn-in batches
             # if ni <= n_burn:
@@ -270,6 +254,22 @@ def train():
             #     for x in optimizer.param_groups:
             #         x['lr'] = hyp['lr0'] * g
             #         x['weight_decay'] = hyp['weight_decay'] * g
+
+            # Plot images with bounding boxes
+            if ni == 0:
+                fname = 'train_batch%g.png' % i
+                plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname)
+                if tb_writer:
+                    tb_writer.add_image(fname, cv2.imread(fname)[:, :, ::-1], dataformats='HWC')
+
+            # Multi-Scale training
+            if opt.multi_scale:
+                if ni / accumulate % 10 == 0:  #  adjust (67% - 150%) every 10 batches
+                    img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
+                sf = img_size / max(imgs.shape[2:])  # scale factor
+                if sf != 1:
+                    ns = [math.ceil(x * sf / 32.) * 32 for x in imgs.shape[2:]]  # new shape (stretched to 32-multiple)
+                    imgs = F.interpolate(imgs, size=ns, mode='bilinear', align_corners=False)
 
             # Run model
             pred = model(imgs)
