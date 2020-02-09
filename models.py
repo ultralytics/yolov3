@@ -177,7 +177,7 @@ class YOLOLayer(nn.Module):
             return p
 
         elif ONNX_EXPORT:
-            # Constants CAN NOT BE BROADCAST, ensure correct shape!
+            # Avoid broadcasting for ANE operations
             m = self.na * self.nx * self.ny
             grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view(m, 2)
             anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view(m, 2) / self.ng
@@ -187,7 +187,7 @@ class YOLOLayer(nn.Module):
             wh = torch.exp(p[:, 2:4]) * anchor_wh  # width, height
             p_cls = torch.sigmoid(p[:, 4:5]) if self.nc == 1 else \
                 torch.sigmoid(p[:, 5:self.no]) * torch.sigmoid(p[:, 4:5])  # conf
-            return p_cls, xy / self.ng, wh
+            return p_cls, xy / self.ng.repeat((m, 1)), wh
 
         else:  # inference
             # s = 1.5  # scale_xy  (pxy = pxy * s - (s - 1) / 2)
