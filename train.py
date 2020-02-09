@@ -264,7 +264,7 @@ def train():
 
             # Multi-Scale training
             if opt.multi_scale:
-                if ni / accumulate % 1 == 0:  #  adjust (67% - 150%) every 10 batches
+                if ni / accumulate % 1 == 0:  #  adjust img_size (67% - 150%) every 1 batch
                     img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
                 sf = img_size / max(imgs.shape[2:])  # scale factor
                 if sf != 1:
