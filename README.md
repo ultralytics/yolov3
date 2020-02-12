@@ -1,198 +1,75 @@
-<table style="width:100%">
-  <tr>
-    <td>
-      <img src="https://user-images.githubusercontent.com/26833433/61591130-f7beea00-abc2-11e9-9dc0-d6abcf41d713.jpg">
-    </td>
-    <td align="center">
-    <a href="https://www.ultralytics.com" target="_blank">
-    <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="160"></a>
-      <img src="https://user-images.githubusercontent.com/26833433/61591093-2b4d4480-abc2-11e9-8b46-d88eb1dabba1.jpg">
-          <a href="https://itunes.apple.com/app/id1452689527" target="_blank">
-    <img src="https://user-images.githubusercontent.com/26833433/50044365-9b22ac00-0082-11e9-862f-e77aee7aa7b0.png" width="180"></a>
-    </td>
-    <td>
-      <img src="https://user-images.githubusercontent.com/26833433/61591100-55066b80-abc2-11e9-9647-52c0e045b288.jpg">
-    </td>
-  </tr>
-</table>
+# YOLOv3 with PEDL Client
 
-# Introduction
+A PEDL Client implementation of the [ultralytics/yolov3](https://github.com/ultralytics/yolov3) implementation in PyTorch.
 
-This directory contains PyTorch YOLOv3 software developed by Ultralytics LLC, and **is freely available for redistribution under the GPL-3.0 license**. For more information please visit https://www.ultralytics.com.
+## Setup
 
-# Description
+PEDL Client aims to replicate a local development experience and thus we start by creating a local copy of determined.ai's fork of the `ultralytics/yolov3` github repo. 
 
-The https://github.com/ultralytics/yolov3 repo contains inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. Training is done on the COCO dataset by default: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO:** https://pjreddie.com/darknet/yolo/.
-
-# Requirements
-
-Python 3.7 or later with all of the `pip install -U -r requirements.txt` packages including:
-- `torch >= 1.4`
-- `opencv-python`
-- `Pillow`
-
-All dependencies are included in the associated docker images. Docker requirements are: 
-- Nvidia Driver >= 440.44
-- Docker Engine - CE >= 19.03
-
-# Tutorials
-
-* [GCP Quickstart](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart)
-* [Transfer Learning](https://github.com/ultralytics/yolov3/wiki/Example:-Transfer-Learning)
-* [Train Single Image](https://github.com/ultralytics/yolov3/wiki/Example:-Train-Single-Image)
-* [Train Single Class](https://github.com/ultralytics/yolov3/wiki/Example:-Train-Single-Class)
-* [Train Custom Data](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data)
-
-# Jupyter Notebook
-
-Our Jupyter [notebook](https://colab.research.google.com/github/ultralytics/yolov3/blob/master/examples.ipynb) provides quick training, inference and testing examples.
-
-# Training
-
-**Start Training:** `python3 train.py` to begin training after downloading COCO data with `data/get_coco_dataset.sh`. Each epoch trains on 117,263 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set.
-
-**Resume Training:** `python3 train.py --resume` to resume training from `weights/last.pt`.
-
-**Plot Training:** `from utils import utils; utils.plot_results()` plots training results from `coco_16img.data`, `coco_64img.data`, 2 example datasets available in the `data/` folder, which train and test on the first 16 and 64 images of the COCO2014-trainval dataset.
-
-<img src="https://user-images.githubusercontent.com/26833433/63258271-fe9d5300-c27b-11e9-9a15-95038daf4438.png" width="900">
-
-## Image Augmentation
-
-`datasets.py` applies random OpenCV-powered (https://opencv.org/) augmentation to the input images in accordance with the following specifications. Augmentation is applied **only** during training, not during inference. Bounding boxes are automatically tracked and updated with the images. 416 x 416 examples pictured below.
-
-Augmentation | Description
---- | ---
-Translation | +/- 10% (vertical and horizontal)
-Rotation | +/- 5 degrees
-Shear | +/- 2 degrees (vertical and horizontal)
-Scale | +/- 10%
-Reflection | 50% probability (horizontal-only)
-H**S**V Saturation | +/- 50%
-HS**V** Intensity | +/- 50%
-
-<img src="https://user-images.githubusercontent.com/26833433/66699231-27beea80-ece5-11e9-9cad-bdf9d82c500a.jpg" width="900">
-
-## Speed
-
-https://cloud.google.com/deep-learning-vm/  
-**Machine type:** preemptible [n1-standard-16](https://cloud.google.com/compute/docs/machine-types) (16 vCPUs, 60 GB memory)   
-**CPU platform:** Intel Skylake  
-**GPUs:** K80 ($0.20/hr), T4 ($0.35/hr), V100 ($0.83/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32  
-**HDD:** 1 TB SSD  
-**Dataset:** COCO train 2014 (117,263 images)  
-**Model:** `yolov3-spp.cfg`  
-**Command:**  `python3 train.py --img 416 --batch 32 --accum 2`
-
-GPU |n| `--batch --accum` | img/s | epoch<br>time | epoch<br>cost
---- |--- |--- |--- |--- |---
-K80    |1| 32 x 2 | 11  | 175 min  | $0.58
-T4     |1<br>2| 32 x 2<br>64 x 1 | 41<br>61 | 48 min<br>32 min | $0.28<br>$0.36
-V100   |1<br>2| 32 x 2<br>64 x 1 | 122<br>**178** | 16 min<br>**11 min** | **$0.23**<br>$0.31
-2080Ti |1<br>2| 32 x 2<br>64 x 1 | 81<br>140 | 24 min<br>14 min | -<br>-
-
-# Inference
-
-`detect.py` runs inference on any sources:
-
-```bash
-python3 detect.py --source ...
+```
+git clone --depth 1 git@github.com:determined-ai/yolov3.git
 ```
 
-- Image:  `--source file.jpg`
-- Video:  `--source file.mp4`
-- Directory:  `--source dir/`
-- Webcam:  `--source 0`
-- RTSP stream:  `--source rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa`
-- HTTP stream:  `--source http://wmccpinetop.axiscam.net/mjpg/video.mjpg`
+#### Data Download
+To successfully use PEDL Client we need to make sure that all data is available both to your local environment and to the PEDL master. One way is to simply download the data to both your development local machine and to your PEDL master machine. Depending on your setup, you might be able to only download the data to one shared directory or simply point to a location that already has the data available. For simplicity, we just download the data to both machines by using the `bash get_coco2017.sh` script from within the `data` directory of this repo. 
 
-To run a specific models:
+Once downloaded, we need to edit `data/coco/train2017.txt` and `data/coco/val2017.txt` by replacing `../` by `data/` in front of each image file name. 
 
-**YOLOv3:** `python3 detect.py --cfg cfg/yolov3.cfg --weights yolov3.weights`  
-<img src="https://user-images.githubusercontent.com/26833433/64067835-51d5b500-cc2f-11e9-982e-843f7f9a6ea2.jpg" width="500">
+To make the data available to our script that runs with PEDL we use bind mounts in the experiment configuration:
 
-**YOLOv3-tiny:** `python3 detect.py --cfg cfg/yolov3-tiny.cfg --weights yolov3-tiny.weights`  
-<img src="https://user-images.githubusercontent.com/26833433/64067834-51d5b500-cc2f-11e9-9357-c485b159a20b.jpg" width="500">
-
-**YOLOv3-SPP:** `python3 detect.py --cfg cfg/yolov3-spp.cfg --weights yolov3-spp.weights`  
-<img src="https://user-images.githubusercontent.com/26833433/64067833-51d5b500-cc2f-11e9-8208-6fe197809131.jpg" width="500">
-
-
-# Pretrained Weights
-
-Download from: [https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0](https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0)
-
-## Darknet Conversion
-
-```bash
-$ git clone https://github.com/ultralytics/yolov3 && cd yolov3
-
-# convert darknet cfg/weights to pytorch model
-$ python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.weights')"
-Success: converted 'weights/yolov3-spp.weights' to 'converted.pt'
-
-# convert cfg/pytorch model to darknet weights
-$ python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.pt')"
-Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
+```
+config = {"bind_mounts": [{"host_path": "<abs_host_path_of_data>", "container_path": "data"}]}
 ```
 
-# mAP
+#### Running it locally
+<!-- Question: How does it know which libraries need to be installed remotely? -->
+Now that we have the data available, we can run the script locally (outside of PEDL) to make sure everything works. We do this by using the following steps:
 
-```bash
-python3 test.py --weights ... --cfg ...
+ 1. Create Virtual Environment
+ 2. Install requirements with `pip install -U -r requirements.txt` and `pip install torchvision zmq`
+
+To verify it works run the (original) train script via:
+```
+python train.py
 ```
 
-- mAP@0.5 run at `--iou-thr 0.5`, mAP@0.5...0.95 run at `--iou-thr 0.7`
-- YOLOv3-SPP ultralytics is `ultralytics68.pt` with `yolov3-spp.cfg`
-- Darknet results: https://arxiv.org/abs/1804.02767
+### Running it with PEDL
 
-<i></i>                      |Size |COCO mAP<br>@0.5...0.95 |COCO mAP<br>@0.5 
----                          | ---         | ---         | ---
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |320 |14.0<br>28.7<br>30.5<br>**35.5** |29.1<br>51.8<br>52.3<br>**55.4**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>31.2<br>33.9<br>**39.2** |33.0<br>55.4<br>56.9<br>**59.9**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |512 |16.6<br>32.7<br>35.6<br>**40.5** |34.9<br>57.7<br>59.5<br>**61.4**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.1<br>37.0<br>**41.1** |35.4<br>58.2<br>60.7<br>**61.5**
+We first install the PEDL command line interface. Then, we port over the original code to `pedl_train.py`. To port the code to PEDL, we need to implement a trial class, which we call `YOLOv3Trial` that inherits from PEDL's `PyTorchTrial` class. In this class, we define the model, the learning rate scheduler, the optimizer and the training and evaluation loop. 
 
-```bash
-$ python3 test.py --img-size 608 --iou-thr 0.6 --weights ultralytics68.pt --cfg yolov3-spp.cfg
+#### Creating the Model
+Overall, we use the same model architecture as the original `train.py` script. One temporary point of friction is that in PEDL the model is defined independently of the dataset and does not have access to the dataset directly. To circumvent this problem, we write a `LazyModule` class that shares data between different functions of the script. Going forward, there will be better ways of sharing data between model and data. 
 
-Namespace(batch_size=32, cfg='yolov3-spp.cfg', conf_thres=0.001, data='data/coco2014.data', device='', img_size=608, iou_thres=0.6, save_json=True, task='test', weights='ultralytics68.pt')
-Using CUDA device0 _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', total_memory=16130MB)
-               Class    Images   Targets         P         R   mAP@0.5        F1: 100% 157/157 [03:30<00:00,  1.16it/s]
-                 all     5e+03  3.51e+04    0.0353     0.891     0.606    0.0673
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.615
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.437
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.242
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.448
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.519
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.337
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.557
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.612
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.438
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.658
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.746
+#### Creating the Learning Rate Scheduler
+The original `train.py` script mostly uses PyTorch's `MultiStepLR` scheduler. However, for the first three epochs it uses a higher warmup learning rate. To mimic this behavior, we create our own learning rate scheduler `WarmupMultiStepLR` which can set a higher learning rate for the first few epochs.
+
+### Training and Evaluating
+
+We feed the training and evaluation data into PEDL by replacing the original `torch.utils.data.DataLoader` by PEDL's `DataLoader`. Apart from that, no code changes are necessary to load the data into PEDL. We also define a `train_batch` function which replicates the computation of one training step in the original `train.py` file. Again, no further code changes are necessary. Similarly, we create a `evaluate_full_dataset` function that computes test metrics on the entire dataset. 
+
+### Configs and Parameters
+Finally, we make sure that all parameters of the original model are also available to pedl. By default, all variables set in the `__main__` part of `pedl_train.py` are available to all function and we can just use them as we would during local development. To take advantage of PEDL hyperparameter tuning, we can expose some of the hyperparameters to PEDL by defining them as `pedl.Constant`s and then updating the previously defined parameters. 
+
+For example, the original model had a `batch_size` hyperparameter which was part of the `opt` namespace. To turn this hyperparameter into a PEDL hyperparameter, we first set the batch_size as a PEDL constant and then overwrite the namespace variable:
+
+```
+batch_size = pedl.Constant(value=16, name="batch_size")
+opt.batch_size = batch_size
+```
+Lastly, we set the searcher metric to use `mAP` and set the number of steps such that it equals 273 epochs. Once this is set up we start the experiment by running the `pedl_train.py` script via:
+
+```
+python pedl_train.py
 ```
 
-# Reproduce Our Results
-
-This command trains `yolov3-spp.cfg` from scratch to our mAP above. Training takes about one week on a 2080Ti.
-```bash
-$ python3 train.py --weights '' --cfg yolov3-spp.cfg --epochs 273 --batch 16 --accum 4 --multi --pre
+This triggers the experiment creation from within the file:
 ```
-<img src="https://user-images.githubusercontent.com/26833433/70661588-76bbca00-1c19-11ea-86f9-23350d8c3193.png" width="900">
-
-# Reproduce Our Environment
-
-To access an up-to-date working environment (with all dependencies including CUDA/CUDNN, Python and PyTorch preinstalled), consider a:
-
-- **GCP** Deep Learning VM with $300 free credit offer: See our [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) 
-- **Google Colab Notebook** with 12 hours of free GPU time: [Google Colab Notebook](https://colab.research.google.com/drive/1G8T-VFxQkjDe4idzN8F-hbIBqkkkQnxw)
-- **Docker Image** from https://hub.docker.com/r/ultralytics/yolov3. See [Docker Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/Docker-Quickstart) 
-# Citation
-
-[![DOI](https://zenodo.org/badge/146165888.svg)](https://zenodo.org/badge/latestdoi/146165888)
-
-# Contact
-
-**Issues should be raised directly in the repository.** For additional questions or comments please email Glenn Jocher at glenn.jocher@ultralytics.com or visit us at https://contact.ultralytics.com.
+exp = pedl.Experiment(
+    context_directory=str(pathlib.Path.cwd()),
+    trial_def=YOLOv3Trial,
+    make_data_loaders_fn=make_data_loaders,
+    configuration=config,
+)
+exp.create()
+```
+Further implementation details are available in the [`pedl_train.py`](pedl_train.py) script.
