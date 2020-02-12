@@ -47,10 +47,10 @@ COPY . /usr/src/app
 # t=ultralytics/yolov3:v0 && sudo docker build -t $t . && sudo docker push $t
 
 # Run
-# t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo docker run -it $t
+# t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo docker run -it $t bash
 
 # Pull and Run with local directory access
-# t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo docker run -it -v "$(pwd)"/coco:/usr/src/coco $t
+# t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo docker run -it -v "$(pwd)"/coco:/usr/src/coco $t bash
 
 # Kill all
 # sudo docker kill "$(sudo docker ps -q)"
