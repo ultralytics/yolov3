@@ -45,7 +45,7 @@ def detect(save_img=False):
     if ONNX_EXPORT:
         model.fuse()
         img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
-        torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=10)
+        torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=11)
 
         # Validate exported model
         import onnx
