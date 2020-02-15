@@ -108,21 +108,25 @@ def weights_init_normal(m):
 
 def xyxy2xywh(x):
     # Convert bounding box format from [x1, y1, x2, y2] to [x, y, w, h]
+    # x, y are coordinates of center 
+    # (x1, y1) and (x2, y2) are coordinates of bottom left and top right respectively. 
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
-    y[:, 0] = (x[:, 0] + x[:, 2]) / 2
-    y[:, 1] = (x[:, 1] + x[:, 3]) / 2
-    y[:, 2] = x[:, 2] - x[:, 0]
-    y[:, 3] = x[:, 3] - x[:, 1]
+    y[:, 0] = (x[:, 0] + x[:, 2]) / 2  # x center
+    y[:, 1] = (x[:, 1] + x[:, 3]) / 2  # y center
+    y[:, 2] = x[:, 2] - x[:, 0]  # width
+    y[:, 3] = x[:, 3] - x[:, 1]  # height
     return y
 
 
 def xywh2xyxy(x):
     # Convert bounding box format from [x, y, w, h] to [x1, y1, x2, y2]
+    # x, y are coordinates of center 
+    # (x1, y1) and (x2, y2) are coordinates of bottom left and top right respectively. 
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
-    y[:, 0] = x[:, 0] - x[:, 2] / 2
-    y[:, 1] = x[:, 1] - x[:, 3] / 2
-    y[:, 2] = x[:, 0] + x[:, 2] / 2
-    y[:, 3] = x[:, 1] + x[:, 3] / 2
+    y[:, 0] = x[:, 0] - x[:, 2] / 2  # Bottom left x
+    y[:, 1] = x[:, 1] - x[:, 3] / 2  # Bottom left y
+    y[:, 2] = x[:, 0] + x[:, 2] / 2  # Top right x
+    y[:, 3] = x[:, 1] + x[:, 3] / 2  # Top right y
     return y
 
 
@@ -267,11 +271,9 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False):
     if x1y1x2y2:  # x1, y1, x2, y2 = box1
         b1_x1, b1_y1, b1_x2, b1_y2 = box1[0], box1[1], box1[2], box1[3]
         b2_x1, b2_y1, b2_x2, b2_y2 = box2[0], box2[1], box2[2], box2[3]
-    else:  # x, y, w, h = box1
-        b1_x1, b1_x2 = box1[0] - box1[2] / 2, box1[0] + box1[2] / 2
-        b1_y1, b1_y2 = box1[1] - box1[3] / 2, box1[1] + box1[3] / 2
-        b2_x1, b2_x2 = box2[0] - box2[2] / 2, box2[0] + box2[2] / 2
-        b2_y1, b2_y2 = box2[1] - box2[3] / 2, box2[1] + box2[3] / 2
+    else:  # Transform from center and width to exact coordinates
+        [b1_x1, b1_y1, b1_x2, b1_y2] = xywh2xyxy(box1)
+        [b2_x1, b2_y1, b2_x2, b2_y2] = xywh2xyxy(box2)
 
     # Intersection area
     inter = (torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1)).clamp(0) * \
