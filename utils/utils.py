@@ -656,8 +656,6 @@ def strip_optimizer(f='weights/last.pt'):  # from utils.utils import *; strip_op
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
     x = torch.load(f, map_location=torch.device('cpu'))
     x['optimizer'] = None
-    # x['training_results'] = None  # uncomment to create a backbone
-    # x['epoch'] = -1  # uncomment to create a backbone
     torch.save(x, f)
 
 
@@ -1025,6 +1023,7 @@ def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_re
 
 def plot_results(start=0, stop=0, bucket='', id=()):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
+    # Sample plot: https://user-images.githubusercontent.com/26833433/63258271-fe9d5300-c27b-11e9-9a15-95038daf4438.png
     fig, ax = plt.subplots(2, 5, figsize=(14, 7))
     ax = ax.ravel()
     s = ['GIoU', 'Objectness', 'Classification', 'Precision', 'Recall',
