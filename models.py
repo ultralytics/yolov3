@@ -67,8 +67,8 @@ def create_modules(module_defs, img_size, arc):
             #     modules = nn.Upsample(scale_factor=1/float(mdef[i+1]['stride']), mode='nearest')  # reorg3d
 
         elif mdef['type'] == 'shortcut':  # nn.Sequential() placeholder for 'shortcut' layer
-            filters = output_filters[int(mdef['from'])]
             layer = int(mdef['from'])
+            filters = output_filters[layer]
             routs.extend([i + layer if layer < 0 else layer])
 
         elif mdef['type'] == 'reorg3d':  # yolov3-spp-pan-scale
