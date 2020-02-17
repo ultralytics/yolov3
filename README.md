@@ -178,9 +178,9 @@ Using CUDA device0 _CudaDeviceProperties(name='Tesla P100-PCIE-16GB', total_memo
 
 This command trains `yolov3-spp.cfg` from scratch to our mAP above. Training takes about one week on a 2080Ti.
 ```bash
-$ python3 train.py --weights '' --cfg yolov3-spp.cfg --epochs 273 --batch 16 --accum 4 --multi --pre
+$ python3 train.py --weights '' --cfg yolov3-spp.cfg --epochs 273 --batch 16 --accum 4 --multi
 ```
-<img src="https://user-images.githubusercontent.com/26833433/70661588-76bbca00-1c19-11ea-86f9-23350d8c3193.png" width="900">
+<img src="https://user-images.githubusercontent.com/26833433/74633793-4f9cdf80-5117-11ea-9cd4-be4860640831.png" width="900">
 
 # Reproduce Our Environment
 
