@@ -11,7 +11,7 @@ git clone --depth 1 git@github.com:determined-ai/yolov3.git
 ```
 
 #### Data Download
-To successfully use PEDL Client we need to make sure that all data is available both to your local environment and to the PEDL master. One way is to simply download the data to both your development local machine and to your PEDL master machine. Depending on your setup, you might be able to only download the data to one shared directory or simply point to a location that already has the data available. For simplicity, we just download the data to both machines by using the `bash get_coco2017.sh` script from within the `data` directory of this repo. 
+To successfully use PEDL Client we need to make sure that all data is available both to your local environment and to the PEDL agents. One way is to simply download the data to both your development local machine and to your PEDL agents. Depending on your setup, you might be able to only download the data to one shared directory or simply point to a location that already has the data available. For simplicity, we just download the data to both machines by using the `bash get_coco2017.sh` script from within the `data` directory of this repo. 
 
 Once downloaded, we need to edit `data/coco/train2017.txt` and `data/coco/val2017.txt` by replacing `../` by `data/` in front of each image file name. 
 
