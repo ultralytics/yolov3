@@ -70,7 +70,7 @@ def create_modules(module_defs, img_size, arc):
             layers = [int(x) for x in mdef['from'].split(',')]
             filters = output_filters[layers[0]]
             routs.extend([i + l if l < 0 else l for l in layers])
-            # modules = weightedFeatureFusion(layers=layers)
+            modules = weightedFeatureFusion(layers=layers, weight='weights_type' in mdef)
 
         elif mdef['type'] == 'reorg3d':  # yolov3-spp-pan-scale
             # torch.Size([16, 128, 104, 104])
@@ -119,20 +119,26 @@ def create_modules(module_defs, img_size, arc):
 
 
 class weightedFeatureFusion(nn.Module):  # weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
-    def __init__(self, layers):
+    def __init__(self, layers, weight=False):
         super(weightedFeatureFusion, self).__init__()
         self.n = len(layers) + 1  # number of layers
         self.layers = layers  # layer indices
-        self.w = torch.nn.Parameter(torch.zeros(self.n))  # layer weights
+        self.weight = weight  # apply weights boolean
+        if weight:
+            self.w = torch.nn.Parameter(torch.zeros(self.n))  # layer weights
 
     def forward(self, x, outputs):
-        w = torch.sigmoid(self.w) * (2 / self.n)  # sigmoid weights (0-1)
-        if self.n == 2:
-            return x * w[0] + outputs[self.layers[0]] * w[1]
-        elif self.n == 3:
-            return x * w[0] + outputs[self.layers[0]] * w[1] + outputs[self.layers[1]] * w[2]
+        if self.weight:
+            w = torch.sigmoid(self.w) * (2 / self.n)  # sigmoid weights (0-1)
+            if self.n == 2:
+                return x * w[0] + outputs[self.layers[0]] * w[1]
+            elif self.n == 3:
+                return x * w[0] + outputs[self.layers[0]] * w[1] + outputs[self.layers[1]] * w[2]
         else:
-            raise ValueError('weightedFeatureFusion() supports up to 3 layer inputs, %g attempted' % self.n)
+            if self.n == 2:
+                return x + outputs[self.layers[0]]
+            elif self.n == 3:
+                return x + outputs[self.layers[0]] + outputs[self.layers[1]]
 
 
 class SwishImplementation(torch.autograd.Function):
@@ -257,6 +263,10 @@ class Darknet(nn.Module):
             mtype = mdef['type']
             if mtype in ['convolutional', 'upsample', 'maxpool']:
                 x = module(x)
+            elif mtype == 'shortcut':  # sum
+                x = module(x, layer_outputs)  # weightedFeatureFusion()
+                if verbose:
+                    print('shortcut/add %s' % ([layer_outputs[i].shape for i in module.layers]))
             elif mtype == 'route':  # concat
                 layers = [int(x) for x in mdef['layers'].split(',')]
                 if verbose:
@@ -270,25 +280,18 @@ class Darknet(nn.Module):
                         layer_outputs[layers[1]] = F.interpolate(layer_outputs[layers[1]], scale_factor=[0.5, 0.5])
                         x = torch.cat([layer_outputs[i] for i in layers], 1)
                     # print(''), [print(layer_outputs[i].shape) for i in layers], print(x.shape)
-            elif mtype == 'shortcut':  # sum
-                # x = module(x, layer_outputs)  # weightedFeatureFusion()
-                layers = [int(x) for x in mdef['from'].split(',')]
-                if verbose:
-                    print('shortcut/add %s' % ([layer_outputs[i].shape for i in layers]))
-                for j in layers:
-                    x = x + layer_outputs[j]
             elif mtype == 'yolo':
                 output.append(module(x, img_size))
             layer_outputs.append(x if i in self.routs else [])
             if verbose:
                 print(i, x.shape)
 
-        if self.training:
+        if self.training:  # train
             return output
-        elif ONNX_EXPORT:
+        elif ONNX_EXPORT:  # export
             x = [torch.cat(x, 0) for x in zip(*output)]
             return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
-        else:
+        else:  # test
             io, p = zip(*output)  # inference output, training output
             return torch.cat(io, 1), p
 
