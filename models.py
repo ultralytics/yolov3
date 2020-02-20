@@ -22,17 +22,16 @@ def create_modules(module_defs, img_size, arc):
         #     modules.add_module('BatchNorm2d_0', nn.BatchNorm2d(output_filters[-1], momentum=0.1))
 
         if mdef['type'] == 'convolutional':
-            bn = int(mdef['batch_normalize'])
-            filters = int(mdef['filters'])
-            size = int(mdef['size'])
-            stride = int(mdef['stride']) if 'stride' in mdef else (int(mdef['stride_y']), int(mdef['stride_x']))
-            pad = (size - 1) // 2 if int(mdef['pad']) else 0
+            bn = mdef['batch_normalize']
+            filters = mdef['filters']
+            size = mdef['size']
+            stride = mdef['stride'] if 'stride' in mdef else (mdef['stride_y'], mdef['stride_x'])
             modules.add_module('Conv2d', nn.Conv2d(in_channels=output_filters[-1],
                                                    out_channels=filters,
                                                    kernel_size=size,
                                                    stride=stride,
-                                                   padding=pad,
-                                                   groups=int(mdef['groups']) if 'groups' in mdef else 1,
+                                                   padding=(size - 1) // 2 if mdef['pad'] else 0,
+                                                   groups=mdef['groups'] if 'groups' in mdef else 1,
                                                    bias=not bn))
             if bn:
                 modules.add_module('BatchNorm2d', nn.BatchNorm2d(filters, momentum=0.1))
@@ -43,9 +42,9 @@ def create_modules(module_defs, img_size, arc):
                 modules.add_module('activation', Swish())
 
         elif mdef['type'] == 'maxpool':
-            size = int(mdef['size'])
-            stride = int(mdef['stride'])
-            maxpool = nn.MaxPool2d(kernel_size=size, stride=stride, padding=int((size - 1) // 2))
+            size = mdef['size']
+            stride = mdef['stride']
+            maxpool = nn.MaxPool2d(kernel_size=size, stride=stride, padding=(size - 1) // 2)
             if size == 2 and stride == 1:  # yolov3-tiny
                 modules.add_module('ZeroPad2d', nn.ZeroPad2d((0, 1, 0, 1)))
                 modules.add_module('MaxPool2d', maxpool)
@@ -57,17 +56,17 @@ def create_modules(module_defs, img_size, arc):
                 g = (yolo_index + 1) * 2 / 32  # gain
                 modules = nn.Upsample(size=tuple(int(x * g) for x in img_size))  # img_size = (320, 192)
             else:
-                modules = nn.Upsample(scale_factor=int(mdef['stride']))
+                modules = nn.Upsample(scale_factor=mdef['stride'])
 
         elif mdef['type'] == 'route':  # nn.Sequential() placeholder for 'route' layer
-            layers = [int(x) for x in mdef['layers'].split(',')]
+            layers = mdef['layers']
             filters = sum([output_filters[i + 1 if i > 0 else i] for i in layers])
             routs.extend([l if l > 0 else l + i for l in layers])
             # if mdef[i+1]['type'] == 'reorg3d':
             #     modules = nn.Upsample(scale_factor=1/float(mdef[i+1]['stride']), mode='nearest')  # reorg3d
 
         elif mdef['type'] == 'shortcut':  # nn.Sequential() placeholder for 'shortcut' layer
-            layers = [int(x) for x in mdef['from'].split(',')]
+            layers = mdef['from']
             filters = output_filters[layers[0]]
             routs.extend([i + l if l < 0 else l for l in layers])
             modules = weightedFeatureFusion(layers=layers, weight='weights_type' in mdef)
@@ -79,9 +78,9 @@ def create_modules(module_defs, img_size, arc):
 
         elif mdef['type'] == 'yolo':
             yolo_index += 1
-            mask = [int(x) for x in mdef['mask'].split(',')]  # anchor mask
+            mask = mdef['mask']  # anchor mask
             modules = YOLOLayer(anchors=mdef['anchors'][mask],  # anchor list
-                                nc=int(mdef['classes']),  # number of classes
+                                nc=mdef['classes'],  # number of classes
                                 img_size=img_size,  # (416, 416)
                                 yolo_index=yolo_index,  # 0, 1 or 2
                                 arc=arc)  # yolo architecture
@@ -278,7 +277,7 @@ class Darknet(nn.Module):
                     print('shortcut/add %s + %s' % (list(x.shape), [list(out[i].shape) for i in module.layers]))
                 x = module(x, out)  # weightedFeatureFusion()
             elif mtype == 'route':  # concat
-                layers = [int(x) for x in mdef['layers'].split(',')]
+                layers = mdef['layers']
                 if verbose:
                     print('route/concatenate %s + %s' % (list(x.shape), [list(out[i].shape) for i in layers]))
                 if len(layers) == 1:
