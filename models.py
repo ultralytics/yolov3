@@ -67,7 +67,7 @@ def create_modules(module_defs, img_size, arc):
 
         elif mdef['type'] == 'shortcut':  # nn.Sequential() placeholder for 'shortcut' layer
             layers = mdef['from']
-            filters = output_filters[layers[0]]
+            filters = output_filters[-1]
             routs.extend([i + l if l < 0 else l for l in layers])
             modules = weightedFeatureFusion(layers=layers, weight='weights_type' in mdef)
 
@@ -266,6 +266,7 @@ class Darknet(nn.Module):
         yolo_out, out = [], []
         verbose = False
         if verbose:
+            str = ''
             print('0', x.shape)
 
         for i, (mdef, module) in enumerate(zip(self.module_defs, self.module_list)):
@@ -274,14 +275,16 @@ class Darknet(nn.Module):
                 x = module(x)
             elif mtype == 'shortcut':  # sum
                 if verbose:
-                    l = [i] + module.layers  # layers
+                    l = [i - 1] + module.layers  # layers
                     s = [list(x.shape)] + [list(out[i].shape) for i in module.layers]  # shapes
-                    print('shortcut/add: ' + ' + '.join(['layer %g %s' % x for x in zip(l, s)]))
+                    str = ' >> ' + ' + '.join(['layer %g %s' % x for x in zip(l, s)])
                 x = module(x, out)  # weightedFeatureFusion()
             elif mtype == 'route':  # concat
                 layers = mdef['layers']
                 if verbose:
-                    print('route/concatenate %s + %s' % (list(x.shape), [list(out[i].shape) for i in layers]))
+                    l = [i - 1] + layers  # layers
+                    s = [list(x.shape)] + [list(out[i].shape) for i in layers]  # shapes
+                    str = ' >> ' + ' + '.join(['layer %g %s' % x for x in zip(l, s)])
                 if len(layers) == 1:
                     x = out[layers[0]]
                 else:
@@ -295,7 +298,8 @@ class Darknet(nn.Module):
                 yolo_out.append(module(x, img_size))
             out.append(x if i in self.routs else [])
             if verbose:
-                print('%g/%g -' % (i, len(self.module_list)), list(x.shape))
+                print('%g/%g %s -' % (i, len(self.module_list), mtype), list(x.shape), str)
+                str = ''
 
         if self.training:  # train
             return yolo_out
