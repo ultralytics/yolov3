@@ -274,7 +274,9 @@ class Darknet(nn.Module):
                 x = module(x)
             elif mtype == 'shortcut':  # sum
                 if verbose:
-                    print('shortcut/add %s + %s' % (list(x.shape), [list(out[i].shape) for i in module.layers]))
+                    l = [i] + module.layers  # layers
+                    s = [list(x.shape)] + [list(out[i].shape) for i in module.layers]  # shapes
+                    print('shortcut/add: ' + ' + '.join(['layer %g %s' % x for x in zip(l, s)]))
                 x = module(x, out)  # weightedFeatureFusion()
             elif mtype == 'route':  # concat
                 layers = mdef['layers']
@@ -293,7 +295,7 @@ class Darknet(nn.Module):
                 yolo_out.append(module(x, img_size))
             out.append(x if i in self.routs else [])
             if verbose:
-                print(i, list(x.shape))
+                print('%g/%g -' % (i, len(self.module_list)), list(x.shape))
 
         if self.training:  # train
             return yolo_out
