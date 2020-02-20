@@ -40,12 +40,25 @@ class LazyModule(object):
 
     @staticmethod
     def get():
+
+        hyp = get_hyp(lr0=pedl_init_lr)
+
+        opt = get_cli_args(
+            batch_size=pedl_batch_size, prebias=pedl_prebias, accumulate=pedl_accumulate
+        )
+        data_dict = get_data_cfg()
+        train_path = data_dict["train"]
+
+        img_size, _ = (
+            opt.img_size if len(opt.img_size) == 2 else opt.img_size * 2
+        )  # train, test sizes
+
         if LazyModule.__instance is None:
             # Initializing the augmented dataset on first call
             train_dataset = LoadImagesAndLabels(
                 train_path,
                 img_size,
-                batch_size,
+                opt.batch_size,
                 augment=True,
                 hyp=hyp,  # augmentation hyperparameters
                 rect=opt.rect,  # rectangular training
@@ -63,11 +76,20 @@ def make_data_loaders(
     experiment_config: Dict[str, Any], hparams: Dict[str, Any]
 ) -> Tuple[DataLoader, DataLoader]:
 
+    hyp = get_hyp(lr0=pedl_init_lr)
+    opt = get_cli_args(
+        batch_size=pedl_batch_size, prebias=pedl_prebias, accumulate=pedl_accumulate
+    )
+    data_dict = get_data_cfg()
+    test_path = data_dict["valid"]
+
     train_dataset = LazyModule.get()
+
+    _, img_size_test = opt.img_size if len(opt.img_size) == 2 else opt.img_size * 2
     test_dataset = LoadImagesAndLabels(
         test_path,
         img_size_test,
-        batch_size * 2,
+        opt.batch_size * 2,
         hyp=hyp,
         rect=True,
         cache_labels=True,
@@ -76,12 +98,12 @@ def make_data_loaders(
     )
     train_dataloader = DataLoader(  # torch.utils.data.DataLoader
         train_dataset,
-        batch_size=batch_size,
+        batch_size=opt.batch_size,
         shuffle=not opt.rect,  # Shuffle=True unless rectangular training is used
         collate_fn=train_dataset.collate_fn,
     )
     test_dataloader = DataLoader(
-        test_dataset, batch_size=batch_size * 2, collate_fn=test_dataset.collate_fn,
+        test_dataset, batch_size=opt.batch_size * 2, collate_fn=test_dataset.collate_fn,
     )
 
     return (
@@ -93,13 +115,19 @@ def make_data_loaders(
 class YOLOv3Trial(PyTorchTrial):
     def build_model(self) -> nn.Module:
 
+        opt = get_cli_args(
+            batch_size=pedl_batch_size, prebias=pedl_prebias, accumulate=pedl_accumulate
+        )
+        hyp = get_hyp(lr0=pedl_init_lr)
+
         # Initialize model
-        model = Darknet(cfg, arc=opt.arc)  # .to(device)
+        model = Darknet(opt.cfg, arc=opt.arc)  # .to(device)
 
         # Fetch starting weights
         # TODO Once download_data_fn is implemented this should go into download_data
-        attempt_download(weights)
-        chkpt = torch.load(weights)
+        attempt_download(opt.weights)
+        chkpt = torch.load(opt.weights)
+
         # load model
         try:
             chkpt["model"] = {
@@ -118,7 +146,10 @@ class YOLOv3Trial(PyTorchTrial):
 
         del chkpt
 
+        data_dict = get_data_cfg()
+        nc = 1 if opt.single_cls else int(data_dict["classes"])
         model.nc = nc  # attach number of classes to model
+
         model.arc = opt.arc  # attach yolo architecture
         model.hyp = hyp  # attach hyperparameters to model
 
@@ -139,6 +170,11 @@ class YOLOv3Trial(PyTorchTrial):
         If step_every_batch or step_every_epoch is True, PEDL will handle the .step().
         If both are false, the user will be in charge of calling .step().
         """
+
+        opt = get_cli_args(
+            batch_size=pedl_batch_size, prebias=pedl_prebias, accumulate=pedl_accumulate
+        )
+
         scheduler = WarmupMultiStepLR(
             optimizer,
             milestones=[round(opt.epochs * x) for x in [0.8, 0.9]],
@@ -161,6 +197,8 @@ class YOLOv3Trial(PyTorchTrial):
             else:
                 pg0 += [v]  # all else
 
+        hyp = get_hyp(lr0=pedl_init_lr)
+
         # We use Adam
         optimizer = optim.Adam(pg0, lr=hyp["lr0"])
 
@@ -176,14 +214,17 @@ class YOLOv3Trial(PyTorchTrial):
         self, batch: TorchData, model: nn.Module, epoch_idx: int, batch_idx: int
     ) -> Dict[str, torch.Tensor]:
 
+        # opt = get_cli_args(
+        #     batch_size=pedl_batch_size, prebias=pedl_prebias, accumulate=pedl_accumulate
+        # )  # This seems to impact performance => replacing it with just the values
         (imgs, targets, paths, _) = batch
 
         imgs = imgs.float() / 255.0
 
         pred = model(imgs)
-        loss, loss_items = compute_loss(pred, targets, model, not prebias)
+        loss, loss_items = compute_loss(pred, targets, model, not pedl_prebias)
 
-        loss *= batch_size / 64
+        loss *= opt.batch_size / (pedl_batch_size * pedl_accumulate)
 
         if not torch.isfinite(loss):
             print("WARNING: non-finite loss, ending training ", loss_items)
@@ -194,12 +235,15 @@ class YOLOv3Trial(PyTorchTrial):
         self, data_loader: torch.utils.data.DataLoader, model: nn.Module
     ) -> Dict[str, Any]:
 
-        batch_size = 16
+        opt = get_cli_args(batch_size=pedl_batch_size)
+        _, img_size_test = (
+            opt.img_size if len(opt.img_size) == 2 else opt.img_size * 2
+        )  # train, test sizes
 
         results, maps = test.test(
-            cfg,
-            data,
-            batch_size=batch_size * 2,
+            opt.cfg,
+            opt.data,
+            batch_size=opt.batch_size * 2,
             img_size=img_size_test,
             model=model,
             conf_thres=0.1,  # 0.1 for speed
@@ -213,34 +257,81 @@ class YOLOv3Trial(PyTorchTrial):
         return dict(zip(keys, results))
 
 
-if __name__ == "__main__":
+def get_cli_args(**new_args):
+    """Returns the default command line arguments and the hyperparameters from the reference implementation
 
-    # Hard code default arguments
-    opt = argparse.Namespace(
-        accumulate=4,
-        adam=True,
-        arc="default",
-        batch_size=16,
-        bucket="",
-        cache_images=False,
-        cfg="cfg/yolov3-spp.cfg",
-        data="data/coco2017.data",
-        device="",
-        epochs=273,
-        images=117263,
-        evolve=False,
-        img_size=[416],
-        multi_scale=False,
-        name="",
-        nosave=True,  # default False
-        notest=True,  # default False
-        rect=False,
-        resume=False,
-        single_cls=False,
-        var=None,
-        weights="weights/ultralytics68.pt",
+    Returns:
+        Tuple[argparse.Namespace, dict] --
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--epochs", type=int, default=273
+    )  # 500200 batches at bs 16, 117263 COCO images = 273 epochs
+    parser.add_argument(
+        "--batch-size", type=int, default=16
+    )  # effective bs = batch_size * accumulate = 16 * 4 = 64
+    parser.add_argument(
+        "--accumulate",
+        type=int,
+        default=4,
+        help="batches to accumulate before optimizing",
     )
+    parser.add_argument(
+        "--cfg", type=str, default="cfg/yolov3-spp.cfg", help="*.cfg path"
+    )
+    parser.add_argument(
+        "--data", type=str, default="data/coco2017.data", help="*.data path"
+    )
+    parser.add_argument(
+        "--multi-scale",
+        action="store_true",
+        help="adjust (67% - 150%) img_size every 10 batches",
+    )
+    parser.add_argument(
+        "--img-size",
+        nargs="+",
+        type=int,
+        default=[416],
+        help="train and test image-sizes",
+    )
+    parser.add_argument("--rect", action="store_true", help="rectangular training")
+    parser.add_argument(
+        "--resume", action="store_true", help="resume training from last.pt"
+    )
+    parser.add_argument(
+        "--nosave", action="store_true", help="only save final checkpoint"
+    )
+    parser.add_argument("--notest", action="store_true", help="only test final epoch")
+    parser.add_argument("--evolve", action="store_true", help="evolve hyperparameters")
+    parser.add_argument("--bucket", type=str, default="", help="gsutil bucket")
+    parser.add_argument(
+        "--cache-images", action="store_true", help="cache images for faster training"
+    )
+    parser.add_argument(
+        "--weights",
+        type=str,
+        default="weights/ultralytics68.pt",
+        help="initial weights",
+    )
+    parser.add_argument(
+        "--arc", type=str, default="default", help="yolo architecture"
+    )  # default, uCE, uBCE
+    parser.add_argument(
+        "--name", default="", help="renames results.txt to results_name.txt if supplied"
+    )
+    parser.add_argument("--device", default="", help="device id (i.e. 0 or 0,1 or cpu)")
+    parser.add_argument("--adam", action="store_true", help="use adam optimizer")
+    parser.add_argument(
+        "--single-cls", action="store_true", help="train as single-class dataset"
+    )
+    parser.add_argument("--var", type=float, help="debug variable")
+    opt = parser.parse_args()
 
+    opt.__dict__.update(new_args)
+    return opt
+
+
+def get_hyp(**new_hpars):
     hyp = {
         "giou": 3.54,  # giou loss gain
         "cls": 37.4,  # cls loss gain
@@ -260,61 +351,52 @@ if __name__ == "__main__":
         "translate": 0.05,  # image translation (+/- fraction)
         "scale": 0.05,  # image scale (+/- gain)
         "shear": 0.641,
-    }  # image shear (+/- deg)
+    }
 
-    cfg = opt.cfg
-    data = opt.data
-    img_size, img_size_test = (
-        opt.img_size if len(opt.img_size) == 2 else opt.img_size * 2
-    )  # train, test sizes
-    images = opt.images
-    epochs = opt.epochs  # 500200 batches at bs 64, 117263 images = 273 epochs
-    batch_size = opt.batch_size
-    accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
-    weights = opt.weights  # initial training weights
+    hyp.update(new_hpars)
+    return hyp
+
+
+def get_data_cfg():
     data_dict = {
         "classes": "80",
         "train": "data/coco/train2017.txt",
         "valid": "data/coco/val2017.txt",
         "names": "data/coco.names",
     }
-    train_path = data_dict["train"]
-    test_path = data_dict["valid"]
+    return data_dict
 
-    nc = 1 if opt.single_cls else int(data_dict["classes"])
 
-    # PEDL arguments
-    # We make some of the default hyperparameters and turn them into PEDL hyperparameters.
+if __name__ == "__main__":
 
-    prebias = pedl.Constant(value=True, name="Prebias")
-    batch_size = pedl.Constant(value=16, name="batch_size")
-    init_lr = pedl.Constant(value=0.000579, name="init_lr")
+    # We turn some default values for cli args and hyperparameters into PEDL constants.
 
-    # Once defined, we update the original hyperparameters with the PEDL values
-    opt.batch_size = batch_size
-    hyp["lr0"] = init_lr
+    pedl_prebias = pedl.Constant(value=True, name="prebias")
+    pedl_batch_size = pedl.Constant(value=16, name="batch_size")
+    pedl_accumulate = pedl.Constant(value=4, name="accumulate")
+    pedl_init_lr = pedl.Constant(value=0.000579, name="init_lr")
 
+    opt = get_cli_args(
+        batch_size=pedl_batch_size, prebias=pedl_prebias, accumulate=pedl_accumulate
+    )
+
+    total_images = 117263  # number of coco images, TODO: replace by size of train set
     config = {
         "description": "yolov3_pytorch",
         "searcher": {
             "name": "single",
             "metric": "mAP_at_0.5",
-            "max_steps": int(epochs * images / batch_size * accumulate / 100),
+            "max_steps": int(opt.epochs * total_images / opt.batch_size / 100),
             "smaller_is_better": False,
         },
-        "max_restarts": 0,
         "bind_mounts": [
             {"host_path": "/home/anton/yolov3/data", "container_path": "data"}
         ],
-        "optimizations": {"aggregation_frequency": accumulate},
+        "optimizations": {"aggregation_frequency": opt.accumulate},
         "min_validation_period": int(
-            images / batch_size * accumulate / 100 / 4
+            total_images / opt.batch_size / 100 / 4
         ),  # validate after each 1/4 epoch
-        "resources": {
-            "slots_per_trial": 1,
-            # "distributed": False,
-            # "optimized_parallel": False,
-        },
+        "resources": {"slots_per_trial": 1},
     }
 
     exp = pedl.Experiment(
