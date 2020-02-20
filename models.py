@@ -140,8 +140,7 @@ class weightedFeatureFusion(nn.Module):  # weighted sum of 2 or more layers http
 
             # Adjust channels
             if dc > 0:  # pad
-                pad = nn.ZeroPad2d((0, 0, 0, 0, 0, dc))
-                a = pad(a)
+                a = nn.ZeroPad2d((0, 0, 0, 0, 0, dc))(a)
             elif dc < 0:  # slice
                 a = a[:, :nc]
 
