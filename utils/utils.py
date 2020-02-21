@@ -1023,7 +1023,7 @@ def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_re
 
 def plot_results(start=0, stop=0, bucket='', id=()):  # from utils.utils import *; plot_results()
     # Plot training results files 'results*.txt'
-    fig, ax = plt.subplots(2, 5, figsize=(14, 7))
+    fig, ax = plt.subplots(2, 5, figsize=(12, 6))
     ax = ax.ravel()
     s = ['GIoU', 'Objectness', 'Classification', 'Precision', 'Recall',
          'val GIoU', 'val Objectness', 'val Classification', 'mAP@0.5', 'F1']
