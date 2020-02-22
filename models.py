@@ -141,15 +141,10 @@ class weightedFeatureFusion(nn.Module):  # weighted sum of 2 or more layers http
 
             # Adjust channels
             if dc > 0:  # slice input
-                # a = nn.ZeroPad2d((0, 0, 0, 0, 0, dc))(a)
-                x[:, :ac] = x[:, :ac] + a
+                x[:, :ac] = x[:, :ac] + a  # or a = nn.ZeroPad2d((0, 0, 0, 0, 0, dc))(a); x = x + a
             elif dc < 0:  # slice feature
-                if self.n == 2:
-                    return x + a[:, :nc]
                 x = x + a[:, :nc]
             else:  # same shape
-                if self.n == 2:
-                    return x + a
                 x = x + a
         return x
 
