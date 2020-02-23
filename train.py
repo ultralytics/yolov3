@@ -147,7 +147,7 @@ def train():
     # for _ in range(epochs):
     #     scheduler.step()
     #     y.append(optimizer.param_groups[0]['lr'])
-    # plt.plot(y, label='LambdaLR')
+    # plt.plot(y, '.-', label='LambdaLR')
     # plt.xlabel('epoch')
     # plt.ylabel('LR')
     # plt.tight_layout()
