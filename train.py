@@ -139,7 +139,7 @@ def train():
     # lf = lambda x: 0.5 * (1 + math.cos(x * math.pi / epochs))  # cosine https://arxiv.org/pdf/1812.01187.pdf
     # scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
     # scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=range(59, 70, 1), gamma=0.8)  # gradual fall to 0.1*lr0
-    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[round(opt.epochs * x) for x in [0.8, 0.9]], gamma=0.1)
+    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[round(epochs * x) for x in [0.8, 0.9]], gamma=0.1)
     scheduler.last_epoch = start_epoch - 1
 
     # # Plot lr schedule
