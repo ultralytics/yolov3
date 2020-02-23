@@ -99,9 +99,6 @@ def train():
     optimizer.add_param_group({'params': pg2})  # add pg2 (biases)
     del pg0, pg1, pg2
 
-    # https://github.com/alphadl/lookahead.pytorch
-    # optimizer = torch_utils.Lookahead(optimizer, k=5, alpha=0.5)
-
     start_epoch = 0
     best_fitness = 0.0
     attempt_download(weights)
