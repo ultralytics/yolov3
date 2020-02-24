@@ -288,7 +288,7 @@ def train():
             else:
                 loss.backward()
 
-            # Accumulate gradient for x batches before optimizing
+            # Optimize accumulated gradient
             if ni % accumulate == 0:
                 optimizer.step()
                 optimizer.zero_grad()
@@ -300,6 +300,9 @@ def train():
             pbar.set_description(s)
 
             # end batch ------------------------------------------------------------------------------------------------
+
+        # Update scheduler
+        scheduler.step()
 
         # Process epoch results
         final_epoch = epoch + 1 == epochs
@@ -315,9 +318,6 @@ def train():
                                       save_json=final_epoch and is_coco,
                                       single_cls=opt.single_cls,
                                       dataloader=testloader)
-
-        # Update scheduler
-        scheduler.step()
 
         # Write epoch results
         with open(results_file, 'a') as f:
