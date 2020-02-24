@@ -42,7 +42,7 @@ def exif_size(img):
 
 
 class LoadImages:  # for inference
-    def __init__(self, path, img_size=416, half=False):
+    def __init__(self, path, img_size=416):
         path = str(Path(path))  # os-agnostic
         files = []
         if os.path.isdir(path):
@@ -59,7 +59,6 @@ class LoadImages:  # for inference
         self.nF = nI + nV  # number of files
         self.video_flag = [False] * nI + [True] * nV
         self.mode = 'images'
-        self.half = half  # half precision fp16 images
         if any(videos):
             self.new_video(videos[0])  # new video
         else:
@@ -104,8 +103,7 @@ class LoadImages:  # for inference
 
         # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
-        img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)  # uint8 to fp16/fp32
-        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        img = np.ascontiguousarray(img)
 
         # cv2.imwrite(path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
         return path, img, img0, self.cap
@@ -120,9 +118,8 @@ class LoadImages:  # for inference
 
 
 class LoadWebcam:  # for inference
-    def __init__(self, pipe=0, img_size=416, half=False):
+    def __init__(self, pipe=0, img_size=416):
         self.img_size = img_size
-        self.half = half  # half precision fp16 images
 
         if pipe == '0':
             pipe = 0  # local camera
@@ -177,8 +174,7 @@ class LoadWebcam:  # for inference
 
         # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
-        img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)  # uint8 to fp16/fp32
-        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        img = np.ascontiguousarray(img)
 
         return img_path, img, img0, None
 
@@ -187,10 +183,9 @@ class LoadWebcam:  # for inference
 
 
 class LoadStreams:  # multiple IP or RTSP cameras
-    def __init__(self, sources='streams.txt', img_size=416, half=False):
+    def __init__(self, sources='streams.txt', img_size=416):
         self.mode = 'images'
         self.img_size = img_size
-        self.half = half  # half precision fp16 images
 
         if os.path.isfile(sources):
             with open(sources, 'r') as f:
@@ -251,9 +246,8 @@ class LoadStreams:  # multiple IP or RTSP cameras
         img = np.stack(img, 0)
 
         # Convert
-        img = img[:, :, :, ::-1].transpose(0, 3, 1, 2)  # BGR to RGB, to 3x416x416, uint8 to float32
-        img = np.ascontiguousarray(img, dtype=np.float16 if self.half else np.float32)
-        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        img = img[:, :, :, ::-1].transpose(0, 3, 1, 2)  # BGR to RGB, to bsx3x416x416
+        img = np.ascontiguousarray(img)
 
         return self.sources, img, img0, None
 
@@ -372,7 +366,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                             if not os.path.exists(Path(f).parent):
                                 os.makedirs(Path(f).parent)  # make new output folder
 
-                            b = x[1:] * np.array([w, h, w, h])  # box
+                            b = x[1:] * [w, h, w, h]  # box
                             b[2:] = b[2:].max()  # rectangle to square
                             b[2:] = b[2:] * 1.3 + 30  # pad
                             b = xywh2xyxy(b.reshape(-1, 4)).ravel().astype(np.int)
@@ -533,8 +527,9 @@ def load_image(self, index):
 
 
 def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
-    x = (np.random.uniform(-1, 1, 3) * np.array([hgain, sgain, vgain]) + 1).astype(np.float32)  # random gains
-    img_hsv = (cv2.cvtColor(img, cv2.COLOR_BGR2HSV) * x.reshape((1, 1, 3))).clip(None, 255).astype(np.uint8)
+    x = np.random.uniform(-1, 1, 3) * [hgain, sgain, vgain] + 1  # random gains
+    img_hsv = (cv2.cvtColor(img, cv2.COLOR_BGR2HSV) * x).clip(None, 255).astype(np.uint8)
+    np.clip(img_hsv[:, :, 0], None, 179, out=img_hsv[:, :, 0])  # inplace hue clip (0 - 179 deg)
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
 
 
@@ -734,7 +729,7 @@ def cutout(image, labels):
         return inter_area / box2_area
 
     # create random masks
-    scales = [0.5] * 1  # + [0.25] * 4 + [0.125] * 16 + [0.0625] * 64 + [0.03125] * 256  # image size fraction
+    scales = [0.5] * 1 + [0.25] * 2 + [0.125] * 4 + [0.0625] * 8 + [0.03125] * 16  # image size fraction
     for s in scales:
         mask_h = random.randint(1, int(h * s))
         mask_w = random.randint(1, int(w * s))
@@ -746,14 +741,13 @@ def cutout(image, labels):
         ymax = min(h, ymin + mask_h)
 
         # apply random color mask
-        mask_color = [random.randint(0, 255) for _ in range(3)]
-        image[ymin:ymax, xmin:xmax] = mask_color
+        image[ymin:ymax, xmin:xmax] = [random.randint(64, 191) for _ in range(3)]
 
         # return unobscured labels
         if len(labels) and s > 0.03:
             box = np.array([xmin, ymin, xmax, ymax], dtype=np.float32)
             ioa = bbox_ioa(box, labels[:, 1:5])  # intersection over area
-            labels = labels[ioa < 0.90]  # remove >90% obscured labels
+            labels = labels[ioa < 0.60]  # remove >60% obscured labels
 
     return labels
 

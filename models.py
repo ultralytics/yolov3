@@ -18,19 +18,20 @@ def create_modules(module_defs, img_size, arc):
 
     for i, mdef in enumerate(module_defs):
         modules = nn.Sequential()
+        # if i == 0:
+        #     modules.add_module('BatchNorm2d_0', nn.BatchNorm2d(output_filters[-1], momentum=0.1))
 
         if mdef['type'] == 'convolutional':
-            bn = int(mdef['batch_normalize'])
-            filters = int(mdef['filters'])
-            size = int(mdef['size'])
-            stride = int(mdef['stride']) if 'stride' in mdef else (int(mdef['stride_y']), int(mdef['stride_x']))
-            pad = (size - 1) // 2 if int(mdef['pad']) else 0
+            bn = mdef['batch_normalize']
+            filters = mdef['filters']
+            size = mdef['size']
+            stride = mdef['stride'] if 'stride' in mdef else (mdef['stride_y'], mdef['stride_x'])
             modules.add_module('Conv2d', nn.Conv2d(in_channels=output_filters[-1],
                                                    out_channels=filters,
                                                    kernel_size=size,
                                                    stride=stride,
-                                                   padding=pad,
-                                                   groups=int(mdef['groups']) if 'groups' in mdef else 1,
+                                                   padding=(size - 1) // 2 if mdef['pad'] else 0,
+                                                   groups=mdef['groups'] if 'groups' in mdef else 1,
                                                    bias=not bn))
             if bn:
                 modules.add_module('BatchNorm2d', nn.BatchNorm2d(filters, momentum=0.1))
@@ -41,9 +42,9 @@ def create_modules(module_defs, img_size, arc):
                 modules.add_module('activation', Swish())
 
         elif mdef['type'] == 'maxpool':
-            size = int(mdef['size'])
-            stride = int(mdef['stride'])
-            maxpool = nn.MaxPool2d(kernel_size=size, stride=stride, padding=int((size - 1) // 2))
+            size = mdef['size']
+            stride = mdef['stride']
+            maxpool = nn.MaxPool2d(kernel_size=size, stride=stride, padding=(size - 1) // 2)
             if size == 2 and stride == 1:  # yolov3-tiny
                 modules.add_module('ZeroPad2d', nn.ZeroPad2d((0, 1, 0, 1)))
                 modules.add_module('MaxPool2d', maxpool)
@@ -51,19 +52,24 @@ def create_modules(module_defs, img_size, arc):
                 modules = maxpool
 
         elif mdef['type'] == 'upsample':
-            modules = nn.Upsample(scale_factor=int(mdef['stride']), mode='nearest')
+            if ONNX_EXPORT:  # explicitly state size, avoid scale_factor
+                g = (yolo_index + 1) * 2 / 32  # gain
+                modules = nn.Upsample(size=tuple(int(x * g) for x in img_size))  # img_size = (320, 192)
+            else:
+                modules = nn.Upsample(scale_factor=mdef['stride'])
 
         elif mdef['type'] == 'route':  # nn.Sequential() placeholder for 'route' layer
-            layers = [int(x) for x in mdef['layers'].split(',')]
+            layers = mdef['layers']
             filters = sum([output_filters[i + 1 if i > 0 else i] for i in layers])
             routs.extend([l if l > 0 else l + i for l in layers])
             # if mdef[i+1]['type'] == 'reorg3d':
             #     modules = nn.Upsample(scale_factor=1/float(mdef[i+1]['stride']), mode='nearest')  # reorg3d
 
         elif mdef['type'] == 'shortcut':  # nn.Sequential() placeholder for 'shortcut' layer
-            filters = output_filters[int(mdef['from'])]
-            layer = int(mdef['from'])
-            routs.extend([i + layer if layer < 0 else layer])
+            layers = mdef['from']
+            filters = output_filters[-1]
+            routs.extend([i + l if l < 0 else l for l in layers])
+            modules = weightedFeatureFusion(layers=layers, weight='weights_type' in mdef)
 
         elif mdef['type'] == 'reorg3d':  # yolov3-spp-pan-scale
             # torch.Size([16, 128, 104, 104])
@@ -72,9 +78,9 @@ def create_modules(module_defs, img_size, arc):
 
         elif mdef['type'] == 'yolo':
             yolo_index += 1
-            mask = [int(x) for x in mdef['mask'].split(',')]  # anchor mask
+            mask = mdef['mask']  # anchor mask
             modules = YOLOLayer(anchors=mdef['anchors'][mask],  # anchor list
-                                nc=int(mdef['classes']),  # number of classes
+                                nc=mdef['classes'],  # number of classes
                                 img_size=img_size,  # (416, 416)
                                 yolo_index=yolo_index,  # 0, 1 or 2
                                 arc=arc)  # yolo architecture
@@ -109,6 +115,38 @@ def create_modules(module_defs, img_size, arc):
         output_filters.append(filters)
 
     return module_list, routs
+
+
+class weightedFeatureFusion(nn.Module):  # weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
+    def __init__(self, layers, weight=False):
+        super(weightedFeatureFusion, self).__init__()
+        self.layers = layers  # layer indices
+        self.weight = weight  # apply weights boolean
+        self.n = len(layers) + 1  # number of layers
+        if weight:
+            self.w = torch.nn.Parameter(torch.zeros(self.n))  # layer weights
+
+    def forward(self, x, outputs):
+        # Weights
+        if self.weight:
+            w = torch.sigmoid(self.w) * (2 / self.n)  # sigmoid weights (0-1)
+            x = x * w[0]
+
+        # Fusion
+        nc = x.shape[1]  # input channels
+        for i in range(self.n - 1):
+            a = outputs[self.layers[i]] * w[i + 1] if self.weight else outputs[self.layers[i]]  # feature to add
+            ac = a.shape[1]  # feature channels
+            dc = nc - ac  # delta channels
+
+            # Adjust channels
+            if dc > 0:  # slice input
+                x[:, :ac] = x[:, :ac] + a  # or a = nn.ZeroPad2d((0, 0, 0, 0, 0, dc))(a); x = x + a
+            elif dc < 0:  # slice feature
+                x = x + a[:, :nc]
+            else:  # same shape
+                x = x + a
+        return x
 
 
 class SwishImplementation(torch.autograd.Function):
@@ -171,16 +209,18 @@ class YOLOLayer(nn.Module):
             return p
 
         elif ONNX_EXPORT:
-            # Constants CAN NOT BE BROADCAST, ensure correct shape!
+            # Avoid broadcasting for ANE operations
             m = self.na * self.nx * self.ny
+            ng = 1 / self.ng.repeat((m, 1))
             grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view(m, 2)
-            anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view(m, 2) / self.ng
+            anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view(m, 2) * ng
 
             p = p.view(m, self.no)
             xy = torch.sigmoid(p[:, 0:2]) + grid_xy  # x, y
             wh = torch.exp(p[:, 2:4]) * anchor_wh  # width, height
-            p_cls = torch.sigmoid(p[:, 5:self.no]) * torch.sigmoid(p[:, 4:5])  # conf
-            return p_cls, xy / self.ng, wh
+            p_cls = torch.sigmoid(p[:, 4:5]) if self.nc == 1 else \
+                torch.sigmoid(p[:, 5:self.no]) * torch.sigmoid(p[:, 4:5])  # conf
+            return p_cls, xy * ng, wh
 
         else:  # inference
             # s = 1.5  # scale_xy  (pxy = pxy * s - (s - 1) / 2)
@@ -222,44 +262,51 @@ class Darknet(nn.Module):
 
     def forward(self, x, var=None):
         img_size = x.shape[-2:]
-        output, layer_outputs = [], []
+        yolo_out, out = [], []
         verbose = False
         if verbose:
+            str = ''
             print('0', x.shape)
 
         for i, (mdef, module) in enumerate(zip(self.module_defs, self.module_list)):
             mtype = mdef['type']
             if mtype in ['convolutional', 'upsample', 'maxpool']:
                 x = module(x)
-            elif mtype == 'route':
-                layers = [int(x) for x in mdef['layers'].split(',')]
+            elif mtype == 'shortcut':  # sum
+                if verbose:
+                    l = [i - 1] + module.layers  # layers
+                    s = [list(x.shape)] + [list(out[i].shape) for i in module.layers]  # shapes
+                    str = ' >> ' + ' + '.join(['layer %g %s' % x for x in zip(l, s)])
+                x = module(x, out)  # weightedFeatureFusion()
+            elif mtype == 'route':  # concat
+                layers = mdef['layers']
+                if verbose:
+                    l = [i - 1] + layers  # layers
+                    s = [list(x.shape)] + [list(out[i].shape) for i in layers]  # shapes
+                    str = ' >> ' + ' + '.join(['layer %g %s' % x for x in zip(l, s)])
                 if len(layers) == 1:
-                    x = layer_outputs[layers[0]]
+                    x = out[layers[0]]
                 else:
                     try:
-                        x = torch.cat([layer_outputs[i] for i in layers], 1)
+                        x = torch.cat([out[i] for i in layers], 1)
                     except:  # apply stride 2 for darknet reorg layer
-                        layer_outputs[layers[1]] = F.interpolate(layer_outputs[layers[1]], scale_factor=[0.5, 0.5])
-                        x = torch.cat([layer_outputs[i] for i in layers], 1)
-                    # print(''), [print(layer_outputs[i].shape) for i in layers], print(x.shape)
-            elif mtype == 'shortcut':
-                j = int(mdef['from'])
-                if verbose:
-                    print('shortcut adding layer %g-%s to %g-%s' % (j, layer_outputs[j].shape, i - 1, x.shape))
-                x = x + layer_outputs[j]
+                        out[layers[1]] = F.interpolate(out[layers[1]], scale_factor=[0.5, 0.5])
+                        x = torch.cat([out[i] for i in layers], 1)
+                    # print(''), [print(out[i].shape) for i in layers], print(x.shape)
             elif mtype == 'yolo':
-                output.append(module(x, img_size))
-            layer_outputs.append(x if i in self.routs else [])
+                yolo_out.append(module(x, img_size))
+            out.append(x if i in self.routs else [])
             if verbose:
-                print(i, x.shape)
+                print('%g/%g %s -' % (i, len(self.module_list), mtype), list(x.shape), str)
+                str = ''
 
-        if self.training:
-            return output
-        elif ONNX_EXPORT:
-            x = [torch.cat(x, 0) for x in zip(*output)]
+        if self.training:  # train
+            return yolo_out
+        elif ONNX_EXPORT:  # export
+            x = [torch.cat(x, 0) for x in zip(*yolo_out)]
             return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
-        else:
-            io, p = list(zip(*output))  # inference output, training output
+        else:  # test
+            io, p = zip(*yolo_out)  # inference output, training output
             return torch.cat(io, 1), p
 
     def fuse(self):
@@ -321,38 +368,33 @@ def load_darknet_weights(self, weights, cutoff=-1):
     ptr = 0
     for i, (mdef, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
         if mdef['type'] == 'convolutional':
-            conv_layer = module[0]
+            conv = module[0]
             if mdef['batch_normalize']:
                 # Load BN bias, weights, running mean and running variance
-                bn_layer = module[1]
-                num_b = bn_layer.bias.numel()  # Number of biases
+                bn = module[1]
+                nb = bn.bias.numel()  # number of biases
                 # Bias
-                bn_b = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.bias)
-                bn_layer.bias.data.copy_(bn_b)
-                ptr += num_b
+                bn.bias.data.copy_(torch.from_numpy(weights[ptr:ptr + nb]).view_as(bn.bias))
+                ptr += nb
                 # Weight
-                bn_w = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.weight)
-                bn_layer.weight.data.copy_(bn_w)
-                ptr += num_b
+                bn.weight.data.copy_(torch.from_numpy(weights[ptr:ptr + nb]).view_as(bn.weight))
+                ptr += nb
                 # Running Mean
-                bn_rm = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.running_mean)
-                bn_layer.running_mean.data.copy_(bn_rm)
-                ptr += num_b
+                bn.running_mean.data.copy_(torch.from_numpy(weights[ptr:ptr + nb]).view_as(bn.running_mean))
+                ptr += nb
                 # Running Var
-                bn_rv = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.running_var)
-                bn_layer.running_var.data.copy_(bn_rv)
-                ptr += num_b
+                bn.running_var.data.copy_(torch.from_numpy(weights[ptr:ptr + nb]).view_as(bn.running_var))
+                ptr += nb
             else:
                 # Load conv. bias
-                num_b = conv_layer.bias.numel()
-                conv_b = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(conv_layer.bias)
-                conv_layer.bias.data.copy_(conv_b)
-                ptr += num_b
+                nb = conv.bias.numel()
+                conv_b = torch.from_numpy(weights[ptr:ptr + nb]).view_as(conv.bias)
+                conv.bias.data.copy_(conv_b)
+                ptr += nb
             # Load conv. weights
-            num_w = conv_layer.weight.numel()
-            conv_w = torch.from_numpy(weights[ptr:ptr + num_w]).view_as(conv_layer.weight)
-            conv_layer.weight.data.copy_(conv_w)
-            ptr += num_w
+            nw = conv.weight.numel()  # number of weights
+            conv.weight.data.copy_(torch.from_numpy(weights[ptr:ptr + nw]).view_as(conv.weight))
+            ptr += nw
 
 
 def save_weights(self, path='model.weights', cutoff=-1):
@@ -424,7 +466,8 @@ def attempt_download(weights):
              'darknet53.conv.74': '1WUVBid-XuoUBmvzBVUCBl_ELrzqwA8dJ',
              'yolov3-tiny.conv.15': '1Bw0kCpplxUqyRYAJr9RY9SGnOJbo9nEj',
              'ultralytics49.pt': '158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq',
-             'ultralytics68.pt': '1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG'}
+             'ultralytics68.pt': '1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG',
+             'yolov3-spp-ultralytics.pt': '1UcR-zVoMs7DH5dj3N1bswkiQTA4dmKF4'}
 
         file = Path(weights).name
         if file in d:

@@ -25,15 +25,22 @@ def parse_model_cfg(path):
             key, val = line.split("=")
             key = key.rstrip()
 
-            if 'anchors' in key:
+            if key == 'anchors':  # return nparray
                 mdefs[-1][key] = np.array([float(x) for x in val.split(',')]).reshape((-1, 2))  # np anchors
+            elif key in ['from', 'layers', 'mask']:  # return array
+                mdefs[-1][key] = [int(x) for x in val.split(',')]
             else:
-                mdefs[-1][key] = val.strip()
+                val = val.strip()
+                if val.isnumeric():  # return int or float
+                    mdefs[-1][key] = int(val) if (int(val) - float(val)) == 0 else float(val)
+                else:
+                    mdefs[-1][key] = val  # return string
 
     # Check all fields are supported
     supported = ['type', 'batch_normalize', 'filters', 'size', 'stride', 'pad', 'activation', 'layers', 'groups',
                  'from', 'mask', 'anchors', 'classes', 'num', 'jitter', 'ignore_thresh', 'truth_thresh', 'random',
-                 'stride_x', 'stride_y']
+                 'stride_x', 'stride_y', 'weights_type', 'weights_normalization', 'scale_x_y', 'beta_nms', 'nms_kind',
+                 'iou_loss', 'iou_normalizer', 'cls_normalizer', 'iou_thresh']
 
     f = []  # fields
     for x in mdefs[1:]:

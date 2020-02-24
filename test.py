@@ -76,21 +76,21 @@ def test(cfg,
         _, _, height, width = imgs.shape  # batch size, channels, height, width
 
         # Plot images with bounding boxes
-        if batch_i == 0 and not os.path.exists('test_batch0.jpg'):
-            plot_images(imgs=imgs, targets=targets, paths=paths, fname='test_batch0.jpg')
+        if batch_i == 0 and not os.path.exists('test_batch0.png'):
+            plot_images(imgs=imgs, targets=targets, paths=paths, fname='test_batch0.png')
+
 
         # Disable gradients
         with torch.no_grad():
             # Run model
             inf_out, train_out = model(imgs)  # inference and training outputs
-            
+
             # Compute loss
             if hasattr(model, 'hyp'):  # if model has loss hyperparameters
                 loss += compute_loss(train_out, targets, model)[1][:3].cpu()  # GIoU, obj, cls
 
             # Run NMS
             output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)
-            
 
         # Statistics per image
         for si, pred in enumerate(output):
@@ -209,7 +209,7 @@ def test(cfg,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
-    parser.add_argument('--data', type=str, default='data/coco2014.data', help='*.data path')
+    parser.add_argument('--data', type=str, default='/data/zjc4/chipped/xview_data.txt', help='*.data path')
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
     parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')

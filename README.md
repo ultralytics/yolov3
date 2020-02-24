@@ -11,3 +11,11 @@ Recommended to download pretrained weights from ultralytics. Simply run ",py" an
 * **Zisheng Jason Chang**
 * **Xuan Yu**
 
+
+# Requirements
+
+Python 3.7 or later with all of the `pip install -U -r requirements.txt` packages including:
+- `torch >= 1.4`
+- `opencv-python`
+- `Pillow`
+

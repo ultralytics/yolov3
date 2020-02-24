@@ -6,7 +6,7 @@ from utils.datasets import *
 from utils.utils import *
 
 
-def detect(save_img=False):
+def detect(save_img=True):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half, view_img, save_txt = opt.output, opt.source, opt.weights, opt.half, opt.view_img, opt.save_txt
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
@@ -36,14 +36,16 @@ def detect(save_img=False):
 
     # Fuse Conv2d + BatchNorm2d layers
     # model.fuse()
+    # torch_utils.model_info(model, report='summary')  # 'full' or 'summary'
 
     # Eval mode
     model.to(device).eval()
 
     # Export mode
     if ONNX_EXPORT:
+        model.fuse()
         img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
-        torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=10)
+        torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=11)
 
         # Validate exported model
         import onnx
@@ -62,10 +64,10 @@ def detect(save_img=False):
     if webcam:
         view_img = True
         torch.backends.cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=img_size, half=half)
+        dataset = LoadStreams(source, img_size=img_size)
     else:
         save_img = True
-        dataset = LoadImages(source, img_size=img_size, half=half)
+        dataset = LoadImages(source, img_size=img_size)
 
     # Get names and colors
     names = load_classes(opt.names)
@@ -75,15 +77,14 @@ def detect(save_img=False):
     t0 = time.time()
     for path, img, im0s, vid_cap in dataset:
         t = time.time()
-
-        # Get detections
         img = torch.from_numpy(img).to(device)
+        img = img.half() if half else img.float()  # uint8 to fp16/32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
-        pred = model(img)[0]
 
-        if opt.half:
-            pred = pred.float()
+        # Inference
+        pred = model(img)[0].float() if half else model(img)[0]
 
         # Apply NMS
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
@@ -156,13 +157,13 @@ def detect(save_img=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
-    parser.add_argument('--names', type=str, default='data/coco.names', help='*.names path')
-    parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
-    parser.add_argument('--source', type=str, default='data/samples', help='source')  # input file/folder, 0 for webcam
+    parser.add_argument('--names', type=str, default='/data/zjc4/chipped/labels.txt', help='*.names path')
+    parser.add_argument('--weights', type=str, default='weights/model_results.pt', help='path to weights file')
+    parser.add_argument('--source', type=str, default='/data/zjc4/chipped/data/small_planes/', help='source')  # input file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.5, help='IOU threshold for NMS')
+    parser.add_argument('--conf-thres', type=float, default=0.6, help='object confidence threshold')
+    parser.add_argument('--iou-thres', type=float, default=0.2, help='IOU threshold for NMS')
     parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
     parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
