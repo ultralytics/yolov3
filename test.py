@@ -47,9 +47,11 @@ def test(cfg,
     # Configure run
     data = parse_data_cfg(data)
     nc = 1 if single_cls else int(data['classes'])  # number of classes
-    path = data['valid']  # path to test images
+    #path = data['valid']  # path to test images
+    path = data['test']  # path to test images
     names = load_classes(data['names'])  # class names
-    iouv = torch.linspace(0.5, 0.95, 10).to(device)  # iou vector for mAP@0.5:0.95
+    # iouv = torch.linspace(0.5, 0.95, 10).to(device)  # iou vector for mAP@0.5:0.95
+    iouv = torch.linspace(0.25, 0.95, 10).to(device)  # iou vector for mAP@0.5:0.95
     iouv = iouv[0].view(1)  # comment for mAP@0.5:0.95
     niou = iouv.numel()
 
@@ -66,7 +68,7 @@ def test(cfg,
     seen = 0
     model.eval()
     coco91class = coco80_to_coco91_class()
-    s = ('%20s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@0.5', 'F1')
+    s = ('%20s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@0.25', 'F1')
     p, r, f1, mp, mr, map, mf1 = 0., 0., 0., 0., 0., 0., 0.
     loss = torch.zeros(3)
     jdict, stats, ap, ap_class = [], [], [], []
@@ -210,7 +212,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
     parser.add_argument('--data', type=str, default='/data/zjc4/chipped/xview_data.txt', help='*.data path')
-    parser.add_argument('--weights', type=str, default='weights/yolov3-spp.weights', help='path to weights file')
+    parser.add_argument('--weights', type=str, default='weights/best.pt', help='path to weights file')
     parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
@@ -222,7 +224,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
     print(opt)
-
+    
     if opt.task == 'test':  # task = 'test', 'study', 'benchmark'
         # Test
         test(opt.cfg,

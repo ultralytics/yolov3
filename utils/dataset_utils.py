@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 import itertools
 import glob
 import random
+import os
 random.seed(1)
 
 class XviewDataset():
@@ -119,28 +120,31 @@ class XviewDataset():
 
     def showClassExample(self,
                          image_path = "/data/zjc4/train_images/",
-                         chip_name=None):
-        s_class=np.array(self.grouped_classes[1])
+                         chip_name=None,
+                         class_idx=1):
+        s_class=np.array(self.grouped_classes[class_idx])
         mask = (np.isin(self.classes,s_class))
-        schips = chips1[mask]
+        schips = self.chips[mask]
         if chip_name == None:
             chip_name = (np.random.choice(schips))
 
         arr = wv.get_image(image_path+chip_name)
-        coords = coords1[(chips1==chip_name) & (mask)]
-        classes = classes1[(chips1==chip_name) & (mask)].astype(np.int64)
+        coords = self.coords[(self.chips==chip_name) & (mask)]
+        classes = self.classes[(self.chips==chip_name) & (mask)].astype(np.int64)
         c_img, c_box, c_cls = wv.chip_image(img = arr, coords= coords,
                                             classes=classes, shape=(800,800))
+        images = []
         for ind in range(c_img.shape[0]):
             if len(c_cls[ind]) > 2:
                 labelled = aug.draw_bboxes(c_img[ind],c_box[ind])
                 plt.figure(figsize=(10,10))
                 plt.axis('off')
                 plt.imshow(labelled)
+                images.append(labelled)
                 pass
             pass
-        pass
-
+        return images
+    
 class DarkNetFormatter():
     def __init__(self,output_dir_,input_dir_,coords_,chips_,classes_,grouped_classes_):
         self.output_dir = output_dir_
@@ -226,6 +230,7 @@ class DarkNetFormatter():
 
     def exportChipImages(self,image_paths,c_dir,set_str):
         fnames = []
+        print(set_str)
         for img_pth in image_paths:
             try:
                 img_pth = self.input_dir+'train_images/'+img_pth
@@ -270,24 +275,19 @@ class DarkNetFormatter():
         ("train", [training file idxs])
         """
         for (data_str, data_files) in datum:
-
-            self.exportChipImages(data_files,
-                                  self.output_dir,
-                                  data_str)            
+            self.exportChipImages(data_files,self.output_dir,data_str)            
             pass
-
+        pass
+#if __name__ == "main":
+# Load dataset
+coords1, chips1, classes1 = wv.get_labels('/data/zjc4//xView_train.geojson')
+# Input desired classes
+grouped_classes = [[77,73],[11,12],[13],[17,18,20,21],
+       [19,23,24,25,28,29,60,61,65,26],[41,42,50,40,44,45,47,49]]
+labels = ["building and facility" ,"small aircraft", 
+          "large aircraft","vehicles","bus","boat"]
 #print(labels[0])
 #showClassExample(grouped_classes[0],chip_name = "1694.tif")
-
-# Load dataset
-#coords1, chips1, classes1 = wv.get_labels('/data/zjc4//xView_train.geojson')
-
-# Input desired classes
-grouped_classes = [[77,73],[11,12],[13],[17,18,20,21],\
-       [19,23,24,25,28,29,60,61,65,26],[41,42,50,40,44,45,47,49]]
-labels = ["building and facility","facility" ,"small aircraft", \ 
-          "large aircraft","vehicles","bus","boat"]
-
 print(len(chips1))
 idxs = range(0,300000)
 xdataset = XviewDataset(grouped_classes,labels, coords1[idxs],chips1[idxs],classes1[idxs])
