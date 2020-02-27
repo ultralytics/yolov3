@@ -15,25 +15,23 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
     t = time.time()
 
     print('Downloading https://drive.google.com/uc?export=download&id=%s as %s... ' % (id, name), end='')
-    if os.path.exists(name):  # remove existing
-        os.remove(name)
+    os.remove(name) if os.path.exists(name) else None  # remove existing
+    os.remove('cookie') if os.path.exists('cookie') else None
 
-    # Attempt large file download
-    s = ["curl -c ./cookie -s -L \"https://drive.google.com/uc?export=download&id=%s\" > /dev/null" % id,
-         "curl -Lb ./cookie -s \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
-             id, name),
-         'rm ./cookie']
-    r = sum([os.system(x) for x in s][:2])  # run commands, get return zeros
-
-    # Attempt small file download
-    if not os.path.exists(name):  # file size < 40MB
+    # Attempt file download
+    os.system("curl -c ./cookie -s -L \"https://drive.google.com/uc?export=download&id=%s\" > /dev/null" % id)
+    if os.path.exists('cookie'):  # large file
+        s = "curl -Lb ./cookie -s \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
+            id, name)
+    else:  # small file
         s = 'curl -f -L -o %s https://drive.google.com/uc?export=download&id=%s' % (name, id)
-        r = os.system(s)
+    r = os.system(s)  # execute, capture return values
+    os.remove('cookie') if os.path.exists('cookie') else None
 
     # Error check
     if r != 0:
-        os.system('rm ' + name)  # remove partial downloads
-        print('ERROR: Download failure ')
+        os.remove(name) if os.path.exists(name) else None  # remove partial
+        print('Download error ')  # raise Exception('Download error')
         return r
 
     # Unzip if archive
