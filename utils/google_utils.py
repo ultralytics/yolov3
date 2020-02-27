@@ -24,7 +24,7 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
         s = "curl -Lb ./cookie -s \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
             id, name)
     else:  # small file
-        s = "curl -f -L -o %s 'https://drive.google.com/uc?export=download&id=%s'" % (name, id)
+        s = "curl -s -L -o %s 'https://drive.google.com/uc?export=download&id=%s'" % (name, id)
     r = os.system(s)  # execute, capture return values
     os.remove('cookie') if os.path.exists('cookie') else None
 
