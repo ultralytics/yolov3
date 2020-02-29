@@ -158,9 +158,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
     parser.add_argument('--names', type=str, default='/data/zjc4/chipped/labels.txt', help='*.names path')
-    parser.add_argument('--weights', type=str, default='weights/model_results.pt', help='path to weights file')
-    parser.add_argument('--source', type=str, default='/data/zjc4/chipped/data/small_planes/', help='source')  # input file/folder, 0 for webcam
-    parser.add_argument('--output', type=str, default='output', help='output folder')  # output folder
+    parser.add_argument('--weights', type=str, default='weights_chkpt_90/best.pt', help='path to weights file')
+    parser.add_argument('--source', type=str, default='/data/zjc4/yolov3_input_90/', help='source')  # input file/folder, 0 for webcam
+    parser.add_argument('--output', type=str, default='output_90', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.6, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.2, help='IOU threshold for NMS')

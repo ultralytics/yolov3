@@ -9,6 +9,7 @@ import tqdm
 import pickle
 from sklearn.model_selection import train_test_split
 import itertools
+import cv2 as cv
 import glob
 import random
 import os
@@ -200,8 +201,18 @@ class DarkNetFormatter():
         if not os.path.exists(filepath):
             os.makedirs(filepath)
         
-
-    def parseChip(self,c_img, c_box, c_cls,img_num,c_dir):
+    def downsampleImage(self,img,res_native=30,res_out=120):
+        kernel_sz = int(0.5*(res_out/res_native))
+        scale_percent = res_native/res_out
+        width = int(img.shape[1] * scale_percent )
+        height = int(img.shape[0] * scale_percent)
+        dim = (width, height)
+        sigma = 0.3*((kernel_sz-1)*0.5 - 1) + 0.8
+        blur = cv.blur(img,(kernel_sz,kernel_sz),borderType=cv.BORDER_REFLECT)
+        resized = cv.resize(blur, dim, interpolation = cv.INTER_AREA)
+        return resized
+        
+    def parseChip(self,c_img, c_box, c_cls,img_num,c_dir,res_out=30):
         # Parses chips, saves chip image, and also saves corresponding labels
         fnames = []
         
@@ -220,7 +231,8 @@ class DarkNetFormatter():
             np.savetxt(ff_l, result, fmt='%i %1.6f %1.6f %1.6f %1.6f')
             # Save image to specified dir
             ff_i = "{}images/{}.jpg".format(c_dir,c_name)
-
+            if res_out != 30:
+              simg = self.downsampleImage(simg,res_out=res_out)
             Image.fromarray(simg).save(ff_i)
             # Append file name to list
             fnames.append("{}images/{}.jpg".format(c_dir,c_name))
@@ -228,7 +240,7 @@ class DarkNetFormatter():
 
         return fnames
 
-    def exportChipImages(self,image_paths,c_dir,set_str):
+    def exportChipImages(self,image_paths,c_dir,set_str,res_out=30):
         fnames = []
         print(set_str)
         for img_pth in image_paths:
@@ -245,7 +257,7 @@ class DarkNetFormatter():
                 c_img, c_box, c_cls = wv.chip_image(img=arr, coords=chip_coords, 
                                                     classes=chip_classes, shape=(600,600))
 
-                c_fnames = self.parseChip(c_img, c_box, c_cls, img_num, c_dir)
+                c_fnames = self.parseChip(c_img, c_box, c_cls, img_num, c_dir,res_out)
                 fnames.extend(c_fnames)
             except FileNotFoundError as e:
                 print(e)
@@ -268,18 +280,19 @@ class DarkNetFormatter():
             myfile.write('\n'.join(lines))
         pass
 
-    def transformDatum(self,datum):
+    def transformDatum(self,datum,res_out=30):
         """
         takes in as input list of tuples corresponding to
         first string of subset, and training file indexes
         ("train", [training file idxs])
         """
         for (data_str, data_files) in datum:
-            self.exportChipImages(data_files,self.output_dir,data_str)            
+            self.exportChipImages(data_files,self.output_dir,data_str,res_out=res_out)            
             pass
         pass
 #if __name__ == "main":
 # Load dataset
+'''
 coords1, chips1, classes1 = wv.get_labels('/data/zjc4//xView_train.geojson')
 # Input desired classes
 grouped_classes = [[77,73],[11,12],[13],[17,18,20,21],
@@ -301,3 +314,4 @@ dnf = DarkNetFormatter(output_dir_ = "/data/zjc4/chipped/data/",
                        grouped_classes_=grouped_classes)
 datum = list(zip(string_sets,data_sets))
 dnf.transformDatum(datum)
+'''

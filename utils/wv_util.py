@@ -89,6 +89,7 @@ def boxes_from_coords(coords):
         nc[ind] = [x1,y1,x2,y2]
     return nc
 
+import math
 
 def chip_image(img,coords,classes,shape=(300,300)):
     """
@@ -112,8 +113,16 @@ def chip_image(img,coords,classes,shape=(300,300)):
     height,width,_ = img.shape
     wn,hn = shape
     
-    w_num,h_num = (int(width/wn),int(height/hn))
+    w_num,h_num = (int(math.ceil(width/wn)),int(math.ceil(height/hn)))
+    w_new,h_new = wn*(w_num),hn*(h_num)
+    
+    # Make new image with padded edges
+    temp_img = np.zeros((h_new,w_new,3))
+    temp_img[:height,:width,:] = img
+    img = temp_img
+    # Resulting images
     images = np.zeros((w_num*h_num,hn,wn,3))
+    
     total_boxes = {}
     total_classes = {}
     
