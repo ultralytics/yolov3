@@ -223,8 +223,8 @@ if __name__ == '__main__':
     opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
     print(opt)
 
-    if opt.task == 'test':  # task = 'test', 'study', 'benchmark'
-        # Test
+    # task = 'test', 'study', 'benchmark'
+    if opt.task == 'test':  # (default) test normally
         test(opt.cfg,
              opt.data,
              opt.weights,
@@ -235,20 +235,18 @@ if __name__ == '__main__':
              opt.save_json,
              opt.single_cls)
 
-    elif opt.task == 'benchmark':
-        # mAPs at 320-608 at conf 0.5 and 0.7
+    elif opt.task == 'benchmark':  # mAPs at 320-608 at conf 0.5 and 0.7
         y = []
-        for i in [320, 416, 512, 608]:
-            for j in [0.5, 0.7]:
+        for i in [320, 416, 512, 608]:  # img-size
+            for j in [0.5, 0.7]:  # iou-thres
                 t = time.time()
                 r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, i, opt.conf_thres, j, opt.save_json)[0]
                 y.append(r + (time.time() - t,))
         np.savetxt('benchmark.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
 
-    elif opt.task == 'study':
-        # Parameter study
+    elif opt.task == 'study':  # Parameter study
         y = []
-        x = np.arange(0.4, 0.9, 0.05)
+        x = np.arange(0.4, 0.9, 0.05)  # iou-thres
         for i in x:
             t = time.time()
             r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, i, opt.save_json)[0]
