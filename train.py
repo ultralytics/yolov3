@@ -97,6 +97,7 @@ def train():
         optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
     optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
     optimizer.add_param_group({'params': pg2})  # add pg2 (biases)
+    optimizer.param_groups[2]['lr'] *= 2.0  # bias lr
     del pg0, pg1, pg2
 
     start_epoch = 0
@@ -140,10 +141,9 @@ def train():
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
     # lf = lambda x: 10 ** (hyp['lrf'] * x / epochs)  # exp ramp
     # lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inverse exp ramp
-    # lf = lambda x: 0.5 * (1 + math.cos(x * math.pi / epochs))  # cosine https://arxiv.org/pdf/1812.01187.pdf
-    # scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
-    # scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=range(59, 70, 1), gamma=0.8)  # gradual fall to 0.1*lr0
-    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[round(epochs * x) for x in [0.8, 0.9]], gamma=0.1)
+    lf = lambda x: 0.5 * (1 + math.cos(x * math.pi / epochs))  # cosine https://arxiv.org/pdf/1812.01187.pdf
+    scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
+    # scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[round(epochs * x) for x in [0.8, 0.9]], gamma=0.1)
     scheduler.last_epoch = start_epoch
 
     # # Plot lr schedule
@@ -216,10 +216,10 @@ def train():
 
         # Prebias
         if prebias:
-            if epoch < 3:  # prebias
-                ps = np.interp(epoch, [0, 3], [0.1, hyp['lr0']]), 0.0  # prebias settings (lr=0.1, momentum=0.0)
-            else:  # normal training
-                ps = hyp['lr0'], hyp['momentum']  # normal training settings
+            ne = 3  # number of prebias epochs
+            ps = np.interp(epoch, [0, ne], [0.1, hyp['lr0'] * 2]), \
+                 np.interp(epoch, [0, ne], [0.9, hyp['momentum']])  # prebias settings (lr=0.1, momentum=0.9)
+            if epoch == ne:
                 print_model_biases(model)
                 prebias = False
 
