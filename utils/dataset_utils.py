@@ -243,6 +243,8 @@ class XviewDataset():
                         numd[1].reshape(-1,1) )) ))
         return (train_tifs,test_tifs),((df_train,df_test),(gc_df_train,gc_df_test))
       
+
+
 class DarkNetFormatter():
     def __init__(self,output_dir_,input_dir_,coords_,chips_,classes_,grouped_classes_):
         self.output_dir = output_dir_
@@ -267,7 +269,7 @@ class DarkNetFormatter():
         pass
 
     def plotDarknetFmt(self,c_img,x_center,y_center,ws,hs,c_cls,szx,szy):
-        fig,ax = plt.subplots(1,figsize=(10,10))
+        fig,ax = plt.subplots(1,figsize=(5,5))
         ax.imshow(c_img)
         for didx in range(c_cls.shape[0]):
             x,y = x_center[didx]*szx,y_center[didx]*szy
@@ -277,6 +279,7 @@ class DarkNetFormatter():
             rect = patches.Rectangle((x1,y1),w1,h1,\
                                      linewidth=1,edgecolor='r',facecolor='none')
             ax.add_patch(rect)
+        break
             pass
         plt.show()
         pass
@@ -311,7 +314,7 @@ class DarkNetFormatter():
         resized = cv.resize(blur, dim, interpolation = cv.INTER_AREA)
         return resized
     
-    def parseChip(self,c_img, c_box, c_cls,img_num,c_dir,res_out=30,showImg = False):
+    def parseChip(self,c_img, c_box, c_cls,img_num,c_dir,res_out=30,showImg = True):
         # Parses chips, saves chip image, and also saves corresponding labels
         fnames = []
         
@@ -349,7 +352,8 @@ class DarkNetFormatter():
             pass
         return fnames
     
-    def exportChipImages(self,image_paths,c_dir,set_str,res_out=30,showImg=False):
+    def exportChipImages(self,image_paths,c_dir,set_str,res_out=30,
+                         showImg=False,shape=(600,600)):
         fnames = []
         #image_paths = sorted(image_paths)
         for img_pth in image_paths:
@@ -369,7 +373,7 @@ class DarkNetFormatter():
                     chip_coords = chip_coords*scale
                 # Chip the tif image into tiles
                 c_img, c_box, c_cls = wv.chip_image(img=arr, coords=chip_coords, 
-                                                    classes=chip_classes, shape=(600,600))
+                                                    classes=chip_classes, shape=shape)
                 if showImg:
                     result = []
                     for key in c_cls.keys():
@@ -409,14 +413,15 @@ class DarkNetFormatter():
             myfile.write('\n'.join(lines))
         pass
 
-    def transformDatum(self,datum,res_out=30):
+    def transformDatum(self,datum,res_out=30,shape=(600,600)):
         """
         takes in as input list of tuples corresponding to
         first string of subset, and training file indexes
         ("train", [training file idxs])
         """
         for (data_str, data_files) in datum:
-            self.exportChipImages(data_files,self.output_dir,data_str,res_out=res_out)            
+            self.exportChipImages(data_files,self.output_dir,data_str,
+                                  res_out=res_out,shape)            
             pass
         pass
 #if __name__ == "main":
