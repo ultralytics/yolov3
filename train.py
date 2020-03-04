@@ -28,7 +28,7 @@ hyp = {'giou': 3.54,  # giou loss gain
        'obj': 64.3,  # obj loss gain (*=img_size/320 if img_size != 320)
        'obj_pw': 1.0,  # obj BCELoss positive_weight
        'iou_t': 0.225,  # iou training threshold
-       'lr0': 0.00579,  # initial learning rate (SGD=5E-3, Adam=5E-4)
+       'lr0': 0.01,  # initial learning rate (SGD=5E-3, Adam=5E-4)
        'lrf': -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
        'momentum': 0.937,  # SGD momentum
        'weight_decay': 0.000484,  # optimizer weight decay
@@ -141,7 +141,7 @@ def train():
     # lf = lambda x: 1 - x / epochs  # linear ramp to zero
     # lf = lambda x: 10 ** (hyp['lrf'] * x / epochs)  # exp ramp
     # lf = lambda x: 1 - 10 ** (hyp['lrf'] * (1 - x / epochs))  # inverse exp ramp
-    lf = lambda x: 0.5 * (1 + math.cos(x * math.pi / epochs))  # cosine https://arxiv.org/pdf/1812.01187.pdf
+    lf = lambda x: (1 + math.cos(x * math.pi / epochs)) / 2 * 0.99 + 0.01  # cosine https://arxiv.org/pdf/1812.01187.pdf
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
     # scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[round(epochs * x) for x in [0.8, 0.9]], gamma=0.1)
     scheduler.last_epoch = start_epoch
@@ -311,7 +311,7 @@ def train():
                                       batch_size=batch_size * 2,
                                       img_size=img_size_test,
                                       model=model,
-                                      conf_thres=1E-3 if opt.evolve or (final_epoch and is_coco) else 0.1,  # 0.1 faster
+                                      conf_thres=0.001,  # 0.001 if opt.evolve or (final_epoch and is_coco) else 0.01,
                                       iou_thres=0.6,
                                       save_json=final_epoch and is_coco,
                                       single_cls=opt.single_cls,
