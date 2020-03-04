@@ -523,7 +523,7 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_cls=Tru
         pred = pred[pred[:, 4] > conf_thres]
 
         # Apply width-height constraint
-        pred = pred[(pred[:, 2:4] > min_wh).all(1) & (pred[:, 2:4] < max_wh).all(1)]
+        pred = pred[((pred[:, 2:4] > min_wh) & (pred[:, 2:4] < max_wh)).all(1)]
 
         # Compute conf
         pred[..., 5:] *= pred[..., 4:5]  # conf = obj_conf * cls_conf
