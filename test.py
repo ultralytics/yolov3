@@ -17,6 +17,7 @@ def test(cfg,
          iou_thres=0.6,  # for nms
          save_json=False,
          single_cls=False,
+         profile=False,
          model=None,
          dataloader=None):
     # Initialize/load model and set device
@@ -182,7 +183,7 @@ def test(cfg,
             print(pf % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
 
     # Print profile results
-    if opt.profile:
+    if profile:
         t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1))
         print('Profile results: %.1f/%.1f/%.1f ms inference/NMS/total per image' % t)
 
@@ -244,7 +245,8 @@ if __name__ == '__main__':
              opt.conf_thres,
              opt.iou_thres,
              opt.save_json,
-             opt.single_cls)
+             opt.single_cls,
+             opt.profile)
 
     elif opt.task == 'benchmark':  # mAPs at 320-608 at conf 0.5 and 0.7
         y = []
