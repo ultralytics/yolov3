@@ -88,7 +88,7 @@ def create_modules(module_defs, img_size, arc):
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
                 if arc == 'default' or arc == 'Fdefault':  # default
-                    b = [-5.0, -5.0]  # obj, cls
+                    b = [-3.0, -6.0]  # obj, cls
                 elif arc == 'uBCE':  # unified BCE (80 classes)
                     b = [0, -9.0]
                 elif arc == 'uCE':  # unified CE (1 background + 80 classes)
