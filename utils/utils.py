@@ -524,10 +524,6 @@ def non_max_suppression(prediction, conf_thres=0.5, iou_thres=0.5, multi_cls=Tru
         # Apply width-height constraint
         pred = pred[(pred[:, 2:4] > min_wh).all(1) & (pred[:, 2:4] < max_wh).all(1)]
 
-        # If none remain process next image
-        if len(pred) == 0:
-            continue
-
         # Compute conf
         pred[..., 5:] *= pred[..., 4:5]  # conf = obj_conf * cls_conf
 
@@ -549,6 +545,10 @@ def non_max_suppression(prediction, conf_thres=0.5, iou_thres=0.5, multi_cls=Tru
         # Apply finite constraint
         if not torch.isfinite(pred).all():
             pred = pred[torch.isfinite(pred).all(1)]
+
+        # If none remain process next image
+        if not pred.shape[0]:
+            continue
 
         # Batched NMS
         if method == 'vision_batch':
