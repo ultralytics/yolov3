@@ -563,7 +563,7 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_cls=Tru
                 i = torchvision.ops.boxes.batched_nms(boxes, scores, c, iou_thres)
             elif method == 'fast_batch':  # FastNMS from https://github.com/dbolya/yolact
                 boxes += c.view(-1, 1) * max_wh
-                iou = box_iou(boxes, boxes).triu_(diagonal=1)  # zero upper triangle iou matrix
+                iou = box_iou(boxes, boxes).triu_(diagonal=1)  # upper triangular iou matrix
                 i = iou.max(dim=0)[0] < iou_thres
 
             output[image_i] = pred[i]
