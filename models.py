@@ -87,7 +87,7 @@ def create_modules(module_defs, img_size, arc):
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
-                p = math.log(1 / (modules.nc - 1))  # class probability  ->  sigmoid(p) = 1/nc
+                p = math.log(1 / (modules.nc - 0.99))  # class probability  ->  sigmoid(p) = 1/nc
                 if arc == 'default' or arc == 'Fdefault':  # default
                     b = [-5.0, p]  # obj, cls
                 elif arc == 'uBCE':  # unified BCE (80 classes)
