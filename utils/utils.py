@@ -513,7 +513,7 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_cls=Tru
     # Box constraints
     min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
 
-    method = 'fast_batch'
+    method = 'vision_batch'
     batched = 'batch' in method  # run once per image, all classes simultaneously
     nc = prediction[0].shape[1] - 5  # number of classes
     multi_cls = multi_cls and (nc > 1)  # allow multiple classes per anchor
