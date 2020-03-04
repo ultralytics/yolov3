@@ -89,7 +89,7 @@ def create_modules(module_defs, img_size, arc):
             try:
                 p = math.log(1 / (modules.nc - 0.99))  # class probability  ->  sigmoid(p) = 1/nc
                 if arc == 'default' or arc == 'Fdefault':  # default
-                    b = [-5.0, p]  # obj, cls
+                    b = [-4.5, p]  # obj, cls
                 elif arc == 'uBCE':  # unified BCE (80 classes)
                     b = [0, -9.0]
                 elif arc == 'uCE':  # unified CE (1 background + 80 classes)
