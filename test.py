@@ -67,7 +67,7 @@ def test(cfg,
     model.eval()
     coco91class = coco80_to_coco91_class()
     s = ('%20s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@0.5', 'F1')
-    p, r, f1, mp, mr, map, mf1 = 0., 0., 0., 0., 0., 0., 0.
+    p, r, f1, mp, mr, map, mf1, t0, t1 = 0., 0., 0., 0., 0., 0., 0., 0., 0.
     loss = torch.zeros(3)
     jdict, stats, ap, ap_class = [], [], [], []
     for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc=s)):
@@ -84,14 +84,18 @@ def test(cfg,
         # Disable gradients
         with torch.no_grad():
             # Run model
+            t = time.time()
             inf_out, train_out = model(imgs)  # inference and training outputs
+            t0 += time.time() - t
 
             # Compute loss
             if hasattr(model, 'hyp'):  # if model has loss hyperparameters
                 loss += compute_loss(train_out, targets, model)[1][:3].cpu()  # GIoU, obj, cls
 
             # Run NMS
+            t = time.time()
             output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)
+            t1 += time.time() - t
 
         # Statistics per image
         for si, pred in enumerate(output):
@@ -177,6 +181,11 @@ def test(cfg,
         for i, c in enumerate(ap_class):
             print(pf % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
 
+    # Print profile results
+    if opt.profile:
+        t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1))
+        print('Profile results: %.1f/%.1f/%.1f ms inference/NMS/total per image' % t)
+
     # Save JSON
     if save_json and map and len(jdict):
         imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataloader.dataset.img_files]
@@ -220,6 +229,7 @@ if __name__ == '__main__':
     parser.add_argument('--task', default='test', help="'test', 'study', 'benchmark'")
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
+    parser.add_argument('--profile', action='store_true', help='profile inference and NMS times')
     opt = parser.parse_args()
     opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
     print(opt)
