@@ -84,18 +84,18 @@ def test(cfg,
         # Disable gradients
         with torch.no_grad():
             # Run model
-            t = time.time()
+            t = torch_utils.time_synchronized()
             inf_out, train_out = model(imgs)  # inference and training outputs
-            t0 += time.time() - t
+            t0 += torch_utils.time_synchronized() - t
 
             # Compute loss
             if hasattr(model, 'hyp'):  # if model has loss hyperparameters
                 loss += compute_loss(train_out, targets, model)[1][:3].cpu()  # GIoU, obj, cls
 
             # Run NMS
-            t = time.time()
-            output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)
-            t1 += time.time() - t
+            t = torch_utils.time_synchronized()
+            output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)  # nms
+            t1 += torch_utils.time_synchronized() - t
 
         # Statistics per image
         for si, pred in enumerate(output):

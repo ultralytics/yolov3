@@ -1,4 +1,5 @@
 import os
+import time
 
 import torch
 import torch.backends.cudnn as cudnn
@@ -38,6 +39,11 @@ def select_device(device='', apex=False, batch_size=None):
 
     print('')  # skip a line
     return torch.device('cuda:0' if cuda else 'cpu')
+
+
+def time_synchronized():
+    torch.cuda.synchronize() if torch.cuda.is_available() else None
+    return time.time()
 
 
 def fuse_conv_and_bn(conv, bn):
