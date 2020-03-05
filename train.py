@@ -215,7 +215,7 @@ def train():
 
         # Prebias
         if prebias:
-            ne = 3  # number of prebias epochs
+            ne = max(round(30 / nb), 3)  # number of prebias epochs
             ps = np.interp(epoch, [0, ne], [0.1, hyp['lr0'] * 2]), \
                  np.interp(epoch, [0, ne], [0.9, hyp['momentum']])  # prebias settings (lr=0.1, momentum=0.9)
             if epoch == ne:
