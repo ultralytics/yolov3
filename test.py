@@ -188,7 +188,7 @@ def test(cfg,
 
     # Save JSON
     if save_json and map and len(jdict):
-        print('COCO mAP with pycocotools...')
+        print('\nCOCO mAP with pycocotools...')
         imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataloader.dataset.img_files]
         with open('results.json', 'w') as file:
             json.dump(jdict, file)
