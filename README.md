@@ -5,7 +5,7 @@
 # 快速使用
 1. git clone https://github.com/zdyshine/yolov3.git  
 2. data文件夹下新建 Annotations, images, ImageSets, labels文件夹（已建）  
-3. 把图片*.jpg放置 data/ImageSets， 把*.xml文件放置到data/Annotations  
+3. 把图片*.jpg放置 data/images， 把*.xml文件放置到data/Annotations  
 4. data文件中新建 under_water.data, underwater_names文件（已建）  
 5. 分别运行makeTxt.py和voc_label.py创建训练需要的文件  
 6. 修改yolo-tiny.cfg，原理参考上面的blog  
