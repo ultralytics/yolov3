@@ -1,0 +1,6 @@
+classes=4
+train=data/underwater_train.txt
+valid=data/underwater_val.txt
+names=data/underwater.names
+backup=backup/
+eval=coco # 选择map计算方式
