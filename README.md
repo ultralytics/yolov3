@@ -155,11 +155,11 @@ YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**[YOLOv3-SPP-ultralytics](https://drive.
 ```bash
 $ python3 test.py --cfg yolov3-spp.cfg --weights yolov3-spp-ultralytics.pt --img 608
 
-Namespace(batch_size=32, cfg='yolov3-spp', conf_thres=0.001, data='data/coco2014.data', device='', img_size=608, iou_thres=0.6, save_json=True, single_cls=False, task='test', weights='last82.pt')
-Using CUDA device0 _CudaDeviceProperties(name='Tesla P100-PCIE-16GB', total_memory=16280MB)
+Namespace(batch_size=32, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='data/coco2014.data', device='', img_size=608, iou_thres=0.6, save_json=True, single_cls=False, task='test', weights='weights/yolov3-spp-ultralytics.pt')
+Using CUDA device0 _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', total_memory=16130MB)
 
-               Class    Images   Targets         P         R   mAP@0.5        F1: 100% 157/157 [03:12<00:00,  1.50it/s]
-                 all     5e+03  3.51e+04    0.0573     0.871     0.611     0.106
+              Class    Images   Targets         P         R   mAP@0.5        F1: 100%|█████| 157/157 [02:46<00:00,  1.06s/it]
+                 all     5e+03  3.51e+04     0.822     0.433     0.611     0.551
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.419
  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.618
  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.448
