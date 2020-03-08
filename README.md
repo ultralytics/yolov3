@@ -18,3 +18,5 @@
 2. 代码针对比赛做了简单修改，目前仅进行简单的train和test    
 3. 训练 python train.py 测试 python test.py --save-txt  
 
+比赛主页：https://www.kesci.com/home/competition/5e535a612537a0002ca864ac
+
