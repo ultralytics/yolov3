@@ -17,7 +17,6 @@ def test(cfg,
          iou_thres=0.6,  # for nms
          save_json=False,
          single_cls=False,
-         profile=False,
          model=None,
          dataloader=None):
     # Initialize/load model and set device
@@ -182,11 +181,6 @@ def test(cfg,
         for i, c in enumerate(ap_class):
             print(pf % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
 
-    # Print profile results
-    if profile:
-        t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1))
-        print('Profile results: %.1f/%.1f/%.1f ms inference/NMS/total per image' % t)
-
     # Save JSON
     if save_json and map and len(jdict):
         imgIds = [int(Path(x).stem.split('_')[-1]) for x in dataloader.dataset.img_files]
@@ -210,6 +204,11 @@ def test(cfg,
         cocoEval.summarize()
         mf1, map = cocoEval.stats[:2]  # update to pycocotools results (mAP@0.5:0.95, mAP@0.5)
 
+    # Print speeds
+    if verbose:
+        t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (img_size, img_size, batch_size)  # tuple
+        print('Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t)
+
     # Return results
     maps = np.zeros(nc) + map
     for i, c in enumerate(ap_class):
@@ -230,7 +229,6 @@ if __name__ == '__main__':
     parser.add_argument('--task', default='test', help="'test', 'study', 'benchmark'")
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
-    parser.add_argument('--profile', action='store_true', help='profile inference and NMS times')
     opt = parser.parse_args()
     opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
     print(opt)
@@ -245,8 +243,7 @@ if __name__ == '__main__':
              opt.conf_thres,
              opt.iou_thres,
              opt.save_json,
-             opt.single_cls,
-             opt.profile)
+             opt.single_cls)
 
     elif opt.task == 'benchmark':  # mAPs at 320-608 at conf 0.5 and 0.7
         y = []
