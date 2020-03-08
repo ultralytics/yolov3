@@ -378,6 +378,14 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     BCE = nn.BCEWithLogitsLoss(reduction=red)
     CE = nn.CrossEntropyLoss(reduction=red)  # weight=model.class_weights
 
+    # class label smoothing https://arxiv.org/pdf/1902.04103.pdf eqn 3
+    smooth = False
+    if smooth:
+        e = 0.1  #  class label smoothing epsilon
+        cp, cn = 1.0 - e, e / (model.nc - 0.99)  # class positive and negative labels
+    else:
+        cp, cn = 1.0, 0.0
+
     if 'F' in arc:  # add focal loss
         g = h['fl_gamma']
         BCEcls, BCEobj, BCE, CE = FocalLoss(BCEcls, g), FocalLoss(BCEobj, g), FocalLoss(BCE, g), FocalLoss(CE, g)
@@ -405,13 +413,6 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             tobj[b, a, gj, gi] = (1.0 - model.gr) + model.gr * giou.detach().clamp(0).type(tobj.dtype)  # giou ratio
 
             if 'default' in arc and model.nc > 1:  # cls loss (only if multiple classes)
-                smooth = False  # class label smoothing https://arxiv.org/pdf/1902.04103.pdf eqn 3
-                if smooth:
-                    e = 0.1  #  class label smoothing epsilon
-                    cp, cn = 1.0 - e, e / (model.nc - 0.99)  # class positive and negative labels
-                else:
-                    cp, cn = 1.0, 0.0
-
                 t = torch.zeros_like(ps[:, 5:]) + cn  # targets
                 t[range(nb), tcls[i]] = cp
                 lcls += BCEcls(ps[:, 5:], t)  # BCE
