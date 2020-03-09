@@ -189,7 +189,7 @@ class YOLOLayer(nn.Module):
         self.ny = 0  # initialize number of y gridpoints
         self.arc = arc
 
-        if ONNX_EXPORT:  # grids must be computed in __init__
+        if ONNX_EXPORT:
             stride = [32, 16, 8][yolo_index]  # stride of this layer
             nx = img_size[1] // stride  # number x grid points
             ny = img_size[0] // stride  # number y grid points
