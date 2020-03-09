@@ -87,24 +87,13 @@ def create_modules(module_defs, img_size, arc):
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
-                p = math.log(1 / (modules.nc - 0.99))  # class probability  ->  sigmoid(p) = 1/nc
-                if arc == 'default' or arc == 'Fdefault':  # default
-                    b = [-4.5, p]  # obj, cls
-                elif arc == 'uBCE':  # unified BCE (80 classes)
-                    b = [0, -9.0]
-                elif arc == 'uCE':  # unified CE (1 background + 80 classes)
-                    b = [10, -0.1]
-                elif arc == 'uFBCE':  # unified FocalBCE (5120 obj, 80 classes)
-                    b = [0, -6.5]
-                elif arc == 'uFCE':  # unified FocalCE (64 cls, 1 background + 80 classes)
-                    b = [7.7, -1.1]
+                bo = -4.5  #  obj bias
+                bc = math.log(1 / (modules.nc - 0.99))  # cls bias: class probability is sigmoid(p) = 1/nc
 
                 bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
-                bias[:, 4] += b[0] - bias[:, 4].mean()  # obj
-                bias[:, 5:] += b[1] - bias[:, 5:].mean()  # cls
-                # bias = torch.load('weights/yolov3-spp.bias.pt')[yolo_index]  # list of tensors [3x85, 3x85, 3x85]
-                module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
-                # utils.print_model_biases(model)
+                bias[:, 4] += bo - bias[:, 4].mean()  # obj
+                bias[:, 5:] += bc - bias[:, 5:].mean()  # cls
+                module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))  # utils.print_model_biases(model)
             except:
                 print('WARNING: smart bias initialization failure.')
 
