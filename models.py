@@ -191,8 +191,8 @@ class YOLOLayer(nn.Module):
 
         if ONNX_EXPORT:  # grids must be computed in __init__
             stride = [32, 16, 8][yolo_index]  # stride of this layer
-            nx = int(img_size[1] / stride)  # number x grid points
-            ny = int(img_size[0] / stride)  # number y grid points
+            nx = img_size[1] // stride  # number x grid points
+            ny = img_size[0] // stride  # number y grid points
             create_grids(self, img_size, (nx, ny))
 
     def forward(self, p, img_size, var=None):
