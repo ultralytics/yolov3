@@ -1,0 +1,13 @@
+data_xview/train/images/0000884_10.jpg
+data_xview/train/images/0000781_08.jpg
+data_xview/train/images/0001182_15.jpg
+data_xview/train/images/0000781_05.jpg
+data_xview/train/images/0000781_09.jpg
+data_xview/train/images/0000926_04.jpg
+data_xview/train/images/0000926_15.jpg
+data_xview/train/images/0001182_10.jpg
+data_xview/train/images/0000884_08.jpg
+data_xview/train/images/0000145_15.jpg
+data_xview/train/images/0000781_17.jpg
+data_xview/train/images/0001182_04.jpg
+data_xview/train/images/0001182_03.jpg

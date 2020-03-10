@@ -246,3 +246,4 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 *.bak
+*.pkl
