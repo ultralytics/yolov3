@@ -81,8 +81,7 @@ def create_modules(module_defs, img_size, arc):
 
         elif mdef['type'] == 'yolo':
             yolo_index += 1
-            mask = mdef['mask']  # anchor mask
-            modules = YOLOLayer(anchors=mdef['anchors'][mask],  # anchor list
+            modules = YOLOLayer(anchors=mdef['anchors'][mdef['mask']],  # anchor list
                                 nc=mdef['classes'],  # number of classes
                                 img_size=img_size,  # (416, 416)
                                 yolo_index=yolo_index,  # 0, 1 or 2
@@ -93,7 +92,7 @@ def create_modules(module_defs, img_size, arc):
                 bo = -4.5  #  obj bias
                 bc = math.log(1 / (modules.nc - 0.99))  # cls bias: class probability is sigmoid(p) = 1/nc
 
-                bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
+                bias = module_list[-1][0].bias.view(modules.na, -1)  # 255 to 3x85
                 bias[:, 4] += bo - bias[:, 4].mean()  # obj
                 bias[:, 5:] += bc - bias[:, 5:].mean()  # cls, view with utils.print_model_biases(model)
             except:
