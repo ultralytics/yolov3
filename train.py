@@ -261,7 +261,7 @@ def train():
 
             # Multi-Scale training
             if opt.multi_scale:
-                if ni / accumulate % 1 == 0:  #  adjust img_size (67% - 150%) every 1 batch
+                if ni / accumulate % 1 == 0:  # adjust img_size (67% - 150%) every 1 batch
                     img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
                 sf = img_size / max(imgs.shape[2:])  # scale factor
                 if sf != 1:
@@ -314,7 +314,7 @@ def train():
                                       save_json=final_epoch and is_coco,
                                       single_cls=opt.single_cls,
                                       dataloader=testloader)
-
+        
         # Update scheduler
         scheduler.step()
 
@@ -391,7 +391,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=300)  # 500200 batches at bs 16, 117263 COCO images = 273 epochs
     parser.add_argument('--batch-size', type=int, default=16)  # effective bs = batch_size * accumulate = 16 * 4 = 64
-    parser.add_argument('--accumulate', type=int, default=1, help='batches to accumulate before optimizing')
+    parser.add_argument('--accumulate', type=int, default=4, help='batches to accumulate before optimizing')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
     #parser.add_argument('--data', type=str, default='/data/zjc4/chipped/xview_data.txt', help='*.data path')
     parser.add_argument('--data', type=str, default='/data/zjc4/chipped_90/xview_data.txt', help='*.data path')

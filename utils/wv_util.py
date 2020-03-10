@@ -91,7 +91,7 @@ def boxes_from_coords(coords):
 
 import math
 
-def chip_image(img,coords,classes,shape=(300,300)):
+def chip_image(img,coords,classes,shape=(300,300),chipImage=False):
     """
     Chip an image and get relative coordinates and classes.  Bounding boxes that pass into
         multiple chips are clipped: each portion that is in a chip is labeled. For example,
@@ -110,12 +110,19 @@ def chip_image(img,coords,classes,shape=(300,300)):
         W and H are the dimensions of the image, and C is the number of color
         channels.  Also returns boxes and classes dictionaries for each corresponding chip.
     """
+
     height,width,_ = img.shape
-    wn,hn = shape
-    
-    w_num,h_num = (int(math.ceil(width/wn)),int(math.ceil(height/hn)))
+    if chipImage == False:
+        # don't chip image and return original size
+        wn,hn = np.max(img.shape),np.max(img.shape)        
+        w_num,h_num = 1,1
+    else:
+        height,width,_ = img.shape
+        wn,hn = shape
+        w_num,h_num = (int(math.ceil(width/wn)),int(math.ceil(height/hn)))
+        pass
+
     w_new,h_new = wn*(w_num),hn*(h_num)
-    
     # Make new image with padded edges
     temp_img = np.zeros((h_new,w_new,3))
     temp_img[:height,:width,:] = img

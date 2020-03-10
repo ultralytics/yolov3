@@ -158,7 +158,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
     parser.add_argument('--names', type=str, default='/data/zjc4/chipped/labels.txt', help='*.names path')
-    parser.add_argument('--weights', type=str, default='weights_chkpt_90/best.pt', help='path to weights file')
+    parser.add_argument('--weights', type=str, default='weights/best-90.pt', help='path to weights file')
     parser.add_argument('--source', type=str, default='/data/zjc4/yolov3_input_90/', help='source')  # input file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='output_90', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
@@ -173,6 +173,5 @@ if __name__ == '__main__':
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     opt = parser.parse_args()
     print(opt)
-
     with torch.no_grad():
         detect()

@@ -176,7 +176,7 @@ class XviewDataset():
         class_num = len(data[0])
         for i in range(1000000):
             tr_set, te_set = train_test_split(np.array(list(range(len(data)))),\
-                                              test_size=0.5)
+                                              test_size=1-train_percent)
             tr_d = self.getDistribution(data, tr_set)
             te_d = self.getDistribution(data, te_set)
             
@@ -279,8 +279,7 @@ class DarkNetFormatter():
             rect = patches.Rectangle((x1,y1),w1,h1,\
                                      linewidth=1,edgecolor='r',facecolor='none')
             ax.add_patch(rect)
-        break
-            pass
+            break
         plt.show()
         pass
 
@@ -294,8 +293,11 @@ class DarkNetFormatter():
         # Visualize using mpl
         if debug:
             plotDarknetFmt(c_img,x_center,y_center,ws,hs,c_cls,szx,szy)
-        result = np.vstack((c_cls,x_center,y_center,ws,hs))
-        return result.T
+        result = np.vstack((c_cls,x_center,y_center,ws,hs)).T
+        result[:,1:] = np.clip(result[:,1:],0.001,0.999)
+        assert (result[:, 1:] > 0, "values less than 0")
+        assert(result[:, 1:] <= 1,"Values not normalized")
+        return result
 
     def checkDir(self,filepath):
         """ passed a filepath string, checks if it dne
@@ -314,7 +316,7 @@ class DarkNetFormatter():
         resized = cv.resize(blur, dim, interpolation = cv.INTER_AREA)
         return resized
     
-    def parseChip(self,c_img, c_box, c_cls,img_num,c_dir,res_out=30,showImg = True):
+    def parseChip(self,c_img, c_box, c_cls,img_num,c_dir,res_out=30,showImg = False):
         # Parses chips, saves chip image, and also saves corresponding labels
         fnames = []
         
@@ -334,7 +336,8 @@ class DarkNetFormatter():
                 labelled = aug.draw_bboxes(simg,sbox)
                 plt.figure(figsize=(10,10))
                 plt.imshow(labelled)
-                plt.title(simg.shape)
+                print(c_name)
+                plt.title(str(c_name)+" "+str(simg.shape))
                 plt.axis('off')
                 break
 
@@ -353,9 +356,9 @@ class DarkNetFormatter():
         return fnames
     
     def exportChipImages(self,image_paths,c_dir,set_str,res_out=30,
-                         showImg=False,shape=(600,600)):
+                         showImg=False,shape=(600,600),chipImage=False):
         fnames = []
-        #image_paths = sorted(image_paths)
+        # image_paths = sorted(image_paths)
         for img_pth in image_paths:
             try:
                 img_pth = self.input_dir+'train_images/'+img_pth
@@ -373,14 +376,15 @@ class DarkNetFormatter():
                     chip_coords = chip_coords*scale
                 # Chip the tif image into tiles
                 c_img, c_box, c_cls = wv.chip_image(img=arr, coords=chip_coords, 
-                                                    classes=chip_classes, shape=shape)
+                                                    classes=chip_classes, shape=shape,
+                                                    chipImage=chipImage)
                 if showImg:
                     result = []
                     for key in c_cls.keys():
                         result.extend(c_cls[key])
                     print("number of classes: {}".format(len(result)))
 
-                    for i,img in enumerate(c_img):
+                    for i,img in enumerate(c_img[:5]):
                         labelled = aug.draw_bboxes(c_img[i],c_box[i])
                         plt.imshow(labelled)
                         plt.axis('off')
@@ -413,7 +417,8 @@ class DarkNetFormatter():
             myfile.write('\n'.join(lines))
         pass
 
-    def transformDatum(self,datum,res_out=30,shape=(600,600)):
+    def transformDatum(self,datum,res_out=30,shape=(600,600),
+                       chipImage=False,showImg=False):
         """
         takes in as input list of tuples corresponding to
         first string of subset, and training file indexes
@@ -421,7 +426,8 @@ class DarkNetFormatter():
         """
         for (data_str, data_files) in datum:
             self.exportChipImages(data_files,self.output_dir,data_str,
-                                  res_out=res_out,shape)            
+                                  res_out=res_out,shape=shape,showImg=showImg,
+                                  chipImage=chipImage)
             pass
         pass
 #if __name__ == "main":
