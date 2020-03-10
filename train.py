@@ -36,10 +36,10 @@ hyp = {'giou': 3.54,  # giou loss gain
        'hsv_h': 0.0138,  # image HSV-Hue augmentation (fraction)
        'hsv_s': 0.678,  # image HSV-Saturation augmentation (fraction)
        'hsv_v': 0.36,  # image HSV-Value augmentation (fraction)
-       'degrees': 1.98,  # image rotation (+/- deg)
-       'translate': 0.05,  # image translation (+/- fraction)
-       'scale': 0.05,  # image scale (+/- gain)
-       'shear': 0.641}  # image shear (+/- deg)
+       'degrees': 1.98 * 0,  # image rotation (+/- deg)
+       'translate': 0.05 * 0,  # image translation (+/- fraction)
+       'scale': 0.05 * 0,  # image scale (+/- gain)
+       'shear': 0.641 * 0}  # image shear (+/- deg)
 
 # Overwrite hyp with hyp*.txt (optional)
 f = glob.glob('hyp*.txt')
@@ -197,7 +197,7 @@ def train():
 
     # Start training
     nb = len(dataloader)
-    prebias = start_epoch == 0
+    prebias = False  # start_epoch == 0
     model.nc = nc  # attach number of classes to model
     model.arc = opt.arc  # attach yolo architecture
     model.hyp = hyp  # attach hyperparameters to model
@@ -211,7 +211,7 @@ def train():
     print('Starting training for %g epochs...' % epochs)
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
         model.train()
-        model.gr = 1 - (1 + math.cos(min(epoch * 2, epochs) * math.pi / epochs)) / 2  # GIoU <-> 1.0 loss ratio
+        model.gr = 1 - (1 + math.cos(min(epoch * 1, epochs) * math.pi / epochs)) / 2  # GIoU <-> 1.0 loss ratio
 
         # Prebias
         if prebias:
