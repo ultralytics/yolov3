@@ -41,6 +41,9 @@ def create_modules(module_defs, img_size, arc):
             elif mdef['activation'] == 'swish':
                 modules.add_module('activation', Swish())
 
+            if not bn:  # detection output layer
+                routs.append(i)
+
         elif mdef['type'] == 'maxpool':
             size = mdef['size']
             stride = mdef['stride']
