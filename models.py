@@ -95,8 +95,7 @@ def create_modules(module_defs, img_size, arc):
 
                 bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
                 bias[:, 4] += bo - bias[:, 4].mean()  # obj
-                bias[:, 5:] += bc - bias[:, 5:].mean()  # cls
-                module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))  # utils.print_model_biases(model)
+                bias[:, 5:] += bc - bias[:, 5:].mean()  # cls, view with utils.print_model_biases(model)
             except:
                 print('WARNING: smart bias initialization failure.')
 
