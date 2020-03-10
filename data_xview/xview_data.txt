@@ -1,4 +1,0 @@
-classes=96
-train=./data_xview/xview_img.txt
-valid=./data_xview/xview_img.txt
-labels=./data_xview//labels.txt
