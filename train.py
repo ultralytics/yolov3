@@ -238,15 +238,10 @@ def train():
             targets = targets.to(device)
 
             # Hyperparameter burn-in
-            # n_burn = nb - 1  # min(nb // 5 + 1, 1000)  # number of burn-in batches
-            # if ni <= n_burn:
-            #     for m in model.named_modules():
-            #         if m[0].endswith('BatchNorm2d'):
-            #             m[1].momentum = 1 - i / n_burn * 0.99  # BatchNorm2d momentum falls from 1 - 0.01
-            #     g = (i / n_burn) ** 4  # gain rises from 0 - 1
+            # n_burn = 100  # number of burn-in batches
+            # if ni < n_burn:
             #     for x in optimizer.param_groups:
-            #         x['lr'] = hyp['lr0'] * g
-            #         x['weight_decay'] = hyp['weight_decay'] * g
+            #         x['lr'] = x['initial_lr'] * (ni / n_burn) ** 4  # gain rises from 0 - 1
 
             # Plot images with bounding boxes
             if ni < 1:
