@@ -240,7 +240,7 @@ def train():
             # Hyperparameter Burn-in
             n_burn = 200  # number of burn-in batches
             if ni <= n_burn:
-                g = (ni / n_burn) ** 2  # gain
+                g = ni / n_burn  # gain
                 for x in model.named_modules():
                     if x[0].endswith('BatchNorm2d'):
                         # x[1].momentum = 1 - 0.9 * g  # momentum falls from 1 - 0.1
