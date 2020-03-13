@@ -325,7 +325,7 @@ def box_iou(boxes1, boxes2):
     lt = torch.max(boxes1[:, None, :2], boxes2[:, :2])  # [N,M,2]
     rb = torch.min(boxes1[:, None, 2:], boxes2[:, 2:])  # [N,M,2]
 
-    inter = (rb - lt).clamp(min=0).prod(2)  # [N,M]
+    inter = (rb - lt).clamp(0).prod(2)  # [N,M]
     return inter / (area1[:, None] + area2 - inter)  # iou = inter / (area1 + area2 - inter)
 
 
