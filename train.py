@@ -240,12 +240,14 @@ def train():
             # Hyperparameter Burn-in
             n_burn = 200  # number of burn-in batches
             if ni <= n_burn:
-                # g = ni / n_burn  # gain
+                # g = (ni / n_burn) ** 2  # gain
                 for x in model.named_modules():  # initial stats may be poor, wait to track
                     if x[0].endswith('BatchNorm2d'):
                         x[1].track_running_stats = ni == n_burn
                 # for x in optimizer.param_groups:
                 #     x['lr'] = x['initial_lr'] * lf(epoch) * g  # gain rises from 0 - 1
+                #     if 'momentum' in x:
+                #         x['momentum'] = hyp['momentum'] * g
 
             # Plot images with bounding boxes
             if ni < 1:
