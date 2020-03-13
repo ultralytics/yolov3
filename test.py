@@ -127,8 +127,8 @@ def test(cfg,
                 for di, d in enumerate(pred):
                     jdict.append({'image_id': image_id,
                                   'category_id': coco91class[int(d[5])],
-                                  'bbox': [floatn(x, 3) for x in box[di]],
-                                  'score': floatn(d[4], 5)})
+                                  'bbox': [round(x, 3) for x in box[di]],
+                                  'score': round(d[4], 5)})
 
             # Assign all predictions as incorrect
             correct = torch.zeros(pred.shape[0], niou, dtype=torch.bool, device=device)
