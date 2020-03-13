@@ -97,7 +97,6 @@ def train():
         optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
     optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
     optimizer.add_param_group({'params': pg2})  # add pg2 (biases)
-    optimizer.param_groups[2]['lr'] *= 2.0  # bias lr
     del pg0, pg1, pg2
 
     start_epoch = 0
@@ -138,7 +137,7 @@ def train():
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
 
     # Scheduler https://github.com/ultralytics/yolov3/issues/238
-    lf = lambda x: (1 + math.cos(x * math.pi / epochs)) / 2 * 0.99 + 0.01  # cosine https://arxiv.org/pdf/1812.01187.pdf
+    lf = lambda x: (1 + math.cos(x * math.pi / epochs)) / 2  # cosine https://arxiv.org/pdf/1812.01187.pdf
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
     # scheduler = lr_scheduler.MultiStepLR(optimizer, [round(epochs * x) for x in [0.8, 0.9]], 0.1, start_epoch - 1)
 
@@ -192,8 +191,8 @@ def train():
                                              collate_fn=dataset.collate_fn)
 
     # Start training
-    nb = len(dataloader)
-    prebias = False  # start_epoch == 0
+    nb = len(dataloader)  # number of batches
+    prebias = start_epoch == 0
     model.nc = nc  # attach number of classes to model
     model.arc = opt.arc  # attach yolo architecture
     model.hyp = hyp  # attach hyperparameters to model
@@ -207,14 +206,15 @@ def train():
     print('Starting training for %g epochs...' % epochs)
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
         model.train()
-        model.gr = 1 - (1 + math.cos(min(epoch * 1, epochs) * math.pi / epochs)) / 2  # GIoU <-> 1.0 loss ratio
 
         # Prebias
         if prebias:
-            ne = max(round(30 / nb), 3)  # number of prebias epochs
-            ps = np.interp(epoch, [0, ne], [0.1, hyp['lr0'] * 2]), \
-                 np.interp(epoch, [0, ne], [0.9, hyp['momentum']])  # prebias settings (lr=0.1, momentum=0.9)
+            ne = 3  # number of prebias epochs
+            ps = 0.1, 0.9  # prebias settings (lr=0.1, momentum=0.9)
+            model.gr = 0.0  # giou loss ratio (obj_loss = 1.0)
             if epoch == ne:
+                ps = hyp['lr0'], hyp['momentum']  # normal training settings
+                model.gr = 1.0  # giou loss ratio (obj_loss = giou)
                 print_model_biases(model)
                 prebias = False
 
@@ -240,13 +240,12 @@ def train():
             # Hyperparameter Burn-in
             n_burn = 200  # number of burn-in batches
             if ni <= n_burn:
-                g = ni / n_burn  # gain
-                for x in model.named_modules():
+                # g = ni / n_burn  # gain
+                for x in model.named_modules():  # initial stats may be poor, wait to track
                     if x[0].endswith('BatchNorm2d'):
-                        # x[1].momentum = 1 - 0.9 * g  # momentum falls from 1 - 0.1
                         x[1].track_running_stats = ni == n_burn
-                for x in optimizer.param_groups:
-                    x['lr'] = x['initial_lr'] * lf(epoch) * g  # gain rises from 0 - 1
+                # for x in optimizer.param_groups:
+                #     x['lr'] = x['initial_lr'] * lf(epoch) * g  # gain rises from 0 - 1
 
             # Plot images with bounding boxes
             if ni < 1:
@@ -308,7 +307,7 @@ def train():
                                       batch_size=batch_size * 2,
                                       img_size=img_size_test,
                                       model=model,
-                                      conf_thres=0.001,  # 0.001 if opt.evolve or (final_epoch and is_coco) else 0.01,
+                                      conf_thres=0.001 if final_epoch else 0.01,  # 0.001 for best mAP, 0.01 for speed
                                       iou_thres=0.6,
                                       save_json=final_epoch and is_coco,
                                       single_cls=opt.single_cls,

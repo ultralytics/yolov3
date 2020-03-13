@@ -406,7 +406,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             pbox = torch.cat((pxy, pwh), 1)  # predicted box
             giou = bbox_iou(pbox.t(), tbox[i], x1y1x2y2=False, GIoU=True)  # giou computation
             lbox += (1.0 - giou).sum() if red == 'sum' else (1.0 - giou).mean()  # giou loss
-            tobj[b, a, gj, gi] = (1.0 - model.gr) + model.gr * giou.detach().clamp(0).type(tobj.dtype)  # giou ratio
+            tobj[b, a, gj, gi] = (1.0 - model.gr) + model.gr * giou.detach().type(tobj.dtype)  # giou ratio
 
             if 'default' in arc and model.nc > 1:  # cls loss (only if multiple classes)
                 t = torch.zeros_like(ps[:, 5:]) + cn  # targets
@@ -563,10 +563,10 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_label=T
         if batched:
             c = pred[:, 5] * 0 if agnostic else pred[:, 5]  # class-agnostic NMS
             boxes, scores = pred[:, :4].clone(), pred[:, 4]
+            boxes += c.view(-1, 1) * max_wh
             if method == 'vision_batch':
-                i = torchvision.ops.boxes.batched_nms(boxes, scores, c, iou_thres)
+                i = torchvision.ops.boxes.nms(boxes, scores, iou_thres)
             elif method == 'fast_batch':  # FastNMS from https://github.com/dbolya/yolact
-                boxes += c.view(-1, 1) * max_wh
                 iou = box_iou(boxes, boxes).triu_(diagonal=1)  # upper triangular iou matrix
                 i = iou.max(dim=0)[0] < iou_thres
 
