@@ -107,9 +107,7 @@ def weights_init_normal(m):
 
 
 def xyxy2xywh(x):
-    # Convert bounding box format from [x1, y1, x2, y2] to [x, y, w, h]
-    # x, y are coordinates of center 
-    # (x1, y1) and (x2, y2) are coordinates of bottom left and top right respectively. 
+    # Transform box coordinates from [x1, y1, x2, y2] (where xy1=top-left, xy2=bottom-right) to [x, y, w, h] 
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
     y[:, 0] = (x[:, 0] + x[:, 2]) / 2  # x center
     y[:, 1] = (x[:, 1] + x[:, 3]) / 2  # y center
@@ -119,14 +117,12 @@ def xyxy2xywh(x):
 
 
 def xywh2xyxy(x):
-    # Convert bounding box format from [x, y, w, h] to [x1, y1, x2, y2]
-    # x, y are coordinates of center 
-    # (x1, y1) and (x2, y2) are coordinates of bottom left and top right respectively. 
+    # Transform box coordinates from [x, y, w, h] to [x1, y1, x2, y2] (where xy1=top-left, xy2=bottom-right)
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
-    y[:, 0] = x[:, 0] - x[:, 2] / 2  # Bottom left x
-    y[:, 1] = x[:, 1] - x[:, 3] / 2  # Bottom left y
-    y[:, 2] = x[:, 0] + x[:, 2] / 2  # Top right x
-    y[:, 3] = x[:, 1] + x[:, 3] / 2  # Top right y
+    y[:, 0] = x[:, 0] - x[:, 2] / 2  # top left x
+    y[:, 1] = x[:, 1] - x[:, 3] / 2  # top left y
+    y[:, 2] = x[:, 0] + x[:, 2] / 2  # bottom right x
+    y[:, 3] = x[:, 1] + x[:, 3] / 2  # bottom right y
     return y
 
 
@@ -271,7 +267,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False):
     if x1y1x2y2:  # x1, y1, x2, y2 = box1
         b1_x1, b1_y1, b1_x2, b1_y2 = box1[0], box1[1], box1[2], box1[3]
         b2_x1, b2_y1, b2_x2, b2_y2 = box2[0], box2[1], box2[2], box2[3]
-    else:  # Transform from center and width to exact coordinates
+    else:  # transform from xywh to xyxy
         b1_x1, b1_x2 = box1[0] - box1[2] / 2, box1[0] + box1[2] / 2
         b1_y1, b1_y2 = box1[1] - box1[3] / 2, box1[1] + box1[3] / 2
         b2_x1, b2_x2 = box2[0] - box2[2] / 2, box2[0] + box2[2] / 2
@@ -1024,8 +1020,7 @@ def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_re
 
 
 def plot_results(start=0, stop=0, bucket='', id=()):  # from utils.utils import *; plot_results()
-    # Plot training results files 'results*.txt'
-    # Sample plot: https://user-images.githubusercontent.com/26833433/63258271-fe9d5300-c27b-11e9-9a15-95038daf4438.png
+    # Plot training 'results*.txt' as seen in https://github.com/ultralytics/yolov3#training
     fig, ax = plt.subplots(2, 5, figsize=(14, 7))
     ax = ax.ravel()
     s = ['GIoU', 'Objectness', 'Classification', 'Precision', 'Recall',
