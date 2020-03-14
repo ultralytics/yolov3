@@ -1,6 +1,10 @@
 import os
+import time
+from copy import deepcopy
 
 import torch
+import torch.backends.cudnn as cudnn
+import torch.nn as nn
 
 
 def init_seeds(seed=0):
@@ -8,8 +12,8 @@ def init_seeds(seed=0):
 
     # Remove randomness (may be slower on Tesla GPUs) # https://pytorch.org/docs/stable/notes/randomness.html
     if seed == 0:
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+        cudnn.deterministic = True
+        cudnn.benchmark = False
 
 
 def select_device(device='', apex=False, batch_size=None):
@@ -37,6 +41,11 @@ def select_device(device='', apex=False, batch_size=None):
 
     print('')  # skip a line
     return torch.device('cuda:0' if cuda else 'cpu')
+
+
+def time_synchronized():
+    torch.cuda.synchronize() if torch.cuda.is_available() else None
+    return time.time()
 
 
 def fuse_conv_and_bn(conv, bn):
@@ -70,7 +79,7 @@ def model_info(model, report='summary'):
     # Plots a line-by-line description of a PyTorch model
     n_p = sum(x.numel() for x in model.parameters())  # number parameters
     n_g = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
-    if report is 'full':
+    if report == 'full':
         print('%5s %40s %9s %12s %20s %10s %10s' % ('layer', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
         for i, (name, p) in enumerate(model.named_parameters()):
             name = name.replace('module_list.', '')
@@ -96,72 +105,46 @@ def load_classifier(name='resnet101', n=2):
     return model
 
 
-from collections import defaultdict
-from torch.optim import Optimizer
+class ModelEMA:
+    """ Model Exponential Moving Average from https://github.com/rwightman/pytorch-image-models
+    Keep a moving average of everything in the model state_dict (parameters and buffers).
+    This is intended to allow functionality like
+    https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage
+    A smoothed version of the weights is necessary for some training schemes to perform well.
+    E.g. Google's hyper-params for training MNASNet, MobileNet-V3, EfficientNet, etc that use
+    RMSprop with a short 2.4-3 epoch decay period and slow LR decay rate of .96-.99 requires EMA
+    smoothing of weights to match results. Pay attention to the decay constant you are using
+    relative to your update count per epoch.
+    To keep EMA from using GPU resources, set device='cpu'. This will save a bit of memory but
+    disable validation of the EMA weights. Validation will have to be done manually in a separate
+    process, or after the training stops converging.
+    This class is sensitive where it is initialized in the sequence of model init,
+    GPU assignment and distributed training wrappers.
+    I've tested with the sequence in my own train.py for torch.DataParallel, apex.DDP, and single-GPU.
+    """
 
+    def __init__(self, model, decay=0.9998, device=''):
+        # make a copy of the model for accumulating moving average of weights
+        self.ema = deepcopy(model)
+        self.ema.eval()
+        self.decay = decay
+        self.device = device  # perform ema on different device from model if set
+        if device:
+            self.ema.to(device=device)
+        for p in self.ema.parameters():
+            p.requires_grad_(False)
 
-class Lookahead(Optimizer):
-    def __init__(self, optimizer, k=5, alpha=0.5):
-        self.optimizer = optimizer
-        self.k = k
-        self.alpha = alpha
-        self.param_groups = self.optimizer.param_groups
-        self.state = defaultdict(dict)
-        self.fast_state = self.optimizer.state
-        for group in self.param_groups:
-            group["counter"] = 0
+    def update(self, model):
+        d = self.decay
+        with torch.no_grad():
+            if type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel):
+                msd, esd = model.module.state_dict(), self.ema.module.state_dict()
+            else:
+                msd, esd = model.state_dict(), self.ema.state_dict()
 
-    def update(self, group):
-        for fast in group["params"]:
-            param_state = self.state[fast]
-            if "slow_param" not in param_state:
-                param_state["slow_param"] = torch.zeros_like(fast.data)
-                param_state["slow_param"].copy_(fast.data)
-            slow = param_state["slow_param"]
-            slow += (fast.data - slow) * self.alpha
-            fast.data.copy_(slow)
-
-    def update_lookahead(self):
-        for group in self.param_groups:
-            self.update(group)
-
-    def step(self, closure=None):
-        loss = self.optimizer.step(closure)
-        for group in self.param_groups:
-            if group["counter"] == 0:
-                self.update(group)
-            group["counter"] += 1
-            if group["counter"] >= self.k:
-                group["counter"] = 0
-        return loss
-
-    def state_dict(self):
-        fast_state_dict = self.optimizer.state_dict()
-        slow_state = {
-            (id(k) if isinstance(k, torch.Tensor) else k): v
-            for k, v in self.state.items()
-        }
-        fast_state = fast_state_dict["state"]
-        param_groups = fast_state_dict["param_groups"]
-        return {
-            "fast_state": fast_state,
-            "slow_state": slow_state,
-            "param_groups": param_groups,
-        }
-
-    def load_state_dict(self, state_dict):
-        slow_state_dict = {
-            "state": state_dict["slow_state"],
-            "param_groups": state_dict["param_groups"],
-        }
-        fast_state_dict = {
-            "state": state_dict["fast_state"],
-            "param_groups": state_dict["param_groups"],
-        }
-        super(Lookahead, self).load_state_dict(slow_state_dict)
-        self.optimizer.load_state_dict(fast_state_dict)
-        self.fast_state = self.optimizer.state
-
-    def add_param_group(self, param_group):
-        param_group["counter"] = 0
-        self.optimizer.add_param_group(param_group)
+            # self.ema.load_state_dict(
+            #     {k: esd[k] * d + (1 - d) * v.detach() for k, v in model.items() if v.dtype.is_floating_point})
+            for k in msd.keys():
+                if esd[k].dtype.is_floating_point:
+                    esd[k] *= d
+                    esd[k] += (1. - d) * msd[k].detach()

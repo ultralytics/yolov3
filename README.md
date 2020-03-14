@@ -139,48 +139,51 @@ Success: converted 'weights/yolov3-spp.pt' to 'converted.weights'
 # mAP
 
 ```bash
-python3 test.py --weights ... --cfg ...
+$ python3 test.py --cfg yolov3-spp.cfg --weights yolov3-spp-ultralytics.pt
 ```
 
 - mAP@0.5 run at `--iou-thr 0.5`, mAP@0.5...0.95 run at `--iou-thr 0.7`
-- YOLOv3-SPP ultralytics is `ultralytics68.pt` with `yolov3-spp.cfg`
 - Darknet results: https://arxiv.org/abs/1804.02767
 
 <i></i>                      |Size |COCO mAP<br>@0.5...0.95 |COCO mAP<br>@0.5 
 ---                          | ---         | ---         | ---
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |320 |14.0<br>28.7<br>30.5<br>**35.6** |29.1<br>51.8<br>52.3<br>**55.4**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |416 |16.0<br>31.2<br>33.9<br>**39.1** |33.0<br>55.4<br>56.9<br>**59.6**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |512 |16.6<br>32.7<br>35.6<br>**40.6** |34.9<br>57.7<br>59.5<br>**61.4**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**YOLOv3-SPP ultralytics** |608 |16.6<br>33.1<br>37.0<br>**41.1** |35.4<br>58.2<br>60.7<br>**61.7**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**[YOLOv3-SPP-ultralytics](https://drive.google.com/open?id=1UcR-zVoMs7DH5dj3N1bswkiQTA4dmKF4)** |320 |14.0<br>28.7<br>30.5<br>**36.6** |29.1<br>51.8<br>52.3<br>**56.0**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**[YOLOv3-SPP-ultralytics](https://drive.google.com/open?id=1UcR-zVoMs7DH5dj3N1bswkiQTA4dmKF4)** |416 |16.0<br>31.2<br>33.9<br>**40.4** |33.0<br>55.4<br>56.9<br>**60.2**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**[YOLOv3-SPP-ultralytics](https://drive.google.com/open?id=1UcR-zVoMs7DH5dj3N1bswkiQTA4dmKF4)** |512 |16.6<br>32.7<br>35.6<br>**41.6** |34.9<br>57.7<br>59.5<br>**61.7**
+YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**[YOLOv3-SPP-ultralytics](https://drive.google.com/open?id=1UcR-zVoMs7DH5dj3N1bswkiQTA4dmKF4)** |608 |16.6<br>33.1<br>37.0<br>**42.1** |35.4<br>58.2<br>60.7<br>**61.7**
 
 ```bash
-$ python3 test.py --img-size 608 --iou-thr 0.6 --weights ultralytics68.pt --cfg yolov3-spp.cfg
+$ python3 test.py --cfg yolov3-spp.cfg --weights yolov3-spp-ultralytics.pt --img 608
 
-Namespace(batch_size=32, cfg='yolov3-spp.cfg', conf_thres=0.001, data='data/coco2014.data', device='', img_size=608, iou_thres=0.6, save_json=True, task='test', weights='ultralytics68.pt')
+Namespace(batch_size=32, cfg='yolov3-spp.cfg', conf_thres=0.001, data='data/coco2014.data', device='', img_size=608, iou_thres=0.6, save_json=True, single_cls=False, task='test', weights='weights/yolov3-spp-ultralytics.pt')
 Using CUDA device0 _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', total_memory=16130MB)
-               Class    Images   Targets         P         R   mAP@0.5        F1: 100% 157/157 [03:30<00:00,  1.16it/s]
-                 all     5e+03  3.51e+04    0.0353     0.891     0.606    0.0673
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.615
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.437
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.242
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.448
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.519
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.337
+
+              Class    Images   Targets         P         R   mAP@0.5        F1: 100%|█████| 157/157 [02:46<00:00,  1.06s/it]
+                 all     5e+03  3.51e+04      0.51     0.667     0.611     0.574
+
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.419
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.618
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.448
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.247
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.462
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.534
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.341
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.557
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.612
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.438
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.658
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.746
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.606
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.440
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.649
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.735
+
+Speed: 6.6/1.5/8.1 ms inference/NMS/total per 608x608 image at batch-size 32
 ```
 
 # Reproduce Our Results
 
 This command trains `yolov3-spp.cfg` from scratch to our mAP above. Training takes about one week on a 2080Ti.
 ```bash
-$ python3 train.py --weights '' --cfg yolov3-spp.cfg --epochs 273 --batch 16 --accum 4 --multi --pre
+$ python3 train.py --weights '' --cfg yolov3-spp.cfg --epochs 273 --batch 16 --accum 4 --multi
 ```
-<img src="https://user-images.githubusercontent.com/26833433/70661588-76bbca00-1c19-11ea-86f9-23350d8c3193.png" width="900">
+<img src="https://user-images.githubusercontent.com/26833433/74633793-4f9cdf80-5117-11ea-9cd4-be4860640831.png" width="900">
 
 # Reproduce Our Environment
 

@@ -45,11 +45,12 @@ def detect(save_img=False):
     if ONNX_EXPORT:
         model.fuse()
         img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
-        torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=11)
+        f = opt.weights.replace(opt.weights.split('.')[-1], 'onnx')  # *.onnx filename
+        torch.onnx.export(model, img, f, verbose=False, opset_version=11)
 
         # Validate exported model
         import onnx
-        model = onnx.load('weights/export.onnx')  # Load the ONNX model
+        model = onnx.load(f)  # Load the ONNX model
         onnx.checker.check_model(model)  # Check that the IR is well formed
         print(onnx.helper.printable_graph(model.graph))  # Print a human readable representation of the graph
         return
@@ -64,10 +65,10 @@ def detect(save_img=False):
     if webcam:
         view_img = True
         torch.backends.cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=img_size, half=half)
+        dataset = LoadStreams(source, img_size=img_size)
     else:
         save_img = True
-        dataset = LoadImages(source, img_size=img_size, half=half)
+        dataset = LoadImages(source, img_size=img_size)
 
     # Get names and colors
     names = load_classes(opt.names)
@@ -76,16 +77,16 @@ def detect(save_img=False):
     # Run inference
     t0 = time.time()
     for path, img, im0s, vid_cap in dataset:
-        t = time.time()
-
-        # Get detections
         img = torch.from_numpy(img).to(device)
+        img = img.half() if half else img.float()  # uint8 to fp16/32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
-        pred = model(img)[0]
 
-        if opt.half:
-            pred = pred.float()
+        # Inference
+        t1 = torch_utils.time_synchronized()
+        pred = model(img)[0].float() if half else model(img)[0]
+        t2 = torch_utils.time_synchronized()
 
         # Apply NMS
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
@@ -123,7 +124,7 @@ def detect(save_img=False):
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
 
             # Print time (inference + NMS)
-            print('%sDone. (%.3fs)' % (s, time.time() - t))
+            print('%sDone. (%.3fs)' % (s, t2 - t1))
 
             # Stream results
             if view_img:
@@ -159,12 +160,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
     parser.add_argument('--names', type=str, default='data/coco.names', help='*.names path')
-    parser.add_argument('--weights', type=str, default='weights/ultralytics68.pt', help='path to weights file')
+    parser.add_argument('--weights', type=str, default='weights/yolov3-spp-ultralytics.pt', help='weights path')
     parser.add_argument('--source', type=str, default='data/samples', help='source')  # input file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.5, help='IOU threshold for NMS')
+    parser.add_argument('--iou-thres', type=float, default=0.6, help='IOU threshold for NMS')
     parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
     parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
