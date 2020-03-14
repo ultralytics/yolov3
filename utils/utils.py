@@ -103,22 +103,22 @@ def weights_init_normal(m):
 
 
 def xyxy2xywh(x):
-    # Convert bounding box format from [x1, y1, x2, y2] to [x, y, w, h]
+    # Transform box coordinates from [x1, y1, x2, y2] (where xy1=top-left, xy2=bottom-right) to [x, y, w, h] 
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
-    y[:, 0] = (x[:, 0] + x[:, 2]) / 2
-    y[:, 1] = (x[:, 1] + x[:, 3]) / 2
-    y[:, 2] = x[:, 2] - x[:, 0]
-    y[:, 3] = x[:, 3] - x[:, 1]
+    y[:, 0] = (x[:, 0] + x[:, 2]) / 2  # x center
+    y[:, 1] = (x[:, 1] + x[:, 3]) / 2  # y center
+    y[:, 2] = x[:, 2] - x[:, 0]  # width
+    y[:, 3] = x[:, 3] - x[:, 1]  # height
     return y
 
 
 def xywh2xyxy(x):
-    # Convert bounding box format from [x, y, w, h] to [x1, y1, x2, y2]
+    # Transform box coordinates from [x, y, w, h] to [x1, y1, x2, y2] (where xy1=top-left, xy2=bottom-right)
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
-    y[:, 0] = x[:, 0] - x[:, 2] / 2
-    y[:, 1] = x[:, 1] - x[:, 3] / 2
-    y[:, 2] = x[:, 0] + x[:, 2] / 2
-    y[:, 3] = x[:, 1] + x[:, 3] / 2
+    y[:, 0] = x[:, 0] - x[:, 2] / 2  # top left x
+    y[:, 1] = x[:, 1] - x[:, 3] / 2  # top left y
+    y[:, 2] = x[:, 0] + x[:, 2] / 2  # bottom right x
+    y[:, 3] = x[:, 1] + x[:, 3] / 2  # bottom right y
     return y
 
 
@@ -264,7 +264,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False):
     if x1y1x2y2:  # x1, y1, x2, y2 = box1
         b1_x1, b1_y1, b1_x2, b1_y2 = box1[0], box1[1], box1[2], box1[3]
         b2_x1, b2_y1, b2_x2, b2_y2 = box2[0], box2[1], box2[2], box2[3]
-    else:  # x, y, w, h = box1
+    else:  # transform from xywh to xyxy
         b1_x1, b1_x2 = box1[0] - box1[2] / 2, box1[0] + box1[2] / 2
         b1_y1, b1_y2 = box1[1] - box1[3] / 2, box1[1] + box1[3] / 2
         b2_x1, b2_x2 = box2[0] - box2[2] / 2, box2[0] + box2[2] / 2
@@ -670,8 +670,6 @@ def strip_optimizer(f='weights/last.pt'):  # from utils.utils import *; strip_op
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
     x = torch.load(f, map_location=torch.device('cpu'))
     x['optimizer'] = None
-    # x['training_results'] = None  # uncomment to create a backbone
-    # x['epoch'] = -1  # uncomment to create a backbone
     torch.save(x, f)
 
 
@@ -1038,7 +1036,7 @@ def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_re
 
 
 def plot_results(start=0, stop=0, bucket='', id=()):  # from utils.utils import *; plot_results()
-    # Plot training results files 'results*.txt'
+    # Plot training 'results*.txt' as seen in https://github.com/ultralytics/yolov3#training
     fig, ax = plt.subplots(2, 5, figsize=(12, 6))
     ax = ax.ravel()
     s = ['GIoU', 'Objectness', 'Classification', 'Precision', 'Recall',
