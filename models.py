@@ -240,6 +240,7 @@ class Darknet(nn.Module):
         # Darknet Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
         self.version = np.array([0, 2, 5], dtype=np.int32)  # (int32) version info: major, minor, revision
         self.seen = np.array([0], dtype=np.int64)  # (int64) number of images seen during training
+        self.info()  # print model description
 
     def forward(self, x, verbose=False):
         img_size = x.shape[-2:]
@@ -291,6 +292,7 @@ class Darknet(nn.Module):
 
     def fuse(self):
         # Fuse Conv2d + BatchNorm2d layers throughout model
+        print('Fusing Conv2d() and BatchNorm2d() layers...')
         fused_list = nn.ModuleList()
         for a in list(self.children())[0]:
             if isinstance(a, nn.Sequential):
@@ -303,7 +305,10 @@ class Darknet(nn.Module):
                         break
             fused_list.append(a)
         self.module_list = fused_list
-        # model_info(self)  # yolov3-spp reduced from 225 to 152 layers
+        self.info()  # yolov3-spp reduced from 225 to 152 layers
+
+    def info(self, verbose=False):
+        torch_utils.model_info(self, verbose)
 
 
 def get_yolo_layers(model):

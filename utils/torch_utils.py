@@ -75,11 +75,11 @@ def fuse_conv_and_bn(conv, bn):
         return fusedconv
 
 
-def model_info(model, report='summary'):
+def model_info(model, verbose=False):
     # Plots a line-by-line description of a PyTorch model
     n_p = sum(x.numel() for x in model.parameters())  # number parameters
     n_g = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
-    if report == 'full':
+    if verbose:
         print('%5s %40s %9s %12s %20s %10s %10s' % ('layer', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
         for i, (name, p) in enumerate(model.named_parameters()):
             name = name.replace('module_list.', '')
