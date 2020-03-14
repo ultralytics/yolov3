@@ -190,13 +190,19 @@ def train():
                                              pin_memory=True,
                                              collate_fn=dataset.collate_fn)
 
-    # Start training
-    nb = len(dataloader)  # number of batches
-    prebias = start_epoch == 0
+    # Model parameters
     model.nc = nc  # attach number of classes to model
     model.arc = opt.arc  # attach yolo architecture
     model.hyp = hyp  # attach hyperparameters to model
+    model.gr = 0.0  # giou loss ratio (obj_loss = 1.0 or giou)
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
+
+    # Model EMA
+    # ema = torch_utils.ModelEMA(model, decay=0.9997)
+
+    # Start training
+    nb = len(dataloader)  # number of batches
+    prebias = start_epoch == 0
     maps = np.zeros(nc)  # mAP per class
     # torch.autograd.set_detect_anomaly(True)
     results = (0, 0, 0, 0, 0, 0, 0)  # 'P', 'R', 'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification'
