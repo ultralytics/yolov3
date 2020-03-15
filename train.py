@@ -198,7 +198,7 @@ def train():
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
 
     # Model EMA
-    # ema = torch_utils.ModelEMA(model, decay=0.9997)
+    # ema = torch_utils.ModelEMA(model, decay=0.9998)
 
     # Start training
     nb = len(dataloader)  # number of batches
