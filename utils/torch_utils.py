@@ -151,4 +151,4 @@ class ModelEMA:
         # Assign attributes (which may change during training)
         for k in model.__dict__.keys():
             if not k.startswith('_'):
-                self.ema.__setattr__(k, model.getattr(k))
+                setattr(model, k, getattr(model, k))
