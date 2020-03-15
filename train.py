@@ -292,6 +292,7 @@ def train():
             if ni % accumulate == 0:
                 optimizer.step()
                 optimizer.zero_grad()
+                # ema.update(model)
 
             # Print batch results
             mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
