@@ -1,5 +1,5 @@
 # Start FROM Nvidia PyTorch image https://ngc.nvidia.com/catalog/containers/nvidia:pytorch
-FROM nvcr.io/nvidia/pytorch:20.01-py3
+FROM nvcr.io/nvidia/pytorch:20.02-py3
 
 # Install dependencies (pip or conda)
 RUN pip install -U gsutil
