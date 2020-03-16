@@ -73,7 +73,7 @@ def test(cfg,
     for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc=s)):
         imgs = imgs.to(device).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
         targets = targets.to(device)
-        _, _, height, width = imgs.shape  # batch size, channels, height, width
+        nb, _, height, width = imgs.shape  # batch size, channels, height, width
         whwh = torch.Tensor([width, height, width, height]).to(device)
 
         # Plot images with bounding boxes
@@ -83,10 +83,23 @@ def test(cfg,
 
         # Disable gradients
         with torch.no_grad():
+            aug = False  # augment https://github.com/ultralytics/yolov3/issues/931
+            if aug:
+                imgs = torch.cat((imgs,
+                                  imgs.flip(3),  # flip-lr
+                                  torch_utils.scale_img(imgs, 0.7),  # scale
+                                  ), 0)
+
             # Run model
             t = torch_utils.time_synchronized()
             inf_out, train_out = model(imgs)  # inference and training outputs
             t0 += torch_utils.time_synchronized() - t
+
+            if aug:
+                x = torch.split(inf_out, nb, dim=0)
+                x[1][..., 0] = width - x[1][..., 0]  # flip lr
+                x[2][..., :4] /= 0.7  # scale
+                inf_out = torch.cat(x, 1)
 
             # Compute loss
             if hasattr(model, 'hyp'):  # if model has loss hyperparameters

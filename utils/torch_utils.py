@@ -5,6 +5,7 @@ from copy import deepcopy
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 def init_seeds(seed=0):
@@ -103,6 +104,16 @@ def load_classifier(name='resnet101', n=2):
     model.last_linear.weight = torch.nn.Parameter(torch.zeros(n, filters))
     model.last_linear.out_features = n
     return model
+
+
+def scale_img(img, r=1.0):  # img(16,3,256,416), r=ratio
+    # scales a batch of pytorch images while retaining same input shape (cropped or grey-padded)
+    h, w = img.shape[2:]
+    s = (int(h * r), int(w * r))  # new size
+    p = h - s[0], w - s[1]  # pad/crop pixels
+    img = F.interpolate(img, size=s, mode='bilinear', align_corners=False)  # resize
+    return F.pad(img, [0, p[1], 0, p[0]], value=0.5) if r < 1.0 else img[:, :, :p[0], :p[1]]  # pad/crop
+    # cv2.imwrite('scaled.jpg', np.array(img[0].permute((1, 2, 0)) * 255.0))
 
 
 class ModelEMA:
