@@ -377,7 +377,6 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     lcls, lbox, lobj = ft([0]), ft([0]), ft([0])
     tcls, tbox, indices, anchor_vec = build_targets(model, targets)
     h = model.hyp  # hyperparameters
-    arc = model.arc  # architecture
     red = 'mean'  # Loss reduction (sum or mean)
 
     # Define criteria
@@ -388,8 +387,9 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     cp, cn = smooth_BCE(eps=0.0)
 
     # focal loss
-    if 'F' in arc:
-        BCEcls, BCEobj = FocalLoss(BCEcls, h['fl_gamma']), FocalLoss(BCEobj, h['fl_gamma'])
+    g = h['fl_gamma']  # focal loss gamma
+    if g > 0:
+        BCEcls, BCEobj = FocalLoss(BCEcls, g), FocalLoss(BCEobj, g)
 
     # Compute losses
     np, ng = 0, 0  # number grid points, targets
