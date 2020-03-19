@@ -105,7 +105,10 @@ def create_modules(module_defs, img_size):
         module_list.append(modules)
         output_filters.append(filters)
 
-    return module_list, routs
+    routs_binary = [False] * (i + 1)
+    for i in routs:
+        routs_binary[i] = True
+    return module_list, routs_binary
 
 
 class weightedFeatureFusion(nn.Module):  # weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
@@ -292,7 +295,7 @@ class Darknet(nn.Module):
                     # print(''), [print(out[i].shape) for i in layers], print(x.shape)
             elif mtype == 'yolo':
                 yolo_out.append(module(x, img_size, out))
-            out.append(x if i in self.routs else [])
+            out.append(x if self.routs[i] else [])
             if verbose:
                 print('%g/%g %s -' % (i, len(self.module_list), mtype), list(x.shape), str)
                 str = ''
@@ -342,7 +345,7 @@ def create_grids(self, img_size=416, ng=(13, 13), device='cpu', type=torch.float
 
     # build wh gains
     self.anchor_vec = self.anchors.to(device) / self.stride
-    self.anchor_wh = self.anchor_vec.view(1, self.na, 1, 1, 2).to(device).type(type)
+    self.anchor_wh = self.anchor_vec.view(1, self.na, 1, 1, 2).type(type)
     self.ng = torch.Tensor(ng).to(device)
     self.nx = nx
     self.ny = ny
