@@ -969,10 +969,8 @@ def plot_test_txt():  # from utils.utils import *; plot_test()
 
 
 def plot_targets_txt():  # from utils.utils import *; plot_targets_txt()
-    # Plot test.txt histograms
-    x = np.loadtxt('targets.txt', dtype=np.float32)
-    x = x.T
-
+    # Plot targets.txt histograms
+    x = np.loadtxt('targets.txt', dtype=np.float32).T
     s = ['x targets', 'y targets', 'width targets', 'height targets']
     fig, ax = plt.subplots(2, 2, figsize=(8, 8))
     ax = ax.ravel()
