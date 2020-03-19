@@ -63,10 +63,8 @@ def create_modules(module_defs, img_size):
 
         elif mdef['type'] == 'route':  # nn.Sequential() placeholder for 'route' layer
             layers = mdef['layers']
-            filters = sum([output_filters[i + 1 if i > 0 else i] for i in layers])
-            routs.extend([l if l > 0 else l + i for l in layers])
-            # if mdef[i+1]['type'] == 'reorg3d':
-            #     modules = nn.Upsample(scale_factor=1/float(mdef[i+1]['stride']), mode='nearest')  # reorg3d
+            filters = sum([output_filters[l + 1 if l > 0 else l] for l in layers])
+            routs.extend([i + l if l < 0 else l for l in layers])
 
         elif mdef['type'] == 'shortcut':  # nn.Sequential() placeholder for 'shortcut' layer
             layers = mdef['from']
@@ -75,8 +73,6 @@ def create_modules(module_defs, img_size):
             modules = weightedFeatureFusion(layers=layers, weight='weights_type' in mdef)
 
         elif mdef['type'] == 'reorg3d':  # yolov3-spp-pan-scale
-            # torch.Size([16, 128, 104, 104])
-            # torch.Size([16, 64, 208, 208]) <-- # stride 2 interpolate dimensions 2 and 3 to cat with prior layer
             pass
 
         elif mdef['type'] == 'yolo':
