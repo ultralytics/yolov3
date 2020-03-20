@@ -311,7 +311,7 @@ class Darknet(nn.Module):
 
     def fuse(self):
         # Fuse Conv2d + BatchNorm2d layers throughout model
-        print('Fusing Conv2d() and BatchNorm2d() layers...')
+        print('Fusing layers...')
         fused_list = nn.ModuleList()
         for a in list(self.children())[0]:
             if isinstance(a, nn.Sequential):

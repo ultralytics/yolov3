@@ -29,7 +29,7 @@ def test(cfg,
             os.remove(f)
 
         # Initialize model
-        model = Darknet(cfg, img_size).to(device)
+        model = Darknet(cfg, img_size)
 
         # Load weights
         attempt_download(weights)
@@ -37,6 +37,10 @@ def test(cfg,
             model.load_state_dict(torch.load(weights, map_location=device)['model'])
         else:  # darknet format
             load_darknet_weights(model, weights)
+
+        # Fuse
+        model.fuse()
+        model.to(device)
 
         if device.type != 'cpu' and torch.cuda.device_count() > 1:
             model = nn.DataParallel(model)
