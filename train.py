@@ -409,7 +409,6 @@ if __name__ == '__main__':
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1 or cpu)')
     parser.add_argument('--adam', action='store_true', help='use adam optimizer')
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
-    parser.add_argument('--var', type=float, help='debug variable')
     opt = parser.parse_args()
     opt.weights = last if opt.resume else opt.weights
     print(opt)
