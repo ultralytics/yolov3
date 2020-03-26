@@ -561,7 +561,7 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_label=T
             elif method == 'merge_batch':  # Merge NMS
                 i = torchvision.ops.boxes.nms(boxes, scores, iou_thres)
                 iou = box_iou(boxes, boxes[i]).tril_()  # upper triangular iou matrix
-                weights = (iou > conf_thres) * scores.view(-1, 1)
+                weights = (iou > iou_thres) * scores.view(-1, 1)
                 weights /= weights.sum(0)
                 pred[i, :4] = torch.matmul(weights.T, pred[:, :4])  # merged_boxes(n,4) = weights(n,n) * boxes(n,4)
             elif method == 'fast_batch':  # FastNMS from https://github.com/dbolya/yolact
