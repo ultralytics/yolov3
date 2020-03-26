@@ -87,8 +87,7 @@ def test(cfg,
 
         # Disable gradients
         with torch.no_grad():
-            aug = False  # augment https://github.com/ultralytics/yolov3/issues/931
-            if aug:
+            if opt.augment:  # augmented testing https://github.com/ultralytics/yolov3/issues/931
                 imgs = torch.cat((imgs,
                                   imgs.flip(3),  # flip-lr
                                   torch_utils.scale_img(imgs, 0.7),  # scale
@@ -99,7 +98,7 @@ def test(cfg,
             inf_out, train_out = model(imgs)  # inference and training outputs
             t0 += torch_utils.time_synchronized() - t
 
-            if aug:
+            if opt.augment:
                 x = torch.split(inf_out, nb, dim=0)
                 x[1][..., 0] = width - x[1][..., 0]  # flip lr
                 x[2][..., :4] /= 0.7  # scale
@@ -247,6 +246,7 @@ if __name__ == '__main__':
     parser.add_argument('--task', default='test', help="'test', 'study', 'benchmark'")
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
+    parser.add_argument('--augment', action='store_true', help='augmented testing')
     opt = parser.parse_args()
     opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
     print(opt)
