@@ -88,7 +88,8 @@ def test(cfg,
 
         # Disable gradients
         with torch.no_grad():
-            if augment:  # augmented testing https://github.com/ultralytics/yolov3/issues/931
+            # Augment images
+            if augment:  # https://github.com/ultralytics/yolov3/issues/931
                 imgs = torch.cat((imgs,
                                   imgs.flip(3),  # flip-lr
                                   torch_utils.scale_img(imgs, 0.7),  # scale
@@ -99,6 +100,7 @@ def test(cfg,
             inf_out, train_out = model(imgs)  # inference and training outputs
             t0 += torch_utils.time_synchronized() - t
 
+            # De-augment results
             if augment:
                 x = torch.split(inf_out, nb, dim=0)
                 x[1][..., 0] = width - x[1][..., 0]  # flip lr
