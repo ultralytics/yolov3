@@ -442,7 +442,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
 def build_targets(model, targets):
     # targets = [image, class, x, y, w, h]
 
-    nt = len(targets)
+    nt = targets.shape[0]
     tcls, tbox, indices, av = [], [], [], []
     multi_gpu = type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel)
     reject, use_all_anchors = True, True
