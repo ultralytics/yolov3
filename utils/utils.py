@@ -160,8 +160,10 @@ def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
 
 def clip_coords(boxes, img_shape):
     # Clip bounding xyxy bounding boxes to image shape (height, width)
-    boxes[:, [0, 2]].clamp_(0, img_shape[1])  # clip x
-    boxes[:, [1, 3]].clamp_(0, img_shape[0])  # clip y
+    boxes[:, 0].clamp_(0, img_shape[1])  # x1
+    boxes[:, 1].clamp_(0, img_shape[0])  # y1
+    boxes[:, 2].clamp_(0, img_shape[1])  # x2
+    boxes[:, 3].clamp_(0, img_shape[0])  # y2
 
 
 def ap_per_class(tp, conf, pred_cls, target_cls):
