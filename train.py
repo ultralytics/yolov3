@@ -197,7 +197,7 @@ def train():
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
 
     # Model EMA
-    # ema = torch_utils.ModelEMA(model, decay=0.9998)
+    ema = torch_utils.ModelEMA(model)
 
     # Start training
     nb = len(dataloader)  # number of batches
@@ -291,7 +291,7 @@ def train():
             if ni % accumulate == 0:
                 optimizer.step()
                 optimizer.zero_grad()
-                # ema.update(model)
+                ema.update(model)
 
             # Print batch results
             mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
@@ -305,7 +305,7 @@ def train():
         scheduler.step()
 
         # Process epoch results
-        # ema.update_attr(model)
+        ema.update_attr(model)
         final_epoch = epoch + 1 == epochs
         if not opt.notest or final_epoch:  # Calculate mAP
             is_coco = any([x in data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]) and model.nc == 80
@@ -313,7 +313,7 @@ def train():
                                       data,
                                       batch_size=batch_size * 2,
                                       img_size=img_size_test,
-                                      model=model,
+                                      model=ema.ema,
                                       conf_thres=0.001 if final_epoch else 0.01,  # 0.001 for best mAP, 0.01 for speed
                                       iou_thres=0.6,
                                       save_json=final_epoch and is_coco,
@@ -347,7 +347,7 @@ def train():
                 chkpt = {'epoch': epoch,
                          'best_fitness': best_fitness,
                          'training_results': f.read(),
-                         'model': model.module.state_dict() if hasattr(model, 'module') else model.state_dict(),
+                         'model': ema.ema.module.state_dict() if hasattr(model, 'module') else ema.ema.state_dict(),
                          'optimizer': None if final_epoch else optimizer.state_dict()}
 
             # Save last checkpoint
@@ -377,7 +377,7 @@ def train():
         if opt.bucket:  # save to cloud
             os.system('gsutil cp %s gs://%s/results' % (fresults, opt.bucket))
             os.system('gsutil cp %s gs://%s/weights' % (wdir + flast, opt.bucket))
-            # os.system('gsutil cp %s gs://%s/weights' % (wdir + fbest, opt.bucket))
+            os.system('gsutil cp %s gs://%s/weights' % (wdir + fbest, opt.bucket))
 
     if not opt.evolve:
         plot_results()  # save as results.png
