@@ -180,12 +180,12 @@ def train():
                                              collate_fn=dataset.collate_fn)
 
     # Testloader
-    testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, img_size_test, batch_size * 2,
+    testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, img_size_test, batch_size,
                                                                  hyp=hyp,
                                                                  rect=True,
                                                                  cache_images=opt.cache_images,
                                                                  single_cls=opt.single_cls),
-                                             batch_size=batch_size * 2,
+                                             batch_size=batch_size,
                                              num_workers=nw,
                                              pin_memory=True,
                                              collate_fn=dataset.collate_fn)
@@ -311,7 +311,7 @@ def train():
             is_coco = any([x in data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]) and model.nc == 80
             results, maps = test.test(cfg,
                                       data,
-                                      batch_size=batch_size * 2,
+                                      batch_size=batch_size,
                                       img_size=img_size_test,
                                       model=ema.ema,
                                       conf_thres=0.001 if final_epoch else 0.01,  # 0.001 for best mAP, 0.01 for speed
