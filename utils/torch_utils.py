@@ -92,7 +92,7 @@ def model_info(model, verbose=False):
     # FLOPS report
     # from thop import profile
     # macs, params = profile(model, inputs=(torch.zeros(1, 3, 608, 608),))
-    # print('%.3f FLOPS' % (macs / 1E9 * 2))
+    # print('%.3f GFLOPs' % (macs / 1E9 * 2))
 
 
 def load_classifier(name='resnet101', n=2):
