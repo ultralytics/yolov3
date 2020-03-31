@@ -241,23 +241,16 @@ def train():
             targets = targets.to(device)
 
             # Hyperparameter Burn-in
-            n_burn = 200  # number of burn-in batches
+            n_burn = 300  # number of burn-in batches
             if ni <= n_burn:
-                # g = (ni / n_burn) ** 2  # gain
+                g = (ni / n_burn) ** 2  # gain
                 for x in model.named_modules():  # initial stats may be poor, wait to track
                     if x[0].endswith('BatchNorm2d'):
                         x[1].track_running_stats = ni == n_burn
-                # for x in optimizer.param_groups:
-                #     x['lr'] = x['initial_lr'] * lf(epoch) * g  # gain rises from 0 - 1
-                #     if 'momentum' in x:
-                #         x['momentum'] = hyp['momentum'] * g
-
-            # Plot images with bounding boxes
-            if ni < 1:
-                f = 'train_batch%g.png' % i  # filename
-                plot_images(imgs=imgs, targets=targets, paths=paths, fname=f)
-                if tb_writer:
-                    tb_writer.add_image(f, cv2.imread(f)[:, :, ::-1], dataformats='HWC')
+                for x in optimizer.param_groups:
+                    x['lr'] = x['initial_lr'] * lf(epoch) * g  # gain rises from 0 - 1
+                    if 'momentum' in x:
+                        x['momentum'] = hyp['momentum'] * g
 
             # Multi-Scale training
             if opt.multi_scale:
@@ -298,6 +291,14 @@ def train():
             mem = '%.3gG' % (torch.cuda.memory_cached() / 1E9 if torch.cuda.is_available() else 0)  # (GB)
             s = ('%10s' * 2 + '%10.3g' * 6) % ('%g/%g' % (epoch, epochs - 1), mem, *mloss, len(targets), img_size)
             pbar.set_description(s)
+
+            # Plot images with bounding boxes
+            if ni < 1:
+                f = 'train_batch%g.png' % i  # filename
+                plot_images(imgs=imgs, targets=targets, paths=paths, fname=f)
+                if tb_writer:
+                    tb_writer.add_image(f, cv2.imread(f)[:, :, ::-1], dataformats='HWC')
+                    # tb_writer.add_graph(model, imgs)
 
             # end batch ------------------------------------------------------------------------------------------------
 
