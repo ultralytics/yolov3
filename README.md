@@ -37,7 +37,7 @@ All dependencies are included in the associated docker images. Docker requiremen
 
 # Tutorials
 
-* [Train Custom Data](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data)  ** << recommended**
+* [Train Custom Data](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data) < highly recommended!!
 * [Train Single Class](https://github.com/ultralytics/yolov3/wiki/Example:-Train-Single-Class)
 * [Google Colab Notebook](https://colab.research.google.com/drive/1G8T-VFxQkjDe4idzN8F-hbIBqkkkQnxw) with quick training, inference and testing examples
 * [GCP Quickstart](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart)
@@ -55,17 +55,7 @@ All dependencies are included in the associated docker images. Docker requiremen
 
 ## Image Augmentation
 
-`datasets.py` applies random OpenCV-powered (https://opencv.org/) augmentation to the input images in accordance with the following specifications. Augmentation is applied **only** during training, not during inference. Bounding boxes are automatically tracked and updated with the images. 416 x 416 examples pictured below.
-
-Augmentation | Description
---- | ---
-Translation | +/- 10% (vertical and horizontal)
-Rotation | +/- 5 degrees
-Shear | +/- 2 degrees (vertical and horizontal)
-Scale | +/- 10%
-Reflection | 50% probability (horizontal-only)
-H**S**V Saturation | +/- 50%
-HS**V** Intensity | +/- 50%
+`datasets.py` applies OpenCV-powered (https://opencv.org/) augmentation to the input image. We use a **mosaic dataloader** (pictured below) to increase image variability during training.
 
 <img src="https://user-images.githubusercontent.com/26833433/66699231-27beea80-ece5-11e9-9cad-bdf9d82c500a.jpg" width="900">
 
@@ -89,8 +79,6 @@ V100   |1<br>2| 32 x 2<br>64 x 1 | 122<br>**178** | 16 min<br>**11 min** | **$0.
 
 # Inference
 
-`detect.py` runs inference on any sources:
-
 ```bash
 python3 detect.py --source ...
 ```
@@ -102,15 +90,13 @@ python3 detect.py --source ...
 - RTSP stream:  `--source rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa`
 - HTTP stream:  `--source http://wmccpinetop.axiscam.net/mjpg/video.mjpg`
 
-To run a specific models:
-
-**YOLOv3:** `python3 detect.py --cfg cfg/yolov3.cfg --weights yolov3.weights`  
+**YOLOv3:** `python3 detect.py --cfg cfg/yolov3.cfg --weights yolov3.pt`  
 <img src="https://user-images.githubusercontent.com/26833433/64067835-51d5b500-cc2f-11e9-982e-843f7f9a6ea2.jpg" width="500">
 
-**YOLOv3-tiny:** `python3 detect.py --cfg cfg/yolov3-tiny.cfg --weights yolov3-tiny.weights`  
+**YOLOv3-tiny:** `python3 detect.py --cfg cfg/yolov3-tiny.cfg --weights yolov3-tiny.pt`  
 <img src="https://user-images.githubusercontent.com/26833433/64067834-51d5b500-cc2f-11e9-9357-c485b159a20b.jpg" width="500">
 
-**YOLOv3-SPP:** `python3 detect.py --cfg cfg/yolov3-spp.cfg --weights yolov3-spp.weights`  
+**YOLOv3-SPP:** `python3 detect.py --cfg cfg/yolov3-spp.cfg --weights yolov3-spp.pt`  
 <img src="https://user-images.githubusercontent.com/26833433/64067833-51d5b500-cc2f-11e9-8208-6fe197809131.jpg" width="500">
 
 
