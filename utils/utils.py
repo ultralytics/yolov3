@@ -555,10 +555,11 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_label=T
         boxes, scores = x[:, :4].clone() + c.view(-1, 1) * max_wh, x[:, 4]  # boxes (offset by class), scores
         if method == 'merge':  # Merge NMS (boxes merged using weighted mean)
             i = torchvision.ops.boxes.nms(boxes, scores, iou_thres)
-            if n < 5000:  # update boxes
-                weights = (box_iou(boxes, boxes).tril_() > iou_thres) * scores.view(-1, 1)  # box weights
-                weights /= weights.sum(0)  # normalize
-                x[:, :4] = torch.mm(weights.T, x[:, :4])  # merged_boxes(n,4) = weights(n,n) * boxes(n,4)
+            # weights = (box_iou(boxes, boxes).tril_() > iou_thres) * scores.view(-1, 1)  # box weights
+            # weights /= weights.sum(0)  # normalize
+            # x[:, :4] = torch.mm(weights.T, x[:, :4])
+            weights = (box_iou(boxes[i], boxes) > iou_thres) * scores[None]  # box weights
+            x[i, :4] = torch.mm(weights / weights.sum(1, keepdim=True), x[:, :4])  # boxes(i,4) = w(i,n) * boxes(n,4)
         elif method == 'vision':
             i = torchvision.ops.boxes.nms(boxes, scores, iou_thres)
         elif method == 'fast':  # FastNMS from https://github.com/dbolya/yolact
