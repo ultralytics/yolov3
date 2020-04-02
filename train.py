@@ -137,7 +137,8 @@ def train():
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
 
     # Scheduler https://github.com/ultralytics/yolov3/issues/238
-    lf = lambda x: (((1 + math.cos(x * math.pi / epochs)) / 2) ** 1.0) * 0.95 + 0.05  # cosine https://arxiv.org/pdf/1812.01187.pdf
+    lf = lambda x: (((1 + math.cos(
+        x * math.pi / epochs)) / 2) ** 1.0) * 0.95 + 0.05  # cosine https://arxiv.org/pdf/1812.01187.pdf
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
     # scheduler = lr_scheduler.MultiStepLR(optimizer, [round(epochs * x) for x in [0.8, 0.9]], 0.1, start_epoch - 1)
 
@@ -193,7 +194,7 @@ def train():
     # Model parameters
     model.nc = nc  # attach number of classes to model
     model.hyp = hyp  # attach hyperparameters to model
-    model.gr = 0.0  # giou loss ratio (obj_loss = 1.0 or giou)
+    model.gr = 1.0  # giou loss ratio (obj_loss = 1.0 or giou)
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device)  # attach class weights
 
     # Model EMA
@@ -201,7 +202,7 @@ def train():
 
     # Start training
     nb = len(dataloader)  # number of batches
-    prebias = start_epoch == 0
+    n_burn = max(3 * nb, 300)  # burn-in iterations, max(3 epochs, 300 iterations)
     maps = np.zeros(nc)  # mAP per class
     # torch.autograd.set_detect_anomaly(True)
     results = (0, 0, 0, 0, 0, 0, 0)  # 'P', 'R', 'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification'
@@ -210,21 +211,6 @@ def train():
     print('Starting training for %g epochs...' % epochs)
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
         model.train()
-
-        # Prebias
-        if prebias:
-            ne = 3  # number of prebias epochs
-            ps = 0.1, 0.9  # prebias settings (lr=0.1, momentum=0.9)
-            if epoch == ne:
-                ps = hyp['lr0'], hyp['momentum']  # normal training settings
-                model.gr = 1.0  # giou loss ratio (obj_loss = giou)
-                print_model_biases(model)
-                prebias = False
-
-            # Bias optimizer settings
-            optimizer.param_groups[2]['lr'] = ps[0]
-            if optimizer.param_groups[2].get('momentum') is not None:  # for SGD but not Adam
-                optimizer.param_groups[2]['momentum'] = ps[1]
 
         # Update image weights (optional)
         if dataset.image_weights:
@@ -240,17 +226,17 @@ def train():
             imgs = imgs.to(device).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
             targets = targets.to(device)
 
-            # Hyperparameter Burn-in
-            n_burn = 300  # number of burn-in batches
+            # Burn-in
             if ni <= n_burn:
-                g = (ni / n_burn) ** 2  # gain
-                for x in model.named_modules():  # initial stats may be poor, wait to track
-                    if x[0].endswith('BatchNorm2d'):
-                        x[1].track_running_stats = ni == n_burn
-                for x in optimizer.param_groups:
-                    x['lr'] = x['initial_lr'] * lf(epoch) * g  # gain rises from 0 - 1
+                model.gr = np.interp(ni, [0, n_burn], [0.0, 1.0])  # giou loss ratio (obj_loss = 1.0 or giou)
+                if ni == n_burn:  # burnin complete
+                    print_model_biases(model)
+
+                for j, x in enumerate(optimizer.param_groups):
+                    # bias lr falls from 0.1 to lr0, all other lrs rise from 0.0 to lr0
+                    x['lr'] = np.interp(ni, [0, n_burn], [0.1 if j == 2 else 0.0, x['initial_lr'] * lf(epoch)])
                     if 'momentum' in x:
-                        x['momentum'] = hyp['momentum'] * g
+                        x['momentum'] = np.interp(ni, [0, n_burn], [0.9, hyp['momentum']])
 
             # Multi-Scale training
             if opt.multi_scale:
@@ -353,7 +339,7 @@ def train():
             torch.save(chkpt, last)
 
             # Save best checkpoint
-            if best_fitness == fi:
+            if (best_fitness == fi) and not final_epoch:
                 torch.save(chkpt, best)
 
             # Save backup every 10 epochs (optional)
