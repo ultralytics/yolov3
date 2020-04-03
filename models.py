@@ -77,11 +77,12 @@ def create_modules(module_defs, img_size):
         elif mdef['type'] == 'yolo':
             yolo_index += 1
             stride = [32, 16, 8, 4, 2][yolo_index]  # P3-P7 stride
+            layers = mdef['from'] if 'from' in mdef else []
             modules = YOLOLayer(anchors=mdef['anchors'][mdef['mask']],  # anchor list
                                 nc=mdef['classes'],  # number of classes
                                 img_size=img_size,  # (416, 416)
                                 yolo_index=yolo_index,  # 0, 1, 2...
-                                layers=mdef['from'] if 'from' in mdef else [],  # output layers
+                                layers=layers,  # output layers
                                 stride=stride)
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
@@ -89,7 +90,7 @@ def create_modules(module_defs, img_size):
                 bo = -4.5  #  obj bias
                 bc = math.log(1 / (modules.nc - 0.99))  # cls bias: class probability is sigmoid(p) = 1/nc
 
-                j = l[yolo_index] if 'from' in mdef else -1
+                j = layers[yolo_index] if 'from' in mdef else -1
                 bias_ = module_list[j][0].bias  # shape(255,)
                 bias = bias_[:modules.no * modules.na].view(modules.na, -1)  # shape(3,85)
                 bias[:, 4] += bo - bias[:, 4].mean()  # obj
