@@ -289,7 +289,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             try:
                 if not sp.endswith('.shapes'):
                     # https://github.com/ultralytics/yolov3/issues/964
-                    raise Exception('Not .shapes found for path %s' % path)
+                    raise Exception('Not .shapes found for path %s' % sp)
                 with open(sp, 'r') as f:  # read existing shapefile
                     s = [x.split() for x in f.read().splitlines()]
                     assert len(s) == n, 'Shapefile out of sync'
