@@ -23,13 +23,21 @@ def create_modules(module_defs, img_size):
             filters = mdef['filters']
             size = mdef['size']
             stride = mdef['stride'] if 'stride' in mdef else (mdef['stride_y'], mdef['stride_x'])
-            modules.add_module('Conv2d', nn.Conv2d(in_channels=output_filters[-1],
-                                                   out_channels=filters,
-                                                   kernel_size=size,
-                                                   stride=stride,
-                                                   padding=(size - 1) // 2 if mdef['pad'] else 0,
-                                                   groups=mdef['groups'] if 'groups' in mdef else 1,
-                                                   bias=not bn))
+            if isinstance(size, int):  # single-size conv
+                modules.add_module('Conv2d', nn.Conv2d(in_channels=output_filters[-1],
+                                                       out_channels=filters,
+                                                       kernel_size=size,
+                                                       stride=stride,
+                                                       padding=(size - 1) // 2 if mdef['pad'] else 0,
+                                                       groups=mdef['groups'] if 'groups' in mdef else 1,
+                                                       bias=not bn))
+            else:  # multiple-size conv
+                modules.add_module('MixConv2d', MixConv2d(in_ch=output_filters[-1],
+                                                          out_ch=filters,
+                                                          k=size,
+                                                          stride=stride,
+                                                          bias=not bn))
+
             if bn:
                 modules.add_module('BatchNorm2d', nn.BatchNorm2d(filters, momentum=0.03, eps=1E-4))
             else:

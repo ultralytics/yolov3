@@ -27,7 +27,7 @@ def parse_model_cfg(path):
 
             if key == 'anchors':  # return nparray
                 mdefs[-1][key] = np.array([float(x) for x in val.split(',')]).reshape((-1, 2))  # np anchors
-            elif key in ['from', 'layers', 'mask']:  # return array
+            elif (key in ['from', 'layers', 'mask']) or (key == 'size' and ',' in val):  # return array
                 mdefs[-1][key] = [int(x) for x in val.split(',')]
             else:
                 val = val.strip()
