@@ -213,7 +213,7 @@ class YOLOLayer(nn.Module):
 class Darknet(nn.Module):
     # YOLOv3 object detection model
 
-    def __init__(self, cfg, img_size=(416, 416)):
+    def __init__(self, cfg, img_size=(416, 416), verbose=False):
         super(Darknet, self).__init__()
 
         self.module_defs = parse_model_cfg(cfg)
@@ -223,7 +223,7 @@ class Darknet(nn.Module):
         # Darknet Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
         self.version = np.array([0, 2, 5], dtype=np.int32)  # (int32) version info: major, minor, revision
         self.seen = np.array([0], dtype=np.int64)  # (int64) number of images seen during training
-        self.info()  # print model description
+        self.info(verbose)  # print model description
 
     def forward(self, x, verbose=False):
         img_size = x.shape[-2:]

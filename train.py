@@ -411,6 +411,7 @@ if __name__ == '__main__':
             from torch.utils.tensorboard import SummaryWriter
 
             tb_writer = SummaryWriter()
+            print('Tensorboard started at http://localhost:6006/')
         except:
             pass
 
