@@ -88,7 +88,8 @@ def detect(save_img=False):
         t2 = torch_utils.time_synchronized()
 
         # Apply NMS
-        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres,
+                                   multi_label=False, classes=opt.classes, agnostic=opt.agnostic_nms)
 
         # Apply Classifier
         if classify:
