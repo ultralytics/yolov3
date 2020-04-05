@@ -313,7 +313,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 elif mini > 1:
                     shapes[i] = [1, 1 / mini]
 
-            self.batch_shapes = np.ceil(np.array(shapes) * img_size / 32.).astype(np.int) * 32
+            self.batch_shapes = np.ceil(np.array(shapes) * img_size / 64.).astype(np.int) * 64
 
         # Preload labels (required for weighted CE training)
         self.imgs = [None] * n
@@ -614,7 +614,7 @@ def letterbox(img, new_shape=(416, 416), color=(128, 128, 128),
     new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
     dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
     if auto:  # minimum rectangle
-        dw, dh = np.mod(dw, 32), np.mod(dh, 32)  # wh padding
+        dw, dh = np.mod(dw, 64), np.mod(dh, 64)  # wh padding
     elif scaleFill:  # stretch
         dw, dh = 0.0, 0.0
         new_unpad = new_shape
