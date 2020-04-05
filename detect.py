@@ -34,11 +34,11 @@ def detect(save_img=False):
         modelc.load_state_dict(torch.load('weights/resnet101.pt', map_location=device)['model'])  # load weights
         modelc.to(device).eval()
 
-    # Fuse Conv2d + BatchNorm2d layers
-    # model.fuse()
-
     # Eval mode
     model.to(device).eval()
+
+    # Fuse Conv2d + BatchNorm2d layers
+    # model.fuse()
 
     # Export mode
     if ONNX_EXPORT:
