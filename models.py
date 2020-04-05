@@ -230,25 +230,25 @@ class Darknet(nn.Module):
         img_size = x.shape[-2:]
         yolo_out, out = [], []
         if verbose:
-            str = ''
             print('0', x.shape)
+            str = ''
 
-        for i, (mdef, module) in enumerate(zip(self.module_defs, self.module_list)):
-            mtype = mdef['type']
-            if mtype in ['shortcut', 'route']:  # sum, concat
+        for i, module in enumerate(self.module_list):
+            name = module.__class__.__name__
+            if name in ['WeightedFeatureFusion', 'FeatureConcat']:  # sum, concat
                 if verbose:
                     l = [i - 1] + module.layers  # layers
                     s = [list(x.shape)] + [list(out[i].shape) for i in module.layers]  # shapes
                     str = ' >> ' + ' + '.join(['layer %g %s' % x for x in zip(l, s)])
                 x = module(x, out)  # WeightedFeatureFusion(), FeatureConcat()
-            elif mtype == 'yolo':
+            elif name == 'YOLOLayer':
                 yolo_out.append(module(x, img_size, out))
             else:  # run module directly, i.e. mtype = 'convolutional', 'upsample', 'maxpool', 'batchnorm2d' etc.
                 x = module(x)
 
             out.append(x if self.routs[i] else [])
             if verbose:
-                print('%g/%g %s -' % (i, len(self.module_list), mtype), list(x.shape), str)
+                print('%g/%g %s -' % (i, len(self.module_list), name), list(x.shape), str)
                 str = ''
 
         if self.training:  # train
