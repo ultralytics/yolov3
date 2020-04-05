@@ -234,9 +234,7 @@ class Darknet(nn.Module):
 
         for i, (mdef, module) in enumerate(zip(self.module_defs, self.module_list)):
             mtype = mdef['type']
-            if mtype in ['convolutional', 'upsample', 'maxpool']:
-                x = module(x)
-            elif mtype == 'shortcut':  # sum
+            if mtype == 'shortcut':  # sum
                 if verbose:
                     l = [i - 1] + module.layers  # layers
                     s = [list(x.shape)] + [list(out[i].shape) for i in module.layers]  # shapes
@@ -259,6 +257,9 @@ class Darknet(nn.Module):
                     # print(''), [print(out[i].shape) for i in layers], print(x.shape)
             elif mtype == 'yolo':
                 yolo_out.append(module(x, img_size, out))
+            else:  # run module directly, i.e. mtype = 'convolutional', 'upsample', 'maxpool', 'batchnorm2d' etc.
+                x = module(x)
+
             out.append(x if self.routs[i] else [])
             if verbose:
                 print('%g/%g %s -' % (i, len(self.module_list), mtype), list(x.shape), str)
