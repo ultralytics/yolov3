@@ -88,25 +88,10 @@ def test(cfg,
 
         # Disable gradients
         with torch.no_grad():
-            # Augment images
-            if augment:  # https://github.com/ultralytics/yolov3/issues/931
-                imgs = torch.cat((imgs,
-                                  torch_utils.scale_img(imgs.flip(3), 0.9),  # flip-lr and scale
-                                  torch_utils.scale_img(imgs, 0.7),  # scale
-                                  ), 0)
-
             # Run model
             t = torch_utils.time_synchronized()
-            inf_out, train_out = model(imgs)  # inference and training outputs
+            inf_out, train_out = model(imgs, augment=augment)  # inference and training outputs
             t0 += torch_utils.time_synchronized() - t
-
-            # De-augment results
-            if augment:
-                x = torch.split(inf_out, nb, dim=0)
-                x[1][..., :4] /= 0.9  # scale
-                x[1][..., 0] = width - x[1][..., 0]  # flip lr
-                x[2][..., :4] /= 0.7  # scale
-                inf_out = torch.cat(x, 1)
 
             # Compute loss
             if hasattr(model, 'hyp'):  # if model has loss hyperparameters
@@ -250,7 +235,7 @@ if __name__ == '__main__':
     parser.add_argument('--task', default='test', help="'test', 'study', 'benchmark'")
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
-    parser.add_argument('--augment', action='store_true', help='augmented testing')
+    parser.add_argument('--augment', action='store_true', help='augmented inference')
     opt = parser.parse_args()
     opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
     print(opt)

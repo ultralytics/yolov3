@@ -226,12 +226,20 @@ class Darknet(nn.Module):
         self.seen = np.array([0], dtype=np.int64)  # (int64) number of images seen during training
         self.info(verbose)  # print model description
 
-    def forward(self, x, verbose=False):
-        img_size = x.shape[-2:]
+    def forward(self, x, augment=False, verbose=False):
+        img_size = x.shape[-2:]  # height, width
         yolo_out, out = [], []
         if verbose:
             print('0', x.shape)
             str = ''
+
+        # Augment images (inference and test only)
+        if augment:  # https://github.com/ultralytics/yolov3/issues/931
+            nb = x.shape[0]  # batch size
+            x = torch.cat((x,
+                           torch_utils.scale_img(x.flip(3), 0.9),  # flip-lr and scale
+                           torch_utils.scale_img(x, 0.7),  # scale
+                           ), 0)
 
         for i, module in enumerate(self.module_list):
             name = module.__class__.__name__
@@ -256,9 +264,16 @@ class Darknet(nn.Module):
         elif ONNX_EXPORT:  # export
             x = [torch.cat(x, 0) for x in zip(*yolo_out)]
             return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
-        else:  # test
-            io, p = zip(*yolo_out)  # inference output, training output
-            return torch.cat(io, 1), p
+        else:  # inference or test
+            x, p = zip(*yolo_out)  # inference output, training output
+            x = torch.cat(x, 1)  # cat yolo outputs
+            if augment:  # de-augment results
+                x = torch.split(x, nb, dim=0)
+                x[1][..., :4] /= 0.9  # scale
+                x[1][..., 0] = img_size[1] - x[1][..., 0]  # flip lr
+                x[2][..., :4] /= 0.7  # scale
+                x = torch.cat(x, 1)
+            return x, p
 
     def fuse(self):
         # Fuse Conv2d + BatchNorm2d layers throughout model

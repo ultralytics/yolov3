@@ -84,8 +84,12 @@ def detect(save_img=False):
 
         # Inference
         t1 = torch_utils.time_synchronized()
-        pred = model(img)[0].float() if half else model(img)[0]
+        pred = model(img, augment=opt.augment)[0]
         t2 = torch_utils.time_synchronized()
+
+        # to float
+        if half:
+            pred = pred.float()
 
         # Apply NMS
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres,
@@ -173,6 +177,7 @@ if __name__ == '__main__':
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
+    parser.add_argument('--augment', action='store_true', help='augmented inference')
     opt = parser.parse_args()
     print(opt)
 
