@@ -56,7 +56,6 @@ def create_modules(module_defs, img_size):
                 # imagenet mean and var https://pytorch.org/docs/stable/torchvision/models.html#classification
                 modules.running_mean = torch.tensor([0.485, 0.456, 0.406])
                 modules.running_var = torch.tensor([0.0524, 0.0502, 0.0506])
-                modules.momentum = 0.003
 
         elif mdef['type'] == 'maxpool':
             size = mdef['size']
