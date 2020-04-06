@@ -536,7 +536,7 @@ def load_mosaic(self, index):
     labels4 = []
     s = self.img_size
     xc, yc = [int(random.uniform(s * 0.5, s * 1.5)) for _ in range(2)]  # mosaic center x, y
-    img4 = np.zeros((s * 2, s * 2, 3), dtype=np.uint8) + 128  # base image with 4 tiles
+    img4 = np.full((s * 2, s * 2, 3), 114, dtype=np.uint8)  # base image with 4 tiles
     indices = [index] + [random.randint(0, len(self.labels) - 1) for _ in range(3)]  # 3 additional image indices
     for i, index in enumerate(indices):
         # Load image
@@ -597,7 +597,7 @@ def load_mosaic(self, index):
     return img4, labels4
 
 
-def letterbox(img, new_shape=(416, 416), color=(128, 128, 128),
+def letterbox(img, new_shape=(416, 416), color=(114, 114, 114),
               auto=True, scaleFill=False, scaleup=True, interp=cv2.INTER_AREA):
     # Resize image to a 32-pixel-multiple rectangle https://github.com/ultralytics/yolov3/issues/232
     shape = img.shape[:2]  # current shape [height, width]
@@ -661,7 +661,7 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10,
     M = S @ T @ R  # ORDER IS IMPORTANT HERE!!
     changed = (border != 0) or (M != np.eye(3)).any()
     if changed:
-        img = cv2.warpAffine(img, M[:2], dsize=(width, height), flags=cv2.INTER_AREA, borderValue=(128, 128, 128))
+        img = cv2.warpAffine(img, M[:2], dsize=(width, height), flags=cv2.INTER_AREA, borderValue=(114, 114, 114))
 
     # Transform label coordinates
     n = len(targets)
