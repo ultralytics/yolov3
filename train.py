@@ -48,6 +48,10 @@ if f:
     for k, v in zip(hyp.keys(), np.loadtxt(f[0])):
         hyp[k] = v
 
+# Print focal loss if gamma > 0
+if hyp['fl_gamma']:
+    print('Using FocalLoss(gamma=%g)' % hyp['fl_gamma'])
+
 
 def train():
     cfg = opt.cfg
@@ -412,7 +416,7 @@ if __name__ == '__main__':
             from torch.utils.tensorboard import SummaryWriter
 
             tb_writer = SummaryWriter()
-            print('Tensorboard started at http://localhost:6006/')
+            print("Tensorboard found. Run 'tensorboard --logdir=runs' to view at http://localhost:6006/")
         except:
             pass
 
