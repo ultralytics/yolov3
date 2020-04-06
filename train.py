@@ -71,6 +71,7 @@ def train():
     train_path = data_dict['train']
     test_path = data_dict['valid']
     nc = 1 if opt.single_cls else int(data_dict['classes'])  # number of classes
+    hyp['cls'] *= nc / 80  # update coco-tuned hyp['cls'] to current dataset
 
     # Remove previous results
     for f in glob.glob('*_batch*.png') + glob.glob(results_file):
