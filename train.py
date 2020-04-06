@@ -416,7 +416,7 @@ if __name__ == '__main__':
             from torch.utils.tensorboard import SummaryWriter
 
             tb_writer = SummaryWriter()
-            print("Tensorboard found. Run 'tensorboard --logdir=runs' to view at http://localhost:6006/")
+            print("Run 'tensorboard --logdir=runs' to view tensorboard at http://localhost:6006/")
         except:
             pass
 
