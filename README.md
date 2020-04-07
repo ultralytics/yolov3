@@ -42,6 +42,7 @@ All dependencies are included in the associated docker images. Docker requiremen
 * [Google Colab Notebook](https://colab.research.google.com/drive/1G8T-VFxQkjDe4idzN8F-hbIBqkkkQnxw) with quick training, inference and testing examples
 * [GCP Quickstart](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart)
 * [Docker Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/Docker-Quickstart) 
+* [A TensorRT Implementation of YOLOv3-SPP](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov3-spp) 
 
 # Training
 
