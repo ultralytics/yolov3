@@ -115,14 +115,16 @@ def load_classifier(name='resnet101', n=2):
     return model
 
 
-def scale_img(img, r=1.0):  # img(16,3,256,416), r=ratio
-    # scales a batch of pytorch images while retaining same input shape (cropped or grey-padded)
+def scale_img(img, ratio=1.0, same_shape=True):  # img(16,3,256,416), r=ratio
+    # scales img(bs,3,y,x) by ratio
     h, w = img.shape[2:]
-    s = (int(h * r), int(w * r))  # new size
-    p = h - s[0], w - s[1]  # pad/crop pixels
+    s = (int(h * ratio), int(w * ratio))  # new size
     img = F.interpolate(img, size=s, mode='bilinear', align_corners=False)  # resize
-    return F.pad(img, [0, p[1], 0, p[0]], value=0.5) if r < 1.0 else img[:, :, :p[0], :p[1]]  # pad/crop
-    # cv2.imwrite('scaled.jpg', np.array(img[0].permute((1, 2, 0)) * 255.0))
+    if not same_shape:  # pad/crop img
+        p = h - s[0], w - s[1]
+        p = [int(math.fmod(x, 64)) for x in p]  # pad to 64 grid size
+        img = F.pad(img, [0, p[1], 0, p[0]], value=0.447)  # value = imagenet mean
+    return img
 
 
 class ModelEMA:
