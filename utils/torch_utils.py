@@ -120,10 +120,10 @@ def scale_img(img, ratio=1.0, same_shape=True):  # img(16,3,256,416), r=ratio
     h, w = img.shape[2:]
     s = (int(h * ratio), int(w * ratio))  # new size
     img = F.interpolate(img, size=s, mode='bilinear', align_corners=False)  # resize
-    p = h - s[0], w - s[1]
     if not same_shape:  # pad/crop img
-        p = [int(math.fmod(x, 64)) for x in p]  # pad to 64 grid size
-    return F.pad(img, [0, p[1], 0, p[0]], value=0.447)  # value = imagenet mean
+        gs = 64  # (pixels) grid size
+        h, w = [math.ceil(x * ratio / gs) * gs for x in (h, w)]
+    return F.pad(img, [0, w - s[1], 0, h - s[0]], value=0.447)  # value = imagenet mean
 
 
 class ModelEMA:
