@@ -155,7 +155,7 @@ Using CUDA device0 _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', total_memo
 
 Speed: 17.5/2.5/20.1 ms inference/NMS/total per 640x640 image at batch-size 16
 ```
-<!-- Speed: 11.5/2.1/13.6 ms inference/NMS/total per 608x608 image at batch-size 1 --!>
+<!-- Speed: 11.5/2.1/13.6 ms inference/NMS/total per 608x608 image at batch-size 1 -->
 
 # Reproduce Our Results
 
