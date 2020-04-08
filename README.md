@@ -138,24 +138,24 @@ Namespace(augment=True, batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.00
 Using CUDA device0 _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', total_memory=16130MB)
 
                Class    Images   Targets         P         R   mAP@0.5        F1: 100%|█████████| 313/313 [03:00<00:00,  1.74it/s]
-                 all     5e+03  3.51e+04     0.375     0.743     0.639     0.493
+                 all     5e+03  3.51e+04     0.375     0.743      0.64     0.492
 
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.455
  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.646
  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.496
  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.263
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.500
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.501
  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.596
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.362
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.361
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.597
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.666
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.491
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.492
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.719
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.808
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.810
 
-Speed: 21.3/3.0/24.4 ms inference/NMS/total per 640x640 image at batch-size 16
+Speed: 17.5/2.5/20.1 ms inference/NMS/total per 640x640 image at batch-size 16
 ```
-<!-- Speed: 12.2/2.3/14.5 ms inference/NMS/total per 608x608 image at batch-size 1
+<!-- Speed: 11.5/2.1/13.6 ms inference/NMS/total per 608x608 image at batch-size 1
 
 # Reproduce Our Results
 
