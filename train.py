@@ -63,12 +63,14 @@ def train():
     weights = opt.weights  # initial training weights
 
     # Initialize
+    gs = 32  # (pixels) grid size
+    assert math.fmod(img_size, gs) == 0, '--img-size must be a %g-multiple' % gs
     init_seeds()
     if opt.multi_scale:
-        img_sz_min = round(img_size / 32 / 1.5)
-        img_sz_max = round(img_size / 32 * 1.5)
-        img_size = img_sz_max * 32  # initiate with maximum multi_scale size
-        print('Using multi-scale %g - %g' % (img_sz_min * 32, img_size))
+        img_sz_min = round(img_size / gs / 1.5) + 1
+        img_sz_max = round(img_size / gs * 1.5)
+        img_size = img_sz_max * gs  # initiate with maximum multi_scale size
+        print('Using multi-scale %g - %g' % (img_sz_min * gs, img_size))
 
     # Configure run
     data_dict = parse_data_cfg(data)
@@ -246,10 +248,10 @@ def train():
             # Multi-Scale training
             if opt.multi_scale:
                 if ni / accumulate % 1 == 0:  #  adjust img_size (67% - 150%) every 1 batch
-                    img_size = random.randrange(img_sz_min, img_sz_max + 1) * 32
+                    img_size = random.randrange(img_sz_min, img_sz_max + 1) * gs
                 sf = img_size / max(imgs.shape[2:])  # scale factor
                 if sf != 1:
-                    ns = [math.ceil(x * sf / 32.) * 32 for x in imgs.shape[2:]]  # new shape (stretched to 32-multiple)
+                    ns = [math.ceil(x * sf / gs) * gs for x in imgs.shape[2:]]  # new shape (stretched to 32-multiple)
                     imgs = F.interpolate(imgs, size=ns, mode='bilinear', align_corners=False)
 
             # Run model
