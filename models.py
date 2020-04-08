@@ -252,9 +252,9 @@ class Darknet(nn.Module):
             # for i, yi in enumerate(y):  # coco small, medium, large = < 32**2 < 96**2 <
             #     area = yi[..., 2:4].prod(2)[:, :, None]
             #     if i == 1:
-            #         yi = yi * (area < 96. ** 2).float()
+            #         yi *= (area < 96. ** 2).float()
             #     elif i == 2:
-            #         yi = yi * (area > 32. ** 2).float()
+            #         yi *= (area > 32. ** 2).float()
             #     y[i] = yi
 
             y = torch.cat(y, 1)
