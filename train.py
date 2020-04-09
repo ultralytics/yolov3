@@ -209,7 +209,7 @@ def train():
 
     # Start training
     nb = len(dataloader)  # number of batches
-    n_burn = max(3 * nb, 300)  # burn-in iterations, max(3 epochs, 300 iterations)
+    n_burn = max(3 * nb, 500)  # burn-in iterations, max(3 epochs, 300 iterations)
     maps = np.zeros(nc)  # mAP per class
     # torch.autograd.set_detect_anomaly(True)
     results = (0, 0, 0, 0, 0, 0, 0)  # 'P', 'R', 'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification'
@@ -234,8 +234,8 @@ def train():
             targets = targets.to(device)
 
             # Burn-in
-            if ni <= n_burn:
-                model.gr = np.interp(ni, [0, n_burn], [0.0, 1.0])  # giou loss ratio (obj_loss = 1.0 or giou)
+            if ni <= n_burn * 2:
+                model.gr = np.interp(ni, [0, n_burn * 2], [0.0, 1.0])  # giou loss ratio (obj_loss = 1.0 or giou)
                 if ni == n_burn:  # burnin complete
                     print_model_biases(model)
 

@@ -149,7 +149,7 @@ class ModelEMA:
         self.ema = deepcopy(model)
         self.ema.eval()
         self.updates = 0  # number of EMA updates
-        self.decay = lambda x: decay * (1 - math.exp(-x / 1000))  # decay exponential ramp (to help early epochs)
+        self.decay = lambda x: decay * (1 - math.exp(-x / 2000))  # decay exponential ramp (to help early epochs)
         self.device = device  # perform ema on different device from model if set
         if device:
             self.ema.to(device=device)

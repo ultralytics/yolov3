@@ -688,11 +688,11 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(608, 608)):
+def kmean_anchors(path='../coco/train2017.txt', n=12, img_size=(320, 1024)):
     # from utils.utils import *; _ = kmean_anchors()
-    # Produces a list of target kmeans suitable for use in *.cfg files
+    # Creaters kmeans anchors for use in *.cfg files
     from utils.datasets import LoadImagesAndLabels
-    thr = 0.20  # IoU threshold
+    thr = 0.225  # IoU threshold
 
     def print_results(k):
         k = k[np.argsort(k.prod(1))]  # sort small to large
@@ -709,7 +709,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=9, img_size=(608, 608)):
     def fitness(k):  # mutation fitness
         iou = wh_iou(wh, torch.Tensor(k))  # iou
         max_iou = iou.max(1)[0]
-        return max_iou.mean()  # product
+        return (max_iou * (max_iou > thr).float()).mean()  # product
 
     # Get label wh
     wh = []
