@@ -153,9 +153,10 @@ Using CUDA device0 _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', total_memo
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.719
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.810
 
-Speed: 17.5/2.5/20.1 ms inference/NMS/total per 640x640 image at batch-size 16
+Speed: 17.5/2.3/19.9 ms inference/NMS/total per 640x640 image at batch-size 16
 ```
-<!-- Speed: 11.5/2.1/13.6 ms inference/NMS/total per 608x608 image at batch-size 1 -->
+<!-- Speed: 11.4/2.2/13.6 ms inference/NMS/total per 608x608 image at batch-size 1 -->
+
 
 # Reproduce Our Results
 
