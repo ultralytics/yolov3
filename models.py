@@ -299,7 +299,7 @@ class Darknet(nn.Module):
             return yolo_out
         elif ONNX_EXPORT:  # export
             x = [torch.cat(x, 1) for x in zip(*yolo_out)]
-            return x[0], torch.cat(x[1:3], 2)  # scores, boxes: 3780x80, 3780x4
+            return x[0], torch.cat(x[1:3], 2)  # scores, boxes: bsx3780x80, bsx3780x4
         else:  # inference or test
             x, p = zip(*yolo_out)  # inference output, training output
             x = torch.cat(x, 1)  # cat yolo outputs
