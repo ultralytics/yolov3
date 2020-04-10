@@ -688,11 +688,12 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmean_anchors(path='../coco/train2017.txt', n=12, img_size=(320, 1024)):
-    # from utils.utils import *; _ = kmean_anchors()
-    # Creaters kmeans anchors for use in *.cfg files
+def kmean_anchors(path='../coco/train2017.txt', n=12, img_size=(320, 1024), thr=0.10):
+    # Creates kmeans anchors for use in *.cfg files: from utils.utils import *; _ = kmean_anchors()
+    # n: number of anchors
+    # img_size: (min, max) image size used for multi-scale training (can be same values)
+    # thr: IoU threshold hyperparameter used for training (0.0 - 1.0)
     from utils.datasets import LoadImagesAndLabels
-    thr = 0.225  # IoU threshold
 
     def print_results(k):
         k = k[np.argsort(k.prod(1))]  # sort small to large
