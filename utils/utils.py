@@ -966,18 +966,21 @@ def plot_results(start=0, stop=0, bucket='', id=()):  # from utils.utils import 
     else:
         files = glob.glob('results*.txt') + glob.glob('../../Downloads/results*.txt')
     for f in sorted(files):
-        results = np.loadtxt(f, usecols=[2, 3, 4, 8, 9, 12, 13, 14, 10, 11], ndmin=2).T
-        n = results.shape[1]  # number of rows
-        x = range(start, min(stop, n) if stop else n)
-        for i in range(10):
-            y = results[i, x]
-            if i in [0, 1, 2, 5, 6, 7]:
-                y[y == 0] = np.nan  # dont show zero loss values
-                # y /= y[0]  # normalize
-            ax[i].plot(x, y, marker='.', label=Path(f).stem, linewidth=2, markersize=8)
-            ax[i].set_title(s[i])
-            if i in [5, 6, 7]:  # share train and val loss y axes
-                ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
+        try:
+            results = np.loadtxt(f, usecols=[2, 3, 4, 8, 9, 12, 13, 14, 10, 11], ndmin=2).T
+            n = results.shape[1]  # number of rows
+            x = range(start, min(stop, n) if stop else n)
+            for i in range(10):
+                y = results[i, x]
+                if i in [0, 1, 2, 5, 6, 7]:
+                    y[y == 0] = np.nan  # dont show zero loss values
+                    # y /= y[0]  # normalize
+                ax[i].plot(x, y, marker='.', label=Path(f).stem, linewidth=2, markersize=8)
+                ax[i].set_title(s[i])
+                if i in [5, 6, 7]:  # share train and val loss y axes
+                    ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
+        except:
+            print('Warning: Plotting error for %s, skipping file' % f)
 
     fig.tight_layout()
     ax[1].legend()
