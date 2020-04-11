@@ -225,6 +225,7 @@ class Darknet(nn.Module):
         self.module_defs = parse_model_cfg(cfg)
         self.module_list, self.routs = create_modules(self.module_defs, img_size)
         self.yolo_layers = get_yolo_layers(self)
+        # torch_utils.initialize_weights(self)
 
         # Darknet Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
         self.version = np.array([0, 2, 5], dtype=np.int32)  # (int32) version info: major, minor, revision

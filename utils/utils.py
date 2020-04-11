@@ -93,15 +93,6 @@ def coco80_to_coco91_class():  # converts 80-index (val2014) to 91-index (paper)
     return x
 
 
-def weights_init_normal(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        torch.nn.init.normal_(m.weight.data, 0.0, 0.03)
-    elif classname.find('BatchNorm2d') != -1:
-        torch.nn.init.normal_(m.weight.data, 1.0, 0.03)
-        torch.nn.init.constant_(m.bias.data, 0.0)
-
-
 def xyxy2xywh(x):
     # Transform box coordinates from [x1, y1, x2, y2] (where xy1=top-left, xy2=bottom-right) to [x, y, w, h] 
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)

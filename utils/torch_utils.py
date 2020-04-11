@@ -50,6 +50,15 @@ def time_synchronized():
     return time.time()
 
 
+def initialize_weights(model):
+    for m in model.modules():
+        if isinstance(m, nn.Conv2d):
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        elif isinstance(m, nn.BatchNorm2d):
+            m.weight.data.fill_(1)
+            m.bias.data.zero_()
+
+
 def fuse_conv_and_bn(conv, bn):
     # https://tehnokv.com/posts/fusing-batchnorm-and-conv/
     with torch.no_grad():
