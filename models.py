@@ -28,7 +28,7 @@ def create_modules(module_defs, img_size):
                                                        out_channels=filters,
                                                        kernel_size=size,
                                                        stride=stride,
-                                                       padding=(size - 1) // 2 if mdef['pad'] else 0,
+                                                       padding=size // 2 if mdef['pad'] else 0,
                                                        groups=mdef['groups'] if 'groups' in mdef else 1,
                                                        bias=not bn))
             else:  # multiple-size conv

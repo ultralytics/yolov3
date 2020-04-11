@@ -65,7 +65,7 @@ class MixConv2d(nn.Module):  # MixConv: Mixed Depthwise Convolutional Kernels ht
                                                 out_channels=ch[g],
                                                 kernel_size=k[g],
                                                 stride=stride,
-                                                padding=(k[g] - 1) // 2,  # 'same' pad
+                                                padding=k[g] // 2,  # 'same' pad
                                                 dilation=dilation,
                                                 bias=bias) for g in range(groups)])
 
