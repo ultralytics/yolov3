@@ -521,9 +521,9 @@ def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
 
     # Histogram equalization
-    if random.random() < 0.2:
-        for i in range(3):
-            img[:, :, i] = cv2.equalizeHist(img[:, :, i])
+    # if random.random() < 0.2:
+    #     for i in range(3):
+    #         img[:, :, i] = cv2.equalizeHist(img[:, :, i])
 
 
 def load_mosaic(self, index):
