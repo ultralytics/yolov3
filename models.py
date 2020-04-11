@@ -334,7 +334,7 @@ class Darknet(nn.Module):
 
 
 def get_yolo_layers(model):
-    return [i for i, m in enumerate(model.module_list) if m.__class__.__name__ == 'YOLOLayer']  # [89, 101, 1113]
+    return [i for i, m in enumerate(model.module_list) if m.__class__.__name__ == 'YOLOLayer']  # [89, 101, 113]
 
 
 def load_darknet_weights(self, weights, cutoff=-1):
