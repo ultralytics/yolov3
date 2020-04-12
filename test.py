@@ -188,7 +188,7 @@ def test(cfg,
             print(pf % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
 
     # Print speeds
-    if verbose:
+    if verbose or save_json:
         t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (img_size, img_size, batch_size)  # tuple
         print('Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t)
 
