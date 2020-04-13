@@ -56,23 +56,27 @@ if hyp['fl_gamma']:
 def train():
     cfg = opt.cfg
     data = opt.data
-    img_size, img_size_test = opt.img_size if len(opt.img_size) == 2 else opt.img_size * 2  # train, test sizes
     epochs = opt.epochs  # 500200 batches at bs 64, 117263 images = 273 epochs
     batch_size = opt.batch_size
     accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
     weights = opt.weights  # initial training weights
+    imgsz_min, imgsz_max, img_size_test = opt.img_size  # img sizes (min, max, test)
 
-    # Initialize
-    gs = 32  # (pixels) grid size
-    assert math.fmod(img_size, gs) == 0, '--img-size must be a %g-multiple' % gs
-    init_seeds()
+    # Image Sizes
+    gs = 64  # (pixels) grid size
+    assert math.fmod(imgsz_min, gs) == 0, '--img-size %g must be a %g-multiple' % (imgsz_min, gs)
+    opt.multi_scale |= imgsz_min != imgsz_max  # multi if different (min, max)
     if opt.multi_scale:
-        img_sz_min = round(img_size / gs / 1.5) + 1
-        img_sz_max = round(img_size / gs * 1.5)
-        img_size = img_sz_max * gs  # initiate with maximum multi_scale size
-        print('Using multi-scale %g - %g' % (img_sz_min * gs, img_size))
+        if imgsz_min == imgsz_max:
+            imgsz_min //= 1.5
+            imgsz_max //= 0.667
+        grid_min, grid_max = imgsz_min // gs, imgsz_max // gs
+        imgsz_max = grid_max * gs  # initialize with maximum multi_scale size
+        print('Using multi-scale %g - %g' % (grid_min * gs, imgsz_max))
+    img_size = imgsz_max
 
     # Configure run
+    init_seeds()
     data_dict = parse_data_cfg(data)
     train_path = data_dict['train']
     test_path = data_dict['valid']
@@ -248,7 +252,7 @@ def train():
             # Multi-Scale training
             if opt.multi_scale:
                 if ni / accumulate % 1 == 0:  #  adjust img_size (67% - 150%) every 1 batch
-                    img_size = random.randrange(img_sz_min, img_sz_max + 1) * gs
+                    img_size = random.randrange(grid_min, grid_max + 1) * gs
                 sf = img_size / max(imgs.shape[2:])  # scale factor
                 if sf != 1:
                     ns = [math.ceil(x * sf / gs) * gs for x in imgs.shape[2:]]  # new shape (stretched to 32-multiple)
@@ -387,7 +391,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
     parser.add_argument('--data', type=str, default='data/coco2017.data', help='*.data path')
     parser.add_argument('--multi-scale', action='store_true', help='adjust (67%% - 150%%) img_size every 10 batches')
-    parser.add_argument('--img-size', nargs='+', type=int, default=[416], help='train and test image-sizes')
+    parser.add_argument('--img-size', nargs='+', type=int, default=[512], help='[min_train, max-train, test] img sizes')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
     parser.add_argument('--resume', action='store_true', help='resume training from last.pt')
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
@@ -403,6 +407,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     opt.weights = last if opt.resume else opt.weights
     print(opt)
+    opt.img_size.extend([opt.img_size[-1]] * (3 - len(opt.img_size)))  # extend to 3 sizes (min, max, test)
     device = torch_utils.select_device(opt.device, apex=mixed_precision, batch_size=opt.batch_size)
     if device.type == 'cpu':
         mixed_precision = False
