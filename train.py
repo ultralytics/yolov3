@@ -60,7 +60,7 @@ def train():
     batch_size = opt.batch_size
     accumulate = opt.accumulate  # effective bs = batch_size * accumulate = 16 * 4 = 64
     weights = opt.weights  # initial training weights
-    imgsz_min, imgsz_max, img_size_test = opt.img_size  # img sizes (min, max, test)
+    imgsz_min, imgsz_max, imgsz_test = opt.img_size  # img sizes (min, max, test)
 
     # Image Sizes
     gs = 64  # (pixels) grid size
@@ -71,9 +71,9 @@ def train():
             imgsz_min //= 1.5
             imgsz_max //= 0.667
         grid_min, grid_max = imgsz_min // gs, imgsz_max // gs
-        imgsz_max = grid_max * gs  # initialize with maximum multi_scale size
-        print('Using multi-scale %g - %g' % (grid_min * gs, imgsz_max))
-    img_size = imgsz_max
+        imgsz_min, imgsz_max = grid_min * gs, grid_max * gs
+    print('Training image sizes %g - %g, testing image size %g' % (imgsz_min, imgsz_max, imgsz_test))
+    img_size = imgsz_max  # initialize with max size
 
     # Configure run
     init_seeds()
@@ -192,7 +192,7 @@ def train():
                                              collate_fn=dataset.collate_fn)
 
     # Testloader
-    testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, img_size_test, batch_size,
+    testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, imgsz_test, batch_size,
                                                                  hyp=hyp,
                                                                  rect=True,
                                                                  cache_images=opt.cache_images,
@@ -310,7 +310,7 @@ def train():
             results, maps = test.test(cfg,
                                       data,
                                       batch_size=batch_size,
-                                      img_size=img_size_test,
+                                      img_size=imgsz_test,
                                       model=ema.ema,
                                       save_json=final_epoch and is_coco,
                                       single_cls=opt.single_cls,
