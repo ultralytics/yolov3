@@ -159,7 +159,7 @@ class YOLOLayer(nn.Module):
             self.anchor_vec = self.anchor_vec.to(device)
             self.anchor_wh = self.anchor_wh.to(device)
 
-    def forward(self, p, img_size, out):
+    def forward(self, p, out):
         ASFF = False  # https://arxiv.org/abs/1911.09516
         if ASFF:
             i, n = self.index, self.nl  # index in layers, number of layers
@@ -287,7 +287,7 @@ class Darknet(nn.Module):
                     str = ' >> ' + ' + '.join(['layer %g %s' % x for x in zip(l, sh)])
                 x = module(x, out)  # WeightedFeatureFusion(), FeatureConcat()
             elif name == 'YOLOLayer':
-                yolo_out.append(module(x, img_size, out))
+                yolo_out.append(module(x, out))
             else:  # run module directly, i.e. mtype = 'convolutional', 'upsample', 'maxpool', 'batchnorm2d' etc.
                 x = module(x)
 
