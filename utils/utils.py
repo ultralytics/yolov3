@@ -443,7 +443,7 @@ def build_targets(p, targets, model):
         anchor_vec = model.module.module_list[j].anchor_vec if multi_gpu else model.module_list[j].anchor_vec
 
         # iou of targets-anchors
-        gain[2:] = torch.tensor(p[j].shape)[[2, 3, 2, 3]]  # xyxy gain
+        gain[2:] = torch.tensor(p[i].shape)[[2, 3, 2, 3]]  # xyxy gain
         t, a = targets * gain, []
         gwh = t[:, 4:6]
         if nt:
