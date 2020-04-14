@@ -148,7 +148,7 @@ class YOLOLayer(nn.Module):
 
     def create_grids(self, ng=(13, 13), device='cpu'):
         self.nx, self.ny = ng  # x and y grid size
-        self.ng = torch.tensor(ng, device=device)
+        self.ng = torch.tensor(ng)
 
         # build xy offsets
         if not self.training:

@@ -366,7 +366,7 @@ def smooth_BCE(eps=0.1):  # https://github.com/ultralytics/yolov3/issues/238#iss
 def compute_loss(p, targets, model):  # predictions, targets, model
     ft = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
     lcls, lbox, lobj = ft([0]), ft([0]), ft([0])
-    tcls, tbox, indices, anchor_vec = build_targets(model, targets)
+    tcls, tbox, indices, anchor_vec = build_targets(p, targets, model)
     h = model.hyp  # hyperparameters
     red = 'mean'  # Loss reduction (sum or mean)
 
@@ -430,42 +430,41 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     return loss, torch.cat((lbox, lobj, lcls, loss)).detach()
 
 
-def build_targets(model, targets):
+def build_targets(p, targets, model):
     # targets = [image, class, x, y, w, h]
 
     nt = targets.shape[0]
     tcls, tbox, indices, av = [], [], [], []
     multi_gpu = type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel)
     reject, use_all_anchors = True, True
+    gain = torch.ones(6, device=targets.device)  # normalized to gridspace gain
     for i in model.yolo_layers:
         # get number of grid points and anchor vec for this yolo layer
-        if multi_gpu:
-            ng, anchor_vec = model.module.module_list[i].ng, model.module.module_list[i].anchor_vec
-        else:
-            ng, anchor_vec = model.module_list[i].ng, model.module_list[i].anchor_vec
+        anchor_vec = model.module.module_list[i].anchor_vec if multi_gpu else model.module_list[i].anchor_vec
 
         # iou of targets-anchors
-        t, a = targets, []
-        gwh = t[:, 4:6] * ng
+        gain[2:] = torch.tensor(p[0].shape)[[2, 3, 2, 3]]  # xyxy gain
+        t, a = targets * gain, []
+        gwh = t[:, 4:6]
         if nt:
             iou = wh_iou(anchor_vec, gwh)  # iou(3,n) = wh_iou(anchor_vec(3,2), gwh(n,2))
 
             if use_all_anchors:
                 na = anchor_vec.shape[0]  # number of anchors
-                a = torch.arange(na).view((-1, 1)).repeat([1, nt]).view(-1)
-                t = targets.repeat([na, 1])
-                gwh = gwh.repeat([na, 1])
+                a = torch.arange(na).view(-1, 1).repeat(1, nt).view(-1)
+                t = targets.repeat(na, 1)
             else:  # use best anchor only
                 iou, a = iou.max(0)  # best iou and anchor
 
             # reject anchors below iou_thres (OPTIONAL, increases P, lowers R)
             if reject:
                 j = iou.view(-1) > model.hyp['iou_t']  # iou threshold hyperparameter
-                t, a, gwh = t[j], a[j], gwh[j]
+                t, a = t[j], a[j]
 
         # Indices
         b, c = t[:, :2].long().t()  # target image, class
-        gxy = t[:, 2:4] * ng  # grid x, y
+        gxy = t[:, 2:4]  # grid x, y
+        gwh = t[:, 4:6]  # grid w, h
         gi, gj = gxy.long().t()  # grid x, y indices
         indices.append((b, a, gj, gi))
 
