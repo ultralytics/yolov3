@@ -54,7 +54,7 @@ def initialize_weights(model):
     for m in model.modules():
         t = type(m)
         if t is nn.Conv2d:
-            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            pass  # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
         elif t is nn.BatchNorm2d:
             m.eps = 1e-4
             m.momentum = 0.03
