@@ -3,6 +3,28 @@ import torch.nn.functional as F
 from utils.utils import *
 
 
+def make_divisible(v, divisor):
+    # Function ensures all layers have a channel number that is divisible by 8
+    # https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
+    return math.ceil(v / divisor) * divisor
+
+
+class Flatten(nn.Module):
+    # Use after nn.AdaptiveAvgPool2d(1) to remove last 2 dimensions
+    def forward(self, x):
+        return x.view(x.size(0), -1)
+
+
+class Concat(nn.Module):
+    # Concatenate a list of tensors along dimension
+    def __init__(self, dimension=1):
+        super(Concat, self).__init__()
+        self.d = dimension
+
+    def forward(self, x):
+        return torch.cat(x, self.d)
+
+
 class FeatureConcat(nn.Module):
     def __init__(self, layers):
         super(FeatureConcat, self).__init__()

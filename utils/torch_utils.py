@@ -52,11 +52,14 @@ def time_synchronized():
 
 def initialize_weights(model):
     for m in model.modules():
-        if isinstance(m, nn.Conv2d):
+        t = type(m)
+        if t is nn.Conv2d:
             nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-        elif isinstance(m, nn.BatchNorm2d):
+        elif t is nn.BatchNorm2d:
             m.eps = 1e-4
             m.momentum = 0.03
+        elif t in [nn.LeakyReLU, nn.ReLU, nn.ReLU6]:
+            m.inplace = True
 
 
 def find_modules(model, mclass=nn.Conv2d):
