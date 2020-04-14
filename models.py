@@ -224,7 +224,7 @@ class Darknet(nn.Module):
 
         self.module_defs = parse_model_cfg(cfg)
         self.module_list, self.routs = create_modules(self.module_defs, img_size)
-        self.yolo_layers = torch_utils.find_modules(self, mclass=YOLOLayer)
+        self.yolo_layers = get_yolo_layers(self)
         # torch_utils.initialize_weights(self)
 
         # Darknet Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
@@ -331,6 +331,10 @@ class Darknet(nn.Module):
 
     def info(self, verbose=False):
         torch_utils.model_info(self, verbose)
+
+
+def get_yolo_layers(model):
+    return [i for i, m in enumerate(model.module_list) if m.__class__.__name__ == 'YOLOLayer']  # [89, 101, 113]
 
 
 def load_darknet_weights(self, weights, cutoff=-1):
