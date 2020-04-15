@@ -3,6 +3,7 @@ import math
 import os
 import random
 import shutil
+import subprocess
 from pathlib import Path
 
 import cv2
@@ -17,6 +18,11 @@ from tqdm import tqdm
 from . import torch_utils  # , google_utils
 
 matplotlib.rc('font', **{'size': 11})
+
+# Suggest 'git pull'
+s = subprocess.check_output('git status -uno', shell=True).decode('utf-8')
+if 'Your branch is behind' in s:
+    print(s[s.find('Your branch is behind'):s.find('\n\n')] + '\n')
 
 # Set printoptions
 torch.set_printoptions(linewidth=320, precision=5, profile='long')

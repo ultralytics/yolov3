@@ -13,6 +13,7 @@ mixed_precision = True
 try:  # Mixed precision training https://github.com/NVIDIA/apex
     from apex import amp
 except:
+    print('Apex recommended for mixed precision and faster training: https://github.com/NVIDIA/apex')
     mixed_precision = False  # not installed
 
 wdir = 'weights' + os.sep  # weights dir
