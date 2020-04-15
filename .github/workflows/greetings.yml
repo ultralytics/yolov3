@@ -11,6 +11,6 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         pr-message: 'Hello @${{ github.actor }}, thank you for submitting a PR! We will respond as soon as possible.'
         issue-message: >
-          Hello @${{ github.actor }}, thank you for your interest in our work! Please visit our [Custom Training Tutorial](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data) to get started, and see our [Google Colab Notebook](https://colab.research.google.com/drive/1G8T-VFxQkjDe4idzN8F-hbIBqkkkQnxw), [Docker Image](https://hub.docker.com/r/ultralytics/yolov3), and [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) for example environments. 
+          Hello @${{ github.actor }}, thank you for your interest in our work! Please visit our [Custom Training Tutorial](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data) to get started, and see our [Google Colab Notebook](https://github.com/ultralytics/yolov3/blob/master/tutorial.ipynb), [Docker Image](https://hub.docker.com/r/ultralytics/yolov3), and [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) for example environments. 
             
           If this is a bug report, please provide screenshots and **minimum viable code to reproduce your issue**, otherwise we can not help you.
