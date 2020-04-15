@@ -102,14 +102,11 @@ def create_modules(module_defs, img_size):
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
-                bo = -4.5  #  obj bias
-                bc = math.log(1 / (modules.nc - 0.99))  # cls bias: class probability is sigmoid(p) = 1/nc
-
                 j = layers[yolo_index] if 'from' in mdef else -1
                 bias_ = module_list[j][0].bias  # shape(255,)
                 bias = bias_[:modules.no * modules.na].view(modules.na, -1)  # shape(3,85)
-                bias[:, 4] += bo - bias[:, 4].mean()  # obj
-                bias[:, 5:] += bc - bias[:, 5:].mean()  # cls, view with utils.print_model_biases(model)
+                bias[:, 4] += -4.5  # obj
+                bias[:, 5:] += math.log(0.6 / (modules.nc - 0.99))  # cls (sigmoid(p) = 1/nc)
                 module_list[j][0].bias = torch.nn.Parameter(bias_, requires_grad=bias_.requires_grad)
             except:
                 print('WARNING: smart bias initialization failure.')
