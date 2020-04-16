@@ -73,7 +73,6 @@ def train():
             imgsz_max //= 0.667
         grid_min, grid_max = imgsz_min // gs, imgsz_max // gs
         imgsz_min, imgsz_max = grid_min * gs, grid_max * gs
-    print('Image sizes %g - %g train, %g test' % (imgsz_min, imgsz_max, imgsz_test))
     img_size = imgsz_max  # initialize with max size
 
     # Configure run
@@ -219,6 +218,7 @@ def train():
     # torch.autograd.set_detect_anomaly(True)
     results = (0, 0, 0, 0, 0, 0, 0)  # 'P', 'R', 'mAP', 'F1', 'val GIoU', 'val Objectness', 'val Classification'
     t0 = time.time()
+    print('Image sizes %g - %g train, %g test' % (imgsz_min, imgsz_max, imgsz_test))
     print('Using %g dataloader workers' % nw)
     print('Starting training for %g epochs...' % epochs)
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
