@@ -601,7 +601,7 @@ def letterbox(img, new_shape=(416, 416), color=(114, 114, 114), auto=True, scale
         new_shape = (new_shape, new_shape)
 
     # Scale ratio (new / old)
-    r = max(new_shape) / max(shape)
+    r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
     if not scaleup:  # only scale down, do not scale up (for better test mAP)
         r = min(r, 1.0)
 
