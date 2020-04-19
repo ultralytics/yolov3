@@ -20,7 +20,7 @@ from . import torch_utils  # , google_utils
 matplotlib.rc('font', **{'size': 11})
 
 # Suggest 'git pull'
-s = subprocess.check_output('git status -uno', shell=True).decode('utf-8')
+s = subprocess.check_output('if [ -d .git ]; then git status -uno; fi', shell=True).decode('utf-8')
 if 'Your branch is behind' in s:
     print(s[s.find('Your branch is behind'):s.find('\n\n')] + '\n')
 
@@ -561,6 +561,7 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_label=T
                 # x[:, :4] = torch.mm(weights.T, x[:, :4])
                 weights = (box_iou(boxes[i], boxes) > iou_thres) * scores[None]  # box weights
                 x[i, :4] = torch.mm(weights / weights.sum(1, keepdim=True), x[:, :4]).float()  # merged boxes
+
         elif method == 'vision':
             i = torchvision.ops.boxes.nms(boxes, scores, iou_thres)
         elif method == 'fast':  # FastNMS from https://github.com/dbolya/yolact
