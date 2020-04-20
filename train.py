@@ -3,6 +3,7 @@ import argparse
 import torch.distributed as dist
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
+from torch.utils.tensorboard import SummaryWriter
 
 import test  # import test.py to get mAP after each epoch
 from models import *
@@ -13,7 +14,7 @@ mixed_precision = True
 try:  # Mixed precision training https://github.com/NVIDIA/apex
     from apex import amp
 except:
-    print('Apex recommended for mixed precision and faster training: https://github.com/NVIDIA/apex')
+    print('Apex recommended for faster mixed precision training: https://github.com/NVIDIA/apex')
     mixed_precision = False  # not installed
 
 wdir = 'weights' + os.sep  # weights dir
@@ -28,7 +29,7 @@ hyp = {'giou': 3.54,  # giou loss gain
        'cls_pw': 1.0,  # cls BCELoss positive_weight
        'obj': 64.3,  # obj loss gain (*=img_size/320 if img_size != 320)
        'obj_pw': 1.0,  # obj BCELoss positive_weight
-       'iou_t': 0.225,  # iou training threshold
+       'iou_t': 0.1,  # iou training threshold
        'lr0': 0.01,  # initial learning rate (SGD=5E-3, Adam=5E-4)
        'lrf': 0.0005,  # final learning rate (with cos scheduler)
        'momentum': 0.937,  # SGD momentum
@@ -418,15 +419,8 @@ if __name__ == '__main__':
 
     tb_writer = None
     if not opt.evolve:  # Train normally
-        try:
-            # Start Tensorboard with "tensorboard --logdir=runs", view at http://localhost:6006/
-            from torch.utils.tensorboard import SummaryWriter
-
-            tb_writer = SummaryWriter()
-            print("Run 'tensorboard --logdir=runs' to view tensorboard at http://localhost:6006/")
-        except:
-            pass
-
+        print('Start Tensorboard with "tensorboard --logdir=runs", view at http://localhost:6006/')
+        tb_writer = SummaryWriter()
         train()  # train normally
 
     else:  # Evolve hyperparameters (optional)
