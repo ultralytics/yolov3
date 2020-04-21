@@ -420,7 +420,7 @@ if __name__ == '__main__':
     tb_writer = None
     if not opt.evolve:  # Train normally
         print('Start Tensorboard with "tensorboard --logdir=runs", view at http://localhost:6006/')
-        tb_writer = SummaryWriter()
+        tb_writer = SummaryWriter(comment=opt.name)
         train()  # train normally
 
     else:  # Evolve hyperparameters (optional)
