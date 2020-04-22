@@ -36,5 +36,5 @@ do
 done
 
 #COCO training
-n=131 && t=ultralytics/coco:v131 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 256 768 768 --epochs 300 --batch 16 --accum 4 --weights '' --device 0 --cfg yolov3-spp.cfg --nosave --bucket ult/coco --name $n && sudo shutdown
-n=132 && t=ultralytics/coco:v131 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 256 768 768 --epochs 300 --batch 64 --accum 1 --weights '' --device 0 --cfg yolov3-tiny.cfg --nosave --bucket ult/coco --name $n && sudo shutdown
+n=131 && t=ultralytics/coco:v131 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 320 640 --epochs 300 --batch 16 --accum 4 --weights '' --device 0 --cfg yolov3-spp.cfg --nosave --bucket ult/coco --name $n && sudo shutdown
+n=132 && t=ultralytics/coco:v131 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t python3 train.py --data coco2014.data --img-size 320 640 --epochs 300 --batch 64 --accum 1 --weights '' --device 0 --cfg yolov3-tiny.cfg --nosave --bucket ult/coco --name $n && sudo shutdown
