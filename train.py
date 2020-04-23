@@ -146,11 +146,11 @@ def train():
     if mixed_precision:
         model, optimizer = amp.initialize(model, optimizer, opt_level='O1', verbosity=0)
 
-    # Scheduler https://github.com/ultralytics/yolov3/issues/238
-    lf = lambda x: (((1 + math.cos(
-        x * math.pi / epochs)) / 2) ** 1.0) * 0.95 + 0.05  # cosine https://arxiv.org/pdf/1812.01187.pdf
-    scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
-    # scheduler = lr_scheduler.MultiStepLR(optimizer, [round(epochs * x) for x in [0.8, 0.9]], 0.1, start_epoch - 1)
+    # Scheduler https://arxiv.org/pdf/1812.01187.pdf
+    lf = lambda x: (((1 + math.cos(x * math.pi / epochs)) / 2) ** 1.0) * 0.95 + 0.05  # cosine
+    scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
+    scheduler.last_epoch=start_epoch - 1   # see link below
+    # https://discuss.pytorch.org/t/a-problem-occured-when-resuming-an-optimizer/28822
 
     # Plot lr schedule
     # y = []
