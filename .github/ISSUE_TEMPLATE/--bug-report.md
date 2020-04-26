@@ -7,14 +7,25 @@ assignees: ''
 
 ---
 
+Before submitting a bug report, please ensure that you are using the latest versions of:
+ - python
+ - torch
+ - this repo (run `git status` and `git pull`)
+ 
+**Your issue must be reproducible on a public dataset (i.e COCO) using the latest version of the repository, and you must supply code to reproduce, or we can not help you.**
+
+If this is a custom training question we suggest you include your `train_batch0.png` and `results.png` figures.
+
+
 ## 🐛 Bug
 A clear and concise description of what the bug is.
 
 ## To Reproduce
-Steps to reproduce the behavior:
-1. 
-2. 
-3. 
+**REQUIRED**: Code to reproduce your issue below
+```
+python train.py ...
+```
+
 
 ## Expected behavior
 A clear and concise description of what you expected to happen.
@@ -22,14 +33,9 @@ A clear and concise description of what you expected to happen.
 ## Environment
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Version [e.g. 22]
+ - OS: [e.g. Ubuntu]
+ - GPU [e.g. 2080 Ti]
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhoneXS]
- - OS: [e.g. iOS8.1]
- - Version [e.g. 22]
 
 ## Additional context
 Add any other context about the problem here.
