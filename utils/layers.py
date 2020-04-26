@@ -115,9 +115,9 @@ class MemoryEfficientSwish(nn.Module):
 
 class Swish(nn.Module):
     def forward(self, x):
-        return x.mul_(torch.sigmoid(x))
+        return x.mul(torch.sigmoid(x))
 
 
 class Mish(nn.Module):  # https://github.com/digantamisra98/Mish
     def forward(self, x):
-        return x.mul_(F.softplus(x).tanh())
+        return x.mul(F.softplus(x).tanh())
