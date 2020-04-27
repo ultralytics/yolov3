@@ -60,17 +60,17 @@ Python 3.7 or later with all `pip install -U -r requirements.txt` packages inclu
 https://cloud.google.com/deep-learning-vm/  
 **Machine type:** preemptible [n1-standard-16](https://cloud.google.com/compute/docs/machine-types) (16 vCPUs, 60 GB memory)   
 **CPU platform:** Intel Skylake  
-**GPUs:** K80 ($0.20/hr), T4 ($0.35/hr), V100 ($0.83/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32  
-**HDD:** 1 TB SSD  
+**GPUs:** K80 ($0.14/hr), T4 ($0.11/hr), V100 ($0.74/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32    
+**HDD:** 1 TB SSD
 **Dataset:** COCO train 2014 (117,263 images)  
 **Model:** `yolov3-spp.cfg`  
 **Command:**  `python3 train.py --img 416 --batch 32 --accum 2`
 
 GPU |n| `--batch --accum` | img/s | epoch<br>time | epoch<br>cost
 --- |--- |--- |--- |--- |---
-K80    |1| 32 x 2 | 11  | 175 min  | $0.58
-T4     |1<br>2| 32 x 2<br>64 x 1 | 41<br>61 | 48 min<br>32 min | $0.28<br>$0.36
-V100   |1<br>2| 32 x 2<br>64 x 1 | 122<br>**178** | 16 min<br>**11 min** | **$0.23**<br>$0.31
+K80    |1| 32 x 2 | 11  | 175 min  | $0.41
+T4     |1<br>2| 32 x 2<br>64 x 1 | 41<br>61 | 48 min<br>32 min | $0.09<br>$0.11
+V100   |1<br>2| 32 x 2<br>64 x 1 | 122<br>**178** | 16 min<br>**11 min** | **$0.21**<br>$0.28
 2080Ti |1<br>2| 32 x 2<br>64 x 1 | 81<br>140 | 24 min<br>14 min | -<br>-
 
 # Inference
