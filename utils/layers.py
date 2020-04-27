@@ -118,6 +118,11 @@ class Swish(nn.Module):
         return x.mul(torch.sigmoid(x))
 
 
+class HardSwish(nn.Module):  # https://arxiv.org/pdf/1905.02244.pdf
+    def forward(self, x):
+        return x * F.hardtanh(x + 3, 0., 6., True) / 6.
+
+
 class Mish(nn.Module):  # https://github.com/digantamisra98/Mish
     def forward(self, x):
         return x.mul(F.softplus(x).tanh())
