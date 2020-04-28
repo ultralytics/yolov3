@@ -26,7 +26,7 @@ def test(cfg,
         verbose = opt.task == 'test'
 
         # Remove previous
-        for f in glob.glob('test_batch*.png'):
+        for f in glob.glob('test_batch*.jpg'):
             os.remove(f)
 
         # Initialize model
@@ -83,7 +83,7 @@ def test(cfg,
         whwh = torch.Tensor([width, height, width, height]).to(device)
 
         # Plot images with bounding boxes
-        f = 'test_batch%g.png' % batch_i  # filename
+        f = 'test_batch%g.jpg' % batch_i  # filename
         if batch_i < 1 and not os.path.exists(f):
             plot_images(imgs=imgs, targets=targets, paths=paths, fname=f)
 
