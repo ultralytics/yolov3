@@ -82,10 +82,10 @@ def test(cfg,
         nb, _, height, width = imgs.shape  # batch size, channels, height, width
         whwh = torch.Tensor([width, height, width, height]).to(device)
 
-        # Plot images with bounding boxes
-        f = 'test_batch%g.jpg' % batch_i  # filename
-        if batch_i < 1 and not os.path.exists(f):
-            plot_images(imgs=imgs, targets=targets, paths=paths, fname=f)
+        # Plot images with ground truth
+        if batch_i < 1:
+            f = 'test_batch%g_gt.jpg' % batch_i  # filename
+            plot_images(images=imgs, targets=targets, paths=paths, names=names, fname=f)
 
         # Disable gradients
         with torch.no_grad():
@@ -166,6 +166,12 @@ def test(cfg,
 
             # Append statistics (correct, conf, pcls, tcls)
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
+
+        # Plot images with predictions
+        if batch_i < 1:
+            f = 'test_batch%g_pred.jpg' % batch_i  # filename
+            plot_targets = output_to_target(output, width, height)
+            plot_images(images=imgs, targets=plot_targets, paths=paths, names=names, fname=f)
 
     # Compute statistics
     stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
