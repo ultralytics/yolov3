@@ -22,7 +22,7 @@ last = wdir + 'last.pt'
 best = wdir + 'best.pt'
 results_file = 'results.txt'
 
-# Hyperparameters https://github.com/ultralytics/yolov3/issues/310
+# Hyperparameters
 hyp = {'giou': 3.54,  # giou loss gain
        'cls': 37.4,  # cls loss gain
        'cls_pw': 1.0,  # cls BCELoss positive_weight
@@ -315,13 +315,13 @@ def train():
                                       single_cls=opt.single_cls,
                                       dataloader=testloader)
 
-        # Write epoch results
+        # Write
         with open(results_file, 'a') as f:
             f.write(s + '%10.3g' * 7 % results + '\n')  # P, R, mAP, F1, test_losses=(GIoU, obj, cls)
         if len(opt.name) and opt.bucket:
             os.system('gsutil cp results.txt gs://%s/results/results%s.txt' % (opt.bucket, opt.name))
 
-        # Write Tensorboard results
+        # Tensorboard
         if tb_writer:
             tags = ['train/giou_loss', 'train/obj_loss', 'train/cls_loss',
                     'metrics/precision', 'metrics/recall', 'metrics/mAP_0.5', 'metrics/F1',
@@ -334,34 +334,25 @@ def train():
         if fi > best_fitness:
             best_fitness = fi
 
-        # Save training results
+        # Save model
         save = (not opt.nosave) or (final_epoch and not opt.evolve)
         if save:
-            with open(results_file, 'r') as f:
-                # Create checkpoint
+            with open(results_file, 'r') as f:  # create checkpoint
                 chkpt = {'epoch': epoch,
                          'best_fitness': best_fitness,
                          'training_results': f.read(),
                          'model': ema.ema.module.state_dict() if hasattr(model, 'module') else ema.ema.state_dict(),
                          'optimizer': None if final_epoch else optimizer.state_dict()}
 
-            # Save last checkpoint
+            # Save last, best and delete
             torch.save(chkpt, last)
-
-            # Save best checkpoint
             if (best_fitness == fi) and not final_epoch:
                 torch.save(chkpt, best)
-
-            # Save backup every 10 epochs (optional)
-            # if epoch > 0 and epoch % 10 == 0:
-            #     torch.save(chkpt, wdir + 'backup%g.pt' % epoch)
-
-            # Delete checkpoint
             del chkpt
 
         # end epoch ----------------------------------------------------------------------------------------------------
-
     # end training
+
     n = opt.name
     if len(n):
         n = '_' + n if not n.isnumeric() else n
@@ -378,7 +369,6 @@ def train():
     print('%g epochs completed in %.3f hours.\n' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
     dist.destroy_process_group() if torch.cuda.device_count() > 1 else None
     torch.cuda.empty_cache()
-
     return results
 
 
