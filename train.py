@@ -293,7 +293,7 @@ def train():
                 f = 'train_batch%g.jpg' % i  # filename
                 res = plot_images(images=imgs, targets=targets, paths=paths, fname=f)
                 if tb_writer:
-                    tb_writer.add_image("train/example_batch", res, dataformats='HWC', global_step=epoch)
+                    tb_writer.add_image(f, res, dataformats='HWC', global_step=epoch)
                     # tb_writer.add_graph(model, imgs)  # add model to tensorboard
 
             # end batch ------------------------------------------------------------------------------------------------
