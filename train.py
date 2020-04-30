@@ -292,9 +292,9 @@ def train():
             # Plot
             if ni < 1:
                 f = 'train_batch%g.jpg' % i  # filename
-                plot_images(imgs=imgs, targets=targets, paths=paths, fname=f)
+                res = plot_images(images=imgs, targets=targets, paths=paths, fname=f)
                 if tb_writer:
-                    tb_writer.add_image(f, cv2.imread(f)[:, :, ::-1], dataformats='HWC')
+                    tb_writer.add_image(f, res, dataformats='HWC', global_step=epoch)
                     # tb_writer.add_graph(model, imgs)  # add model to tensorboard
 
             # end batch ------------------------------------------------------------------------------------------------
