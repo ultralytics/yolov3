@@ -967,20 +967,12 @@ def plot_images(images, targets, paths=None, fname='images.jpg', names=None, cla
                 
                 # Draw class label
                 if class_labels and max_size > 250:
-                   
-                    if names is None:
-                        label = str(classes[j])
-                    else:
-                        label = names[classes[j]]
-                    
+                    label = str(classes[j]) if names is None else names[classes[j]]
                     if confidences is not None and confidence_labels:
-                        label += ": {:1.2f}".format(confidences[j])
+                        label += " {:1.2f}".format(confidences[j])
                     
                     font_scale = 0.4/10 * min(20, h * 0.05)
-                    font_thickness = 1
-
-                    if max(w, h) > 320:
-                        font_thickness = 2
+                    font_thickness = 2 if max(w, h) > 320 else 1
 
                     label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
                     cv2.rectangle(mosaic, (box[0], box[1]), (box[0]+label_size[0], box[1]-label_size[1]), color, thickness=-1)
