@@ -690,7 +690,7 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
             shutil.copyfile(src=img_file, dst='new/images/' + Path(file).name.replace('txt', 'jpg'))  # copy images
 
 
-def kmean_anchors(path='../coco/train2017.txt', n=12, img_size=(320, 1024), thr=0.10, gen=1000):
+def kmean_anchors(path='./data/coco64.txt', n=9, img_size=(320, 1024), thr=0.20, gen=1000):
     # Creates kmeans anchors for use in *.cfg files: from utils.utils import *; _ = kmean_anchors()
     # n: number of anchors
     # img_size: (min, max) image size used for multi-scale training (can be same values)
@@ -717,7 +717,7 @@ def kmean_anchors(path='../coco/train2017.txt', n=12, img_size=(320, 1024), thr=
 
     # Get label wh
     wh = []
-    dataset = LoadImagesAndLabels(path, augment=True, rect=True, cache_labels=True)
+    dataset = LoadImagesAndLabels(path, augment=True, rect=True)
     nr = 1 if img_size[0] == img_size[1] else 10  # number augmentation repetitions
     for s, l in zip(dataset.shapes, dataset.labels):
         wh.append(l[:, 3:5] * (s / s.max()))  # image normalized to letterbox normalized wh
