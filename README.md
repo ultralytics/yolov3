@@ -37,7 +37,7 @@ Python 3.7 or later with all `pip install -U -r requirements.txt` packages inclu
 * [Google Colab Notebook](https://colab.research.google.com/github/ultralytics/yolov3/blob/master/tutorial.ipynb) with quick training, inference and testing examples
 * [GCP Quickstart](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart)
 * [Docker Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/Docker-Quickstart) 
-* [A TensorRT Implementation of YOLOv3-SPP](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov3-spp) 
+* [A TensorRT Implementation of YOLOv3 and YOLOv4](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov3-spp) 
 
 # Training
 
