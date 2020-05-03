@@ -155,11 +155,12 @@ Speed: 17.5/2.3/19.9 ms inference/NMS/total per 640x640 image at batch-size 16
 
 # Reproduce Our Results
 
-This command trains `yolov3-spp.cfg` from scratch to our mAP above. Training takes about one week on a 2080Ti.
+Run commands below. Training takes about one week on a 2080Ti per model.
 ```bash
-$ python3 train.py --weights '' --cfg yolov3-spp.cfg --epochs 300 --batch-size 16 --img 320 640
+$ python train.py --data coco2014.data --weights '' --batch-size 16 --cfg yolov3-spp.cfg
+$ python train.py --data coco2014.data --weights '' --batch-size 32 --cfg yolov3-tiny.cfg
 ```
-<img src="https://user-images.githubusercontent.com/26833433/77986559-408b7e80-72cc-11ea-9c4f-5d7820840a98.png" width="900">
+<img src="https://user-images.githubusercontent.com/26833433/80831822-57a9de80-8ba0-11ea-9684-c47afb0432dc.png" width="900">
 
 # Reproduce Our Environment
 
