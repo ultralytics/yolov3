@@ -72,7 +72,7 @@ def train():
             imgsz_min //= 1.5
             imgsz_max //= 0.667
         grid_min, grid_max = imgsz_min // gs, imgsz_max // gs
-        imgsz_min, imgsz_max = grid_min * gs, grid_max * gs
+        imgsz_min, imgsz_max = int(grid_min * gs), int(grid_max * gs)
     img_size = imgsz_max  # initialize with max size
 
     # Configure run
