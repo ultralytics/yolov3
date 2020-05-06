@@ -8,13 +8,13 @@ assignees: ''
 ---
 
 Before submitting a bug report, please ensure that you are using the latest versions of:
- - python
- - torch
- - this repo (run `git status` and `git pull`)
+ - Python
+ - PyTorch
+ - This repository (run `git status -uno` to check and `git pull` to update)
  
 **Your issue must be reproducible on a public dataset (i.e COCO) using the latest version of the repository, and you must supply code to reproduce, or we can not help you.**
 
-If this is a custom training question we suggest you include your `train_batch0.png` and `results.png` figures.
+If this is a custom training question we suggest you include your `train*.jpg`, `test*.jpg` and `results.png` figures.
 
 
 ## 🐛 Bug
