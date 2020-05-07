@@ -87,21 +87,33 @@ def create_modules(module_defs, img_size, cfg):
             routs.extend([i + l if l < 0 else l for l in layers])
             modules = WeightedFeatureFusion(layers=layers, weight='weights_type' in mdef)
 
-        elif mdef['type'] == 'reorg3d':  # yolov3-spp-pan-scale
-            pass
+        elif mdef['type'] == 'reorg':
+            stride = mdef['stride']
+            filters *= stride*stride
+            modules.add_module('Reorg', Reorg(stride=stride, reverse=mdef.get('reverse', 0)))
 
-        elif mdef['type'] == 'yolo':
+        elif mdef['type'] == 'yolo' or mdef['type'] == 'region':
             yolo_index += 1
             stride = [32, 16, 8]  # P5, P4, P3 strides
             if 'panet' in cfg or 'yolov4' in cfg:  # stride order reversed
                 stride = list(reversed(stride))
             layers = mdef['from'] if 'from' in mdef else []
+            softmax = False
+            if mdef['type'] == 'region':
+                if mdef.get('tree'):
+                    raise NotImplementedError("tree parameter not implemented for region layer")
+                assert mdef.get('coords', 4) == 4
+                if not mdef.get('mask'):
+                    mdef['mask'] = list(range(len(mdef['anchors'])))
+                mdef['anchors'][mdef['mask']] *= stride
+                softmax = mdef.get('softmax', 0)
             modules = YOLOLayer(anchors=mdef['anchors'][mdef['mask']],  # anchor list
                                 nc=mdef['classes'],  # number of classes
                                 img_size=img_size,  # (416, 416)
                                 yolo_index=yolo_index,  # 0, 1, 2...
                                 layers=layers,  # output layers
-                                stride=stride[yolo_index])
+                                stride=stride[yolo_index],
+                                softmax=softmax)
 
             # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
             try:
@@ -128,7 +140,7 @@ def create_modules(module_defs, img_size, cfg):
 
 
 class YOLOLayer(nn.Module):
-    def __init__(self, anchors, nc, img_size, yolo_index, layers, stride):
+    def __init__(self, anchors, nc, img_size, yolo_index, layers, stride, softmax):
         super(YOLOLayer, self).__init__()
         self.anchors = torch.Tensor(anchors)
         self.index = yolo_index  # index of this layer in layers
@@ -141,6 +153,7 @@ class YOLOLayer(nn.Module):
         self.nx, self.ny, self.ng = 0, 0, 0  # initialize number of x, y gridpoints
         self.anchor_vec = self.anchors / self.stride
         self.anchor_wh = self.anchor_vec.view(1, self.na, 1, 1, 2)
+        self.softmax = softmax
 
         if ONNX_EXPORT:
             self.training = False
@@ -212,7 +225,11 @@ class YOLOLayer(nn.Module):
             io[..., :2] = torch.sigmoid(io[..., :2]) + self.grid  # xy
             io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method
             io[..., :4] *= self.stride
-            torch.sigmoid_(io[..., 4:])
+            if self.softmax:
+                torch.sigmoid_(io[..., 4])
+                io[..., 5:] = torch.nn.functional.softmax(io[..., 5:], dim=4)
+            else:
+                torch.sigmoid_(io[..., 4:])
             return io.view(bs, -1, self.no), p  # view [1, 3, 13, 13, 85] as [1, 507, 85]
 
 
@@ -351,7 +368,10 @@ def load_darknet_weights(self, weights, cutoff=-1):
     with open(weights, 'rb') as f:
         # Read Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
         self.version = np.fromfile(f, dtype=np.int32, count=3)  # (int32) version info: major, minor, revision
-        self.seen = np.fromfile(f, dtype=np.int64, count=1)  # (int64) number of images seen during training
+        if self.version[0]*10 + self.version[0] >= 2:
+            self.seen = np.fromfile(f, dtype=np.int64, count=1)  # (int64) number of images seen during training
+        else:
+            self.seen = np.fromfile(f, dtype=np.int32, count=1)  # (int32) for old versions
 
         weights = np.fromfile(f, dtype=np.float32)  # the rest are weights
 

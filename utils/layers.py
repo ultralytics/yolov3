@@ -146,3 +146,28 @@ class HardSwish(nn.Module):  # https://arxiv.org/pdf/1905.02244.pdf
 class Mish(nn.Module):  # https://github.com/digantamisra98/Mish
     def forward(self, x):
         return x * F.softplus(x).tanh()
+
+class Reorg(nn.Module):
+    def __init__(self, stride, reverse):
+        super(Reorg, self).__init__()
+        self.stride = stride
+        self.reverse = reverse
+
+    def forward(self, x):
+        if self.reverse:
+            b, c, h, w = x.shape
+            assert c % (self.stride * self.stride) == 0
+            out_h, out_w, out_c = h*self.stride, w*self.stride, c//(self.stride * self.stride)
+            x = x.view(b, self.stride, self.stride, out_c, h, w)
+            x = x.permute(0, 3, 4, 1, 5, 2)
+            x = x.reshape(b, out_c, out_h, out_w)
+            return x
+        else:
+            b, c, h, w = x.shape
+            assert h % self.stride == 0 and w % self.stride == 0
+            out_h, out_w = h//self.stride, w//self.stride
+            x = x.view(b, c, out_h, self.stride, out_w, self.stride)
+            x = x.permute(0, 3, 5, 1, 2, 4)  # b, stride_y, stride_x, c, out_h, out_w
+            x = x.reshape(b, -1, out_h, out_w)
+            return x
+

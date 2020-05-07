@@ -576,7 +576,7 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_label=T
 
 
 def get_yolo_layers(model):
-    bool_vec = [x['type'] == 'yolo' for x in model.module_defs]
+    bool_vec = [x['type'] == 'yolo' or x['type'] == 'region' for x in model.module_defs]
     return [i for i, x in enumerate(bool_vec) if x]  # [82, 94, 106] for yolov3
 
 
