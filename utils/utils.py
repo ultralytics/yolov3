@@ -109,6 +109,13 @@ def xyxy2xywh(x):
     y[:, 3] = x[:, 3] - x[:, 1]  # height
     return y
 
+def det2label(det,height,width):
+    if det.ndimension() == 1:
+            det = det.unsqueeze(0)
+    label_format_det = xyxy2xywh(det[:, :4])
+    label_format_det[:, 1::2] = label_format_det[:, 1::2] / height
+    label_format_det[:, 0::2] = label_format_det[:, 0::2] / width
+    return label_format_det.squeeze().detach().cpu().numpy()
 
 def xywh2xyxy(x):
     # Transform box coordinates from [x, y, w, h] to [x1, y1, x2, y2] (where xy1=top-left, xy2=bottom-right)

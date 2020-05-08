@@ -10,12 +10,23 @@ def detect(save_img=False):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half, view_img, save_txt = opt.output, opt.source, opt.weights, opt.half, opt.view_img, opt.save_txt
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
-
+    generate_labels = False
+    
     # Initialize
     device = torch_utils.select_device(device='cpu' if ONNX_EXPORT else opt.device)
     if os.path.exists(out):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
+
+    if opt.label:
+        if os.path.isdir(source):
+            generate_labels = True
+            print('Generating labels ... \n')
+        elif not os.path.isdir(source):
+            print('Not generating labels!')
+            print('To generate labels, a dir of images must be provided !')
+    else:
+        print('Not generating labels!')
 
     # Initialize model
     model = Darknet(opt.cfg, img_size)
@@ -102,6 +113,8 @@ def detect(save_img=False):
         if classify:
             pred = apply_classifier(pred, modelc, img, im0s)
 
+        height, width = im0s.shape[:2]
+
         # Process detections
         for i, det in enumerate(pred):  # detections per image
             if webcam:  # batch_size >= 1
@@ -120,11 +133,17 @@ def detect(save_img=False):
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += '%g %ss, ' % (n, names[int(c)])  # add to string
 
+
                 # Write results
                 for *xyxy, conf, cls in det:
                     if save_txt:  # Write to file
                         with open(save_path + '.txt', 'a') as file:
                             file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
+
+                    if generate_labels:
+                        label = det2label(torch.Tensor(xyxy), width=width, height=height)
+                        with open(save_path.split('.')[0] + '.txt', 'a') as file:
+                            file.write(('%g ' * 4 + '%g' + '\n') % (cls, *label))
 
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
@@ -181,6 +200,7 @@ if __name__ == '__main__':
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
+    parser.add_argument('--label', action='store_true', help='generate label files')
     opt = parser.parse_args()
     print(opt)
 
