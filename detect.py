@@ -18,7 +18,7 @@ def detect(save_img=False):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
 
-    if opt.label:
+    if save_txt:
         if os.path.isdir(source):
             generate_labels = True
             print('Generating labels ... \n')
@@ -136,15 +136,10 @@ def detect(save_img=False):
 
                 # Write results
                 for *xyxy, conf, cls in det:
-                    if save_txt:  # Write to file
-                        with open(save_path + '.txt', 'a') as file:
-                            file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
-
-                    if generate_labels:
-                        label = det2label(torch.Tensor(xyxy), width=width, height=height)
+                    if generate_labels: # Write to label file
+                        label = det2label(xyxy, width=width, height=height)
                         with open(save_path.split('.')[0] + '.txt', 'a') as file:
                             file.write(('%g ' * 4 + '%g' + '\n') % (cls, *label))
-
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
@@ -200,7 +195,6 @@ if __name__ == '__main__':
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
-    parser.add_argument('--label', action='store_true', help='generate label files')
     opt = parser.parse_args()
     print(opt)
 
