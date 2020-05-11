@@ -10,7 +10,7 @@ assignees: ''
 Before submitting a bug report, please ensure that you are using the latest versions of:
  - Python
  - PyTorch
- - This repository (run `git status -uno` to check and `git pull` to update)
+ - This repository (run `git fetch && git status -uno` to check and `git pull` to update)
  
 **Your issue must be reproducible on a public dataset (i.e COCO) using the latest version of the repository, and you must supply code to reproduce, or we can not help you.**
 
