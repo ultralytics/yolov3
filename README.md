@@ -61,7 +61,7 @@ https://cloud.google.com/deep-learning-vm/
 **Machine type:** preemptible [n1-standard-8](https://cloud.google.com/compute/docs/machine-types) (8 vCPUs, 30 GB memory)   
 **CPU platform:** Intel Skylake  
 **GPUs:** K80 ($0.14/hr), T4 ($0.11/hr), V100 ($0.74/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32    
-**HDD:** 300 GB SSD
+**HDD:** 300 GB SSD  
 **Dataset:** COCO train 2014 (117,263 images)  
 **Model:** `yolov3-spp.cfg`  
 **Command:**  `python3 train.py --data coco2017.data --img 416 --batch 32`
