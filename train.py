@@ -54,7 +54,7 @@ if hyp['fl_gamma']:
     print('Using FocalLoss(gamma=%g)' % hyp['fl_gamma'])
 
 
-def train():
+def train(hyp):
     cfg = opt.cfg
     data = opt.data
     epochs = opt.epochs  # 500200 batches at bs 64, 117263 images = 273 epochs
@@ -409,7 +409,7 @@ if __name__ == '__main__':
     if not opt.evolve:  # Train normally
         print('Start Tensorboard with "tensorboard --logdir=runs", view at http://localhost:6006/')
         tb_writer = SummaryWriter(comment=opt.name)
-        train()  # train normally
+        train(hyp)  # train normally
 
     else:  # Evolve hyperparameters (optional)
         opt.notest, opt.nosave = True, True  # only test/save final epoch
@@ -455,7 +455,7 @@ if __name__ == '__main__':
                 hyp[k] = np.clip(hyp[k], v[0], v[1])
 
             # Train mutation
-            results = train()
+            results = train(hyp.copy())
 
             # Write mutation results
             print_mutation(hyp, results, opt.bucket)
