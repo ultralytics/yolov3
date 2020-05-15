@@ -93,7 +93,7 @@ def create_modules(module_defs, img_size, cfg):
         elif mdef['type'] == 'yolo':
             yolo_index += 1
             stride = [32, 16, 8]  # P5, P4, P3 strides
-            if 'panet' in cfg or 'yolov4' or 'cd53' in cfg:  # stride order reversed
+            if any(x in cfg for x in ['panet', 'yolov4', 'cd53']):  # stride order reversed
                 stride = list(reversed(stride))
             layers = mdef['from'] if 'from' in mdef else []
             modules = YOLOLayer(anchors=mdef['anchors'][mdef['mask']],  # anchor list
