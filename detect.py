@@ -1,5 +1,4 @@
 import argparse
-from sys import platform
 
 from models import *  # set ONNX_EXPORT in models.py
 from utils.datasets import *
@@ -10,23 +9,12 @@ def detect(save_img=False):
     img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half, view_img, save_txt = opt.output, opt.source, opt.weights, opt.half, opt.view_img, opt.save_txt
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
-    generate_labels = False
-    
+
     # Initialize
     device = torch_utils.select_device(device='cpu' if ONNX_EXPORT else opt.device)
     if os.path.exists(out):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
-
-    if save_txt:
-        if os.path.isdir(source):
-            generate_labels = True
-            print('Generating labels ... \n')
-        elif not os.path.isdir(source):
-            print('Not generating labels!')
-            print('To generate labels, a dir of images must be provided !')
-    else:
-        print('Not generating labels!')
 
     # Initialize model
     model = Darknet(opt.cfg, img_size)
@@ -113,10 +101,9 @@ def detect(save_img=False):
         if classify:
             pred = apply_classifier(pred, modelc, img, im0s)
 
-        height, width = im0s.shape[:2]
-
         # Process detections
-        for i, det in enumerate(pred):  # detections per image
+        height, width = im0s.shape[:2]
+        for i, det in enumerate(pred):  # detections for image i
             if webcam:  # batch_size >= 1
                 p, s, im0 = path[i], '%g: ' % i, im0s[i]
             else:
@@ -124,6 +111,7 @@ def detect(save_img=False):
 
             save_path = str(Path(out) / Path(p).name)
             s += '%gx%g ' % img.shape[2:]  # print string
+            gn = torch.tensor(im0s.shape)[[1, 0, 1, 0]]  #  normalization gain whwh
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
@@ -133,13 +121,13 @@ def detect(save_img=False):
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += '%g %ss, ' % (n, names[int(c)])  # add to string
 
-
                 # Write results
                 for *xyxy, conf, cls in det:
-                    if generate_labels: # Write to label file
-                        label = det2label(xyxy, width=width, height=height)
-                        with open(save_path.split('.')[0] + '.txt', 'a') as file:
-                            file.write(('%g ' * 4 + '%g' + '\n') % (cls, *label))
+                    if save_txt:  # Write to file
+                        xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
+                        with open(save_path + '.txt', 'a') as file:
+                            file.write(('%g ' * 5 + '\n') % (cls, *xywh))  # label format
+
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
