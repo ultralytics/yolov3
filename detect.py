@@ -102,7 +102,6 @@ def detect(save_img=False):
             pred = apply_classifier(pred, modelc, img, im0s)
 
         # Process detections
-        height, width = im0s.shape[:2]
         for i, det in enumerate(pred):  # detections for image i
             if webcam:  # batch_size >= 1
                 p, s, im0 = path[i], '%g: ' % i, im0s[i]
