@@ -626,9 +626,8 @@ def letterbox(img, new_shape=(416, 416), color=(114, 114, 114), auto=True, scale
 def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10, border=0):
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
     # https://medium.com/uruvideo/dataset-augmentation-with-random-homographies-a8f4b44830d4
+    # targets = [cls, xyxy]
 
-    if targets is None:  # targets = [cls, xyxy]
-        targets = []
     height = img.shape[0] + border * 2
     width = img.shape[1] + border * 2
 
@@ -637,6 +636,7 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10,
     a = random.uniform(-degrees, degrees)
     # a += random.choice([-180, -90, 0, 90])  # add 90deg rotations to small rotations
     s = random.uniform(1 - scale, 1 + scale)
+    # s = 2 ** random.uniform(-scale, scale)
     R[:2] = cv2.getRotationMatrix2D(angle=a, center=(img.shape[1] / 2, img.shape[0] / 2), scale=s)
 
     # Translation

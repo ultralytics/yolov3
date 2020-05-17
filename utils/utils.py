@@ -103,7 +103,7 @@ def coco80_to_coco91_class():  # converts 80-index (val2014) to 91-index (paper)
 
 
 def xyxy2xywh(x):
-    # Transform box coordinates from [x1, y1, x2, y2] (where xy1=top-left, xy2=bottom-right) to [x, y, w, h] 
+    # Convert nx4 boxes from [x1, y1, x2, y2] to [x, y, w, h] where xy1=top-left, xy2=bottom-right
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
     y[:, 0] = (x[:, 0] + x[:, 2]) / 2  # x center
     y[:, 1] = (x[:, 1] + x[:, 3]) / 2  # y center
@@ -113,33 +113,13 @@ def xyxy2xywh(x):
 
 
 def xywh2xyxy(x):
-    # Transform box coordinates from [x, y, w, h] to [x1, y1, x2, y2] (where xy1=top-left, xy2=bottom-right)
+    # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
     y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
     y[:, 0] = x[:, 0] - x[:, 2] / 2  # top left x
     y[:, 1] = x[:, 1] - x[:, 3] / 2  # top left y
     y[:, 2] = x[:, 0] + x[:, 2] / 2  # bottom right x
     y[:, 3] = x[:, 1] + x[:, 3] / 2  # bottom right y
     return y
-
-
-# def xywh2xyxy(box):
-#     # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2]
-#     if isinstance(box, torch.Tensor):
-#         x, y, w, h = box.t()
-#         return torch.stack((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).t()
-#     else:  # numpy
-#         x, y, w, h = box.T
-#         return np.stack((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).T
-#
-#
-# def xyxy2xywh(box):
-#     # Convert nx4 boxes from [x1, y1, x2, y2] to [x, y, w, h]
-#     if isinstance(box, torch.Tensor):
-#         x1, y1, x2, y2 = box.t()
-#         return torch.stack(((x1 + x2) / 2, (y1 + y2) / 2, x2 - x1, y2 - y1)).t()
-#     else:  # numpy
-#         x1, y1, x2, y2 = box.T
-#         return np.stack(((x1 + x2) / 2, (y1 + y2) / 2, x2 - x1, y2 - y1)).T
 
 
 def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
@@ -187,7 +167,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
 
     # Create Precision-Recall curve and compute AP for each class
     pr_score = 0.1  # score to evaluate P and R https://github.com/ultralytics/yolov3/issues/898
-    s = [len(unique_classes), tp.shape[1]]  # number class, number iou thresholds (i.e. 10 for mAP0.5...0.95)
+    s = [unique_classes.shape[0], tp.shape[1]]  # number class, number iou thresholds (i.e. 10 for mAP0.5...0.95)
     ap, p, r = np.zeros(s), np.zeros(s), np.zeros(s)
     for ci, c in enumerate(unique_classes):
         i = pred_cls == c
@@ -601,7 +581,7 @@ def print_model_biases(model):
         pass
 
 
-def strip_optimizer(f='weights/last.pt'):  # from utils.utils import *; strip_optimizer()
+def strip_optimizer(f='weights/best.pt'):  # from utils.utils import *; strip_optimizer()
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
     x = torch.load(f, map_location=torch.device('cpu'))
     x['optimizer'] = None
@@ -614,12 +594,11 @@ def create_backbone(f='weights/last.pt'):  # from utils.utils import *; create_b
     x['optimizer'] = None
     x['training_results'] = None
     x['epoch'] = -1
-    for p in x['model'].values():
-        try:
-            p.requires_grad = True
-        except:
-            pass
-    torch.save(x, 'weights/backbone.pt')
+    for p in x['model'].parameters():
+        p.requires_grad = True
+    s = 'weights/backbone.pt'
+    print('%s saved as %s' % (f, s))
+    torch.save(x, s)
 
 
 def coco_class_count(path='../coco/labels/train2014/'):
