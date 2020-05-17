@@ -185,7 +185,6 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     opt.cfg = list(glob.iglob('./**/' + opt.cfg, recursive=True))[0]  # find file
     opt.names = list(glob.iglob('./**/' + opt.names, recursive=True))[0]  # find file
-    opt.weights = list(glob.iglob('./**/' + opt.weights, recursive=True))[0]  # find file
     print(opt)
 
     with torch.no_grad():
