@@ -6,7 +6,7 @@ from utils.utils import *
 
 
 def detect(save_img=False):
-    img_size = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
+    imgsz = (320, 192) if ONNX_EXPORT else opt.img_size  # (320, 192) or (416, 256) or (608, 352) for (height, width)
     out, source, weights, half, view_img, save_txt = opt.output, opt.source, opt.weights, opt.half, opt.view_img, opt.save_txt
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
 
@@ -17,7 +17,7 @@ def detect(save_img=False):
     os.makedirs(out)  # make new output folder
 
     # Initialize model
-    model = Darknet(opt.cfg, img_size)
+    model = Darknet(opt.cfg, imgsz)
 
     # Load weights
     attempt_download(weights)
@@ -42,7 +42,7 @@ def detect(save_img=False):
     # Export mode
     if ONNX_EXPORT:
         model.fuse()
-        img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
+        img = torch.zeros((1, 3) + imgsz)  # (1, 3, 320, 192)
         f = opt.weights.replace(opt.weights.split('.')[-1], 'onnx')  # *.onnx filename
         torch.onnx.export(model, img, f, verbose=False, opset_version=11,
                           input_names=['images'], output_names=['classes', 'boxes'])
@@ -64,10 +64,10 @@ def detect(save_img=False):
     if webcam:
         view_img = True
         torch.backends.cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=img_size)
+        dataset = LoadStreams(source, img_size=imgsz)
     else:
         save_img = True
-        dataset = LoadImages(source, img_size=img_size)
+        dataset = LoadImages(source, img_size=imgsz)
 
     # Get names and colors
     names = load_classes(opt.names)
@@ -75,7 +75,7 @@ def detect(save_img=False):
 
     # Run inference
     t0 = time.time()
-    img = torch.zeros((1, 3, img_size, img_size), device=device)  # init img
+    img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
     _ = model(img.half() if half else img.float()) if device.type != 'cpu' else None  # run once
     for path, img, im0s, vid_cap in dataset:
         img = torch.from_numpy(img).to(device)
@@ -112,7 +112,7 @@ def detect(save_img=False):
             s += '%gx%g ' % img.shape[2:]  # print string
             gn = torch.tensor(im0s.shape)[[1, 0, 1, 0]]  #  normalization gain whwh
             if det is not None and len(det):
-                # Rescale boxes from img_size to im0 size
+                # Rescale boxes from imgsz to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
                 # Print results

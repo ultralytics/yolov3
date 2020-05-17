@@ -12,7 +12,7 @@ def test(cfg,
          data,
          weights=None,
          batch_size=16,
-         img_size=416,
+         imgsz=416,
          conf_thres=0.001,
          iou_thres=0.6,  # for nms
          save_json=False,
@@ -30,7 +30,7 @@ def test(cfg,
             os.remove(f)
 
         # Initialize model
-        model = Darknet(cfg, img_size)
+        model = Darknet(cfg, imgsz)
 
         # Load weights
         attempt_download(weights)
@@ -60,7 +60,7 @@ def test(cfg,
 
     # Dataloader
     if dataloader is None:
-        dataset = LoadImagesAndLabels(path, img_size, batch_size, rect=True, single_cls=opt.single_cls)
+        dataset = LoadImagesAndLabels(path, imgsz, batch_size, rect=True, single_cls=opt.single_cls)
         batch_size = min(batch_size, len(dataset))
         dataloader = DataLoader(dataset,
                                 batch_size=batch_size,
@@ -70,7 +70,7 @@ def test(cfg,
 
     seen = 0
     model.eval()
-    _ = model(torch.zeros((1, 3, img_size, img_size), device=device)) if device.type != 'cpu' else None  # run once
+    _ = model(torch.zeros((1, 3, imgsz, imgsz), device=device)) if device.type != 'cpu' else None  # run once
     coco91class = coco80_to_coco91_class()
     s = ('%20s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@0.5', 'F1')
     p, r, f1, mp, mr, map, mf1, t0, t1 = 0., 0., 0., 0., 0., 0., 0., 0., 0.
@@ -191,7 +191,7 @@ def test(cfg,
 
     # Print speeds
     if verbose or save_json:
-        t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (img_size, img_size, batch_size)  # tuple
+        t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (imgsz, imgsz, batch_size)  # tuple
         print('Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t)
 
     # Save JSON
@@ -259,35 +259,11 @@ if __name__ == '__main__':
              opt.single_cls,
              opt.augment)
 
-    elif opt.task == 'benchmark':  # mAPs at 320-608 at conf 0.5 and 0.7
+    elif opt.task == 'benchmark':  # mAPs at 256-640 at conf 0.5 and 0.7
         y = []
-        for i in [320, 416, 512, 608]:  # img-size
-            for j in [0.5, 0.7]:  # iou-thres
+        for i in list(range(256, 640, 128)):  # img-size
+            for j in [0.6, 0.7]:  # iou-thres
                 t = time.time()
                 r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, i, opt.conf_thres, j, opt.save_json)[0]
                 y.append(r + (time.time() - t,))
         np.savetxt('benchmark.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
-
-    elif opt.task == 'study':  # Parameter study
-        y = []
-        x = np.arange(0.4, 0.9, 0.05)  # iou-thres
-        for i in x:
-            t = time.time()
-            r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, i, opt.save_json)[0]
-            y.append(r + (time.time() - t,))
-        np.savetxt('study.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
-
-        # Plot
-        fig, ax = plt.subplots(3, 1, figsize=(6, 6))
-        y = np.stack(y, 0)
-        ax[0].plot(x, y[:, 2], marker='.', label='mAP@0.5')
-        ax[0].set_ylabel('mAP')
-        ax[1].plot(x, y[:, 3], marker='.', label='mAP@0.5:0.95')
-        ax[1].set_ylabel('mAP')
-        ax[2].plot(x, y[:, -1], marker='.', label='time')
-        ax[2].set_ylabel('time (s)')
-        for i in range(3):
-            ax[i].legend()
-            ax[i].set_xlabel('iou_thr')
-        fig.tight_layout()
-        plt.savefig('study.jpg', dpi=200)
