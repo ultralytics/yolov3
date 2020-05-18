@@ -4,6 +4,7 @@ import os
 import random
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from sys import platform
 
@@ -472,12 +473,14 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_label=T
         nx6 (x1, y1, x2, y2, conf, cls)
     """
 
-    # Box constraints
+    # Settings
+    merge = True  # merge for best mAP
     min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
+    time_limit = 10.0  # seconds to quit after
 
+    t = time.time()
     nc = prediction[0].shape[1] - 5  # number of classes
     multi_label &= nc > 1  # multiple labels per box
-    merge = True  # merge for best mAP
     output = [None] * prediction.shape[0]
     for xi, x in enumerate(prediction):  # image index, image inference
         # Apply constraints
@@ -533,6 +536,9 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_label=T
                 pass
 
         output[xi] = x[i]
+        if (time.time() - t) > time_limit:
+            break  # time limit exceeded
+
     return output
 
 
