@@ -317,18 +317,28 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Cache labels
         self.imgs = [None] * n
-        self.labels = [np.zeros((0, 5), dtype=np.float32)] * n
-        extract_bounding_boxes = False
-        create_datasubset = False
-        pbar = tqdm(self.label_files, desc='Caching labels')
+        create_datasubset, extract_bounding_boxes = False, False
         nm, nf, ne, ns, nd = 0, 0, 0, 0, 0  # number missing, found, empty, datasubset, duplicate
+        np_labels_path = str(Path(self.label_files[0]).parent) + '.npy'  # saved labels in *.npy file
+        if os.path.isfile(np_labels_path):
+            print('Loading labels from %s' % np_labels_path)
+            self.labels = list(np.load(np_labels_path, allow_pickle=True))
+            labels_loaded = True
+        else:
+            self.labels = [np.zeros((0, 5), dtype=np.float32)] * n
+            labels_loaded = False
+
+        pbar = tqdm(self.label_files, desc='Caching labels')
         for i, file in enumerate(pbar):
-            try:
-                with open(file, 'r') as f:
-                    l = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
-            except:
-                nm += 1  # print('missing labels for image %s' % self.img_files[i])  # file missing
-                continue
+            if labels_loaded:
+                l = self.labels[i]
+            else:
+                try:
+                    with open(file, 'r') as f:
+                        l = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)
+                except:
+                    nm += 1  # print('missing labels for image %s' % self.img_files[i])  # file missing
+                    continue
 
             if l.shape[0]:
                 assert l.shape[1] == 5, '> 5 label columns: %s' % file
@@ -378,6 +388,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             pbar.desc = 'Caching labels (%g found, %g missing, %g empty, %g duplicate, for %g images)' % (
                 nf, nm, ne, nd, n)
         assert nf > 0, 'No labels found in %s. See %s' % (os.path.dirname(file) + os.sep, help_url)
+        if not labels_loaded:
+            print('Saving labels to %s for faster future loading' % np_labels_path)
+            np.save(np_labels_path, self.labels)  # save for next time
 
         # Cache images into memory for faster training (WARNING: large datasets may exceed system RAM)
         if cache_images:  # if training
