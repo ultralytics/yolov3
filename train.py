@@ -314,7 +314,8 @@ def train(hyp):
                                       model=ema.ema,
                                       save_json=final_epoch and is_coco,
                                       single_cls=opt.single_cls,
-                                      dataloader=testloader)
+                                      dataloader=testloader,
+                                      multi_label=ni > n_burn)
 
         # Write
         with open(results_file, 'a') as f:
