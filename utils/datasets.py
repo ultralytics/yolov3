@@ -258,11 +258,16 @@ class LoadStreams:  # multiple IP or RTSP cameras
 class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False,
                  cache_images=False, single_cls=False):
-        path = str(Path(path))  # os-agnostic
-        assert os.path.isfile(path), 'File not found %s. See %s' % (path, help_url)
-        with open(path, 'r') as f:
-            self.img_files = [x.replace('/', os.sep) for x in f.read().splitlines()  # os-agnostic
-                              if os.path.splitext(x)[-1].lower() in img_formats]
+        try:
+            path = str(Path(path))  # os-agnostic
+            if os.path.isfile(path):  # file
+                with open(path, 'r') as f:
+                    f = f.read().splitlines()
+            elif os.path.isdir(path):  # folder
+                f = glob.iglob(path + os.sep + '*.*')
+            self.img_files = [x.replace('/', os.sep) for x in f if os.path.splitext(x)[-1].lower() in img_formats]
+        except:
+            raise Exception('Error loading data from %s. See %s' % (path, help_url))
 
         n = len(self.img_files)
         assert n > 0, 'No images found in %s. See %s' % (path, help_url)
@@ -387,8 +392,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 ne += 1  # print('empty labels for image %s' % self.img_files[i])  # file empty
                 # os.system("rm '%s' '%s'" % (self.img_files[i], self.label_files[i]))  # remove
 
-            pbar.desc = 'Caching labels (%g found, %g missing, %g empty, %g duplicate, for %g images)' % (
-                nf, nm, ne, nd, n)
+            pbar.desc = 'Caching labels %s (%g found, %g missing, %g empty, %g duplicate, for %g images)' % (
+                s, nf, nm, ne, nd, n)
         assert nf > 0, 'No labels found in %s. See %s' % (os.path.dirname(file) + os.sep, help_url)
         if not labels_loaded:
             print('Saving labels to %s for faster future loading' % np_labels_path)
