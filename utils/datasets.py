@@ -322,13 +322,15 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         nm, nf, ne, ns, nd = 0, 0, 0, 0, 0  # number missing, found, empty, datasubset, duplicate
         np_labels_path = str(Path(self.label_files[0]).parent) + '.npy'  # saved labels in *.npy file
         if os.path.isfile(np_labels_path):
-            print('Loading labels from %s' % np_labels_path)
+            s = np_labels_path
             x = list(np.load(np_labels_path, allow_pickle=True))
             if len(x) == n:
                 self.labels = x
                 labels_loaded = True
+        else:
+            s = path.replace('images', 'labels')
 
-        pbar = tqdm(self.label_files, desc='Caching labels')
+        pbar = tqdm(self.label_files)
         for i, file in enumerate(pbar):
             if labels_loaded:
                 l = self.labels[i]
