@@ -4,6 +4,7 @@ numpy == 1.17
 opencv-python >= 4.1
 torch >= 1.5
 matplotlib
+cython
 pycocotools
 tqdm
 pillow
