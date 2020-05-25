@@ -570,6 +570,7 @@ def strip_optimizer(f='weights/best.pt'):  # from utils.utils import *; strip_op
     # Strip optimizer from *.pt files for lighter files (reduced by 2/3 size)
     x = torch.load(f, map_location=torch.device('cpu'))
     x['optimizer'] = None
+    print('Optimizer stripped from %s' % f)
     torch.save(x, f)
 
 
