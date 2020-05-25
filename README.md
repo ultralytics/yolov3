@@ -175,4 +175,4 @@ To access an up-to-date working environment (with all dependencies including CUD
 
 # Contact
 
-**Issues should be raised directly in the repository.** For additional questions or comments please email Glenn Jocher at glenn.jocher@ultralytics.com or visit us at https://contact.ultralytics.com.
+**Issues should be raised directly in the repository.** For business inquiries or professional support requests please visit us at https://contact.ultralytics.com.
