@@ -260,11 +260,15 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                  cache_images=False, single_cls=False):
         try:
             path = str(Path(path))  # os-agnostic
+            parent = str(Path(path).parent) + os.sep
             if os.path.isfile(path):  # file
                 with open(path, 'r') as f:
                     f = f.read().splitlines()
+                    f = [x.replace('./', parent) for x in f if x.startswith('./')]  # local to global path
             elif os.path.isdir(path):  # folder
                 f = glob.iglob(path + os.sep + '*.*')
+            else:
+                raise Exception('%s does not exist' % path)
             self.img_files = [x.replace('/', os.sep) for x in f if os.path.splitext(x)[-1].lower() in img_formats]
         except:
             raise Exception('Error loading data from %s. See %s' % (path, help_url))
@@ -274,7 +278,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         bi = np.floor(np.arange(n) / batch_size).astype(np.int)  # batch index
         nb = bi[-1] + 1  # number of batches
 
-        self.n = n
+        self.n = n  # number of images
         self.batch = bi  # batch index of image
         self.img_size = img_size
         self.augment = augment
@@ -290,7 +294,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         # Rectangular Training  https://github.com/ultralytics/yolov3/issues/232
         if self.rect:
             # Read image shapes (wh)
-            sp = path.replace('.txt', '.shapes')  # shapefile path
+            sp = path.replace('.txt', '') + '.shapes'  # shapefile path
             try:
                 with open(sp, 'r') as f:  # read existing shapefile
                     s = [x.split() for x in f.read().splitlines()]
@@ -302,11 +306,11 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             # Sort by aspect ratio
             s = np.array(s, dtype=np.float64)
             ar = s[:, 1] / s[:, 0]  # aspect ratio
-            i = ar.argsort()
-            self.img_files = [self.img_files[i] for i in i]
-            self.label_files = [self.label_files[i] for i in i]
-            self.shapes = s[i]  # wh
-            ar = ar[i]
+            irect = ar.argsort()
+            self.img_files = [self.img_files[i] for i in irect]
+            self.label_files = [self.label_files[i] for i in irect]
+            self.shapes = s[irect]  # wh
+            ar = ar[irect]
 
             # Set training image shapes
             shapes = [[1, 1]] * nb
@@ -327,8 +331,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         nm, nf, ne, ns, nd = 0, 0, 0, 0, 0  # number missing, found, empty, datasubset, duplicate
         np_labels_path = str(Path(self.label_files[0]).parent) + '.npy'  # saved labels in *.npy file
         if os.path.isfile(np_labels_path):
-            s = np_labels_path
-            x = list(np.load(np_labels_path, allow_pickle=True))
+            s = np_labels_path  # print string
+            x = np.load(np_labels_path, allow_pickle=True)
             if len(x) == n:
                 self.labels = x
                 labels_loaded = True
@@ -339,6 +343,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         for i, file in enumerate(pbar):
             if labels_loaded:
                 l = self.labels[i]
+                # np.savetxt(file, l, '%g')  # save *.txt from *.npy file
             else:
                 try:
                     with open(file, 'r') as f:
@@ -394,8 +399,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
             pbar.desc = 'Caching labels %s (%g found, %g missing, %g empty, %g duplicate, for %g images)' % (
                 s, nf, nm, ne, nd, n)
-        assert nf > 0, 'No labels found in %s. See %s' % (os.path.dirname(file) + os.sep, help_url)
-        if not labels_loaded:
+        assert nf > 0 or n == 20288, 'No labels found in %s. See %s' % (os.path.dirname(file) + os.sep, help_url)
+        if not labels_loaded and n > 1000:
             print('Saving labels to %s for faster future loading' % np_labels_path)
             np.save(np_labels_path, self.labels)  # save for next time
 
