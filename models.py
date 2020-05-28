@@ -438,7 +438,7 @@ def convert(cfg='cfg/yolov3-spp.cfg', weights='weights/yolov3-spp.weights'):
 
         target = weights.rsplit('.', 1)[0] + '.pt'
         torch.save(chkpt, target)
-        print("Success: converted '%s' to '%'" % (weights, target))
+        print("Success: converted '%s' to 's%'" % (weights, target))
 
     else:
         print('Error: extension not supported.')
