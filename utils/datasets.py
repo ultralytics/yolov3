@@ -264,7 +264,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             if os.path.isfile(path):  # file
                 with open(path, 'r') as f:
                     f = f.read().splitlines()
-                    f = [x.replace('./', parent) for x in f if x.startswith('./')]  # local to global path
+                    f = [x.replace('./', parent) if x.startswith('./') else x for x in f]  # local to global path
             elif os.path.isdir(path):  # folder
                 f = glob.iglob(path + os.sep + '*.*')
             else:
