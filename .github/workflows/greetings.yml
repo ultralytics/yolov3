@@ -11,12 +11,19 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         pr-message: 'Hello @${{ github.actor }}, thank you for submitting a PR! We will respond as soon as possible.'
         issue-message: |
-          Hello @${{ github.actor }}, thank you for your interest in our work! Please visit our [Custom Training Tutorial](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data) to get started, and see our [Google Colab Notebook](https://github.com/ultralytics/yolov3/blob/master/tutorial.ipynb), [Docker Image](https://hub.docker.com/r/ultralytics/yolov3), and [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) for example environments. 
+          Hello @${{ github.actor }}, thank you for your interest in our work! **Ultralytics has publically released YOLOv5** at https://github.com/ultralytics/yolov5, featuring faster, lighter and more accurate object detection. YOLOv5 is recommended for all new projects.
+
+          <a href="https://apps.apple.com/app/id1452689527" target="_blank">
+          <img src="https://user-images.githubusercontent.com/26833433/82944393-f7644d80-9f4f-11ea-8b87-1a5b04f555f1.jpg" width="800"></a>
+
+          <img src="https://user-images.githubusercontent.com/26833433/84200349-729f2680-aa5b-11ea-8f9a-604c9e01a658.png" width="800">
+
+          To continue with this repo, please visit our [Custom Training Tutorial](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data) to get started, and see our [Google Colab Notebook](https://github.com/ultralytics/yolov3/blob/master/tutorial.ipynb), [Docker Image](https://hub.docker.com/r/ultralytics/yolov3), and [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) for example environments.
             
           If this is a bug report, please provide screenshots and **minimum viable code to reproduce your issue**, otherwise we can not help you.
 
           If this is a custom model or data training question, please note that Ultralytics does **not** provide free personal support. As a leader in vision ML and AI, we do offer professional consulting, from simple expert advice up to delivery of fully customized, end-to-end production solutions for our clients, such as:
-          - **Cloud-based AI** surveillance systems operating on **hundreds of HD video streams in realtime.**
+          - **Cloud-based AI** systems operating on **hundreds of HD video streams in realtime.**
           - **Edge AI** integrated into custom iOS and Android apps for realtime **30 FPS video inference.**
           - **Custom data training**, hyperparameter evolution, and model exportation to any destination.
 
