@@ -185,10 +185,9 @@ To access an up-to-date working environment (with all dependencies including CUD
 ## About Us
 
 Ultralytics is a U.S.-based particle physics and AI startup with over 6 years of expertise supporting government, academic and business clients. We offer a wide range of vision AI services, spanning from simple expert advice up to delivery of fully customized, end-to-end production solutions, including:
-- **Cloud-based AI** surveillance systems operating on **hundreds of HD video streams in realtime.**
+- **Cloud-based AI** systems operating on **hundreds of HD video streams in realtime.**
 - **Edge AI** integrated into custom iOS and Android apps for realtime **30 FPS video inference.**
 - **Custom data training**, hyperparameter evolution, and model exportation to any destination.
-
 For business inquiries and professional support requests please visit us at https://www.ultralytics.com. 
 
 
