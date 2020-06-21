@@ -1,0 +1,7 @@
+# pip install -U -r requirements-dev.txt
+
+# include the runtime requirements
+-r requirements.txt
+
+# add development requirements here
+torchvision>=0.6.1
