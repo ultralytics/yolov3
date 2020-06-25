@@ -145,10 +145,9 @@ def train(hyp):
         load_darknet_weights(model, weights)
     
     if opt.freeze_layers:                                                                                                                                                            
-        output_layer_indices = [idx - 1 for idx, module in enumerate(model.module_list) \                                                                                            
-                             if isinstance(module, YOLOLayer)]                                                                                                                      
-        freeze_layer_indices = [x for x in range(len(model.module_list)) if\                                                                                                         
-                                (x not in output_layer_indices) and \                                                                                                                
+        output_layer_indices = [idx - 1 for idx, module in enumerate(model.module_list) if isinstance(module, YOLOLayer)]                                                                                                                      
+        freeze_layer_indices = [x for x in range(len(model.module_list)) if                                                                                                         
+                                (x not in output_layer_indices) and                                                                                                               
                                 (x - 1 not in output_layer_indices)]                                                                                                                 
         for idx in freeze_layer_indices:                                                                                                                                             
             for parameter in model.module_list[idx].parameters():                                                                                                                    
