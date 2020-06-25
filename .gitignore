@@ -26,6 +26,7 @@
 storage.googleapis.com
 runs/*
 data/*
+label_transform/*
 !data/samples/zidane.jpg
 !data/samples/bus.jpg
 !data/coco.names
