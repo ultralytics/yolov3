@@ -1,11 +1,24 @@
 import argparse
 import json
+import hashlib
+import os
+import sys
 
 from torch.utils.data import DataLoader
 
 from models import *
 from utils.datasets import *
 from utils.utils import *
+
+
+#data format transformation;--------------------------------------------------------------------------------------------------
+with open('/home/xfy/val.list') as pp_input:
+# with open('C:\\Users\\jelly\\Desktop\\val.list', "r", encoding="UTF-8")  as pp_input:
+    with open('/home/wangjie/yolov3/data/test.txt','w') as fileObject:
+    # with open('C:\\Users\\jelly\\Desktop\\test.txt', 'w') as fileObject:
+        for word in pp_input:
+            fileObject.write(word)
+            print(word)
 
 
 def test(cfg,
@@ -21,6 +34,7 @@ def test(cfg,
          model=None,
          dataloader=None,
          multi_label=True):
+            
     # Initialize/load model and set device
     if model is None:
         is_training = False
@@ -232,7 +246,7 @@ def test(cfg,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
-    parser.add_argument('--data', type=str, default='data/coco2014.data', help='*.data path')
+    parser.add_argument('--data', type=str, default='data/faceall.data', help='*.data path')
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp-ultralytics.pt', help='weights path')
     parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
     parser.add_argument('--img-size', type=int, default=512, help='inference size (pixels)')
@@ -244,7 +258,7 @@ if __name__ == '__main__':
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     opt = parser.parse_args()
-    opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
+    opt.save_json = opt.save_json or any([x in opt.data for x in ['faceall.data','coco.data', 'coco2014.data', 'coco2017.data']])
     opt.cfg = check_file(opt.cfg)  # check file
     opt.data = check_file(opt.data)  # check file
     print(opt)

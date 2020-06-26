@@ -1,5 +1,11 @@
 import argparse
 
+import json
+import hashlib
+import os
+import sys
+import re
+
 import torch.distributed as dist
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
@@ -22,6 +28,73 @@ last = wdir + 'last.pt'
 best = wdir + 'best.pt'
 results_file = 'results.txt'
 
+#data format transformation;--------------------------------------------------------------------------------------------------------------------------------------------------------
+class_map = {"Vehicle": "1", "EleTri": "1", "ExpTri": "1", "Tricycle": "2", "Motorcycle": "2", "Bicycle": "2",
+             "Pedestrian": "3"}
+x1_max = x2_max = 1920.0
+y1_max = y2_max = 1176.0
+x1_min = x2_min = y1_min = y2_min = 0.0
+
+# [{"items": [{"category_id": "Pedestrian", "bbox": {"y1": 528.0, "x2": 685.0, "x1": 631.0, "y2": 693.0}}, {"category_id": "Pedestrian", "bbox": {"y1": 345.0, "x2": 628.0, "x1": 505.0, "y2": 495.0}}]}]
+with open('/home/xfy/train.json') as dm_input:
+# with open('C:\\Users\\jelly\\Desktop\\train.json', "r", encoding="UTF-8") as dm_input:
+    read_object = json.load(dm_input)
+    with open('/home/wangjie/yolov3/data/train.txt', "w", encoding='utf-8') as temp:
+    # with open("C:\\Users\\jelly\\Desktop\\train.txt", "w", encoding='utf-8') as temp:
+        # with open('/home/xfy/PersonVehicle/JPEGImage/path.txt','w') as path:
+        num = len(read_object) # 获取字典数目
+        for location in range(0, num, 1):
+            cap = len(read_object[location]['items'])  # 获取items字典元素数目
+            for count in range(0, cap, 1):
+                classes = (read_object[location]['items'][count]['category_id'])
+                x1 = (read_object[location]['items'][count]['bbox']['x1'])
+                x2 = (read_object[location]['items'][count]['bbox']['x2'])
+                y1 = (read_object[location]['items'][count]['bbox']['y1'])
+                y2 = (read_object[location]['items'][count]['bbox']['y2'])
+                x1_max = max(x1, x1_max)
+                x2_max = max(x2, x2_max)
+                y1_max = max(y1, y1_max)
+                y2_max = max(y2, y2_max)
+                x1_min = min(x1, x1_min)
+                x2_min = min(x2, x2_min)
+                y1_min = min(y1, y1_min)
+                y2_min = min(y2, y2_min)
+        for location in range(0, num, 1):
+            path = (read_object[location]['filename'])
+            temp.write(str(path) + '\n')
+            print(str(path))
+            str_temp = str(path).split('/')[5]
+            str_res = str_temp.split('.')[0]
+            filename = str_res + '.txt'
+            # os.chdir(r'C:\\Users\\jelly\\Desktop\\hahaha')
+            os.chdir(r'/home/xfy/PersonVehicle/JPEGImage')
+            with open(filename, 'w', encoding='utf-8') as temp1:
+                cap = len(read_object[location]['items'])  # 获取items字典元素数目
+                for count in range(0, cap, 1):
+                    classes = (read_object[location]['items'][count]['category_id'])
+                    x1 = ((read_object[location]['items'][count]['bbox']['x1']) - x1_min)/(x1_max - x1_min)
+                    x2 = ((read_object[location]['items'][count]['bbox']['x2']) - x2_min)/(x2_max - x2_min)
+                    y1 = ((read_object[location]['items'][count]['bbox']['y1']) - y1_min)/(y1_max - y1_min)
+                    y2 = ((read_object[location]['items'][count]['bbox']['y2']) - y2_min)/(y2_max - y2_min)
+                    center_x = (x2 - x1) / 2
+                    center_y = (y2 - y1) / 2
+                    width = x2 - x1
+                    height = y2 - y1
+                    temp1.write(str(class_map[classes]) + '  ' + str(center_x) + '  ' + str(center_y) + '  ' + str(width) + '  ' + str(height) + '\n')
+with open('/home/xfy/class.json') as cc_input:
+# with open('C:\\Users\\jelly\\Desktop\\class.json', "r", encoding="UTF-8") as cc_input:
+    with open('/home/wangjie/yolov3/data/classes.names', 'w', encoding='utf-8') as  cc_output:
+#     with open('C:\\Users\\jelly\\Desktop\\classes.names', 'w', encoding='utf-8') as  cc_output:
+        print(type(cc_input))
+        # for word in cc_input:
+        for line in cc_input.readlines():
+            # temp_key = line.keys() # cc_input不是字典类型，无法调用keys()
+            # for item in line :
+            pattern = re.compile('"'"(.*)"'"') # .表示为任意字符，*表示为任意长度,使用圆括号提取引号之间的内容,":"表示以冒号结尾,'"'表示以冒号开头和结尾
+            temp_key = pattern.findall(line)
+            print (temp_key)
+            for item in temp_key :
+                cc_output.write(item+'\n')
 # Hyperparameters
 hyp = {'giou': 3.54,  # giou loss gain
        'cls': 37.4,  # cls loss gain
@@ -55,7 +128,7 @@ if hyp['fl_gamma']:
 
 
 def train(hyp):
-    cfg = opt.cfg
+    cfg = opt.cfg   # opt?
     data = opt.data
     epochs = opt.epochs  # 500200 batches at bs 64, 117263 images = 273 epochs
     batch_size = opt.batch_size
@@ -78,10 +151,10 @@ def train(hyp):
     # Configure run
     init_seeds()
     data_dict = parse_data_cfg(data)
-    train_path = data_dict['train']
+    train_path = data_dict['train']# 匹配faceall.data中的'train'
     test_path = data_dict['valid']
     nc = 1 if opt.single_cls else int(data_dict['classes'])  # number of classes
-    hyp['cls'] *= nc / 80  # update coco-tuned hyp['cls'] to current dataset
+    hyp['cls'] *= nc / 3  # update coco-tuned hyp['cls'] to current dataset
 
     # Remove previous results
     for f in glob.glob('*_batch*.jpg') + glob.glob(results_file):
@@ -143,15 +216,6 @@ def train(hyp):
     elif len(weights) > 0:  # darknet format
         # possible weights are '*.weights', 'yolov3-tiny.conv.15',  'darknet53.conv.74' etc.
         load_darknet_weights(model, weights)
-    
-    if opt.freeze_layers:                                                                                                                                                            
-        output_layer_indices = [idx - 1 for idx, module in enumerate(model.module_list) if isinstance(module, YOLOLayer)]                                                                                                                      
-        freeze_layer_indices = [x for x in range(len(model.module_list)) if                                                                                                         
-                                (x not in output_layer_indices) and                                                                                                               
-                                (x - 1 not in output_layer_indices)]                                                                                                                 
-        for idx in freeze_layer_indices:                                                                                                                                             
-            for parameter in model.module_list[idx].parameters():                                                                                                                    
-                parameter.requires_grad_(False)                                                                                                                                      
 
     # Mixed precision training https://github.com/NVIDIA/apex
     if mixed_precision:
@@ -315,7 +379,7 @@ def train(hyp):
         ema.update_attr(model)
         final_epoch = epoch + 1 == epochs
         if not opt.notest or final_epoch:  # Calculate mAP
-            is_coco = any([x in data for x in ['coco.data', 'coco2014.data', 'coco2017.data']]) and model.nc == 80
+            is_coco = any([x in data for x in ['faceall.data','coco.data', 'coco2014.data', 'coco2017.data']]) and model.nc == 3
             results, maps = test.test(cfg,
                                       data,
                                       batch_size=batch_size,
@@ -388,7 +452,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=300)  # 500200 batches at bs 16, 117263 COCO images = 273 epochs
     parser.add_argument('--batch-size', type=int, default=16)  # effective bs = batch_size * accumulate = 16 * 4 = 64
     parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
-    parser.add_argument('--data', type=str, default='data/coco2017.data', help='*.data path')
+    parser.add_argument('--data', type=str, default='data/faceall.data', help='*.data path')#修改自定义数据
     parser.add_argument('--multi-scale', action='store_true', help='adjust (67%% - 150%%) img_size every 10 batches')
     parser.add_argument('--img-size', nargs='+', type=int, default=[320, 640], help='[min_train, max-train, test]')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
@@ -400,10 +464,9 @@ if __name__ == '__main__':
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--weights', type=str, default='weights/yolov3-spp-ultralytics.pt', help='initial weights path')
     parser.add_argument('--name', default='', help='renames results.txt to results_name.txt if supplied')
-    parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1 or cpu)')
+    parser.add_argument('--device', default='1', help='device id (i.e. 0 or 0,1 or cpu)')#修改训练GPU
     parser.add_argument('--adam', action='store_true', help='use adam optimizer')
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
-    parser.add_argument('--freeze-layers', action='store_true', help='Freeze non-output layers')  
     opt = parser.parse_args()
     opt.weights = last if opt.resume else opt.weights
     check_git_status()
