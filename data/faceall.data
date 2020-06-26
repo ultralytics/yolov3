@@ -1,0 +1,4 @@
+classes=3
+train=/home/wangjie/yolov3/data/train.txt
+valid=/home/wangjie/yolov3/data/test.txt
+names=/home/wangjie/yolov3/data/classes.names
