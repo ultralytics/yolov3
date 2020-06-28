@@ -1,5 +1,5 @@
 <a href="https://apps.apple.com/app/id1452689527" target="_blank">
-<img src="https://user-images.githubusercontent.com/26833433/85940327-7bec1800-b8d0-11ea-9682-40630843a819.jpg" width="1000"></a>
+<img src="https://user-images.githubusercontent.com/26833433/85940594-2d3f7d80-b8d2-11ea-809a-87b3bf6d968b.jpg" width="1000"></a>
 &nbsp
 
 This repo contains Ultralytics inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. Credit to Joseph Redmon for YOLO  https://pjreddie.com/darknet/yolo/.
