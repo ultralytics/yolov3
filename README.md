@@ -1,25 +1,7 @@
-<table style="width:100%">
-  <tr>
-    <td>
-      <img src="https://user-images.githubusercontent.com/26833433/61591130-f7beea00-abc2-11e9-9dc0-d6abcf41d713.jpg">
-    </td>
-    <td align="center">
-    <a href="https://www.ultralytics.com" target="_blank">
-    <img src="https://storage.googleapis.com/ultralytics/logo/logoname1000.png" width="160"></a>
-      <img src="https://user-images.githubusercontent.com/26833433/61591093-2b4d4480-abc2-11e9-8b46-d88eb1dabba1.jpg">
-          <a href="https://itunes.apple.com/app/id1452689527" target="_blank">
-    <img src="https://user-images.githubusercontent.com/26833433/50044365-9b22ac00-0082-11e9-862f-e77aee7aa7b0.png" width="180"></a>
-    </td>
-    <td>
-      <img src="https://user-images.githubusercontent.com/26833433/61591100-55066b80-abc2-11e9-9647-52c0e045b288.jpg">
-    </td>
-  </tr>
-</table>
+<img src="https://user-images.githubusercontent.com/26833433/85940327-7bec1800-b8d0-11ea-9682-40630843a819.jpg">
+<a href="https://itunes.apple.com/app/id1452689527" target="_blank">
 
-
-## Introduction
-
-The https://github.com/ultralytics/yolov3 repo contains inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. Training is done on the COCO dataset by default: https://cocodataset.org/#home. **Credit to Joseph Redmon for YOLO:** https://pjreddie.com/darknet/yolo/.
+This repo contains Ultralytics inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. **Credit to Joseph Redmon for YOLO:** https://pjreddie.com/darknet/yolo/.
 
 
 ## Requirements
