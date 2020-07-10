@@ -165,9 +165,12 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
 
     # Create Precision-Recall curve and compute AP for each class
     pr_score = 0.1  # score to evaluate P and R https://github.com/ultralytics/yolov3/issues/898
+
     s = [unique_classes.shape[0], tp.shape[1]]  # number class, number iou thresholds (i.e. 10 for mAP0.5...0.95)
     ap, p, r = np.zeros(s), np.zeros(s), np.zeros(s)
     for ci, c in enumerate(unique_classes):
+        result_pr = open(f"results_pr_curve_class{c}.txt", "w+") #create a file for saving precision, recall, and conf
+
         i = pred_cls == c
         n_gt = (target_cls == c).sum()  # Number of ground truth objects
         n_p = i.sum()  # Number of predicted objects
@@ -191,6 +194,16 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
             for j in range(tp.shape[1]):
                 ap[ci, j] = compute_ap(recall[:, j], precision[:, j])
 
+
+            #write precision, recall, and conf
+            precision_reshape = precision.reshape([precision.shape[0],]) #reshape precision to be 1D 
+            recall_reshape = recall.reshape([recall.shape[0],]) #reshapre recall to be 1D similar to conf
+            for x in range(len(precision_reshape)):
+                result_to_save = str(conf[x]) + " " + str(precision_reshape[x]) + " " + str(recall_reshape[x]) + "\n"
+                print(result_to_save)
+                result_pr.write(result_to_save)
+
+
             # Plot
             # fig, ax = plt.subplots(1, 1, figsize=(5, 5))
             # ax.plot(recall, precision)
@@ -199,7 +212,8 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
             # ax.set_xlim(0, 1.01)
             # ax.set_ylim(0, 1.01)
             # fig.tight_layout()
-            # fig.savefig('PR_curve.png', dpi=300)
+            # fig.savefig(f'PR_curve_{c}.png', dpi=300)
+
 
     # Compute F1 score (harmonic mean of precision and recall)
     f1 = 2 * p * r / (p + r + 1e-16)
