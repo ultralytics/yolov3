@@ -452,7 +452,7 @@ def convert(cfg='cfg/yolov3-spp.cfg', weights='weights/yolov3-spp.weights'):
 
 def attempt_download(weights):
     # Attempt to download pretrained weights if not found locally
-    weights = weights.strip()
+    weights = weights.strip().replace("'", '')
     msg = weights + ' missing, try downloading from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0'
 
     if len(weights) > 0 and not os.path.isfile(weights):
