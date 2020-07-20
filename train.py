@@ -205,7 +205,7 @@ def train(hyp):
                                              num_workers=nw,
                                              shuffle=not opt.rect,  # Shuffle=True unless rectangular training is used
                                              pin_memory=True,
-                                             collate_fn=dataset.collate_fn)
+                                             collate_fn=dataset.collate_fn, drop_last = True)
 
     # Testloader
     testloader = torch.utils.data.DataLoader(LoadImagesAndLabels(test_path, imgsz_test, batch_size,
@@ -216,7 +216,7 @@ def train(hyp):
                                              batch_size=batch_size,
                                              num_workers=nw,
                                              pin_memory=True,
-                                             collate_fn=dataset.collate_fn)
+                                             collate_fn=dataset.collate_fn, drop_last = True)
 
     # Model parameters
     model.nc = nc  # attach number of classes to model
