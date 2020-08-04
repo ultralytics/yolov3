@@ -7,7 +7,7 @@ This repo contains Ultralytics inference and training code for YOLOv3 in PyTorch
 
 ## Requirements
 
-Python 3.7 or later with all `requirements.txt` dependencies installed, including `torch >= 1.5`. To install run:
+Python 3.8 or later with all `requirements.txt` dependencies installed, including `torch >= 1.6`. To install run:
 ```bash
 $ pip install -U -r requirements.txt
 ```
