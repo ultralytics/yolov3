@@ -1,17 +1,18 @@
 # pip install -U -r requirements.txt
 Cython
-numpy==1.17
-opencv-python
-torch>=1.5.1
-matplotlib
+matplotlib>=3.2.2
+numpy>=1.18.5
+opencv-python>=4.1.2
 pillow
-tensorboard
-torchvision
-scipy
-tqdm
-git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
+# pycocotools>=2.0
+PyYAML>=5.3
+scipy>=1.4.1
+tensorboard>=2.2
+torch>=1.6.0
+torchvision>=0.7.0
+tqdm>=4.41.0
 
-# Conda commands (in lieu of pip) ---------------------------------------------
+# Conda commands (in place of pip) ---------------------------------------------
 # conda update -yn base -c defaults conda
 # conda install -yc anaconda numpy opencv matplotlib tqdm pillow ipython
 # conda install -yc conda-forge scikit-image pycocotools tensorboard
