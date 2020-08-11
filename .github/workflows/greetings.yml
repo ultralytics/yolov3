@@ -1,6 +1,6 @@
 name: Greetings
 
-on: [pull_request, issues]
+on: [pull_request_target, issues]
 
 jobs:
   greeting:
@@ -21,6 +21,7 @@ jobs:
             ```
             - Verify all Continuous Integration (CI) **checks are passing**.
             - Reduce changes to the absolute **minimum** required for your bug fix or feature addition. _"It is not daily increase but daily decrease, hack away the unessential. The closer to the source, the less wastage there is."_  -Bruce Lee
+
           issue-message: |
             Hello @${{ github.actor }}, thank you for your interest in our work! Ultralytics has open-sourced YOLOv5 at https://github.com/ultralytics/yolov5, featuring faster, lighter and more accurate object detection. YOLOv5 is recommended for all new projects.
 
