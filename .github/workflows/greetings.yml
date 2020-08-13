@@ -28,7 +28,7 @@ jobs:
             <a href="https://apps.apple.com/app/id1452689527" target="_blank">
             <img src="https://user-images.githubusercontent.com/26833433/82944393-f7644d80-9f4f-11ea-8b87-1a5b04f555f1.jpg" width="800"></a>
 
-            <img src="https://user-images.githubusercontent.com/26833433/85340570-30360a80-b49b-11ea-87cf-bdf33d53ae15.png" width="800">
+            <img src="https://user-images.githubusercontent.com/26833433/90187293-6773ba00-dd6e-11ea-8f90-cd94afc0427f.png" width="800">
 
             To continue with this repo, please visit our [Custom Training Tutorial](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data) to get started, and see our [Google Colab Notebook](https://github.com/ultralytics/yolov3/blob/master/tutorial.ipynb), [Docker Image](https://hub.docker.com/r/ultralytics/yolov3), and [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) for example environments.
 
