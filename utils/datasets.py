@@ -293,6 +293,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                             for x in self.img_files]
 
         # Read image shapes (wh)
+        self.img_files = list(map(lambda x: os.path.join("/".join(os.getcwd().split("/")[:-1]), x), self.img_files))
+        self.label_files = list(map(lambda x: os.path.join("/".join(os.getcwd().split("/")[:-1]), x), self.label_files))
+        
         sp = path.replace('.txt', '') + '.shapes'  # shapefile path
         try:
             with open(sp, 'r') as f:  # read existing shapefile
