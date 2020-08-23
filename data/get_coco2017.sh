@@ -6,13 +6,13 @@
 # Download labels from Google Drive, accepting presented query
 filename="coco2017labels.zip"
 fileid="1cXZR_ckHki6nddOmcysCuuJFM--T-Q6L"
-curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null
-curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=${fileid}" -o ${filename}
+curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" >/dev/null
+curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=$(awk '/download/ {print $NF}' ./cookie)&id=${fileid}" -o ${filename}
 rm ./cookie
 
 # Unzip labels
-unzip -q ${filename}  # for coco.zip
-# tar -xzf ${filename}  # for coco.tar.gz
+unzip -q ${filename} # for coco.zip
+# tar -xzf ${filename} # for coco.tar.gz
 rm ${filename}
 
 # Download and unzip images

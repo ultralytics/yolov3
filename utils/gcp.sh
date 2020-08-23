@@ -29,8 +29,7 @@ docker kill $(docker ps -a -q --filter ancestor=$t)
 sudo -s
 t=ultralytics/yolov3:evolve
 # docker kill $(docker ps -a -q --filter ancestor=$t)
-for i in 0 1 6 7
-do
+for i in 0 1 6 7; do
   docker pull $t && docker run --gpus all -d --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t bash utils/evolve.sh $i
   sleep 30
 done
