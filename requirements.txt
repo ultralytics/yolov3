@@ -1,19 +1,21 @@
-# pip install -U -r requirements.txt
-numpy
-opencv-python
-torch >= 1.3
-matplotlib
-pycocotools
-tqdm
-Pillow
+# pip install -r requirements.txt
+Cython
+matplotlib>=3.2.2
+numpy>=1.18.5
+opencv-python>=4.1.2
+pillow
+# pycocotools>=2.0
+PyYAML>=5.3
+scipy>=1.4.1
+tensorboard>=2.2
+torch>=1.6.0
+torchvision>=0.7.0
+tqdm>=4.41.0
 
-# Tensorboard pip requirements -------------------------------------------------
-# tb-nightly
-# future
-
-# Equivalent conda commands ----------------------------------------------------
-# conda update -n base -c defaults conda
-# conda install -yc anaconda numpy opencv matplotlib tqdm pillow ipython future
-# conda install -yc conda-forge scikit-image pycocotools onnx tensorboard
+# Conda commands (in place of pip) ---------------------------------------------
+# conda update -yn base -c defaults conda
+# conda install -yc anaconda numpy opencv matplotlib tqdm pillow ipython
+# conda install -yc conda-forge scikit-image pycocotools tensorboard
 # conda install -yc spyder-ide spyder-line-profiler
 # conda install -yc pytorch pytorch torchvision
+# conda install -yc conda-forge protobuf numpy && pip install onnx==1.6.0  # https://github.com/onnx/onnx#linux-and-macos

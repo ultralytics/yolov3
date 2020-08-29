@@ -1,6 +1,0 @@
-classes=1
-train=./data/coco_1cls.txt
-valid=./data/coco_1cls.txt
-names=data/coco.names
-backup=backup/
-eval=coco

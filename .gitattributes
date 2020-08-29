@@ -1,0 +1,2 @@
+# remove notebooks from GitHub language stats
+*.ipynb linguist-vendored

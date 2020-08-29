@@ -1,17 +1,21 @@
+import math
 import os
+import time
+from copy import deepcopy
 
 import torch
+import torch.backends.cudnn as cudnn
+import torch.nn as nn
+import torch.nn.functional as F
 
 
 def init_seeds(seed=0):
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
 
-    # Remove randomness (may be slower on Tesla GPUs) # https://pytorch.org/docs/stable/notes/randomness.html
+    # Reduce randomness (may be slower on Tesla GPUs) # https://pytorch.org/docs/stable/notes/randomness.html
     if seed == 0:
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+        cudnn.deterministic = False
+        cudnn.benchmark = True
 
 
 def select_device(device='', apex=False, batch_size=None):
@@ -41,6 +45,28 @@ def select_device(device='', apex=False, batch_size=None):
     return torch.device('cuda:0' if cuda else 'cpu')
 
 
+def time_synchronized():
+    torch.cuda.synchronize() if torch.cuda.is_available() else None
+    return time.time()
+
+
+def initialize_weights(model):
+    for m in model.modules():
+        t = type(m)
+        if t is nn.Conv2d:
+            pass  # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        elif t is nn.BatchNorm2d:
+            m.eps = 1e-4
+            m.momentum = 0.03
+        elif t in [nn.LeakyReLU, nn.ReLU, nn.ReLU6]:
+            m.inplace = True
+
+
+def find_modules(model, mclass=nn.Conv2d):
+    # finds layer indices matching module class 'mclass'
+    return [i for i, m in enumerate(model.module_list) if isinstance(m, mclass)]
+
+
 def fuse_conv_and_bn(conv, bn):
     # https://tehnokv.com/posts/fusing-batchnorm-and-conv/
     with torch.no_grad():
@@ -63,22 +89,30 @@ def fuse_conv_and_bn(conv, bn):
         else:
             b_conv = torch.zeros(conv.weight.size(0))
         b_bn = bn.bias - bn.weight.mul(bn.running_mean).div(torch.sqrt(bn.running_var + bn.eps))
-        fusedconv.bias.copy_(b_conv + b_bn)
+        fusedconv.bias.copy_(torch.mm(w_bn, b_conv.reshape(-1, 1)).reshape(-1) + b_bn)
 
         return fusedconv
 
 
-def model_info(model, report='summary'):
+def model_info(model, verbose=False):
     # Plots a line-by-line description of a PyTorch model
     n_p = sum(x.numel() for x in model.parameters())  # number parameters
     n_g = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
-    if report is 'full':
+    if verbose:
         print('%5s %40s %9s %12s %20s %10s %10s' % ('layer', 'name', 'gradient', 'parameters', 'shape', 'mu', 'sigma'))
         for i, (name, p) in enumerate(model.named_parameters()):
             name = name.replace('module_list.', '')
             print('%5g %40s %9s %12g %20s %10.3g %10.3g' %
                   (i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std()))
-    print('Model Summary: %g layers, %g parameters, %g gradients' % (len(list(model.parameters())), n_p, n_g))
+
+    try:  # FLOPS
+        from thop import profile
+        macs, _ = profile(model, inputs=(torch.zeros(1, 3, 480, 640),), verbose=False)
+        fs = ', %.1f GFLOPS' % (macs / 1E9 * 2)
+    except:
+        fs = ''
+
+    print('Model Summary: %g layers, %g parameters, %g gradients%s' % (len(list(model.parameters())), n_p, n_g, fs))
 
 
 def load_classifier(name='resnet101', n=2):
@@ -98,72 +132,63 @@ def load_classifier(name='resnet101', n=2):
     return model
 
 
-from collections import defaultdict
-from torch.optim import Optimizer
+def scale_img(img, ratio=1.0, same_shape=True):  # img(16,3,256,416), r=ratio
+    # scales img(bs,3,y,x) by ratio
+    h, w = img.shape[2:]
+    s = (int(h * ratio), int(w * ratio))  # new size
+    img = F.interpolate(img, size=s, mode='bilinear', align_corners=False)  # resize
+    if not same_shape:  # pad/crop img
+        gs = 64  # (pixels) grid size
+        h, w = [math.ceil(x * ratio / gs) * gs for x in (h, w)]
+    return F.pad(img, [0, w - s[1], 0, h - s[0]], value=0.447)  # value = imagenet mean
 
 
-class Lookahead(Optimizer):
-    def __init__(self, optimizer, k=5, alpha=0.5):
-        self.optimizer = optimizer
-        self.k = k
-        self.alpha = alpha
-        self.param_groups = self.optimizer.param_groups
-        self.state = defaultdict(dict)
-        self.fast_state = self.optimizer.state
-        for group in self.param_groups:
-            group["counter"] = 0
+class ModelEMA:
+    """ Model Exponential Moving Average from https://github.com/rwightman/pytorch-image-models
+    Keep a moving average of everything in the model state_dict (parameters and buffers).
+    This is intended to allow functionality like
+    https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage
+    A smoothed version of the weights is necessary for some training schemes to perform well.
+    E.g. Google's hyper-params for training MNASNet, MobileNet-V3, EfficientNet, etc that use
+    RMSprop with a short 2.4-3 epoch decay period and slow LR decay rate of .96-.99 requires EMA
+    smoothing of weights to match results. Pay attention to the decay constant you are using
+    relative to your update count per epoch.
+    To keep EMA from using GPU resources, set device='cpu'. This will save a bit of memory but
+    disable validation of the EMA weights. Validation will have to be done manually in a separate
+    process, or after the training stops converging.
+    This class is sensitive where it is initialized in the sequence of model init,
+    GPU assignment and distributed training wrappers.
+    I've tested with the sequence in my own train.py for torch.DataParallel, apex.DDP, and single-GPU.
+    """
 
-    def update(self, group):
-        for fast in group["params"]:
-            param_state = self.state[fast]
-            if "slow_param" not in param_state:
-                param_state["slow_param"] = torch.zeros_like(fast.data)
-                param_state["slow_param"].copy_(fast.data)
-            slow = param_state["slow_param"]
-            slow += (fast.data - slow) * self.alpha
-            fast.data.copy_(slow)
+    def __init__(self, model, decay=0.9999, device=''):
+        # make a copy of the model for accumulating moving average of weights
+        self.ema = deepcopy(model)
+        self.ema.eval()
+        self.updates = 0  # number of EMA updates
+        self.decay = lambda x: decay * (1 - math.exp(-x / 2000))  # decay exponential ramp (to help early epochs)
+        self.device = device  # perform ema on different device from model if set
+        if device:
+            self.ema.to(device=device)
+        for p in self.ema.parameters():
+            p.requires_grad_(False)
 
-    def update_lookahead(self):
-        for group in self.param_groups:
-            self.update(group)
+    def update(self, model):
+        self.updates += 1
+        d = self.decay(self.updates)
+        with torch.no_grad():
+            if type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel):
+                msd, esd = model.module.state_dict(), self.ema.module.state_dict()
+            else:
+                msd, esd = model.state_dict(), self.ema.state_dict()
 
-    def step(self, closure=None):
-        loss = self.optimizer.step(closure)
-        for group in self.param_groups:
-            if group["counter"] == 0:
-                self.update(group)
-            group["counter"] += 1
-            if group["counter"] >= self.k:
-                group["counter"] = 0
-        return loss
+            for k, v in esd.items():
+                if v.dtype.is_floating_point:
+                    v *= d
+                    v += (1. - d) * msd[k].detach()
 
-    def state_dict(self):
-        fast_state_dict = self.optimizer.state_dict()
-        slow_state = {
-            (id(k) if isinstance(k, torch.Tensor) else k): v
-            for k, v in self.state.items()
-        }
-        fast_state = fast_state_dict["state"]
-        param_groups = fast_state_dict["param_groups"]
-        return {
-            "fast_state": fast_state,
-            "slow_state": slow_state,
-            "param_groups": param_groups,
-        }
-
-    def load_state_dict(self, state_dict):
-        slow_state_dict = {
-            "state": state_dict["slow_state"],
-            "param_groups": state_dict["param_groups"],
-        }
-        fast_state_dict = {
-            "state": state_dict["fast_state"],
-            "param_groups": state_dict["param_groups"],
-        }
-        super(Lookahead, self).load_state_dict(slow_state_dict)
-        self.optimizer.load_state_dict(fast_state_dict)
-        self.fast_state = self.optimizer.state
-
-    def add_param_group(self, param_group):
-        param_group["counter"] = 0
-        self.optimizer.add_param_group(param_group)
+    def update_attr(self, model):
+        # Assign attributes (which may change during training)
+        for k in model.__dict__.keys():
+            if not k.startswith('_'):
+                setattr(self.ema, k, getattr(model, k))

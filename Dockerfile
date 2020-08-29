@@ -1,5 +1,5 @@
 # Start FROM Nvidia PyTorch image https://ngc.nvidia.com/catalog/containers/nvidia:pytorch
-FROM nvcr.io/nvidia/pytorch:19.10-py3
+FROM nvcr.io/nvidia/pytorch:20.03-py3
 
 # Install dependencies (pip or conda)
 RUN pip install -U gsutil
@@ -44,16 +44,19 @@ COPY . /usr/src/app
 # ---------------------------------------------------  Extras Below  ---------------------------------------------------
 
 # Build and Push
-# export t=ultralytics/yolov3:v0 && sudo docker build -t $t . && sudo docker push $t
+# t=ultralytics/yolov3:v0 && sudo docker build -t $t . && sudo docker push $t
 
 # Run
-# sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 python3 detect.py
+# t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host $t bash
 
 # Pull and Run with local directory access
-# export t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo nvidia-docker run -it --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t
+# t=ultralytics/yolov3:v0 && sudo docker pull $t && sudo docker run -it --gpus all --ipc=host -v "$(pwd)"/coco:/usr/src/coco $t bash
 
 # Kill all
 # sudo docker kill "$(sudo docker ps -q)"
 
+# Kill all image-based
+# sudo docker kill $(sudo docker ps -a -q --filter ancestor=ultralytics/yolov3:v0)
+
 # Run bash for loop
-# sudo nvidia-docker run --ipc=host ultralytics/yolov3:v0 while true; do python3 train.py --evolve; done
+# sudo docker run --gpus all --ipc=host ultralytics/yolov3:v0 while true; do python3 train.py --evolve; done

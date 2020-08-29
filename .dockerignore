@@ -1,57 +1,32 @@
-# Repo-specific GitIgnore ----------------------------------------------------------------------------------------------
-*.jpg
-*.jpeg
-*.png
-*.bmp
-*.tif
-*.tiff
-*.heic
-*.JPG
-*.JPEG
-*.PNG
-*.BMP
-*.TIF
-*.TIFF
-*.HEIC
-*.mp4
-*.mov
-*.MOV
-*.avi
-*.data
-*.json
-
-*.cfg
-!cfg/yolov3*.cfg
-
+# Repo-specific DockerIgnore -------------------------------------------------------------------------------------------
+# .git
+.cache
+.idea
+runs
+output
+coco
 storage.googleapis.com
-runs/*
-data/*
+
+data/samples/*
 !data/samples/zidane.jpg
 !data/samples/bus.jpg
-!data/coco.names
-!data/coco_paper.names
-!data/coco.data
-!data/coco_*.data
-!data/coco_*.txt
-!data/trainvalno5k.shapes
-!data/*.sh
-
-pycocotools/*
-results*.txt
-gcp_test*.sh
-
-# MATLAB GitIgnore -----------------------------------------------------------------------------------------------------
-*.m~
-*.mat
-!targets*.mat
+**/results*.txt
+*.jpg
 
 # Neural Network weights -----------------------------------------------------------------------------------------------
-*.weights
-*.pt
-*.onnx
-*.mlmodel
-darknet53.conv.74
-yolov3-tiny.conv.15
+**/*.weights
+**/*.pt
+**/*.pth
+**/*.onnx
+**/*.mlmodel
+**/*.torchscript
+**/darknet53.conv.74
+**/yolov3-tiny.conv.15
+
+
+# Below Copied From .gitignore -----------------------------------------------------------------------------------------
+# Below Copied From .gitignore -----------------------------------------------------------------------------------------
+
 
 # GitHub Python GitIgnore ----------------------------------------------------------------------------------------------
 # Byte-compiled / optimized / DLL files
