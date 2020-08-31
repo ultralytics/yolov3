@@ -79,7 +79,7 @@ def train(hyp):
     init_seeds()
     data_dict = parse_data_cfg(data)
     train_path = data_dict['train']
-    test_path = data_dict['valid']
+    test_path = data_dict['train']
     nc = 1 if opt.single_cls else int(data_dict['classes'])  # number of classes
     hyp['cls'] *= nc / 80  # update coco-tuned hyp['cls'] to current dataset
 
@@ -113,6 +113,7 @@ def train(hyp):
 
     start_epoch = 0
     best_fitness = 0.0
+    print('PESOS: ',weights)
     attempt_download(weights)
     if weights.endswith('.pt'):  # pytorch format
         # possible weights are '*.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt' etc.
