@@ -465,6 +465,7 @@ def build_targets(p, targets, model):
 
         # Append
         indices.append((b, a, gj, gi))  # image, anchor, grid indices
+        indices.append((b, a, gj.clamp_(0, gain[3]), gi.clamp_(0, gain[2])))  # image, anchor, grid indices
         tbox.append(torch.cat((gxy - gij, gwh), 1))  # box
         anch.append(anchors[a])  # anchors
         tcls.append(c)  # class
