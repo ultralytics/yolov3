@@ -26,7 +26,7 @@ jobs:
             Hello @${{ github.actor }}, thank you for your interest in our work! Ultralytics has open-sourced YOLOv5 at https://github.com/ultralytics/yolov5, featuring faster, lighter and more accurate object detection. YOLOv5 is recommended for all new projects.
 
             <a href="https://apps.apple.com/app/id1452689527" target="_blank">
-            <img src="https://user-images.githubusercontent.com/26833433/82944393-f7644d80-9f4f-11ea-8b87-1a5b04f555f1.jpg" width="800"></a>
+            <img src="https://user-images.githubusercontent.com/26833433/98699617-a1595a00-2377-11eb-8145-fc674eb9b1a7.jpg" width="800"></a>
             <br/><br/>
             <img src="https://user-images.githubusercontent.com/26833433/90187293-6773ba00-dd6e-11ea-8f90-cd94afc0427f.png" width="800">
 
