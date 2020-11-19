@@ -1,12 +1,12 @@
 import argparse
 import logging
-import math
 import os
 import random
 import time
 from pathlib import Path
 from warnings import warn
 
+import math
 import numpy as np
 import torch.distributed as dist
 import torch.nn as nn
@@ -40,7 +40,6 @@ except ImportError:
     wandb = None
     logger.info("Install Weights & Biases for experiment logging via 'pip install wandb' (recommended)")
 
-x=nn.ZeroPad2d
 
 def train(hyp, opt, device, tb_writer=None, wandb=None):
     logger.info(f'Hyperparameters {hyp}')
