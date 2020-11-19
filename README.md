@@ -1,13 +1,41 @@
+README under construction, thank you for your patience.
+
 <a href="https://apps.apple.com/app/id1452689527" target="_blank">
-<img src="https://user-images.githubusercontent.com/26833433/85940594-2d3f7d80-b8d2-11ea-809a-87b3bf6d968b.jpg" width="1000"></a>
+<img src="splash.jpg" width="1000"></a>
 &nbsp
 
-This repo contains Ultralytics inference and training code for YOLOv3 in PyTorch. The code works on Linux, MacOS and Windows. Credit to Joseph Redmon for YOLO  https://pjreddie.com/darknet/yolo/.
+![CI CPU testing](https://github.com/ultralytics/yolov3/workflows/CI%20CPU%20testing/badge.svg)
 
+This repository represents Ultralytics open-source research into YOLOv3. This version of YOLOv3 is forward compatible with [YOLOv5](https://github.com/ultralytics/yolov5) yaml model files. For a backward-compatible branch that works with darknet *.cfg files, see the [YOLOv3 archive branch](https://github.com/ultralytics/yolov3/tree/archive).
+
+<img src="plot.png" width="1000">** GPU Speed measures end-to-end time per image averaged over 5000 COCO val2017 images using a V100 GPU with batch size 32, and includes image preprocessing, PyTorch FP16 inference, postprocessing and NMS. EfficientDet data from [google/automl](https://github.com/google/automl) at batch size 8.
+
+
+
+## Pretrained Checkpoints
+
+| Model | AP<sup>val</sup> | AP<sup>test</sup> | AP<sub>50</sub> | Speed<sub>GPU</sub> | FPS<sub>GPU</sub> || params | FLOPS |
+|---------- |------ |------ |------ | -------- | ------| ------ |------  |  :------: |
+| [YOLOv3](https://github.com/ultralytics/yolov3/releases) | coming soon     | -     | -     | -     | -     || -  | -
+| [YOLOv3-SPP](https://github.com/ultralytics/yolov3/releases) | 45.6     | 45.5     | 65.2     | 4.5ms     | 222     || 63.0M  | 118.0B
+| [YOLOv3-tiny](https://github.com/ultralytics/yolov3/releases) | coming soon     | -     | -     | -     | -     || -  | -
+| | | | | | || |
+| [YOLOv5s](https://github.com/ultralytics/yolov5/releases)    | 37.0     | 37.0     | 56.2     | **2.4ms** | **416** || 7.5M   | 13.2B
+| [YOLOv5m](https://github.com/ultralytics/yolov5/releases)    | 44.3     | 44.3     | 63.2     | 3.4ms     | 294     || 21.8M  | 39.4B
+| [YOLOv5l](https://github.com/ultralytics/yolov5/releases)    | 47.7     | 47.7     | 66.5     | 4.4ms     | 227     || 47.8M  | 88.1B
+| [YOLOv5x](https://github.com/ultralytics/yolov5/releases)    | 49.2 | 49.2 | 67.7 | 6.9ms     | 145     || 89.0M  | 166.4B
+| | | | | | || |
+| [YOLOv5x](https://github.com/ultralytics/yolov5/releases) + TTA|**50.8**| **50.8** | **68.9** | 25.5ms    | 39      || 89.0M  | 354.3B
+
+** AP<sup>test</sup> denotes COCO [test-dev2017](http://cocodataset.org/#upload) server results, all other AP results in the table denote val2017 accuracy.  
+** All AP numbers are for single-model single-scale without ensemble or test-time augmentation. **Reproduce** by `python test.py --data coco.yaml --img 640 --conf 0.001`  
+** Speed<sub>GPU</sub> measures end-to-end time per image averaged over 5000 COCO val2017 images using a GCP [n1-standard-16](https://cloud.google.com/compute/docs/machine-types#n1_standard_machine_types) instance with one V100 GPU, and includes image preprocessing, PyTorch FP16 image inference at --batch-size 32 --img-size 640, postprocessing and NMS. Average NMS time included in this chart is 1-2ms/img.  **Reproduce** by `python test.py --data coco.yaml --img 640 --conf 0.1`  
+** All checkpoints are trained to 300 epochs with default settings and hyperparameters (no autoaugmentation). 
+** Test Time Augmentation ([TTA](https://github.com/ultralytics/yolov5/issues/303)) runs at 3 image sizes. **Reproduce** by `python test.py --data coco.yaml --img 832 --augment` 
 
 ## Requirements
 
-Python 3.8 or later with all [requirements.txt](https://github.com/ultralytics/yolov3/blob/master/requirements.txt) dependencies installed, including `torch>=1.6`. To install run:
+Python 3.8 or later with all [requirements.txt](https://github.com/ultralytics/yolov3/blob/master/requirements.txt) dependencies installed, including `torch>=1.7`. To install run:
 ```bash
 $ pip install -r requirements.txt
 ```
@@ -15,149 +43,81 @@ $ pip install -r requirements.txt
 
 ## Tutorials
 
-* [Notebook](https://github.com/ultralytics/yolov3/blob/master/tutorial.ipynb) <a href="https://colab.research.google.com/github/ultralytics/yolov3/blob/master/tutorial.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
-* [Train Custom Data](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data) << highly recommended
-* [GCP Quickstart](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart)
-* [Docker Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/Docker-Quickstart)  ![Docker Pulls](https://img.shields.io/docker/pulls/ultralytics/yolov3?logo=docker)
-* [A TensorRT Implementation of YOLOv3 and YOLOv4](https://github.com/wang-xinyu/tensorrtx/tree/master/yolov3-spp) 
+* [Train Custom Data](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data)&nbsp; 🚀 RECOMMENDED
+* [Weights & Biases Logging](https://github.com/ultralytics/yolov5/issues/1289)&nbsp; 🌟 NEW
+* [Multi-GPU Training](https://github.com/ultralytics/yolov5/issues/475)
+* [PyTorch Hub](https://github.com/ultralytics/yolov5/issues/36)&nbsp; ⭐ NEW
+* [ONNX and TorchScript Export](https://github.com/ultralytics/yolov5/issues/251)
+* [Test-Time Augmentation (TTA)](https://github.com/ultralytics/yolov5/issues/303)
+* [Model Ensembling](https://github.com/ultralytics/yolov5/issues/318)
+* [Model Pruning/Sparsity](https://github.com/ultralytics/yolov5/issues/304)
+* [Hyperparameter Evolution](https://github.com/ultralytics/yolov5/issues/607)
+* [Transfer Learning with Frozen Layers](https://github.com/ultralytics/yolov5/issues/1314)&nbsp; ⭐ NEW
+* [TensorRT Deployment](https://github.com/wang-xinyu/tensorrtx)
 
 
-## Training
+## Environments
 
-**Start Training:** `python3 train.py` to begin training after downloading COCO data with `data/get_coco2017.sh`. Each epoch trains on 117,263 images from the train and validate COCO sets, and tests on 5000 images from the COCO validate set.
+YOLOv3 may be run in any of the following up-to-date verified environments (with all dependencies including [CUDA](https://developer.nvidia.com/cuda)/[CUDNN](https://developer.nvidia.com/cudnn), [Python](https://www.python.org/) and [PyTorch](https://pytorch.org/) preinstalled):
 
-**Resume Training:** `python3 train.py --resume` to resume training from `weights/last.pt`.
-
-**Plot Training:** `from utils import utils; utils.plot_results()`
-
-<img src="https://user-images.githubusercontent.com/26833433/78175826-599d4800-7410-11ea-87d4-f629071838f6.png" width="900">
-
-
-### Image Augmentation
-
-`datasets.py` applies OpenCV-powered (https://opencv.org/) augmentation to the input image. We use a **mosaic dataloader** to increase image variability during training.
-
-<img src="https://user-images.githubusercontent.com/26833433/80769557-6e015d00-8b02-11ea-9c4b-69310eb2b962.jpg" width="900">
-
-
-### Speed
-
-https://cloud.google.com/deep-learning-vm/  
-**Machine type:** preemptible [n1-standard-8](https://cloud.google.com/compute/docs/machine-types) (8 vCPUs, 30 GB memory)   
-**CPU platform:** Intel Skylake  
-**GPUs:** K80 ($0.14/hr), T4 ($0.11/hr), V100 ($0.74/hr) CUDA with [Nvidia Apex](https://github.com/NVIDIA/apex) FP16/32    
-**HDD:** 300 GB SSD  
-**Dataset:** COCO train 2014 (117,263 images)  
-**Model:** `yolov3-spp.cfg`  
-**Command:**  `python3 train.py --data coco2017.data --img 416 --batch 32`
-
-GPU | n | `--batch-size` | img/s | epoch<br>time | epoch<br>cost
---- |--- |--- |--- |--- |---
-K80    |1| 32 x 2 | 11  | 175 min  | $0.41
-T4     |1<br>2| 32 x 2<br>64 x 1 | 41<br>61 | 48 min<br>32 min | $0.09<br>$0.11
-V100   |1<br>2| 32 x 2<br>64 x 1 | 122<br>**178** | 16 min<br>**11 min** | **$0.21**<br>$0.28
-2080Ti |1<br>2| 32 x 2<br>64 x 1 | 81<br>140 | 24 min<br>14 min | -<br>-
+- **Google Colab Notebook** with free GPU: <a href="https://colab.research.google.com/github/ultralytics/yolov3/blob/master/tutorial.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
+- **Kaggle Notebook** with free GPU: [https://www.kaggle.com/ultralytics/yolov3](https://www.kaggle.com/ultralytics/yolov3)
+- **Google Cloud** Deep Learning VM. See [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) 
+- **Docker Image** https://hub.docker.com/r/ultralytics/yolov3. See [Docker Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/Docker-Quickstart) ![Docker Pulls](https://img.shields.io/docker/pulls/ultralytics/yolov3?logo=docker)
 
 
 ## Inference
 
+detect.py runs inference on a variety of sources, downloading models automatically from the [latest YOLOv3 release](https://github.com/ultralytics/yolov3/releases) and saving results to `runs/detect`.
 ```bash
-python3 detect.py --source ...
+$ python detect.py --source 0  # webcam
+                            file.jpg  # image 
+                            file.mp4  # video
+                            path/  # directory
+                            path/*.jpg  # glob
+                            rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa  # rtsp stream
+                            rtmp://192.168.1.105/live/test  # rtmp stream
+                            http://112.50.243.8/PLTV/88888888/224/3221225900/1.m3u8  # http stream
 ```
 
-- Image:  `--source file.jpg`
-- Video:  `--source file.mp4`
-- Directory:  `--source dir/`
-- Webcam:  `--source 0`
-- RTSP stream:  `--source rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa`
-- HTTP stream:  `--source http://112.50.243.8/PLTV/88888888/224/3221225900/1.m3u8`
-
-**YOLOv3:** `python3 detect.py --cfg cfg/yolov3.cfg --weights yolov3.pt`  
-<img src="https://user-images.githubusercontent.com/26833433/64067835-51d5b500-cc2f-11e9-982e-843f7f9a6ea2.jpg" width="500">
-
-**YOLOv3-tiny:** `python3 detect.py --cfg cfg/yolov3-tiny.cfg --weights yolov3-tiny.pt`  
-<img src="https://user-images.githubusercontent.com/26833433/64067834-51d5b500-cc2f-11e9-9357-c485b159a20b.jpg" width="500">
-
-**YOLOv3-SPP:** `python3 detect.py --cfg cfg/yolov3-spp.cfg --weights yolov3-spp.pt`  
-<img src="https://user-images.githubusercontent.com/26833433/64067833-51d5b500-cc2f-11e9-8208-6fe197809131.jpg" width="500">
-
-
-## Pretrained Checkpoints
-
-Download from: [https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0](https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0)
-
-
-## Darknet Conversion
-
+To run inference on example images in `data/images`:
 ```bash
-$ git clone https://github.com/ultralytics/yolov3 && cd yolov3
+$ python detect.py --source data/images --weights yolov3.pt --conf 0.25
 
-# convert darknet cfg/weights to pytorch model
-$ python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.weights')"
-Success: converted 'weights/yolov3-spp.weights' to 'weights/yolov3-spp.pt'
+RESULT HERE ...
+```
+<img src="https://user-images.githubusercontent.com/26833433/97107365-685a8d80-16c7-11eb-8c2e-83aac701d8b9.jpeg" width="500">  
 
-# convert cfg/pytorch model to darknet weights
-$ python3  -c "from models import *; convert('cfg/yolov3-spp.cfg', 'weights/yolov3-spp.pt')"
-Success: converted 'weights/yolov3-spp.pt' to 'weights/yolov3-spp.weights'
+### PyTorch Hub
+
+To run **batched inference** with YOLO3 and [PyTorch Hub](https://github.com/ultralytics/yolov5/issues/36):
+```python
+import torch
+from PIL import Image
+
+# Model
+model = torch.hub.load('ultralytics/yolov3', 'yolov3', pretrained=True).fuse().eval()  # yolov3.pt
+model = model.autoshape()  # for autoshaping of PIL/cv2/np inputs and NMS
+
+# Images
+img1 = Image.open('zidane.jpg')
+img2 = Image.open('bus.jpg')
+imgs = [img1, img2]  # batched list of images
+
+# Inference
+prediction = model(imgs, size=640)  # includes NMS
 ```
 
 
-## mAP
+## Training
 
-<i></i>                      |Size |COCO mAP<br>@0.5...0.95 |COCO mAP<br>@0.5 
----                          | ---         | ---         | ---
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**[YOLOv3-SPP-ultralytics](https://drive.google.com/open?id=1UcR-zVoMs7DH5dj3N1bswkiQTA4dmKF4)** |320 |14.0<br>28.7<br>30.5<br>**37.7** |29.1<br>51.8<br>52.3<br>**56.8**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**[YOLOv3-SPP-ultralytics](https://drive.google.com/open?id=1UcR-zVoMs7DH5dj3N1bswkiQTA4dmKF4)** |416 |16.0<br>31.2<br>33.9<br>**41.2** |33.0<br>55.4<br>56.9<br>**60.6**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**[YOLOv3-SPP-ultralytics](https://drive.google.com/open?id=1UcR-zVoMs7DH5dj3N1bswkiQTA4dmKF4)** |512 |16.6<br>32.7<br>35.6<br>**42.6** |34.9<br>57.7<br>59.5<br>**62.4**
-YOLOv3-tiny<br>YOLOv3<br>YOLOv3-SPP<br>**[YOLOv3-SPP-ultralytics](https://drive.google.com/open?id=1UcR-zVoMs7DH5dj3N1bswkiQTA4dmKF4)** |608 |16.6<br>33.1<br>37.0<br>**43.1** |35.4<br>58.2<br>60.7<br>**62.8**
-
-- mAP@0.5 run at `--iou-thr 0.5`, mAP@0.5...0.95 run at `--iou-thr 0.7`
-- Darknet results: https://arxiv.org/abs/1804.02767
-
+Download [COCO](https://github.com/ultralytics/yolov3/blob/master/data/scripts/get_coco.sh) and run command below. Training times for YOLOv3/YOLOv3-SPP/YOLOv3-tiny are 6/6/2 days on a single V100 (multi-GPU times faster). Use the largest `--batch-size` your GPU allows (batch sizes shown for 16 GB devices).
 ```bash
-$ python3 test.py --cfg yolov3-spp.cfg --weights yolov3-spp-ultralytics.pt --img 640 --augment
-
-Namespace(augment=True, batch_size=16, cfg='cfg/yolov3-spp.cfg', conf_thres=0.001, data='coco2014.data', device='', img_size=640, iou_thres=0.6, save_json=True, single_cls=False, task='test', weights='weight
-Using CUDA device0 _CudaDeviceProperties(name='Tesla V100-SXM2-16GB', total_memory=16130MB)
-
-               Class    Images   Targets         P         R   mAP@0.5        F1: 100%|█████████| 313/313 [03:00<00:00,  1.74it/s]
-                 all     5e+03  3.51e+04     0.375     0.743      0.64     0.492
-
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.456
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.647
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.496
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.263
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.501
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.596
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.361
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.597
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.666
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.492
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.719
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.810
-
-Speed: 17.5/2.3/19.9 ms inference/NMS/total per 640x640 image at batch-size 16
+$ python train.py --data coco.yaml --cfg yolov3.yaml --weights '' --batch-size 24
+                                         yolov3-spp.yaml                       24
+                                         yolov3-tiny.yaml                      64
 ```
-<!-- Speed: 11.4/2.2/13.6 ms inference/NMS/total per 608x608 image at batch-size 1 -->
-
-
-## Reproduce Our Results
-
-Run commands below. Training takes about one week on a 2080Ti per model.
-```bash
-$ python train.py --data coco2014.data --weights '' --batch-size 16 --cfg yolov3-spp.cfg
-$ python train.py --data coco2014.data --weights '' --batch-size 32 --cfg yolov3-tiny.cfg
-```
-<img src="https://user-images.githubusercontent.com/26833433/80831822-57a9de80-8ba0-11ea-9684-c47afb0432dc.png" width="900">
-
-
-## Reproduce Our Environment
-
-To access an up-to-date working environment (with all dependencies including CUDA/CUDNN, Python and PyTorch preinstalled), consider a:
-
-- **GCP** Deep Learning VM with $300 free credit offer: See our [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) 
-- **Google Colab Notebook** with 12 hours of free GPU time. <a href="https://colab.research.google.com/github/ultralytics/yolov3/blob/master/tutorial.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
-- **Docker Image** https://hub.docker.com/r/ultralytics/yolov3. See [Docker Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/Docker-Quickstart) ![Docker Pulls](https://img.shields.io/docker/pulls/ultralytics/yolov3?logo=docker)
+<img src="results.png" width="900">
 
 
 ## Citation
