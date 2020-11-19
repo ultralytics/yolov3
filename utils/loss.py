@@ -156,7 +156,7 @@ def build_targets(p, targets, model):
             j, k = ((gxy % 1. < g) & (gxy > 1.)).T
             l, m = ((gxi % 1. < g) & (gxi > 1.)).T
             j = torch.stack((torch.ones_like(j), j, k, l, m))
-            t = t.repeat((off.shape[1], 1, 1))[j]
+            t = t.repeat((off.shape[0], 1, 1))[j]
             offsets = (torch.zeros_like(gxy)[None] + off[:, None])[j]
         else:
             t = targets[0]
