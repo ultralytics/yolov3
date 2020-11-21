@@ -18,7 +18,7 @@ def gsutil_getsize(url=''):
 def attempt_download(weights):
     # Attempt to download pretrained weights if not found locally
     weights = weights.strip().replace("'", '')
-    file = Path(weights).name
+    file = Path(weights).name.lower()
 
     msg = weights + ' missing, try downloading from https://github.com/ultralytics/yolov3/releases/'
     models = ['yolov3.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt']  # available models
@@ -35,7 +35,7 @@ def attempt_download(weights):
         #    return
 
         try:  # GitHub
-            url = 'https://github.com/ultralytics/yolov3/releases/download/v9.0/' + file
+            url = 'https://github.com/ultralytics/yolov3/releases/download/v1.0/' + file
             print('Downloading %s to %s...' % (url, weights))
             torch.hub.download_url_to_file(url, weights)
             assert os.path.exists(weights) and os.path.getsize(weights) > 1E6  # check
