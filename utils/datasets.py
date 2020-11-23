@@ -1,20 +1,20 @@
 # Dataset utils and dataloaders
 
 import glob
-import math
 import os
 import random
 import shutil
-import time
-from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from threading import Thread
 
 import cv2
+import math
 import numpy as np
+import time
 import torch
 from PIL import Image, ExifTags
+from itertools import repeat
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
@@ -902,3 +902,21 @@ def flatten_recursive(path='../coco128'):
     create_folder(new_path)
     for file in tqdm(glob.glob(str(Path(path)) + '/**/*.*', recursive=True)):
         shutil.copyfile(file, new_path / Path(file).name)
+
+
+def autosplit(path='../coco128', weights=(0.9, 0.1, 0.0)):  # from utils.datasets import *; autosplit('../data/oiv6')
+    """ Autosplit a dataset into train/val/test splits and save path/autosplit_*.txt files
+    # Arguments
+        path:       Path to images directory
+        weights:    Train, val, test weights (list)
+    """
+    path = Path(path)  # images dir
+    files = list(path.rglob('*.*'))
+    n = len(files)  # number of files
+    indices = random.choices([0, 1, 2], weights=weights, k=n)  # assign each image to a split
+    txt = ['autosplit_train.txt', 'autosplit_val.txt', 'autosplit_test.txt']  # 3 txt files
+    [(path / x).unlink() for x in txt if (path / x).exists()]  # remove existing
+    for i, img in tqdm(zip(indices, files), total=n):
+        if img.suffix[1:] in img_formats:
+            with open(path / txt[i], 'a') as f:
+                f.write(str(img) + '\n')  # add image to txt file
