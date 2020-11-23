@@ -904,7 +904,7 @@ def flatten_recursive(path='../coco128'):
         shutil.copyfile(file, new_path / Path(file).name)
 
 
-def autosplit(path='../coco128', weights=(0.9, 0.1, 0.0)):  # from utils.datasets import *; autosplit('../data/oiv6')
+def autosplit(path='../coco128', weights=(0.9, 0.1, 0.0)):  # from utils.datasets import *; autosplit('../coco128')
     """ Autosplit a dataset into train/val/test splits and save path/autosplit_*.txt files
     # Arguments
         path:       Path to images directory
