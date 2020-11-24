@@ -365,7 +365,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         cache_path = Path(self.label_files[0]).parent.with_suffix('.cache')  # cached labels
         if cache_path.is_file():
             cache = torch.load(cache_path)  # load
-            if cache['hash'] != get_hash(self.label_files + self.img_files):  # dataset changed
+            if cache['hash'] != get_hash(self.label_files + self.img_files) or 'results' not in cache:  # changed
                 cache = self.cache_labels(cache_path)  # re-cache
         else:
             cache = self.cache_labels(cache_path)  # cache
@@ -472,7 +472,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         x['hash'] = get_hash(self.label_files + self.img_files)
         x['results'] = [nf, nm, ne, nc, i]
         torch.save(x, path)  # save for next time
-        logging.info(f"New cache created: '{path}'")
+        logging.info(f"New cache created: {path}")
         return x
 
     def __len__(self):
