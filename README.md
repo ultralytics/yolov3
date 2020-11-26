@@ -77,9 +77,20 @@ To run inference on example images in `data/images`:
 ```bash
 $ python detect.py --source data/images --weights yolov3.pt --conf 0.25
 
-RESULT HERE ...
+Namespace(agnostic_nms=False, augment=False, classes=None, conf_thres=0.25, device='', exist_ok=False, img_size=640, iou_thres=0.45, name='exp', project='runs/detect', save_conf=False, save_txt=False, source='data/images/', update=False, view_img=False, weights=['yolov3.pt'])
+Using torch 1.7.0+cu101 CUDA:0 (Tesla P100-PCIE-16GB, 16280MB)
+
+Downloading https://github.com/ultralytics/yolov3/releases/download/v1.0/yolov3.pt to yolov3.pt...
+100% 118M/118M [00:05<00:00, 24.2MB/s]
+
+Fusing layers... 
+Model Summary: 261 layers, 61922845 parameters, 0 gradients
+image 1/2 /content/yolov3/data/images/bus.jpg: 640x480 4 persons, 1 buss, Done. (0.014s)
+image 2/2 /content/yolov3/data/images/zidane.jpg: 384x640 2 persons, 3 ties, Done. (0.014s)
+Results saved to runs/detect/exp2
+Done. (0.133s)
 ```
-<img src="https://user-images.githubusercontent.com/26833433/97107365-685a8d80-16c7-11eb-8c2e-83aac701d8b9.jpeg" width="500">  
+<img src="https://user-images.githubusercontent.com/26833433/100375993-06b37900-300f-11eb-8d2d-5fc7b22fbfbd.jpg" width="500">  
 
 ### PyTorch Hub
 
