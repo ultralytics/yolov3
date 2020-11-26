@@ -15,7 +15,7 @@ from utils.general import coco80_to_coco91_class, check_dataset, check_file, che
     non_max_suppression, scale_coords, xyxy2xywh, xywh2xyxy, set_logging, increment_path
 from utils.loss import compute_loss
 from utils.metrics import ap_per_class, ConfusionMatrix
-from utils.plots import plot_images, output_to_target
+from utils.plots import plot_images, output_to_target, plot_study_txt
 from utils.torch_utils import select_device, time_synchronized
 
 
@@ -328,4 +328,4 @@ if __name__ == '__main__':
                 y.append(r + t)  # results and times
             np.savetxt(f, y, fmt='%10.4g')  # save
         os.system('zip -r study.zip study_*.txt')
-        # utils.plots.plot_study_txt(f, x)  # plot
+        plot_study_txt(f, x)  # plot
