@@ -1,5 +1,3 @@
-README under construction, thank you for your patience.
-
 <a href="https://apps.apple.com/app/id1452689527" target="_blank">
 <img src="https://user-images.githubusercontent.com/26833433/99805965-8f2ca800-2b3d-11eb-8fad-13a96b222a23.jpg" width="1000"></a>
 &nbsp
@@ -8,7 +6,7 @@ README under construction, thank you for your patience.
 
 This repository represents Ultralytics open-source research into YOLOv3. This version of YOLOv3 is forward compatible with [YOLOv5](https://github.com/ultralytics/yolov5) yaml model files. For a backward-compatible branch that works with darknet *.cfg files, see the [YOLOv3 archive branch](https://github.com/ultralytics/yolov3/tree/archive).
 
-<img src="plot.png" width="1000">** GPU Speed measures end-to-end time per image averaged over 5000 COCO val2017 images using a V100 GPU with batch size 32, and includes image preprocessing, PyTorch FP16 inference, postprocessing and NMS. EfficientDet data from [google/automl](https://github.com/google/automl) at batch size 8.
+<img src="https://user-images.githubusercontent.com/26833433/100382066-c8bc5200-301a-11eb-907b-799a0301595e.png" width="1000">** GPU Speed measures end-to-end time per image averaged over 5000 COCO val2017 images using a V100 GPU with batch size 32, and includes image preprocessing, PyTorch FP16 inference, postprocessing and NMS. EfficientDet data from [google/automl](https://github.com/google/automl) at batch size 8.
 
 
 
