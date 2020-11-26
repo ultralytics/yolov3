@@ -119,7 +119,7 @@ $ python train.py --data coco.yaml --cfg yolov3.yaml --weights '' --batch-size 2
                                          yolov3-spp.yaml                       24
                                          yolov3-tiny.yaml                      64
 ```
-<img src="https://user-images.githubusercontent.com/26833433/100377135-fd2b1080-3010-11eb-8f13-f193045063a7.png" width="900">
+<img src="https://user-images.githubusercontent.com/26833433/100378028-af170c80-3012-11eb-8521-f0d2a8d021bc.png" width="900">
 
 
 ## Citation
