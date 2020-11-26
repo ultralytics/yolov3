@@ -16,17 +16,9 @@ This repository represents Ultralytics open-source research into YOLOv3. This ve
 
 | Model | AP<sup>val</sup> | AP<sup>test</sup> | AP<sub>50</sub> | Speed<sub>GPU</sub> | FPS<sub>GPU</sub> || params | FLOPS |
 |---------- |------ |------ |------ | -------- | ------| ------ |------  |  :------: |
-| [YOLOv3](https://github.com/ultralytics/yolov3/releases)      |     | -     | -     | -     | -     || 61.9M  | 156.4B
-| [YOLOv3-SPP](https://github.com/ultralytics/yolov3/releases)  | 45.6     | 45.5     | 65.2     | 4.5ms     | 222     || 63.0M  | 157.0B
-| [YOLOv3-tiny 0.60](https://github.com/ultralytics/yolov3/releases) | 17.6     | 35.2     | 35.2     | 2.2ms     | 455     || 8.9M  | 13.3B
-| [YOLOv3-tiny 0.65](https://github.com/ultralytics/yolov3/releases) | 17.6     | 34.9     | 34.9     | 2.2ms     | 455     || 8.9M  | 13.3B
-| | | | | | || |
-| [YOLOv5s](https://github.com/ultralytics/yolov5/releases)    | 37.0     | 37.0     | 56.2     | **2.4ms** | **416** || 7.5M   | 13.2B
-| [YOLOv5m](https://github.com/ultralytics/yolov5/releases)    | 44.3     | 44.3     | 63.2     | 3.4ms     | 294     || 21.8M  | 39.4B
-| [YOLOv5l](https://github.com/ultralytics/yolov5/releases)    | 47.7     | 47.7     | 66.5     | 4.4ms     | 227     || 47.8M  | 88.1B
-| [YOLOv5x](https://github.com/ultralytics/yolov5/releases)    | 49.2 | 49.2 | 67.7 | 6.9ms     | 145     || 89.0M  | 166.4B
-| | | | | | || |
-| [YOLOv5x](https://github.com/ultralytics/yolov5/releases) + TTA|**50.8**| **50.8** | **68.9** | 25.5ms    | 39      || 89.0M  | 354.3B
+| [YOLOv3](https://github.com/ultralytics/yolov3/releases)      | 43.3   | 43.3     | 63.0     | 4.8ms     | 208     || 61.9M  | 156.4B
+| [YOLOv3-SPP](https://github.com/ultralytics/yolov3/releases)  | **44.3**   | **44.3**     | **64.6**     | 4.9ms     | 204     || 63.0M  | 157.0B
+| [YOLOv3-tiny](https://github.com/ultralytics/yolov3/releases) | 17.6     | 34.9     | 34.9     | **1.7ms**     | **588**     || 8.9M  | 13.3B
 
 ** AP<sup>test</sup> denotes COCO [test-dev2017](http://cocodataset.org/#upload) server results, all other AP results denote val2017 accuracy.  
 ** All AP numbers are for single-model single-scale without ensemble or TTA. **Reproduce mAP** by `python test.py --data coco.yaml --img 640 --conf 0.001 --iou 0.65`  
