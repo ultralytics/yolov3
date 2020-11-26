@@ -1,17 +1,60 @@
-# This file contains google utils: https://cloud.google.com/storage/docs/reference/libraries
-# pip install --upgrade google-cloud-storage
+# Google utils: https://cloud.google.com/storage/docs/reference/libraries
 
 import os
+import platform
+import subprocess
 import time
+from pathlib import Path
+
+import torch
 
 
-# from google.cloud import storage
+def gsutil_getsize(url=''):
+    # gs://bucket/file size https://cloud.google.com/storage/docs/gsutil/commands/du
+    s = subprocess.check_output('gsutil du %s' % url, shell=True).decode('utf-8')
+    return eval(s.split(' ')[0]) if len(s) else 0  # bytes
 
 
-def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
-    # https://gist.github.com/tanaikech/f0f2d122e05bf5f971611258c22c110f
-    # Downloads a file from Google Drive, accepting presented query
-    # from utils.google_utils import *; gdrive_download()
+def attempt_download(weights):
+    # Attempt to download pretrained weights if not found locally
+    weights = weights.strip().replace("'", '')
+    file = Path(weights).name.lower()
+
+    msg = weights + ' missing, try downloading from https://github.com/ultralytics/yolov3/releases/'
+    models = ['yolov3.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt']  # available models
+    redundant = False  # offer second download option
+
+    if file in models and not os.path.isfile(weights):
+        # Google Drive
+        # d = {'yolov5s.pt': '1R5T6rIyy3lLwgFXNms8whc-387H0tMQO',
+        #      'yolov5m.pt': '1vobuEExpWQVpXExsJ2w-Mbf3HJjWkQJr',
+        #      'yolov5l.pt': '1hrlqD1Wdei7UT4OgT785BEk1JwnSvNEV',
+        #      'yolov5x.pt': '1mM8aZJlWTxOg7BZJvNUMrTnA2AbeCVzS'}
+        # r = gdrive_download(id=d[file], name=weights) if file in d else 1
+        # if r == 0 and os.path.exists(weights) and os.path.getsize(weights) > 1E6:  # check
+        #    return
+
+        try:  # GitHub
+            url = 'https://github.com/ultralytics/yolov3/releases/download/v1.0/' + file
+            print('Downloading %s to %s...' % (url, weights))
+            torch.hub.download_url_to_file(url, weights)
+            assert os.path.exists(weights) and os.path.getsize(weights) > 1E6  # check
+        except Exception as e:  # GCP
+            print('Download error: %s' % e)
+            assert redundant, 'No secondary mirror'
+            url = 'https://storage.googleapis.com/ultralytics/yolov3/ckpt/' + file
+            print('Downloading %s to %s...' % (url, weights))
+            r = os.system('curl -L %s -o %s' % (url, weights))  # torch.hub.download_url_to_file(url, weights)
+        finally:
+            if not (os.path.exists(weights) and os.path.getsize(weights) > 1E6):  # check
+                os.remove(weights) if os.path.exists(weights) else None  # remove partial downloads
+                print('ERROR: Download failure: %s' % msg)
+            print('')
+            return
+
+
+def gdrive_download(id='1n_oKgR81BJtqk75b00eAjdv03qVCQn2f', name='coco128.zip'):
+    # Downloads a file from Google Drive. from utils.google_utils import *; gdrive_download()
     t = time.time()
 
     print('Downloading https://drive.google.com/uc?export=download&id=%s as %s... ' % (id, name), end='')
@@ -19,13 +62,13 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
     os.remove('cookie') if os.path.exists('cookie') else None
 
     # Attempt file download
-    os.system("curl -c ./cookie -s -L \"https://drive.google.com/uc?export=download&id=%s\" > /dev/null" % id)
+    out = "NUL" if platform.system() == "Windows" else "/dev/null"
+    os.system('curl -c ./cookie -s -L "drive.google.com/uc?export=download&id=%s" > %s ' % (id, out))
     if os.path.exists('cookie'):  # large file
-        s = "curl -Lb ./cookie \"https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=%s\" -o %s" % (
-            id, name)
+        s = 'curl -Lb ./cookie "drive.google.com/uc?export=download&confirm=%s&id=%s" -o %s' % (get_token(), id, name)
     else:  # small file
-        s = "curl -s -L -o %s 'https://drive.google.com/uc?export=download&id=%s'" % (name, id)
-    r = os.system(s)  # execute, capture return values
+        s = 'curl -s -L -o %s "drive.google.com/uc?export=download&id=%s"' % (name, id)
+    r = os.system(s)  # execute, capture return
     os.remove('cookie') if os.path.exists('cookie') else None
 
     # Error check
@@ -44,29 +87,36 @@ def gdrive_download(id='1HaXkef9z6y5l4vUnCYgdmEAj61c6bfWO', name='coco.zip'):
     return r
 
 
-def upload_blob(bucket_name, source_file_name, destination_blob_name):
-    # Uploads a file to a bucket
-    # https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-python
+def get_token(cookie="./cookie"):
+    with open(cookie) as f:
+        for line in f:
+            if "download" in line:
+                return line.split()[-1]
+    return ""
 
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-
-    blob.upload_from_filename(source_file_name)
-
-    print('File {} uploaded to {}.'.format(
-        source_file_name,
-        destination_blob_name))
-
-
-def download_blob(bucket_name, source_blob_name, destination_file_name):
-    # Uploads a blob from a bucket
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(source_blob_name)
-
-    blob.download_to_filename(destination_file_name)
-
-    print('Blob {} downloaded to {}.'.format(
-        source_blob_name,
-        destination_file_name))
+# def upload_blob(bucket_name, source_file_name, destination_blob_name):
+#     # Uploads a file to a bucket
+#     # https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-python
+#
+#     storage_client = storage.Client()
+#     bucket = storage_client.get_bucket(bucket_name)
+#     blob = bucket.blob(destination_blob_name)
+#
+#     blob.upload_from_filename(source_file_name)
+#
+#     print('File {} uploaded to {}.'.format(
+#         source_file_name,
+#         destination_blob_name))
+#
+#
+# def download_blob(bucket_name, source_blob_name, destination_file_name):
+#     # Uploads a blob from a bucket
+#     storage_client = storage.Client()
+#     bucket = storage_client.get_bucket(bucket_name)
+#     blob = bucket.blob(source_blob_name)
+#
+#     blob.download_to_filename(destination_file_name)
+#
+#     print('Blob {} downloaded to {}.'.format(
+#         source_blob_name,
+#         destination_file_name))
