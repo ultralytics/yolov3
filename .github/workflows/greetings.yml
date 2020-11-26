@@ -23,33 +23,20 @@ jobs:
             - Reduce changes to the absolute **minimum** required for your bug fix or feature addition. _"It is not daily increase but daily decrease, hack away the unessential. The closer to the source, the less wastage there is."_  -Bruce Lee
 
           issue-message: |
-            Hello @${{ github.actor }}, thank you for your interest in 🚀 YOLOv3! Please visit our ⭐️ [Tutorials](https://github.com/ultralytics/yolov3/wiki#tutorials) to get started, where you can find quickstart guides for simple tasks like [Custom Data Training](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data) all the way to advanced concepts like [Hyperparameter Evolution](https://github.com/ultralytics/yolov5/issues/607).
+            Hello @${{ github.actor }}, thank you for your interest in our work! Ultralytics has open-sourced YOLOv5 at https://github.com/ultralytics/yolov5, featuring faster, lighter and more accurate object detection. YOLOv5 is recommended for all new projects.
 
-            If this is a 🐛 Bug Report, please provide screenshots and **minimum viable code to reproduce your issue**, otherwise we can not help you.
+            <a href="https://apps.apple.com/app/id1452689527" target="_blank">
+            <img src="https://user-images.githubusercontent.com/26833433/98699617-a1595a00-2377-11eb-8145-fc674eb9b1a7.jpg" width="800"></a>
+            <br/><br/>
+            <img src="https://user-images.githubusercontent.com/26833433/90187293-6773ba00-dd6e-11ea-8f90-cd94afc0427f.png" width="800">
 
-            If this is a custom training ❓ Question, please provide as much information as possible, including dataset images, training logs, screenshots, and a public link to online [W&B logging](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data#visualize) if available.
+            To continue with this repo, please visit our [Custom Training Tutorial](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data) to get started, and see our [Google Colab Notebook](https://github.com/ultralytics/yolov3/blob/master/tutorial.ipynb), [Docker Image](https://hub.docker.com/r/ultralytics/yolov3), and [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart) for example environments.
 
-            For business inquiries or professional support requests please visit https://www.ultralytics.com or email Glenn Jocher at glenn.jocher@ultralytics.com.
+            If this is a bug report, please provide screenshots and **minimum viable code to reproduce your issue**, otherwise we can not help you.
 
-            ## Requirements
+            If this is a custom model or data training question, please note that Ultralytics does **not** provide free personal support. As a leader in vision ML and AI, we do offer professional consulting, from simple expert advice up to delivery of fully customized, end-to-end production solutions for our clients, such as:
+            - **Cloud-based AI** systems operating on **hundreds of HD video streams in realtime.**
+            - **Edge AI** integrated into custom iOS and Android apps for realtime **30 FPS video inference.**
+            - **Custom data training**, hyperparameter evolution, and model exportation to any destination.
 
-            Python 3.8 or later with all [requirements.txt](https://github.com/ultralytics/yolov3/blob/master/requirements.txt) dependencies installed, including `torch>=1.7`. To install run:
-            ```bash
-            $ pip install -r requirements.txt
-            ```
-
-            ## Environments
-            
-            YOLOv3 may be run in any of the following up-to-date verified environments (with all dependencies including [CUDA](https://developer.nvidia.com/cuda)/[CUDNN](https://developer.nvidia.com/cudnn), [Python](https://www.python.org/) and [PyTorch](https://pytorch.org/) preinstalled):
-            
-            - **Google Colab Notebook** with free GPU: <a href="https://colab.research.google.com/github/ultralytics/yolov3/blob/master/tutorial.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
-            - **Kaggle Notebook** with free GPU: [https://www.kaggle.com/ultralytics/yolov3](https://www.kaggle.com/ultralytics/yolov3)
-            - **Google Cloud** Deep Learning VM. See [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart)
-            - **Docker Image** https://hub.docker.com/r/ultralytics/yolov3. See [Docker Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/Docker-Quickstart) ![Docker Pulls](https://img.shields.io/docker/pulls/ultralytics/yolov3?logo=docker)
-            
-            ## Status
-            
-            ![CI CPU testing](https://github.com/ultralytics/yolov3/workflows/CI%20CPU%20testing/badge.svg)
-            
-            If this badge is green, all [YOLOv3 GitHub Actions](https://github.com/ultralytics/yolov3/actions) Continuous Integration (CI) tests are currently passing. CI tests verify correct operation of YOLOv3 training ([train.py](https://github.com/ultralytics/yolov3/blob/master/train.py)), testing ([test.py](https://github.com/ultralytics/yolov3/blob/master/test.py)), inference ([detect.py](https://github.com/ultralytics/yolov3/blob/master/detect.py)) and export ([export.py](https://github.com/ultralytics/yolov3/blob/master/models/export.py)) on MacOS, Windows, and Ubuntu every 24 hours and on every commit.
-            
+            For more information please visit https://www.ultralytics.com.

@@ -1,0 +1,4 @@
+classes=80
+train=data/coco16.txt
+valid=data/coco16.txt
+names=data/coco.names
