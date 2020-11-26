@@ -140,6 +140,7 @@ def plot_images(images, targets, paths=None, fname='images.jpg', names=None, max
             labels = image_targets.shape[1] == 6  # labels if no conf column
             conf = None if labels else image_targets[:, 6]  # check for confidence presence (label vs pred)
 
+            print(box.shape[0])
             if boxes.shape[0] and boxes.max() <= 1:  # if normalized
                 boxes[[0, 2]] *= w  # scale to pixels
                 boxes[[1, 3]] *= h
