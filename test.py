@@ -302,7 +302,7 @@ if __name__ == '__main__':
     opt.data = check_file(opt.data)  # check file
     print(opt)
 
-    if opt.task in ['val', 'test']:  # run normally
+    if False: # opt.task in ['val', 'test']:  # run normally
         test(opt.data,
              opt.weights,
              opt.batch_size,
@@ -317,7 +317,7 @@ if __name__ == '__main__':
              save_conf=opt.save_conf,
              )
 
-    elif opt.task == 'study':  # run over a range of settings and save/plot
+    elif True: # opt.task == 'study':  # run over a range of settings and save/plot
         for weights in ['yolov3.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt']:
             f = 'study_%s_%s.txt' % (Path(opt.data).stem, Path(weights).stem)  # filename to save to
             x = list(range(320, 800, 64))  # x axis
