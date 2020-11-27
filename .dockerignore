@@ -1,5 +1,5 @@
 # Repo-specific DockerIgnore -------------------------------------------------------------------------------------------
-# .git
+#.git
 .cache
 .idea
 runs
@@ -8,8 +8,6 @@ coco
 storage.googleapis.com
 
 data/samples/*
-!data/samples/zidane.jpg
-!data/samples/bus.jpg
 **/results*.txt
 *.jpg
 
@@ -20,8 +18,6 @@ data/samples/*
 **/*.onnx
 **/*.mlmodel
 **/*.torchscript
-**/darknet53.conv.74
-**/yolov3-tiny.conv.15
 
 
 # Below Copied From .gitignore -----------------------------------------------------------------------------------------
@@ -114,9 +110,9 @@ celerybeat-schedule
 .env
 
 # virtualenv
-.venv
-venv/
-ENV/
+.venv*
+venv*/
+ENV*/
 
 # Spyder project settings
 .spyderproject
