@@ -5,11 +5,11 @@
 ![CI CPU testing](https://github.com/ultralytics/yolov3/workflows/CI%20CPU%20testing/badge.svg)
 
 BRANCH NOTICE: The [ultralytics/yolov3](https://github.com/ultralytics/yolov3) repository is now divided into two branches:
-* [Master branch](https://github.com/ultralytics/yolov3/tree/master): Forward-compatible with all [YOLOv5](https://github.com/ultralytics/yolov5) models and methods (recommended).
+* [Master branch](https://github.com/ultralytics/yolov3/tree/master): Forward-compatible with all [YOLOv5](https://github.com/ultralytics/yolov5) models and methods (**recommended**).
 ```bash
 $ git clone https://github.com/ultralytics/yolov3  # master branch (default)
 ```
-* [Archive branch](https://github.com/ultralytics/yolov3/tree/archive): Backwards-compatible with original [darknet](https://pjreddie.com/darknet/) *.cfg models (not recommended). 
+* [Archive branch](https://github.com/ultralytics/yolov3/tree/archive): Backwards-compatible with original [darknet](https://pjreddie.com/darknet/) *.cfg models (⚠️ no longer maintained). 
 ```bash
 $ git clone -b archive https://github.com/ultralytics/yolov3  # archive branch
 ```
