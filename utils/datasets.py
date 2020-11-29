@@ -261,7 +261,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
 
         if os.path.isfile(sources):
             with open(sources, 'r') as f:
-                sources = [x.strip() for x in f.read().splitlines() if len(x.strip())]
+                sources = [x.strip() for x in f.read().strip().splitlines() if len(x.strip())]
         else:
             sources = [sources]
 
@@ -353,7 +353,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     f += glob.glob(str(p / '**' / '*.*'), recursive=True)
                 elif p.is_file():  # file
                     with open(p, 'r') as t:
-                        t = t.read().splitlines()
+                        t = t.read().strip().splitlines()
                         parent = str(p.parent) + os.sep
                         f += [x.replace('./', parent) if x.startswith('./') else x for x in t]  # local to global path
                 else:
@@ -450,7 +450,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 if os.path.isfile(lb_file):
                     nf += 1  # label found
                     with open(lb_file, 'r') as f:
-                        l = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)  # labels
+                        l = np.array([x.split() for x in f.read().strip().splitlines()], dtype=np.float32)  # labels
                     if len(l):
                         assert l.shape[1] == 5, 'labels require 5 columns each'
                         assert (l >= 0).all(), 'negative labels'
@@ -897,7 +897,7 @@ def extract_boxes(path='../coco128/'):  # from utils.datasets import *; extract_
             lb_file = Path(img2label_paths([str(im_file)])[0])
             if Path(lb_file).exists():
                 with open(lb_file, 'r') as f:
-                    lb = np.array([x.split() for x in f.read().splitlines()], dtype=np.float32)  # labels
+                    lb = np.array([x.split() for x in f.read().strip().splitlines()], dtype=np.float32)  # labels
 
                 for j, x in enumerate(lb):
                     c = int(x[0])  # class
