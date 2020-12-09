@@ -94,7 +94,7 @@ def yolov3_tiny(pretrained=False, channels=3, classes=80):
 
 if __name__ == '__main__':
     model = create(name='yolov3', pretrained=True, channels=3, classes=80)  # example
-    model = model.fuse().autoshape()  # for PIL/cv2/np inputs and NMS
+    model = model.autoshape()  # for PIL/cv2/np inputs and NMS
 
     # Verify inference
     from PIL import Image
