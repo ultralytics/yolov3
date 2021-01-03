@@ -240,9 +240,6 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                 n = 1
         elif m is nn.BatchNorm2d:
             args = [ch[f]]
-        elif m is nn.ZeroPad2d:
-            args = [args]
-            c2 = ch[f]
         elif m is Concat:
             c2 = sum([ch[-1 if x == -1 else x + 1] for x in f])
         elif m is Detect:
