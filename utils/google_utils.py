@@ -6,6 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
+import requests
 import torch
 
 
@@ -21,21 +22,14 @@ def attempt_download(weights):
     file = Path(weights).name.lower()
 
     msg = weights + ' missing, try downloading from https://github.com/ultralytics/yolov3/releases/'
-    models = ['yolov3.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt']  # available models
-    redundant = False  # offer second download option
+    response = requests.get('https://api.github.com/repos/ultralytics/yolov3/releases/latest').json()  # github api
+    assets = [x['name'] for x in response['assets']]  # release assets ['yolov3.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt']
+    redundant = False  # second download option
 
-    if file in models and not os.path.isfile(weights):
-        # Google Drive
-        # d = {'yolov5s.pt': '1R5T6rIyy3lLwgFXNms8whc-387H0tMQO',
-        #      'yolov5m.pt': '1vobuEExpWQVpXExsJ2w-Mbf3HJjWkQJr',
-        #      'yolov5l.pt': '1hrlqD1Wdei7UT4OgT785BEk1JwnSvNEV',
-        #      'yolov5x.pt': '1mM8aZJlWTxOg7BZJvNUMrTnA2AbeCVzS'}
-        # r = gdrive_download(id=d[file], name=weights) if file in d else 1
-        # if r == 0 and os.path.exists(weights) and os.path.getsize(weights) > 1E6:  # check
-        #    return
-
+    if file in assets and not os.path.isfile(weights):
         try:  # GitHub
-            url = 'https://github.com/ultralytics/yolov3/releases/download/v1.0/' + file
+            tag = response['tag_name']  # i.e. 'v1.0'
+            url = f'https://github.com/ultralytics/yolov3/releases/download/{tag}/{file}'
             print('Downloading %s to %s...' % (url, weights))
             torch.hub.download_url_to_file(url, weights)
             assert os.path.exists(weights) and os.path.getsize(weights) > 1E6  # check
@@ -53,10 +47,9 @@ def attempt_download(weights):
             return
 
 
-def gdrive_download(id='1n_oKgR81BJtqk75b00eAjdv03qVCQn2f', name='coco128.zip'):
+def gdrive_download(id='16TiPfZj7htmTyhntwcZyEEAejOUxuT6m', name='tmp.zip'):
     # Downloads a file from Google Drive. from utils.google_utils import *; gdrive_download()
     t = time.time()
-
     print('Downloading https://drive.google.com/uc?export=download&id=%s as %s... ' % (id, name), end='')
     os.remove(name) if os.path.exists(name) else None  # remove existing
     os.remove('cookie') if os.path.exists('cookie') else None
