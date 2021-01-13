@@ -104,7 +104,6 @@ def compute_loss(p, targets, model):  # predictions, targets, model
         BCEcls, BCEobj = FocalLoss(BCEcls, g), FocalLoss(BCEobj, g)
 
     # Losses
-    nt = 0  # number of targets
     balance = [4.0, 1.0, 0.4, 0.1]  # P3-P6
     for i, pi in enumerate(p):  # layer index, layer predictions
         b, a, gj, gi = indices[i]  # image, anchor, gridy, gridx
@@ -112,7 +111,6 @@ def compute_loss(p, targets, model):  # predictions, targets, model
 
         n = b.shape[0]  # number of targets
         if n:
-            nt += n  # cumulative targets
             ps = pi[b, a, gj, gi]  # prediction subset corresponding to targets
 
             # Regression
