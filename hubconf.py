@@ -17,7 +17,7 @@ dependencies = ['torch', 'yaml']
 set_logging()
 
 
-def create(name, pretrained, channels, classes):
+def create(name, pretrained, channels, classes, autoshape):
     """Creates a specified YOLOv3 model
 
     Arguments:
@@ -41,7 +41,8 @@ def create(name, pretrained, channels, classes):
             model.load_state_dict(state_dict, strict=False)  # load
             if len(ckpt['model'].names) == classes:
                 model.names = ckpt['model'].names  # set class names attribute
-            # model = model.autoshape()  # for PIL/cv2/np inputs and NMS
+            if autoshape:
+                model = model.autoshape()  # for file/URI/PIL/cv2/np inputs and NMS
         return model
 
     except Exception as e:
@@ -50,7 +51,7 @@ def create(name, pretrained, channels, classes):
         raise Exception(s) from e
 
 
-def yolov3(pretrained=False, channels=3, classes=80):
+def yolov3(pretrained=False, channels=3, classes=80, autoshape=True):
     """YOLOv3 model from https://github.com/ultralytics/yolov3
 
     Arguments:
@@ -61,10 +62,10 @@ def yolov3(pretrained=False, channels=3, classes=80):
     Returns:
         pytorch model
     """
-    return create('yolov3', pretrained, channels, classes)
+    return create('yolov3', pretrained, channels, classes, autoshape)
 
 
-def yolov3_spp(pretrained=False, channels=3, classes=80):
+def yolov3_spp(pretrained=False, channels=3, classes=80, autoshape=True):
     """YOLOv3-SPP model from https://github.com/ultralytics/yolov3
 
     Arguments:
@@ -75,10 +76,10 @@ def yolov3_spp(pretrained=False, channels=3, classes=80):
     Returns:
         pytorch model
     """
-    return create('yolov3-spp', pretrained, channels, classes)
+    return create('yolov3-spp', pretrained, channels, classes, autoshape)
 
 
-def yolov3_tiny(pretrained=False, channels=3, classes=80):
+def yolov3_tiny(pretrained=False, channels=3, classes=80, autoshape=True):
     """YOLOv3-tiny model from https://github.com/ultralytics/yolov3
 
     Arguments:
@@ -89,16 +90,17 @@ def yolov3_tiny(pretrained=False, channels=3, classes=80):
     Returns:
         pytorch model
     """
-    return create('yolov3-tiny', pretrained, channels, classes)
+    return create('yolov3-tiny', pretrained, channels, classes, autoshape)
 
 
-def custom(path_or_model='path/to/model.pt'):
+def custom(path_or_model='path/to/model.pt', autoshape=True):
     """YOLOv3-custom model from https://github.com/ultralytics/yolov3
-    
+
     Arguments (3 options):
         path_or_model (str): 'path/to/model.pt'
         path_or_model (dict): torch.load('path/to/model.pt')
         path_or_model (nn.Module): torch.load('path/to/model.pt')['model']
+
     Returns:
         pytorch model
     """
@@ -109,13 +111,12 @@ def custom(path_or_model='path/to/model.pt'):
     hub_model = Model(model.yaml).to(next(model.parameters()).device)  # create
     hub_model.load_state_dict(model.float().state_dict())  # load state_dict
     hub_model.names = model.names  # class names
-    return hub_model
+    return hub_model.autoshape() if autoshape else hub_model
 
 
 if __name__ == '__main__':
-    model = create(name='yolov3', pretrained=True, channels=3, classes=80)  # pretrained example
+    model = create(name='yolov3', pretrained=True, channels=3, classes=80, autoshape=True)  # pretrained example
     # model = custom(path_or_model='path/to/model.pt')  # custom example
-    model = model.autoshape()  # for PIL/cv2/np inputs and NMS
 
     # Verify inference
     from PIL import Image
