@@ -1,10 +1,13 @@
 # Start FROM Nvidia PyTorch image https://ngc.nvidia.com/catalog/containers/nvidia:pytorch
-FROM nvcr.io/nvidia/pytorch:20.10-py3
+FROM nvcr.io/nvidia/pytorch:20.12-py3
 
-# Install dependencies
+# Install linux packages
+RUN apt update && apt install -y screen libgl1-mesa-glx
+
+# Install python dependencies
 RUN pip install --upgrade pip
-# COPY requirements.txt .
-# RUN pip install -r requirements.txt
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 RUN pip install gsutil
 
 # Create working directory
@@ -14,12 +17,6 @@ WORKDIR /usr/src/app
 # Copy contents
 COPY . /usr/src/app
 
-# Copy weights
-#RUN python3 -c "from models import *; \
-#attempt_download('weights/yolov3.pt'); \
-#attempt_download('weights/yolov3-spp.pt'); \
-#attempt_download('weights/yolov3-tiny.pt')"
-
 
 # ---------------------------------------------------  Extras Below  ---------------------------------------------------
 
@@ -28,7 +25,7 @@ COPY . /usr/src/app
 # for v in {300..303}; do t=ultralytics/coco:v$v && sudo docker build -t $t . && sudo docker push $t; done
 
 # Pull and Run
-# t=ultralytics/yolov3:latest && sudo docker pull $t && sudo docker run -it --ipc=host $t
+# t=ultralytics/yolov3:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus all $t
 
 # Pull and Run with local directory access
 # t=ultralytics/yolov3:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus all -v "$(pwd)"/coco:/usr/src/coco $t
