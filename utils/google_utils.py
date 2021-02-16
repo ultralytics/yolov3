@@ -27,7 +27,7 @@ def attempt_download(file, repo='ultralytics/yolov3'):
             tag = response['tag_name']  # i.e. 'v1.0'
         except:  # fallback plan
             assets = ['yolov3.pt', 'yolov3-spp.pt', 'yolov3-tiny.pt']
-            tag = subprocess.check_output('git tag', shell=True).decode('utf-8').split('\n')[-2]
+            tag = subprocess.check_output('git tag', shell=True).decode().split()[-1]
 
         name = file.name
         if name in assets:
