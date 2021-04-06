@@ -11,7 +11,7 @@ $ git clone https://github.com/ultralytics/yolov3  # master branch (default)
 ```
 * [Archive branch](https://github.com/ultralytics/yolov3/tree/archive): Backwards-compatible with original [darknet](https://pjreddie.com/darknet/) *.cfg models (⚠️ no longer maintained). 
 ```bash
-$ git clone -b archive https://github.com/ultralytics/yolov3  # archive branch
+$ git clone https://github.com/ultralytics/yolov3 -b archive  # archive branch
 ```
 
 <img src="https://user-images.githubusercontent.com/26833433/100382066-c8bc5200-301a-11eb-907b-799a0301595e.png" width="1000">** GPU Speed measures end-to-end time per image averaged over 5000 COCO val2017 images using a V100 GPU with batch size 32, and includes image preprocessing, PyTorch FP16 inference, postprocessing and NMS. EfficientDet data from [google/automl](https://github.com/google/automl) at batch size 8.
