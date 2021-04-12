@@ -35,15 +35,16 @@ $ git clone https://github.com/ultralytics/yolov3 -b archive  # archive branch
 
 ## Pretrained Checkpoints
 
-[assets]: https://github.com/ultralytics/yolov3/releases
+[assets3]: https://github.com/ultralytics/yolov3/releases
+[assets5]: https://github.com/ultralytics/yolov5/releases
 
 Model |size<br><sup>(pixels) |mAP<sup>val<br>0.5:0.95 |mAP<sup>test<br>0.5:0.95 |mAP<sup>val<br>0.5 |Speed<br><sup>V100 (ms) | |params<br><sup>(M) |FLOPS<br><sup>640 (B)
----   |---  |---        |---         |---             |---                |---|---              |---
-[YOLOv3-tiny][assets]|640  |17.6     |17.6     |34.9     |**1.7** | |8.9   |13.3
-[YOLOv3][assets]     |640  |43.3     |43.3     |63.0     |4.8     | |61.9  |156.4
-[YOLOv3-SPP][assets] |640  |44.3     |44.3     |64.6     |4.9     | |63.0  |157.0
+---   |---                   |---                     |---                      |---                |---                     |---|---              |---
+[YOLOv3-tiny][assets3] |640  |17.6     |17.6     |34.8     |**1.7** | |8.8   |13.2
+[YOLOv3][assets3]      |640  |43.3     |43.3     |63.0     |4.8     | |61.9  |156.3
+[YOLOv3-SPP][assets3]  |640  |44.3     |44.3     |64.6     |4.9     | |63.0  |157.1
 | | | | | | || |
-[YOLOv5l][assets]    |640  |**48.2** |**48.2** |**66.9** |3.8     | |47.0  |115.4
+[YOLOv5l][assets5]     |640  |**48.2** |**48.2** |**66.9** |3.8     | |47.0  |115.4
 
 
 <details>
