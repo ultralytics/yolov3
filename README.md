@@ -6,7 +6,7 @@
 
 This repository represents Ultralytics open-source research into future object detection methods, and incorporates lessons learned and best practices evolved over thousands of hours of training and evolution on anonymized client datasets. **All code and models are under active development, and are subject to modification or deletion without notice.** Use at your own risk.
 
-<p align="left"><img width="800" src="https://user-images.githubusercontent.com/26833433/100382066-c8bc5200-301a-11eb-907b-799a0301595e.png"></p>
+<p align="left"><img width="800" src="https://user-images.githubusercontent.com/26833433/114424655-a0dc1e00-9bb8-11eb-9a2e-cbe21803f05c.png"></p>
 <details>
   <summary>YOLOv5-P5 640 Figure (click to expand)</summary>
   
@@ -40,11 +40,11 @@ $ git clone https://github.com/ultralytics/yolov3 -b archive  # archive branch
 
 Model |size<br><sup>(pixels) |mAP<sup>val<br>0.5:0.95 |mAP<sup>test<br>0.5:0.95 |mAP<sup>val<br>0.5 |Speed<br><sup>V100 (ms) | |params<br><sup>(M) |FLOPS<br><sup>640 (B)
 ---   |---                   |---                     |---                      |---                |---                     |---|---              |---
-[YOLOv3-tiny][assets3] |640  |17.6     |17.6     |34.8     |**1.7** | |8.8   |13.2
-[YOLOv3][assets3]      |640  |43.3     |43.3     |63.0     |4.8     | |61.9  |156.3
-[YOLOv3-SPP][assets3]  |640  |44.3     |44.3     |64.6     |4.9     | |63.0  |157.1
+[YOLOv3-tiny][assets3] |640  |17.6     |17.6     |34.8     |**1.2** | |8.8   |13.2
+[YOLOv3][assets3]      |640  |43.3     |43.3     |63.0     |4.1     | |61.9  |156.3
+[YOLOv3-SPP][assets3]  |640  |44.3     |44.3     |64.6     |4.1     | |63.0  |157.1
 | | | | | | || |
-[YOLOv5l][assets5]     |640  |**48.2** |**48.2** |**66.9** |3.8     | |47.0  |115.4
+[YOLOv5l][assets5]     |640  |**48.2** |**48.2** |**66.9** |3.7     | |47.0  |115.4
 
 
 <details>
