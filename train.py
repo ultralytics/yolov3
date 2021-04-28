@@ -23,7 +23,7 @@ from tqdm import tqdm
 
 from sparseml.pytorch.nn import replace_activations
 from sparseml.pytorch.optim import ScheduledModifierManager, ScheduledOptimizer
-from sparseml.pytorch.utils import PythonLogger, TensorBoardLogger
+from sparseml.pytorch.utils import SparsificationGroupLogger
 
 import test  # import test.py to get mAP after each epoch
 from models.experimental import attempt_load
@@ -85,7 +85,7 @@ def train(hyp, opt, device, tb_writer=None):
     assert len(names) == nc, '%g names found for nc=%g dataset in %s' % (len(names), nc, opt.data)  # check
 
     # Model
-    pretrained = weights.endswith('.pt')
+    pretrained = weights.endswith('.pt') or weights.endswith('.pth')
     if pretrained:
         with torch_distributed_zero_first(rank):
             attempt_download(weights)  # download if not found locally
@@ -102,6 +102,10 @@ def train(hyp, opt, device, tb_writer=None):
         check_dataset(data_dict)  # check
     train_path = data_dict['train']
     test_path = data_dict['val']
+
+    # Swap activations
+    if opt.use_leaky_relu:  # use LeakyReLU activations
+        model = replace_activations(model, 'lrelu', inplace=True)
 
     # Freeze
     freeze = []  # parameter names to freeze (full or partial)
@@ -239,9 +243,6 @@ def train(hyp, opt, device, tb_writer=None):
     model.names = names
 
     # SparseML Integration
-    if opt.use_leaky_relu:  # use LeakyReLU activations
-        model = replace_activations(model, 'lrelu', inplace=True)
-
     qat = False
     if opt.sparseml_recipe:
         manager = ScheduledModifierManager.from_yaml(opt.sparseml_recipe)
@@ -250,7 +251,12 @@ def train(hyp, opt, device, tb_writer=None):
             model if not is_parallel(model) else model.module,
             manager,
             steps_per_epoch=len(dataloader),
-            loggers=[PythonLogger(), TensorBoardLogger(writer=tb_writer)]
+            loggers=[SparsificationGroupLogger(
+                lambda_func=lambda log_tag, log_val, log_vals, _, __: wandb_logger.log({log_tag: log_val}),
+                python=logger,
+                tensorboard=tb_writer,
+                enabled=rank in [-1, 0]
+            )]
         )
         # Override lr scheduler if recipe makes any LR updates
         if manager.learning_rate_modifiers:
