@@ -295,8 +295,8 @@ class ModelEMA:
         }
 
     def load_state_dict(self, state_dict):
-        self.ema.load_state_dict(state_dict['ema'] if not isinstance(state_dict['ema'], nn.Module) else
-                                 state_dict['ema'].float().state_dict())
+        pickled = isinstance(state_dict['ema'], nn.Module)
+        self.ema.load_state_dict(state_dict['ema'].float().state_dict() if pickled else state_dict['ema'])
         self.updates = state_dict['updates']
 
     def update(self, model):

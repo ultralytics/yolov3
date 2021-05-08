@@ -1,8 +1,8 @@
-'''Exports a YOLOv3 *.pt model to ONNX and TorchScript formats
+"""Exports a YOLOv3 *.pt model to ONNX and TorchScript formats
 
 Usage:
     $ export PYTHONPATH='$PWD' && python models/export.py --weights ./weights/yolov3.pt --img 640 --batch 1
-'''
+"""
 
 import argparse
 from copy import deepcopy

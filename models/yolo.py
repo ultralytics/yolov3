@@ -254,9 +254,9 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
     model = nn.Sequential(*layers)
 
     # override all activations in model if provided in config
-    if act in d:
-        logger.info(f'overriding activations in model to {act}')
-        replace_activations(model, act)
+    if 'act' in d:
+        logger.info(f'overriding activations in model to {d["act"]}')
+        replace_activations(model, d["act"])
 
     return model, sorted(save)
 
