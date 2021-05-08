@@ -284,53 +284,52 @@ class ModelEMA:
         self.updates = updates  # number of EMA updates
         self.decay = lambda x: decay * (1 - math.exp(-x / 2000))  # decay exponential ramp (to help early epochs)
         self.enabled = enabled
-        self.pruning_manager = None  # type: sparseml.pytorch.optim.ScheduledModifierManager
         for p in self.ema.parameters():
             p.requires_grad_(False)
 
-    def state_dict(self, half_precision=True):
-        if not self.enabled:
-            return {}
-
-        ema = deepcopy(self.ema)
+    def state_dict(self, pickle=True):
+        ema = deepcopy(self.ema).float()
         return {
-            'ema': ema.half() if half_precision else ema,
+            'ema': ema if pickle else ema.state_dict(),
             'updates': self.updates,
         }
 
     def load_state_dict(self, state_dict):
-        if 'ema' in state_dict:
-            self.ema.load_state_dict(state_dict['ema'].float().state_dict())
-        if 'updates' in state_dict:
-            self.updates = state_dict['updates']
+        self.ema.load_state_dict(state_dict['ema'] if not isinstance(state_dict['ema'], nn.Module) else
+                                 state_dict['ema'].float().state_dict())
+        self.updates = state_dict['updates']
 
     def update(self, model):
-        if not self.enabled:
+        if self.check_reset_model(model):
+            # weight names in model have changed (quantization applied)
+            # set ema to be equal to current model
+            del self.ema
+            self.ema = deepcopy(model.module if is_parallel(model) else model).eval()
+
             return
 
-        # Update EMA parameters
         with torch.no_grad():
-            self.updates += 1
-            d = self.decay(self.updates)
+            if self.enabled:
+                self.updates += 1
+                d = self.decay(self.updates)
+            else:
+                d = 0
 
             msd = model.module.state_dict() if is_parallel(model) else model.state_dict()  # model state_dict
             for k, v in self.ema.state_dict().items():
                 if v.dtype.is_floating_point:
+                    mv = msd[k].detach()
                     v *= d
-                    v += (1. - d) * msd[k].detach()
+                    v += (1. - d) * mv
+                    v *= mv != 0  # preserve pruned parameters in model (equal to 0)
 
     def update_attr(self, model, include=(), exclude=('process_group', 'reducer')):
-        if not self.enabled:
-            return
-
-        # store pre-ema sparsity masks
-        if self.pruning_manager is not None:
-            pruning_dict = self.pruning_manager.state_dict()
-
         # Update EMA attributes
         copy_attr(self.ema, model, include, exclude)
 
-        # restore sparsity structure post-ema
-        if self.pruning_manager is not None:
-            self.pruning_manager.load_state_dict(pruning_dict)
-            del pruning_dict
+    def check_reset_model(self, model):
+        msd = model.module.state_dict() if is_parallel(model) else model.state_dict()  # model state_dict
+        mkeys = {k for k, v in msd.items() if v.dtype.is_floating_point}
+        ekeys = {k for k, v in msd.items() if v.dtype.is_floating_point}
+
+        return len(mkeys.symmetric_difference(ekeys)) > 0

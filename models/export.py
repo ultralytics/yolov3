@@ -1,10 +1,11 @@
-"""Exports a YOLOv3 *.pt model to ONNX and TorchScript formats
+'''Exports a YOLOv3 *.pt model to ONNX and TorchScript formats
 
 Usage:
-    $ export PYTHONPATH="$PWD" && python models/export.py --weights ./weights/yolov3.pt --img 640 --batch 1
-"""
+    $ export PYTHONPATH='$PWD' && python models/export.py --weights ./weights/yolov3.pt --img 640 --batch 1
+'''
 
 import argparse
+from copy import deepcopy
 import sys
 import time
 
@@ -13,7 +14,6 @@ sys.path.append('./')  # to run '$ python *.py' files in subdirectories
 import torch
 import torch.nn as nn
 
-from sparseml.pytorch.optim import ScheduledModifierManager
 from sparseml.pytorch.utils import ModuleExporter
 from sparseml.pytorch.utils.quantization import skip_onnx_input_quantize
 
@@ -23,36 +23,67 @@ from models.yolo import Model
 from utils.activations import Hardswish, SiLU
 from utils.general import set_logging, check_img_size
 from utils.google_utils import attempt_download
-from utils.torch_utils import select_device, intersect_dicts
+from utils.sparse import SparseMLWrapper
+from utils.torch_utils import select_device, intersect_dicts, is_parallel, torch_distributed_zero_first
 
 
-def load_model(opt, device):
-    attempt_download(opt.weights)
-    ckpt = torch.load(opt.weights, map_location=device)
-    is_picked_model = isinstance(ckpt['model'], nn.Module)
+def create_checkpoint(epoch, model, optimizer, ema, sparseml_wrapper, **kwargs):
+    pickle = not sparseml_wrapper.qat_active(epoch)  # qat does not support pickled exports
+    ckpt_model = deepcopy(model.module if is_parallel(model) else model).float()
+    yaml = ckpt_model.yaml
+    if not pickle:
+        ckpt_model = ckpt_model.state_dict()
 
-    if not is_picked_model and not opt.cfg:
-        raise ValueError(f'{opt.weights} does not load a Module object and no Model cfg given to load into a Module')
+    return {'epoch': epoch,
+            'model': ckpt_model,
+            'optimizer': optimizer.state_dict(),
+            'yaml': yaml,
+            **ema.state_dict(pickle),
+            **sparseml_wrapper.state_dict(),
+            **kwargs}
 
-    if is_picked_model and not opt.cfg:
-        model = attempt_load(opt.weights, map_location=device)  # load FP32 model
+
+def load_checkpoint(type_, weights, device, cfg=None, hyp=None, nc=None, recipe=None, resume=None, rank=-1):
+    with torch_distributed_zero_first(rank):
+        attempt_download(weights)  # download if not found locally
+    ckpt = torch.load(weights, map_location=device)  # load checkpoint
+    start_epoch = ckpt['epoch'] + 1 if 'epoch' in ckpt else 0
+    pickled = isinstance(ckpt['model'], nn.Module)
+
+    if pickled and type_ == 'ensemble':
+        # load ensemble using pickled
+        cfg = None
+        model = attempt_load(weights, map_location=device)  # load FP32 model
         state_dict = model.state_dict()
     else:
-        model = Model(opt.cfg or ckpt['model'].yaml)
-        state_dict = ckpt['model'].float().state_dict() if is_picked_model else ckpt['model']
+        # load model from config and weights
+        cfg = cfg or (ckpt['yaml'] if 'yaml' in ckpt else None) or \
+              (ckpt['model'].yaml if pickled else None)
+        model = Model(cfg, ch=3, nc=ckpt['nc'] if ('nc' in ckpt and not nc) else nc,
+                      anchors=hyp.get('anchors') if hyp else None).to(device)
+        model_key = 'ema' if (type_ in ['ema', 'ensemble'] and 'ema' in ckpt and ckpt['ema']) else 'model'
+        state_dict = ckpt[model_key].float().state_dict() if pickled else ckpt[model_key]
 
-    # apply any sparsity or quantization optimizations
-    if opt.sparseml_recipe:
-        if any([opt.grid, opt.dynamic]):
-            raise ValueError("--grid and --dynamic not supported for exports with sparsification")
-        manager = ScheduledModifierManager.from_yaml(opt.sparseml_recipe)
-        for quant_mod in manager.quantization_modifiers:
-            quant_mod.enable_on_initialize = True
-        manager.initialize(model, None)
+    # load sparseml recipe for applying pruning and quantization
+    recipe = recipe or (ckpt['recipe'] if 'recipe' in ckpt else None)
+    sparseml_wrapper = SparseMLWrapper(model, recipe, rank, start_epoch)
 
-    model.load_state_dict(state_dict, strict=True)  # load
+    if type_ == 'train':
+        # load any missing weights from the model
+        exclude = ['anchor'] if (cfg or hyp.get('anchors')) and not resume else []  # exclude keys
+        state_dict = intersect_dicts(state_dict, model.state_dict(), exclude=exclude)  # intersect
+
+    model.load_state_dict(state_dict, strict=type_ != 'train')  # load
     model.float()
-    return model
+    report = 'Transferred %g/%g items from %s' % (len(state_dict), len(model.state_dict()), weights)
+
+    return model, {
+        'ckpt': ckpt,
+        'state_dict': state_dict,
+        'start_epoch': start_epoch,
+        'sparseml_wrapper': sparseml_wrapper,
+        'report': report,
+    }
 
 
 if __name__ == '__main__':
@@ -63,8 +94,6 @@ if __name__ == '__main__':
     parser.add_argument('--dynamic', action='store_true', help='dynamic ONNX axes')
     parser.add_argument('--grid', action='store_true', help='export Detect() layer grid')
     parser.add_argument('--device', default='cpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--cfg', type=str, default='', help='optional model.yaml path')
-    parser.add_argument('--sparseml-recipe', type=str, default=None, help='optional path to sparsification recipe that was used to train this model')
     opt = parser.parse_args()
     opt.img_size *= 2 if len(opt.img_size) == 1 else 1  # expand
     print(opt)
@@ -73,7 +102,7 @@ if __name__ == '__main__':
 
     # Load PyTorch model
     device = select_device(opt.device)
-    model = load_model(opt, device)  # load FP32 model
+    model, extras = load_checkpoint('ensemble', opt.weights, device)  # load FP32 model
     labels = model.names
 
     # Checks
@@ -118,8 +147,8 @@ if __name__ == '__main__':
                               dynamic_axes={'images': {0: 'batch', 2: 'height', 3: 'width'},  # size(1,3,640,640)
                                             'output': {0: 'batch', 2: 'y', 3: 'x'}} if opt.dynamic else None)
         else:
-            save_dir = "/".join(f.split("/")[:-1])
-            save_name = f.split("/")[-1]
+            save_dir = '/'.join(f.split('/')[:-1])
+            save_name = f.split('/')[-1]
             exporter = ModuleExporter(model, save_dir)
             exporter.export_onnx(img, convert_qat=True)
             try:

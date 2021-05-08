@@ -21,22 +21,18 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from sparseml.pytorch.nn import replace_activations
-from sparseml.pytorch.optim import ScheduledModifierManager, ScheduledOptimizer
-from sparseml.pytorch.utils import SparsificationGroupLogger
-
 import test  # import test.py to get mAP after each epoch
-from models.experimental import attempt_load
+from models.export import load_checkpoint, create_checkpoint
 from models.yolo import Model
 from utils.autoanchor import check_anchors
 from utils.datasets import create_dataloader
 from utils.general import labels_to_class_weights, increment_path, labels_to_image_weights, init_seeds, \
     fitness, strip_optimizer, get_latest_run, check_dataset, check_file, check_git_status, check_img_size, \
     check_requirements, print_mutation, set_logging, one_cycle, colorstr
-from utils.google_utils import attempt_download
 from utils.loss import ComputeLoss
 from utils.plots import plot_images, plot_labels, plot_results, plot_evolution
-from utils.torch_utils import ModelEMA, select_device, intersect_dicts, torch_distributed_zero_first, is_parallel
+from utils.sparse import SparseMLWrapper
+from utils.torch_utils import ModelEMA, select_device, torch_distributed_zero_first, is_parallel
 from utils.wandb_logging.wandb_utils import WandbLogger, check_wandb_resume
 
 logger = logging.getLogger(__name__)
@@ -71,6 +67,7 @@ def train(hyp, opt, device, tb_writer=None):
 
     # Logging- Doing this before checking the dataset. Might update data_dict
     loggers = {'wandb': None}  # loggers dict
+    wandb_logger = None
     if rank in [-1, 0]:
         opt.hyp = hyp  # add hyperparameters
         run_id = torch.load(weights).get('wandb_id') if weights.endswith('.pt') and os.path.isfile(weights) else None
@@ -87,25 +84,17 @@ def train(hyp, opt, device, tb_writer=None):
     # Model
     pretrained = weights.endswith('.pt') or weights.endswith('.pth')
     if pretrained:
-        with torch_distributed_zero_first(rank):
-            attempt_download(weights)  # download if not found locally
-        ckpt = torch.load(weights, map_location=device)  # load checkpoint
-        model = Model(opt.cfg or ckpt['model'].yaml, ch=3, nc=nc, anchors=hyp.get('anchors')).to(device)  # create
-        exclude = ['anchor'] if (opt.cfg or hyp.get('anchors')) and not opt.resume else []  # exclude keys
-        state_dict = ckpt['model'].float().state_dict() if isinstance(ckpt['model'], nn.Module) else ckpt['model']
-        state_dict = intersect_dicts(state_dict, model.state_dict(), exclude=exclude)  # intersect
-        model.load_state_dict(state_dict, strict=False)  # load
-        logger.info('Transferred %g/%g items from %s' % (len(state_dict), len(model.state_dict()), weights))  # report
+        model, extras = load_checkpoint('train', weights, device, opt.cfg, hyp, nc, opt.recipe, opt.resume, rank)
+        ckpt, state_dict, sparseml_wrapper = extras['ckpt'], extras['state_dict'], extras['sparseml_wrapper']
+        logger.info(extras['report'])  # report
     else:
         model = Model(opt.cfg, ch=3, nc=nc, anchors=hyp.get('anchors')).to(device)  # create
+        sparseml_wrapper = SparseMLWrapper(model, opt.recipe, rank, start_epoch=0)
+        ckpt = None
     with torch_distributed_zero_first(rank):
         check_dataset(data_dict)  # check
     train_path = data_dict['train']
     test_path = data_dict['val']
-
-    # Swap activations
-    if opt.use_leaky_relu:  # use LeakyReLU activations
-        model = replace_activations(model, 'lrelu', inplace=True)
 
     # Freeze
     freeze = []  # parameter names to freeze (full or partial)
@@ -222,8 +211,6 @@ def train(hyp, opt, device, tb_writer=None):
             # Anchors
             if not opt.noautoanchor:
                 check_anchors(dataset, model=model, thr=hyp['anchor_t'], imgsz=imgsz)
-            if half_precision:
-                model.half().float()  # pre-reduce anchor precision
 
     # DDP mode
     if cuda and rank != -1:
@@ -243,41 +230,10 @@ def train(hyp, opt, device, tb_writer=None):
     model.names = names
 
     # SparseML Integration
-    qat = False
-    if opt.sparseml_recipe:
-        manager = ScheduledModifierManager.from_yaml(opt.sparseml_recipe)
-        optimizer = ScheduledOptimizer(
-            optimizer,
-            model if not is_parallel(model) else model.module,
-            manager,
-            steps_per_epoch=len(dataloader),
-            loggers=[SparsificationGroupLogger(
-                lambda_func=lambda log_tag, log_val, log_vals, _, __: wandb_logger.log({log_tag: log_val}),
-                python=logger,
-                tensorboard=tb_writer,
-                enabled=rank in [-1, 0]
-            )]
-        )
-        # Override lr scheduler if recipe makes any LR updates
-        if manager.learning_rate_modifiers:
-            logger.info('Disabling LR scheduler, managing LR using SparseML recipe')
-            scheduler = None
-        # Override num epochs if recipe explicitly modifies epoch range
-        if manager.epoch_modifiers and manager.max_epochs:
-            epochs = manager.max_epochs or epochs  # override num_epochs
-            logger.info(f'Overriding number of epochs from SparseML manager to {manager.max_epochs}')
-        # Mark that QAT will be applied, pickled QAT exports currently not supported
-        if manager.quantization_modifiers:
-            logger.info('Disabling pickling for model exports, QAT scheduled to run')
-            if not opt.use_leaky_relu:
-                logger.warning(
-                    'QAT detected in sparsification recipe, but --use-leaky-relu not set '
-                    'quantized model may not run well with default activations'
-                )
-            qat = True
-        # Make sure that sparsity structure is held during EMA updates
-        if ema and manager.pruning_modifiers:
-            ema.pruning_manager = manager
+    sparseml_wrapper.initialize_loggers(logger, tb_writer, wandb_logger)
+    optimizer = sparseml_wrapper.setup_optimizer(optimizer, model, dataloader)
+    scheduler = sparseml_wrapper.check_lr_override(scheduler)
+    epochs = sparseml_wrapper.check_epoch_override(epochs)
 
     # Start training
     t0 = time.time()
@@ -294,6 +250,11 @@ def train(hyp, opt, device, tb_writer=None):
                 f'Logging results to {save_dir}\n'
                 f'Starting training for {epochs} epochs...')
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
+        if sparseml_wrapper.qat_active(epoch):
+            logger.info('Disabling half precision, QAT scheduled to run')
+            half_precision = False
+            scaler._enabled = False
+
         model.train()
 
         # Update image weights (optional)
@@ -403,7 +364,7 @@ def train(hyp, opt, device, tb_writer=None):
                 results, maps, times = test.test(data_dict,
                                                  batch_size=batch_size * 2,
                                                  imgsz=imgsz_test,
-                                                 model=ema.ema if ema.enabled else model,
+                                                 model=ema.ema,
                                                  single_cls=opt.single_cls,
                                                  dataloader=testloader,
                                                  save_dir=save_dir,
@@ -439,16 +400,11 @@ def train(hyp, opt, device, tb_writer=None):
 
             # Save model
             if (not opt.nosave) or (final_epoch and not opt.evolve):  # if save
-                ckpt_model = deepcopy(model.module if is_parallel(model) else model)
-                if qat:
-                    ckpt_model = model.state_dict()  # pickled QAT exports not currently supported
-                ckpt = {'epoch': epoch,
-                        'best_fitness': best_fitness,
-                        'training_results': results_file.read_text(),
-                        'model': ckpt_model.half() if half_precision else ckpt_model,
-                        'optimizer': optimizer.state_dict(),
-                        'wandb_id': wandb_logger.wandb_run.id if wandb_logger.wandb else None}
-                ckpt.update(ema.state_dict(half_precision=half_precision))  # add EMA model and updates if enabled
+                ckpt_extras = {'nc': nc,
+                               'best_fitness': best_fitness,
+                               'training_results': results_file.read_text(),
+                               'wandb_id': wandb_logger.wandb_run.id if wandb_logger.wandb else None}
+                ckpt = create_checkpoint(epoch, model, optimizer, ema, sparseml_wrapper, **ckpt_extras)
 
                 # Save last, best and delete
                 torch.save(ckpt, last)
@@ -474,7 +430,7 @@ def train(hyp, opt, device, tb_writer=None):
         logger.info('%g epochs completed in %.3f hours.\n' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
         if opt.data.endswith('coco.yaml') and nc == 80:  # if COCO
             for m in (last, best) if best.exists() else (last):  # speed, mAP tests
-                test_model = attempt_load(m, device) if not qat else model
+                test_model, _ = load_checkpoint('ensemble', m, device)
                 results, _, _ = test.test(opt.data,
                                           batch_size=batch_size * 2,
                                           imgsz=imgsz_test,
@@ -492,7 +448,7 @@ def train(hyp, opt, device, tb_writer=None):
         # Strip optimizers
         final = best if best.exists() else last  # final model
         for f in last, best:
-            if f.exists() and not qat:  # qat state dict incompatible
+            if f.exists():
                 strip_optimizer(f)  # strip optimizers
         if opt.bucket:
             os.system(f'gsutil cp {final} gs://{opt.bucket}/weights')  # upload
@@ -543,9 +499,8 @@ if __name__ == '__main__':
     parser.add_argument('--bbox_interval', type=int, default=-1, help='Set bounding-box image logging interval for W&B')
     parser.add_argument('--save_period', type=int, default=-1, help='Log model after every "save_period" epoch')
     parser.add_argument('--artifact_alias', type=str, default="latest", help='version of dataset artifact to be used')
-    parser.add_argument('--sparseml-recipe', type=str, default=None, help='Path to a SparseML sparsification recipe, see <TODO: Link Here> for more information')
-    parser.add_argument('--use-leaky-relu', action='store_true', help='Override default SiLU activation with LeakyReLU')
-    parser.add_argument('--disable-amp', action='store_true', help='Disable FP16 half precision (enabled by default)')
+    parser.add_argument('--recipe', type=str, default=None, help='Path to a sparsification recipe, '
+                                                                 'see https://github.com/neuralmagic/sparseml for more information')
     parser.add_argument('--disable-ema', action='store_true', help='Disable EMA model updates (enabled by default)')
     opt = parser.parse_args()
 
