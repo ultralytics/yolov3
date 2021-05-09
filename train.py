@@ -394,7 +394,7 @@ def train(hyp, opt, device, tb_writer=None):
 
             # Update best mAP
             fi = fitness(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
-            if fi > best_fitness:
+            if fi > best_fitness or sparseml_wrapper.reset_best(epoch):
                 best_fitness = fi
             wandb_logger.end_epoch(best_result=best_fitness == fi)
 

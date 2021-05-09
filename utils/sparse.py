@@ -1,3 +1,5 @@
+import math
+
 from sparseml.pytorch.optim import ScheduledModifierManager, ScheduledOptimizer
 from sparseml.pytorch.utils import SparsificationGroupLogger
 
@@ -89,3 +91,18 @@ class SparseMLWrapper(object):
         qat_start = max([mod.start_epoch for mod in self.manager.quantization_modifiers])
 
         return qat_start < epoch + 1
+
+    def reset_best(self, epoch):
+        if not self.enabled:
+            return False
+
+        # if pruning is active or quantization just started, need to reset best checkpoint
+        # this is in case the pruned and/or quantized model do not fully recover
+        pruning_start = math.floor(max([mod.start_epoch for mod in self.manager.pruning_modifiers])) \
+            if self.manager.pruning_modifiers else -1
+        pruning_end = math.ceil(max([mod.end_epoch for mod in self.manager.pruning_modifiers])) \
+            if self.manager.pruning_modifiers else -1
+        qat_start = math.floor(max([mod.start_epoch for mod in self.manager.quantization_modifiers])) \
+            if self.manager.quantization_modifiers else -1
+
+        return (pruning_start <= epoch <= pruning_end) or epoch == qat_start
