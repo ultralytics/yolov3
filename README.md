@@ -120,12 +120,11 @@ import torch
 # Model
 model = torch.hub.load('ultralytics/yolov3', 'yolov3')  # or 'yolov3_spp', 'yolov3_tiny'
 
-# Images
-dir = 'https://github.com/ultralytics/yolov3/raw/master/data/images/'
-imgs = [dir + f for f in ('zidane.jpg', 'bus.jpg')]  # batch of images
+# Image
+img = 'https://ultralytics.com/images/zidane.jpg'
 
 # Inference
-results = model(imgs)
+results = model(img)
 results.print()  # or .show(), .save()
 ```
 
