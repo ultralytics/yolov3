@@ -113,7 +113,7 @@ $ python detect.py --source data/images --weights yolov3.pt --conf 0.25
 
 ### PyTorch Hub
 
-To run **batched inference** with YOLOv5 and [PyTorch Hub](https://github.com/ultralytics/yolov5/issues/36):
+To run **batched inference** with YOLOv3 and [PyTorch Hub](https://github.com/ultralytics/yolov5/issues/36):
 ```python
 import torch
 

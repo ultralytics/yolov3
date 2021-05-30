@@ -1,9 +1,9 @@
 # Argoverse-HD dataset (ring-front-center camera) http://www.cs.cmu.edu/~mengtial/proj/streaming/
 # Train command: python train.py --data argoverse_hd.yaml
-# Default dataset location is next to /yolov5:
+# Default dataset location is next to YOLOv3:
 #   /parent_folder
 #     /argoverse
-#     /yolov5
+#     /yolov3
 
 
 # download command/URL (optional)

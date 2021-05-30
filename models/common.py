@@ -13,8 +13,8 @@ from PIL import Image
 from torch.cuda import amp
 
 from utils.datasets import letterbox
-from utils.general import non_max_suppression, make_divisible, scale_coords, increment_path, xyxy2xywh
-from utils.plots import color_list, plot_one_box
+from utils.general import non_max_suppression, make_divisible, scale_coords, increment_path, xyxy2xywh, save_one_box
+from utils.plots import colors, plot_one_box
 from utils.torch_utils import time_synchronized
 
 
@@ -215,32 +215,34 @@ class NMS(nn.Module):
     conf = 0.25  # confidence threshold
     iou = 0.45  # IoU threshold
     classes = None  # (optional list) filter by class
+    max_det = 1000  # maximum number of detections per image
 
     def __init__(self):
         super(NMS, self).__init__()
 
     def forward(self, x):
-        return non_max_suppression(x[0], conf_thres=self.conf, iou_thres=self.iou, classes=self.classes)
+        return non_max_suppression(x[0], self.conf, iou_thres=self.iou, classes=self.classes, max_det=self.max_det)
 
 
-class autoShape(nn.Module):
+class AutoShape(nn.Module):
     # input-robust model wrapper for passing cv2/np/PIL/torch inputs. Includes preprocessing, inference and NMS
     conf = 0.25  # NMS confidence threshold
     iou = 0.45  # NMS IoU threshold
     classes = None  # (optional list) filter by class
+    max_det = 1000  # maximum number of detections per image
 
     def __init__(self, model):
-        super(autoShape, self).__init__()
+        super(AutoShape, self).__init__()
         self.model = model.eval()
 
     def autoshape(self):
-        print('autoShape already enabled, skipping... ')  # model already converted to model.autoshape()
+        print('AutoShape already enabled, skipping... ')  # model already converted to model.autoshape()
         return self
 
     @torch.no_grad()
     def forward(self, imgs, size=640, augment=False, profile=False):
         # Inference from various sources. For height=640, width=1280, RGB images example inputs are:
-        #   filename:   imgs = 'data/samples/zidane.jpg'
+        #   filename:   imgs = 'data/images/zidane.jpg'
         #   URI:             = 'https://github.com/ultralytics/yolov5/releases/download/v1.0/zidane.jpg'
         #   OpenCV:          = cv2.imread('image.jpg')[:,:,::-1]  # HWC BGR to RGB x(640,1280,3)
         #   PIL:             = Image.open('image.jpg')  # HWC x(640,1280,3)
@@ -271,7 +273,7 @@ class autoShape(nn.Module):
             shape0.append(s)  # image shape
             g = (size / max(s))  # gain
             shape1.append([y * g for y in s])
-            imgs[i] = im  # update
+            imgs[i] = im if im.data.contiguous else np.ascontiguousarray(im)  # update
         shape1 = [make_divisible(x, int(self.stride.max())) for x in np.stack(shape1, 0).max(0)]  # inference shape
         x = [letterbox(im, new_shape=shape1, auto=False)[0] for im in imgs]  # pad
         x = np.stack(x, 0) if n > 1 else x[0][None]  # stack
@@ -285,7 +287,7 @@ class autoShape(nn.Module):
             t.append(time_synchronized())
 
             # Post-process
-            y = non_max_suppression(y, conf_thres=self.conf, iou_thres=self.iou, classes=self.classes)  # NMS
+            y = non_max_suppression(y, self.conf, iou_thres=self.iou, classes=self.classes, max_det=self.max_det)  # NMS
             for i in range(n):
                 scale_coords(shape1, y[i][:, :4], shape0[i])
 
@@ -311,29 +313,32 @@ class Detections:
         self.t = tuple((times[i + 1] - times[i]) * 1000 / self.n for i in range(3))  # timestamps (ms)
         self.s = shape  # inference BCHW shape
 
-    def display(self, pprint=False, show=False, save=False, render=False, save_dir=''):
-        colors = color_list()
-        for i, (img, pred) in enumerate(zip(self.imgs, self.pred)):
-            str = f'image {i + 1}/{len(self.pred)}: {img.shape[0]}x{img.shape[1]} '
+    def display(self, pprint=False, show=False, save=False, crop=False, render=False, save_dir=Path('')):
+        for i, (im, pred) in enumerate(zip(self.imgs, self.pred)):
+            str = f'image {i + 1}/{len(self.pred)}: {im.shape[0]}x{im.shape[1]} '
             if pred is not None:
                 for c in pred[:, -1].unique():
                     n = (pred[:, -1] == c).sum()  # detections per class
                     str += f"{n} {self.names[int(c)]}{'s' * (n > 1)}, "  # add to string
-                if show or save or render:
+                if show or save or render or crop:
                     for *box, conf, cls in pred:  # xyxy, confidence, class
                         label = f'{self.names[int(cls)]} {conf:.2f}'
-                        plot_one_box(box, img, label=label, color=colors[int(cls) % 10])
-            img = Image.fromarray(img.astype(np.uint8)) if isinstance(img, np.ndarray) else img  # from np
+                        if crop:
+                            save_one_box(box, im, file=save_dir / 'crops' / self.names[int(cls)] / self.files[i])
+                        else:  # all others
+                            plot_one_box(box, im, label=label, color=colors(cls))
+
+            im = Image.fromarray(im.astype(np.uint8)) if isinstance(im, np.ndarray) else im  # from np
             if pprint:
                 print(str.rstrip(', '))
             if show:
-                img.show(self.files[i])  # show
+                im.show(self.files[i])  # show
             if save:
                 f = self.files[i]
-                img.save(Path(save_dir) / f)  # save
+                im.save(save_dir / f)  # save
                 print(f"{'Saved' * (i == 0)} {f}", end=',' if i < self.n - 1 else f' to {save_dir}\n')
             if render:
-                self.imgs[i] = np.asarray(img)
+                self.imgs[i] = np.asarray(im)
 
     def print(self):
         self.display(pprint=True)  # print results
@@ -343,9 +348,13 @@ class Detections:
         self.display(show=True)  # show results
 
     def save(self, save_dir='runs/hub/exp'):
-        save_dir = increment_path(save_dir, exist_ok=save_dir != 'runs/hub/exp')  # increment save_dir
-        Path(save_dir).mkdir(parents=True, exist_ok=True)
+        save_dir = increment_path(save_dir, exist_ok=save_dir != 'runs/hub/exp', mkdir=True)  # increment save_dir
         self.display(save=True, save_dir=save_dir)  # save results
+
+    def crop(self, save_dir='runs/hub/exp'):
+        save_dir = increment_path(save_dir, exist_ok=save_dir != 'runs/hub/exp', mkdir=True)  # increment save_dir
+        self.display(crop=True, save_dir=save_dir)  # crop results
+        print(f'Saved results to {save_dir}\n')
 
     def render(self):
         self.display(render=True)  # render results
