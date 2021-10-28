@@ -24,18 +24,24 @@ ROOT_FOLDER = os.path.join("Assignment3")
 
 DATA_FOLDER = os.path.join(ROOT_FOLDER, "Data")
 
-FRAMES_DIR = os.path.join(DATA_FOLDER, "Frames")
+# FRAMES_DIR = os.path.join(DATA_FOLDER, "Frames")
 # IMAGE_MODEL_INFERENCE_DIR = os.path.join(DATA_FOLDER, "Image_model_inference")
 
-VIDEO_DIR = os.path.join(DATA_FOLDER, "Videos")
-video_name = os.listdir(VIDEO_DIR)[0]
+# VIDEO_DIR = os.path.join(DATA_FOLDER, "Videos")
+filesDataFolder = os.listdir(DATA_FOLDER)
+for fileName in filesDataFolder:
+    if '.avi' in fileName:
+        video_name = fileName
 
-VIDEO_TO_INFER_DIR = os.path.join(VIDEO_DIR, video_name)
+VIDEO_TO_INFER_DIR = os.path.join(DATA_FOLDER, video_name)
 
 VIDEO__MODEL_INFERENCE_DIR = os.path.join(DATA_FOLDER, "Video_model_inference")
 
 JSON_DIR = os.path.join(ROOT_FOLDER, "JSON")
-frames_to_infer_file_name = os.listdir(JSON_DIR)[0]
+filesJsonFolder = os.listdir(JSON_DIR)
+for fileName in filesJsonFolder:
+    if '.json' in fileName:
+        frames_to_infer_file_name = fileName
 
 FRAMES_TO_INFER_JSON = os.path.join(JSON_DIR, frames_to_infer_file_name)
 
@@ -47,8 +53,11 @@ CSV_DIR = os.path.join(SAVE_RESULTS_DIR, "results.csv")
 # Instruction: insert the path of the weight to one of trained model from above
 # WEIGHTS = os.path.join(RESULTS_FOLDER, "exp", "weights", "best.pt")
 WEIGHTS_DIR = os.path.join(ROOT_FOLDER, "Weights")
-weight_file_name = os.listdir(WEIGHTS_DIR)[0]
-WEIGHT = os.path.join(WEIGHTS_DIR, weight_file_name)
+filesWeightsFolder = os.listdir(WEIGHTS_DIR)
+for fileName in filesWeightsFolder:
+    if '.pt' in fileName:
+        weight_file_name = fileName
+WEIGHTS = os.path.join(WEIGHTS_DIR, weight_file_name)
 
 # Device to use (e.g. "0", "1", "2"... or "cpu")
 if torch.cuda.is_available():
