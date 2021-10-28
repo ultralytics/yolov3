@@ -13,7 +13,8 @@ data/samples/*
 
 # Neural Network weights -----------------------------------------------------------------------------------------------
 **/*.weights
-**/*.pt
+# commented out the line below to allow docker to access weights
+# **/*.pt
 **/*.pth
 **/*.onnx
 **/*.mlmodel

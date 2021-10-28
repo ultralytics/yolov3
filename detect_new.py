@@ -1,5 +1,5 @@
 import torch
-from IPython.display import Image, clear_output  # to display images
+# from IPython.display import Image, clear_output  # to display images
 
 import os
 from pathlib import Path
@@ -16,6 +16,7 @@ from utils.datasets import *
 import json
 import csv
 import datetime
+import pandas as pd
 
 import os
 
@@ -33,7 +34,10 @@ VIDEO_TO_INFER_DIR = os.path.join(VIDEO_DIR, video_name)
 
 VIDEO__MODEL_INFERENCE_DIR = os.path.join(DATA_FOLDER, "Video_model_inference")
 
-FRAMES_TO_INFER_JSON = os.path.join(ROOT_FOLDER, "JSON", "frames_to_infer.json")
+JSON_DIR = os.path.join(ROOT_FOLDER, "JSON")
+frames_to_infer_file_name = os.listdir(JSON_DIR)[0]
+
+FRAMES_TO_INFER_JSON = os.path.join(JSON_DIR, frames_to_infer_file_name)
 
 SAVE_RESULTS_DIR = os.path.join(ROOT_FOLDER, "Results")
 
@@ -42,10 +46,15 @@ CSV_DIR = os.path.join(SAVE_RESULTS_DIR, "results.csv")
 
 # Instruction: insert the path of the weight to one of trained model from above
 # WEIGHTS = os.path.join(RESULTS_FOLDER, "exp", "weights", "best.pt")
-WEIGHTS = os.path.join(ROOT_FOLDER, "Weights", "best.pt")
+WEIGHTS_DIR = os.path.join(ROOT_FOLDER, "Weights")
+weight_file_name = os.listdir(WEIGHTS_DIR)[0]
+WEIGHT = os.path.join(WEIGHTS_DIR, weight_file_name)
 
 # Device to use (e.g. "0", "1", "2"... or "cpu")
-DEVICE = "0"
+if torch.cuda.is_available():
+    DEVICE = "0"
+else:
+    DEVICE = "cpu"
 
 # Intended image size must be in multiples of 32
 # Image will be resized for training
@@ -112,7 +121,8 @@ def getFramesToInfer():
 
 
 def modelInference(framesToInfer):
-    print('Starting object detection on video')
+    print(f'Starting object detection on video from {VIDEO_TO_INFER_DIR}')
+    print(f'Using device {DEVICE} for model inference.')
     startTime = datetime.datetime.now()
 
     # Set device using in os.environ['CUDA_VISIBLE_DEVICES']
@@ -121,7 +131,7 @@ def modelInference(framesToInfer):
     # Loads weight of model
     model = attempt_load(WEIGHTS, map_location=device)
 
-    # Gets stride size of model
+    # Gets stride size of model 
     stride = int(model.stride.max())
 
     # Makes sure image size is a multiple of stride size
@@ -133,16 +143,20 @@ def modelInference(framesToInfer):
     cap = cv2.VideoCapture(VIDEO_TO_INFER_DIR)
     _, img0 = cap.read()
 
-    save_path = os.path.join(SAVE_VIDEO_DIR, os.path.split(VIDEO_TO_INFER_DIR)[-1])
+    # save_path = os.path.join(SAVE_VIDEO_DIR, os.path.split(VIDEO_TO_INFER_DIR)[-1]) 
+    save_path = SAVE_VIDEO_DIR
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'MP4V'), fps, (w, h))
+    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, (w, h))
 
     print(f'fps {fps}')
     print(f'w x h = {w} x {h}')
 
+    totalNumberOfFrame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(f'totalNumberOfFrame {totalNumberOfFrame}')
+    
     # the list to store (frameNumber, imageDetection)
     allDetectionList = list()
 
@@ -168,7 +182,9 @@ def modelInference(framesToInfer):
         kayak_number = 1
 
         currentFrameNumber = cap.get(cv2.CAP_PROP_POS_FRAMES)  # returns a float
-        currentFrameNumber = int(currentFrameNumber)
+        currentFrameNumber = int(currentFrameNumber) - 1  # frames are 0-index based
+
+        print(f'currentFrameNumber {currentFrameNumber}')
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
@@ -208,10 +224,11 @@ def modelInference(framesToInfer):
                         # add to current list of dections
                         currentDetectionList.append(currentDetection)
 
-                if currentDetectionList is not None:
-                    allDetectionList.append([currentFrameNumber,
-                                             numKayakVesselAndBbox(currentDetectionList)]
-                                            )
+                if currentFrameNumber in framesToInfer:
+                    currentListAdd = list()
+                    currentListAdd.append(currentFrameNumber)
+                    currentListAdd.extend(numKayakVesselAndBbox(currentDetectionList))
+                    allDetectionList.append(currentListAdd)
 
         vid_writer.write(im0)
         _, img0 = cap.read()
@@ -232,9 +249,8 @@ def modelInference(framesToInfer):
     return save_path
 
 
-if "__name__" == "__main__":
+if __name__ == "__main__":
     framesToInfer = getFramesToInfer()
     modelInference(framesToInfer)
-
     csv_read = pd.read_csv(CSV_DIR)
     csv_read.head()
