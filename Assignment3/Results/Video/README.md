@@ -1,0 +1,1 @@
+This directory stores the video with bounding boxes.
