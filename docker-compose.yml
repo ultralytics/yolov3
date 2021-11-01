@@ -1,0 +1,6 @@
+version: "3.7"
+services:
+  yolov3:
+    build: .
+    image: yolov3
+    container_name: yolov3container

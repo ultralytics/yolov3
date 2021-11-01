@@ -1,11 +1,13 @@
-import torch
-# from IPython.display import Image, clear_output  # to display images
-
-import os
+# import libraries
+import argparse
 from pathlib import Path
+import os
+
+import torch
+# from IPython.display import Image, clear_output
+
 import numpy as np
 import cv2
-
 from models.experimental import attempt_load
 from utils.datasets import LoadImages, LoadStreams
 from utils.general import check_img_size, non_max_suppression, apply_classifier, scale_coords, xyxy2xywh
@@ -16,48 +18,31 @@ from utils.datasets import *
 import json
 import csv
 import datetime
-import pandas as pd
 
-import os
-
-ROOT_FOLDER = os.path.join("Assignment3")
-
+# root directory
+CWD = os.getcwd()
+ROOT_FOLDER = os.path.join(CWD, "Assignment3")
 DATA_FOLDER = os.path.join(ROOT_FOLDER, "Data")
 
-# FRAMES_DIR = os.path.join(DATA_FOLDER, "Frames")
-# IMAGE_MODEL_INFERENCE_DIR = os.path.join(DATA_FOLDER, "Image_model_inference")
+# adding arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--weights', nargs='+', type=str, default='best.pt', help='model.pt path(s)')
+parser.add_argument('--source', type=str, default='horizon_1_ship.avi', help='source')
+parser.add_argument('--frames', type=str, default='horizon_1_ship.json', help='frames to infer json format')
+opt = parser.parse_args()
 
-# VIDEO_DIR = os.path.join(DATA_FOLDER, "Videos")
-filesDataFolder = os.listdir(DATA_FOLDER)
-for fileName in filesDataFolder:
-    if '.avi' in fileName:
-        video_name = fileName
-
+video_name = opt.source
 VIDEO_TO_INFER_DIR = os.path.join(DATA_FOLDER, video_name)
 
-VIDEO__MODEL_INFERENCE_DIR = os.path.join(DATA_FOLDER, "Video_model_inference")
+FRAMES_TO_INFER_JSON = os.path.join(ROOT_FOLDER, "JSON", opt.frames)
 
-JSON_DIR = os.path.join(ROOT_FOLDER, "JSON")
-filesJsonFolder = os.listdir(JSON_DIR)
-for fileName in filesJsonFolder:
-    if '.json' in fileName:
-        frames_to_infer_file_name = fileName
-
-FRAMES_TO_INFER_JSON = os.path.join(JSON_DIR, frames_to_infer_file_name)
-
+# outputs
 SAVE_RESULTS_DIR = os.path.join(ROOT_FOLDER, "Results")
-
-SAVE_VIDEO_DIR = os.path.join(SAVE_RESULTS_DIR, video_name)
+SAVE_VIDEO_DIR = os.path.join(SAVE_RESULTS_DIR, 'Video')  # need to add this subfolder
 CSV_DIR = os.path.join(SAVE_RESULTS_DIR, "results.csv")
 
-# Instruction: insert the path of the weight to one of trained model from above
-# WEIGHTS = os.path.join(RESULTS_FOLDER, "exp", "weights", "best.pt")
-WEIGHTS_DIR = os.path.join(ROOT_FOLDER, "Weights")
-filesWeightsFolder = os.listdir(WEIGHTS_DIR)
-for fileName in filesWeightsFolder:
-    if '.pt' in fileName:
-        weight_file_name = fileName
-WEIGHTS = os.path.join(WEIGHTS_DIR, weight_file_name)
+# weights
+WEIGHTS = os.path.join(ROOT_FOLDER, "Weights", opt.weights)
 
 # Device to use (e.g. "0", "1", "2"... or "cpu")
 if torch.cuda.is_available():
@@ -70,12 +55,16 @@ else:
 IMAGE_SIZE = 640
 
 
+# define ImageDetection class
 class ImageDetection:
-    def __init__(self, objectType, bbox):
+    def __init__(self, objectType, bbox, confidence):
         self.objectType = objectType
         self.bbox = bbox
+        self.confidence = confidence
 
 
+# define all helper functions
+# get object count
 def numKayakVesselAndBbox(listOfAllObjectsDetected):
     resultList = list()
 
@@ -88,25 +77,29 @@ def numKayakVesselAndBbox(listOfAllObjectsDetected):
     for objectDetected in listOfAllObjectsDetected:
         objectType = objectDetected.objectType
         objectBbox = objectDetected.bbox
+        objectConfident = objectDetected.confidence
 
         if objectType == 'vessel':
             numVessel += 1
             vesselBbox = [str(round(bboxCoord, 4)) for bboxCoord in objectBbox]
-            vesselBboxString += f'{"_".join(vesselBbox)};'
+            vesselBboxString += f'{"_".join(vesselBbox)}'
+            vesselBboxString += f"_{objectConfident};"
 
         else:
             numKayak += 1
             kayakBbox = [str(round(bboxCoord, 4)) for bboxCoord in objectBbox]
-            kayakBboxString += f'{"_".join(kayakBbox)};'
+            kayakBboxString += f'{"_".join(kayakBbox)}'
+            kayakBboxString += f"_{objectConfident};"
 
     resultList.append(numVessel)
     resultList.append(numKayak)
     resultList.append(vesselBboxString)
     resultList.append(kayakBboxString)
-
+    print(resultList)
     return resultList
 
 
+# helper function to save results
 def saveResultsToCsv(dataToSaveToCsv):
     header = ['frame_index', 'no_ships', 'no_kayaks', 'ships_coordinates', 'kayaks_coordinates']
 
@@ -122,6 +115,7 @@ def saveResultsToCsv(dataToSaveToCsv):
     print(f'Data saved to {CSV_DIR}')
 
 
+# getting frames from json input
 def getFramesToInfer():
     jsonFile = open(FRAMES_TO_INFER_JSON, )
     jsonFileLoaded = json.load(jsonFile)
@@ -129,9 +123,9 @@ def getFramesToInfer():
     return framesToInfer
 
 
+# main function for video inference
 def modelInference(framesToInfer):
-    print(f'Starting object detection on video from {VIDEO_TO_INFER_DIR}')
-    print(f'Using device {DEVICE} for model inference.')
+    print('Starting object detection on video')
     startTime = datetime.datetime.now()
 
     # Set device using in os.environ['CUDA_VISIBLE_DEVICES']
@@ -140,7 +134,7 @@ def modelInference(framesToInfer):
     # Loads weight of model
     model = attempt_load(WEIGHTS, map_location=device)
 
-    # Gets stride size of model 
+    # Gets stride size of model
     stride = int(model.stride.max())
 
     # Makes sure image size is a multiple of stride size
@@ -152,20 +146,17 @@ def modelInference(framesToInfer):
     cap = cv2.VideoCapture(VIDEO_TO_INFER_DIR)
     _, img0 = cap.read()
 
-    # save_path = os.path.join(SAVE_VIDEO_DIR, os.path.split(VIDEO_TO_INFER_DIR)[-1]) 
-    save_path = SAVE_VIDEO_DIR
+    save_path = os.path.join(SAVE_VIDEO_DIR, os.path.split(VIDEO_TO_INFER_DIR)[-1])
+    save_path = save_path.replace('.avi', '.mp4')
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, (w, h))
+    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
 
     print(f'fps {fps}')
     print(f'w x h = {w} x {h}')
 
-    totalNumberOfFrame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    print(f'totalNumberOfFrame {totalNumberOfFrame}')
-    
     # the list to store (frameNumber, imageDetection)
     allDetectionList = list()
 
@@ -192,8 +183,6 @@ def modelInference(framesToInfer):
 
         currentFrameNumber = cap.get(cv2.CAP_PROP_POS_FRAMES)  # returns a float
         currentFrameNumber = int(currentFrameNumber) - 1  # frames are 0-index based
-
-        print(f'currentFrameNumber {currentFrameNumber}')
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
@@ -228,7 +217,8 @@ def modelInference(framesToInfer):
                         print(f'Doing inference on frame number {currentFrameNumber}')
 
                         # Create ImageDetection object to store object class and bbox
-                        currentDetection = ImageDetection(names[c], xywh)
+                        conf = f'{conf:.2f}'
+                        currentDetection = ImageDetection(names[c], xywh, conf)
 
                         # add to current list of dections
                         currentDetectionList.append(currentDetection)
@@ -258,8 +248,7 @@ def modelInference(framesToInfer):
     return save_path
 
 
+# main
 if __name__ == "__main__":
     framesToInfer = getFramesToInfer()
     modelInference(framesToInfer)
-    csv_read = pd.read_csv(CSV_DIR)
-    csv_read.head()
