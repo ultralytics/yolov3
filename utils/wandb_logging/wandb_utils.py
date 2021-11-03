@@ -282,7 +282,7 @@ class WandbLogger():
                     box_data.append(
                         {"position": {"minX": xyxy[0], "minY": xyxy[1], "maxX": xyxy[2], "maxY": xyxy[3]},
                          "class_id": int(cls),
-                         "box_caption": "%s %.3f" % (names[cls], conf),
+                         "box_caption": f"{names[cls]} {conf:.3f}",
                          "scores": {"class_score": conf},
                          "domain": "pixel"})
                     total_conf = total_conf + conf
