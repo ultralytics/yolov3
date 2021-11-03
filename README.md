@@ -145,16 +145,42 @@ $ python train.py --data coco.yaml --cfg yolov3.yaml      --weights '' --batch-s
 [![DOI](https://zenodo.org/badge/146165888.svg)](https://zenodo.org/badge/latestdoi/146165888)
 
 
-## About Us
+## Contribute
 
-Ultralytics is a U.S.-based particle physics and AI startup with over 6 years of expertise supporting government, academic and business clients. We offer a wide range of vision AI services, spanning from simple expert advice up to delivery of fully customized, end-to-end production solutions, including:
-- **Cloud-based AI** systems operating on **hundreds of HD video streams in realtime.**
-- **Edge AI** integrated into custom iOS and Android apps for realtime **30 FPS video inference.**
-- **Custom data training**, hyperparameter evolution, and model exportation to any destination.
+We love your input! We want to make contributing to YOLOv3 as easy and transparent as possible. Please see our [Contributing Guide](CONTRIBUTING.md) to get started, and fill out the [YOLOv5 Survey](https://ultralytics.com/survey?utm_source=github&utm_medium=social&utm_campaign=Survey) to send us feedback on your experiences. Thank you to all our contributors!
 
-For business inquiries and professional support requests please visit us at https://ultralytics.com. 
+<a href="https://github.com/ultralytics/yolov3/graphs/contributors"><img src="https://opencollective.com/ultralytics/contributors.svg?width=990" /></a>
 
 
 ## Contact
 
-**Issues should be raised directly in the repository.** For business inquiries or professional support requests please visit https://ultralytics.com or email Glenn Jocher at glenn.jocher@ultralytics.com. 
+For YOLOv3 bugs and feature requests please visit [GitHub Issues](https://github.com/ultralytics/yolov3/issues). For business inquiries or
+professional support requests please visit [https://ultralytics.com/contact](https://ultralytics.com/contact).
+
+<br>
+
+<div align="center">
+    <a href="https://github.com/ultralytics">
+        <img src="https://github.com/ultralytics/yolov5/releases/download/v1.0/logo-social-github.png" width="3%"/>
+    </a>
+    <img width="3%" />
+    <a href="https://www.linkedin.com/company/ultralytics">
+        <img src="https://github.com/ultralytics/yolov5/releases/download/v1.0/logo-social-linkedin.png" width="3%"/>
+    </a>
+    <img width="3%" />
+    <a href="https://twitter.com/ultralytics">
+        <img src="https://github.com/ultralytics/yolov5/releases/download/v1.0/logo-social-twitter.png" width="3%"/>
+    </a>
+    <img width="3%" />
+    <a href="https://youtube.com/ultralytics">
+        <img src="https://github.com/ultralytics/yolov5/releases/download/v1.0/logo-social-youtube.png" width="3%"/>
+    </a>
+    <img width="3%" />
+    <a href="https://www.facebook.com/ultralytics">
+        <img src="https://github.com/ultralytics/yolov5/releases/download/v1.0/logo-social-facebook.png" width="3%"/>
+    </a>
+    <img width="3%" />
+    <a href="https://www.instagram.com/ultralytics/">
+        <img src="https://github.com/ultralytics/yolov5/releases/download/v1.0/logo-social-instagram.png" width="3%"/>
+    </a>
+</div>
