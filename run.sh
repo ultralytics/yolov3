@@ -5,8 +5,7 @@ docker build -t yolov3 .
 wait
 
 echo 'running yolov3container container'
-docker run -dit --name yolov3container yolov3
-#docker exec -it yolov3container bash
+docker run -dit --name yolov3container --gpus all yolov3
 docker logs --follow yolov3container
 wait
 

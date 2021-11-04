@@ -39,7 +39,8 @@ FRAMES_TO_INFER_JSON = os.path.join(ROOT_FOLDER, "JSON", opt.frames)
 # outputs
 SAVE_RESULTS_DIR = os.path.join(ROOT_FOLDER, "Results")
 SAVE_VIDEO_DIR = os.path.join(SAVE_RESULTS_DIR, 'Video')  # need to add this subfolder
-CSV_DIR = os.path.join(SAVE_RESULTS_DIR, "results.csv")
+video_name_no_ext = video_name.replace(".avi", "")
+CSV_DIR = os.path.join(SAVE_RESULTS_DIR, f"{video_name_no_ext}.csv")
 
 # weights
 WEIGHTS = os.path.join(ROOT_FOLDER, "Weights", opt.weights)
@@ -49,6 +50,7 @@ if torch.cuda.is_available():
     DEVICE = "0"
 else:
     DEVICE = "cpu"
+print(f'Device {DEVICE}')
 
 # Intended image size must be in multiples of 32
 # Image will be resized for training
@@ -160,6 +162,8 @@ def modelInference(framesToInfer):
     # the list to store (frameNumber, imageDetection)
     allDetectionList = list()
 
+    count = 0
+
     while img0 is not None:
 
         # Padded resize
@@ -183,7 +187,7 @@ def modelInference(framesToInfer):
 
         currentFrameNumber = cap.get(cv2.CAP_PROP_POS_FRAMES)  # returns a float
         currentFrameNumber = int(currentFrameNumber) - 1  # frames are 0-index based
-
+        print(f'currentFrameNumber {currentFrameNumber}')
         # Process detections
         for i, det in enumerate(pred):  # detections per image
             im0 = img0  ##### Ganti im0s menjadi img0
@@ -230,6 +234,12 @@ def modelInference(framesToInfer):
                     allDetectionList.append(currentListAdd)
 
         vid_writer.write(im0)
+        count += 1
+        if count % 3 == 0 and count not in getFramesToInfer():
+            count += 1
+        else:
+            count = count
+        cap.set(1, count)
         _, img0 = cap.read()
 
     vid_writer.release()
