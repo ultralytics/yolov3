@@ -9,8 +9,8 @@ COPY requirements.txt requirements.txt
 # Installs python3 and the dependencies
 RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests -y curl
 RUN apt-get -y install unzip apt-utils
-RUN apt-get install python3.7 -y
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
+RUN apt-get install python3 -y
+# RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
 RUN python3 --version
 RUN apt-get -y install python3-pip
 RUN apt-get -y install ffmpeg libsm6 libxext6
