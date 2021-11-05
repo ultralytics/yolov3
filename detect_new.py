@@ -234,6 +234,8 @@ def modelInference(framesToInfer):
                     allDetectionList.append(currentListAdd)
 
         vid_writer.write(im0)
+        
+        # we skip some frames
         count += 1
         if count % 3 == 0 and count not in getFramesToInfer():
             count += 1
