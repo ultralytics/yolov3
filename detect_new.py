@@ -187,7 +187,7 @@ def modelInference(framesToInfer):
 
         currentFrameNumber = cap.get(cv2.CAP_PROP_POS_FRAMES)  # returns a float
         currentFrameNumber = int(currentFrameNumber) - 1  # frames are 0-index based
-        print(f'currentFrameNumber {currentFrameNumber}')
+
         # Process detections
         for i, det in enumerate(pred):  # detections per image
             im0 = img0  ##### Ganti im0s menjadi img0

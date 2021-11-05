@@ -251,3 +251,4 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 Assignment3/Results/results.csv
+Assignment3/Results/*.csv

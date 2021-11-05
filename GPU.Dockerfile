@@ -19,7 +19,6 @@ RUN python3 -m pip install -U setuptools
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Install vim
-RUN ["apt-get", "update"]
 RUN ["apt-get", "install", "-y", "vim"]
 
 # Create directory
