@@ -12,7 +12,7 @@ Running yolv3 model inference with trained weights using docker.
 6. The frames of interest will be saved into a csv file ie frames_of_interest.csv in Assignment/Results directory.
 7. The video of interest with bounding box will be saved into Assignment/Results/Video directory.
 
-Running yolv3 model inference with trained weights without.
+Running yolv3 model inference with trained weights without using docker.
 
 1. Add video of interest to Assignment3/Data directory.
 2. Add frames to infer json to Assignment3/JSON directory.
