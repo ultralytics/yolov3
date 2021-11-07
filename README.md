@@ -287,7 +287,7 @@ The [ultralytics/yolov3](https://github.com/ultralytics/yolov3) repository is no
 ```bash
 $ git clone https://github.com/ultralytics/yolov3  # master branch (default)
 ```
-* [Archive branch](https://github.com/ultralytics/yolov3/tree/archive): Backwards-compatible with original [darknet](https://pjreddie.com/darknet/) *.cfg models (**no longer maintained** ⚠️). 
+* [Archive branch](https://github.com/ultralytics/yolov3/tree/archive): Backwards-compatible with original [darknet](https://pjreddie.com/darknet/) *.cfg models (**no longer maintained** ⚠️).
 ```bash
 $ git clone https://github.com/ultralytics/yolov3 -b archive  # archive branch
 ```
