@@ -1,16 +1,16 @@
 """
-Run a rest API exposing the yolov5s object detection model
+Run a rest API exposing the yolov3 object detection model
 """
 import argparse
 import io
 
 import torch
-from PIL import Image
 from flask import Flask, request
+from PIL import Image
 
 app = Flask(__name__)
 
-DETECTION_URL = "/v1/object-detection/yolov5s"
+DETECTION_URL = "/v1/object-detection/yolov3"
 
 
 @app.route(DETECTION_URL, methods=["POST"])
@@ -33,5 +33,5 @@ if __name__ == "__main__":
     parser.add_argument("--port", default=5000, type=int, help="port number")
     args = parser.parse_args()
 
-    model = torch.hub.load("ultralytics/yolov5", "yolov5s", force_reload=True)  # force_reload to recache
+    model = torch.hub.load("ultralytics/yolov3", "yolov3", force_reload=True)  # force_reload to recache
     app.run(host="0.0.0.0", port=args.port)  # debug=True causes Restarting with stat

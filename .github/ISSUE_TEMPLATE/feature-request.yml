@@ -1,0 +1,50 @@
+name: 🚀 Feature Request
+description: Suggest a YOLOv3 idea
+# title: " "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting a YOLOv3 🚀 Feature Request!
+
+  - type: checkboxes
+    attributes:
+      label: Search before asking
+      description: >
+        Please search the [issues](https://github.com/ultralytics/yolov3/issues) to see if a similar feature request already exists.
+      options:
+        - label: >
+            I have searched the YOLOv3 [issues](https://github.com/ultralytics/yolov3/issues) and found no similar feature requests.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Description
+      description: A short description of your feature.
+      placeholder: |
+        What new feature would you like to see in YOLOv3?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Use case
+      description: |
+        Describe the use case of your feature request. It will help us understand and prioritize the feature request.
+      placeholder: |
+        How would this feature be used, and who would use it?
+
+  - type: textarea
+    attributes:
+      label: Additional
+      description: Anything else you would like to share?
+
+  - type: checkboxes
+    attributes:
+      label: Are you willing to submit a PR?
+      description: >
+        (Optional) We encourage you to submit a [Pull Request](https://github.com/ultralytics/yolov3/pulls) (PR) to help improve YOLOv3 for everyone, especially if you have a good understanding of how to implement a fix or feature.
+        See the YOLOv3 [Contributing Guide](https://github.com/ultralytics/yolov3/blob/master/CONTRIBUTING.md) to get started.
+      options:
+        - label: Yes I'd like to help by submitting a PR!
