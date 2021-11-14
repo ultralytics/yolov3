@@ -10,7 +10,7 @@ def notebook_init():
     from IPython import display  # to display images and clear console output
 
     from utils.general import emojis
-    from utils.torch_utils import select_device  #  imports
+    from utils.torch_utils import select_device  # imports
 
     display.clear_output()
     select_device(newline=False)

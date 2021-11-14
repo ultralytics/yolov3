@@ -1,6 +1,6 @@
 # YOLOv3 🚀 by Ultralytics, GPL-3.0 license
 """
-TensorFlow, Keras and TFLite versions of 
+TensorFlow, Keras and TFLite versions of
 Authored by https://github.com/zldrobit in PR https://github.com/ultralytics/yolov5/pull/1127
 
 Usage:

@@ -66,8 +66,8 @@ class Callbacks:
 
         Args:
             hook The name of the hook to check, defaults to all
-            args Arguments to receive from 
-            kwargs Keyword Arguments to receive from 
+            args Arguments to receive from
+            kwargs Keyword Arguments to receive from
         """
 
         assert hook in self._callbacks, f"hook '{hook}' not found in callbacks {self._callbacks}"
