@@ -1,3 +1,5 @@
+# YOLOv3 🚀 by Ultralytics, GPL-3.0 license
+
 name: Greetings
 
 on: [pull_request_target, issues]
@@ -11,12 +13,12 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           pr-message: |
             👋 Hello @${{ github.actor }}, thank you for submitting a 🚀 PR! To allow your work to be integrated as seamlessly as possible, we advise you to:
-            - ✅ Verify your PR is **up-to-date with origin/master.** If your PR is behind origin/master update by running the following, replacing 'feature' with the name of your local branch:
+            - ✅ Verify your PR is **up-to-date with upstream/master.** If your PR is behind upstream/master an automatic [GitHub actions](https://github.com/ultralytics/yolov3/blob/master/.github/workflows/rebase.yml) rebase may be attempted by including the /rebase command in a comment body, or by running the following code, replacing 'feature' with the name of your local branch:
             ```bash
             git remote add upstream https://github.com/ultralytics/yolov3.git
             git fetch upstream
             git checkout feature  # <----- replace 'feature' with local branch name
-            git rebase upstream/master
+            git merge upstream/master
             git push -u origin -f
             ```
             - ✅ Verify all Continuous Integration (CI) **checks are passing**.
@@ -29,28 +31,29 @@ jobs:
 
             If this is a custom training ❓ Question, please provide as much information as possible, including dataset images, training logs, screenshots, and a public link to online [W&B logging](https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data#visualize) if available.
 
-            For business inquiries or professional support requests please visit https://www.ultralytics.com or email Glenn Jocher at glenn.jocher@ultralytics.com.
+            For business inquiries or professional support requests please visit https://ultralytics.com or email Glenn Jocher at glenn.jocher@ultralytics.com.
 
             ## Requirements
 
-            Python 3.8 or later with all [requirements.txt](https://github.com/ultralytics/yolov3/blob/master/requirements.txt) dependencies installed, including `torch>=1.7`. To install run:
+            [**Python>=3.6.0**](https://www.python.org/) with all [requirements.txt](https://github.com/ultralytics/yolov3/blob/master/requirements.txt) installed including [**PyTorch>=1.7**](https://pytorch.org/get-started/locally/). To get started:
             ```bash
+            $ git clone https://github.com/ultralytics/yolov3
+            $ cd yolov3
             $ pip install -r requirements.txt
             ```
 
             ## Environments
-            
+
             YOLOv3 may be run in any of the following up-to-date verified environments (with all dependencies including [CUDA](https://developer.nvidia.com/cuda)/[CUDNN](https://developer.nvidia.com/cudnn), [Python](https://www.python.org/) and [PyTorch](https://pytorch.org/) preinstalled):
-            
+
             - **Google Colab and Kaggle** notebooks with free GPU: <a href="https://colab.research.google.com/github/ultralytics/yolov3/blob/master/tutorial.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a> <a href="https://www.kaggle.com/ultralytics/yolov3"><img src="https://kaggle.com/static/images/open-in-kaggle.svg" alt="Open In Kaggle"></a>
             - **Google Cloud** Deep Learning VM. See [GCP Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/GCP-Quickstart)
             - **Amazon** Deep Learning AMI. See [AWS Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/AWS-Quickstart)
             - **Docker Image**. See [Docker Quickstart Guide](https://github.com/ultralytics/yolov3/wiki/Docker-Quickstart) <a href="https://hub.docker.com/r/ultralytics/yolov3"><img src="https://img.shields.io/docker/pulls/ultralytics/yolov3?logo=docker" alt="Docker Pulls"></a>
-            
-            
+
+
             ## Status
-            
-            ![CI CPU testing](https://github.com/ultralytics/yolov3/workflows/CI%20CPU%20testing/badge.svg)
-            
-            If this badge is green, all [YOLOv3 GitHub Actions](https://github.com/ultralytics/yolov3/actions) Continuous Integration (CI) tests are currently passing. CI tests verify correct operation of YOLOv3 training ([train.py](https://github.com/ultralytics/yolov3/blob/master/train.py)), testing ([test.py](https://github.com/ultralytics/yolov3/blob/master/test.py)), inference ([detect.py](https://github.com/ultralytics/yolov3/blob/master/detect.py)) and export ([export.py](https://github.com/ultralytics/yolov3/blob/master/models/export.py)) on MacOS, Windows, and Ubuntu every 24 hours and on every commit.
-            
+
+            <a href="https://github.com/ultralytics/yolov3/actions"><img src="https://github.com/ultralytics/yolov3/workflows/CI%20CPU%20testing/badge.svg" alt="CI CPU testing"></a>
+
+            If this badge is green, all [YOLOv3 GitHub Actions](https://github.com/ultralytics/yolov3/actions) Continuous Integration (CI) tests are currently passing. CI tests verify correct operation of YOLOv3 training ([train.py](https://github.com/ultralytics/yolov3/blob/master/train.py)), validation ([val.py](https://github.com/ultralytics/yolov3/blob/master/val.py)), inference ([detect.py](https://github.com/ultralytics/yolov3/blob/master/detect.py)) and export ([export.py](https://github.com/ultralytics/yolov3/blob/master/export.py)) on MacOS, Windows, and Ubuntu every 24 hours and on every commit.
