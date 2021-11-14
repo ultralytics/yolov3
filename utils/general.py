@@ -40,7 +40,7 @@ cv2.setNumThreads(0)  # prevent OpenCV from multithreading (incompatible with Py
 os.environ['NUMEXPR_MAX_THREADS'] = str(min(os.cpu_count(), 8))  # NumExpr max threads
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[1]  #  root directory
+ROOT = FILE.parents[1]  # root directory
 
 
 def set_logging(name=None, verbose=True):
