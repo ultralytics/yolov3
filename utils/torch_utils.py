@@ -80,7 +80,10 @@ def select_device(device='', batch_size=None, newline=True):
     if not newline:
         s = s.rstrip()
     LOGGER.info(s.encode().decode('ascii', 'ignore') if platform.system() == 'Windows' else s)  # emoji-safe
-    return torch.device('cuda:0' if cuda else 'cpu')
+    if cuda:
+        return torch.device(f'cuda:{device}' if n == 1 else 'cuda:0')
+    else:
+        return torch.device('cpu')
 
 
 def time_sync():
