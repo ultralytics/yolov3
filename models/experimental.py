@@ -106,10 +106,10 @@ def attempt_load(weights, map_location=None, inplace=True, fuse=True):
                 if not isinstance(m.anchor_grid, list):  # new Detect Layer compatibility
                     delattr(m, 'anchor_grid')
                     setattr(m, 'anchor_grid', [torch.zeros(1)] * m.nl)
-        elif t is nn.Upsample:
-            m.recompute_scale_factor = None  # torch 1.11.0 compatibility
         elif t is Conv:
             m._non_persistent_buffers_set = set()  # torch 1.6.0 compatibility
+        elif t is nn.Upsample and not hasattr(m, 'recompute_scale_factor'):
+            m.recompute_scale_factor = None  # torch 1.11.0 compatibility
 
     if len(model) == 1:
         return model[-1]  # return model
@@ -119,3 +119,4 @@ def attempt_load(weights, map_location=None, inplace=True, fuse=True):
             setattr(model, k, getattr(model[-1], k))
         model.stride = model[torch.argmax(torch.tensor([m.stride.max() for m in model])).int()].stride  # max stride
         return model  # return ensemble
+
