@@ -119,4 +119,3 @@ def attempt_load(weights, map_location=None, inplace=True, fuse=True):
             setattr(model, k, getattr(model[-1], k))
         model.stride = model[torch.argmax(torch.tensor([m.stride.max() for m in model])).int()].stride  # max stride
         return model  # return ensemble
-
