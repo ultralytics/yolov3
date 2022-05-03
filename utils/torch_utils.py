@@ -25,6 +25,8 @@ try:
 except ImportError:
     thop = None
 
+# LOGGER = logging.getLogger(__name__)
+
 
 @contextmanager
 def torch_distributed_zero_first(local_rank: int):
@@ -100,6 +102,7 @@ def profile(input, ops, n=10, device=None):
     #     profile(input, [m1, m2], n=100)  # profile over 100 iterations
 
     results = []
+    
     device = device or select_device()
     print(f"{'Params':>12s}{'GFLOPs':>12s}{'GPU_mem (GB)':>14s}{'forward (ms)':>14s}{'backward (ms)':>14s}"
           f"{'input':>24s}{'output':>24s}")
@@ -150,6 +153,11 @@ def is_parallel(model):
 def de_parallel(model):
     # De-parallelize a model: returns single-GPU model if model is of type DP or DDP
     return model.module if is_parallel(model) else model
+
+
+
+
+
 
 
 def initialize_weights(model):
@@ -236,6 +244,28 @@ def model_info(model, verbose=False, img_size=640):
     LOGGER.info(f"Model Summary: {len(list(model.modules()))} layers, {n_p} parameters, {n_g} gradients{fs}")
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def scale_img(img, ratio=1.0, same_shape=False, gs=32):  # img(16,3,256,416)
     # scales img(bs,3,y,x) by ratio constrained to gs-multiple
     if ratio == 1.0:
@@ -257,6 +287,21 @@ def copy_attr(a, b, include=(), exclude=()):
         else:
             setattr(a, k, v)
 
+def choose_backend(args):
+    from mqbench.prepare_by_platform import BackendType
+
+    if args.BackendType == "NNIE":
+        return BackendType.NNIE
+    if args.BackendType == "Tensorrt":
+        return BackendType.Tensorrt
+    if args.BackendType == "SNPE":    
+        return BackendType.SNPE
+    if args.BackendType == "PPLW8A16":
+        return BackendType.PPLW8A16
+
+    else:
+        print("error BackendType name, not support: ", args.BackendType)
+        exit(0)
 
 class EarlyStopping:
     #  simple early stopper

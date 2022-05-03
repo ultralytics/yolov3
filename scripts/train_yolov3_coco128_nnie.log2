@@ -1,0 +1,168 @@
+nohup: ignoring input
+[34m[1mtrain: [0mweights=yolov3.pt, cfg=, data=coco128.yaml, hyp=data/hyps/hyp.scratch.yaml, epochs=300, batch_size=8, imgsz=640, rect=False, resume=False, nosave=False, noval=False, noautoanchor=False, evolve=None, bucket=, cache=None, image_weights=False, device=1, multi_scale=False, single_cls=False, adam=False, sync_bn=False, workers=8, project=runs/train, name=exp, exist_ok=False, quad=False, linear_lr=False, label_smoothing=0.0, patience=100, freeze=0, save_period=-1, local_rank=-1, quantize=True, BackendType=NNIE, entity=None, upload_dataset=False, bbox_interval=-1, artifact_alias=latest
+YOLOv3 🚀 v9.6.0-15-gf212505 torch 1.8.1+cu102 CUDA:1 (NVIDIA GeForce RTX 2080 Ti, 11019MiB)
+
+[34m[1mhyperparameters: [0mlr0=0.01, lrf=0.1, momentum=0.937, weight_decay=0.0005, warmup_epochs=3.0, warmup_momentum=0.8, warmup_bias_lr=0.1, box=0.05, cls=0.5, cls_pw=1.0, obj=1.0, obj_pw=1.0, iou_t=0.2, anchor_t=4.0, fl_gamma=0.0, hsv_h=0.015, hsv_s=0.7, hsv_v=0.4, degrees=0.0, translate=0.1, scale=0.5, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.5, mosaic=1.0, mixup=0.0, copy_paste=0.0
+[34m[1mTensorBoard: [0mStart with 'tensorboard --logdir runs/train', view at http://localhost:6006/
+
+                 from  n    params  module                                  arguments                     
+  0                -1  1       928  models.common.Conv                      [3, 32, 3, 1]                 
+  1                -1  1     18560  models.common.Conv                      [32, 64, 3, 2]                
+  2                -1  1     20672  models.common.Bottleneck                [64, 64]                      
+  3                -1  1     73984  models.common.Conv                      [64, 128, 3, 2]               
+  4                -1  2    164608  models.common.Bottleneck                [128, 128]                    
+  5                -1  1    295424  models.common.Conv                      [128, 256, 3, 2]              
+  6                -1  8   2627584  models.common.Bottleneck                [256, 256]                    
+  7                -1  1   1180672  models.common.Conv                      [256, 512, 3, 2]              
+  8                -1  8  10498048  models.common.Bottleneck                [512, 512]                    
+  9                -1  1   4720640  models.common.Conv                      [512, 1024, 3, 2]             
+ 10                -1  4  20983808  models.common.Bottleneck                [1024, 1024]                  
+ 11                -1  1   5245952  models.common.Bottleneck                [1024, 1024, False]           
+ 12                -1  1    525312  models.common.Conv                      [1024, 512, 1, 1]             
+ 13                -1  1   4720640  models.common.Conv                      [512, 1024, 3, 1]             
+ 14                -1  1    525312  models.common.Conv                      [1024, 512, 1, 1]             
+ 15                -1  1   4720640  models.common.Conv                      [512, 1024, 3, 1]             
+ 16                -2  1    131584  models.common.Conv                      [512, 256, 1, 1]              
+ 17                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']          
+ 18           [-1, 8]  1         0  models.common.Concat                    [1]                           
+ 19                -1  1   1377792  models.common.Bottleneck                [768, 512, False]             
+ 20                -1  1   1312256  models.common.Bottleneck                [512, 512, False]             
+ 21                -1  1    131584  models.common.Conv                      [512, 256, 1, 1]              
+ 22                -1  1   1180672  models.common.Conv                      [256, 512, 3, 1]              
+ 23                -2  1     33024  models.common.Conv                      [256, 128, 1, 1]              
+ 24                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']          
+ 25           [-1, 6]  1         0  models.common.Concat                    [1]                           
+ 26                -1  1    344832  models.common.Bottleneck                [384, 256, False]             
+ 27                -1  2    656896  models.common.Bottleneck                [256, 256, False]             
+ 28      [27, 22, 15]  1    457725  models.yolo_quantize.Detect             [80, [[10, 13, 16, 30, 33, 23], [30, 61, 62, 45, 59, 119], [116, 90, 156, 198, 373, 326]], [256, 512, 1024]]
+Model Summary: 333 layers, 61949149 parameters, 61949149 gradients, 156.3 GFLOPs
+
+Transferred 439/439 items from yolov3.pt
+Scaled weight_decay = 0.0005
+[34m[1moptimizer:[0m SGD with parameter groups 72 weight, 75 weight (no decay), 75 bias
+[34m[1mgithub: [0mskipping check (offline), for updates see https://github.com/ultralytics/yolov3
+[34m[1mWeights & Biases: [0mrun 'pip install wandb' to automatically track and visualize YOLOv3 🚀 runs (RECOMMENDED)
+[34m[1mtrain: [0mScanning '/data/niko/datasets/coco128/labels/train2017.cache' images and labels... 128 found, 0 missing, 2 empty, 0 corrupted: 100%|██████████| 128/128 [00:00<?, ?it/s][34m[1mtrain: [0mScanning '/data/niko/datasets/coco128/labels/train2017.cache' images and labels... 128 found, 0 missing, 2 empty, 0 corrupted: 100%|██████████| 128/128 [00:00<?, ?it/s]
+[34m[1mval: [0mScanning '/data/niko/datasets/coco128/labels/train2017.cache' images and labels... 128 found, 0 missing, 2 empty, 0 corrupted: 100%|██████████| 128/128 [00:00<?, ?it/s][34m[1mval: [0mScanning '/data/niko/datasets/coco128/labels/train2017.cache' images and labels... 128 found, 0 missing, 2 empty, 0 corrupted: 100%|██████████| 128/128 [00:00<?, ?it/s]
+Plotting labels to runs/train/exp6/labels.jpg... 
+
+[34m[1mAutoAnchor: [0m4.27 anchors/target, 0.994 Best Possible Recall (BPR). Current anchors are a good fit to dataset ✅
+Image sizes 640 train, 640 val
+Using 8 dataloader workers
+Logging results to [1mruns/train/exp6[0m
+Starting training for 300 epochs...
+[MQBENCH] INFO: Quantize model Scheme: BackendType.NNIE Mode: Training
+[MQBENCH] INFO: Replace module to qat module.
+[MQBENCH] INFO: Insert act quant x_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_0_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_2_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_2_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_1_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_3_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_4_0_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_4_0_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_2_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_4_1_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_4_1_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_3_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_5_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_0_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_0_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_4_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_1_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_1_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_5_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_2_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_2_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_6_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_3_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_3_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_7_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_4_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_4_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_8_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_5_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_5_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_9_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_6_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_6_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_10_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_7_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_6_7_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_11_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_7_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_0_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_0_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_12_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_1_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_1_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_13_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_2_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_2_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_14_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_3_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_3_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_15_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_4_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_4_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_16_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_5_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_5_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_17_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_6_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_6_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_18_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_7_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_8_7_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_19_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_9_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_10_0_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_10_0_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_20_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_10_1_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_10_1_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_21_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_10_2_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_10_2_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_22_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_10_3_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_10_3_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant add_23_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_11_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_11_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_12_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_13_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_14_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_16_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant cat_1_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_19_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_19_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_20_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_20_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_21_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_23_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant cat_2_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_26_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_26_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_27_0_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_27_0_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_27_1_cv1_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_27_1_cv2_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_22_act_post_act_fake_quantizer
+[MQBENCH] INFO: Insert act quant model_15_act_post_act_fake_quantizer
+[MQBENCH] INFO: Enable observer and Disable quantize.
+
+     Epoch   gpu_mem       box       obj       cls    labels  img_size
+  0%|          | 0/16 [00:00<?, ?it/s]                                          [MQBENCH] INFO: Disable observer and Enable quantize.
+  0%|          | 0/16 [00:00<?, ?it/s]                                          
+Traceback (most recent call last):
+  File "train.py", line 688, in <module>
+    main(opt)
+  File "train.py", line 585, in main
+    train(opt.hyp, opt, device, callbacks)
+  File "train.py", line 386, in train
+    ema.update(model)
+  File "/home/zhangyifan/yolov3/utils/torch_utils.py", line 359, in update
+    v += (1 - d) * msd[k].detach()
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu!
