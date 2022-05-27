@@ -5,10 +5,10 @@ import torch
 from torch.fx import GraphModule
 
 import mqbench.nn.qat as qnnqat
+from mqbench.custom_quantizer import ModelQuantizer
+from mqbench.prepare_by_platform import BackendType
 from mqbench.utils.logger import logger
 from mqbench.utils.registry import register_model_quantizer
-from mqbench.prepare_by_platform import BackendType
-from mqbench.custom_quantizer import ModelQuantizer
 
 
 class TRTModelQuantizer(ModelQuantizer):
@@ -79,7 +79,7 @@ class TensorrtNLPQuantizer(ModelQuantizer):
     We notice embedding add(word + pos + token_type) is not quantized,
     so we find and skiped.
     Add in MSA(add mask) should not be quantized either, we skipped it
-    by implicit_merge. 
+    by implicit_merge.
     """
     @property
     def implicit_merge_patterns(self) -> list:
@@ -115,7 +115,7 @@ class TensorrtNLPQuantizer(ModelQuantizer):
                 ((node.op == "call_function" or node.op == "all_method") and
                  node.target in self.exclude_function_type) or
                     node.name in self.exclude_node_name) and node.name not in self.additional_node_name:
-                logger.info("Exclude skip: {}".format(node.name))
+                logger.info(f"Exclude skip: {node.name}")
                 continue
             if (node.op == "call_module" and isinstance(modules[node.target], self.module_type_to_quant_input)) or \
                 ((node.op == "call_function" or node.op == "call_method") and
@@ -133,7 +133,7 @@ class TensorrtNLPQuantizer(ModelQuantizer):
                     pdb.set_trace()
                 for _node in input_node_list:
                     if self._is_implicit_merge(modules, (node, _node)):
-                        logger.info("Implicit merge: {} + {}".format(_node.name, node.name))
+                        logger.info(f"Implicit merge: {_node.name} + {node.name}")
                         continue
                     node_need_to_quantize_output.append(_node)
         return node_need_to_quantize_output
@@ -141,5 +141,5 @@ class TensorrtNLPQuantizer(ModelQuantizer):
     def _is_skiped_add(self, node, modules, input_node_list):
         for _node in input_node_list:
             if _node.op == "call_module" and isinstance(modules[_node.target], (qnnqat.Embedding, torch.nn.Embedding)):
-                logger.info("Skip embedding add: {}".format(node.name))
-                return True    
+                logger.info(f"Skip embedding add: {node.name}")
+                return True

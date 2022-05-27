@@ -6,13 +6,13 @@ import torch.nn.intrinsic as nni
 from torch.fx import GraphModule
 from torch.quantization.quantize_fx import _fuse_fx
 
-import mqbench.nn.intrinsic as qnni 
+import mqbench.nn.intrinsic as qnni
 import mqbench.nn.intrinsic.qat as qnniqat
+from mqbench.custom_quantizer.model_quantizer import ModelQuantizer
+from mqbench.fake_quantize.tqt import TqtFakeQuantize
+from mqbench.prepare_by_platform import BackendType
 from mqbench.utils.logger import logger
 from mqbench.utils.registry import register_model_quantizer
-from mqbench.prepare_by_platform import BackendType
-from mqbench.fake_quantize.tqt import TqtFakeQuantize
-from mqbench.custom_quantizer.model_quantizer import ModelQuantizer
 
 
 @register_model_quantizer(BackendType.Vitis)
@@ -20,7 +20,7 @@ class VitisQuantizer(ModelQuantizer):
     """There is only INT8 calculations in the model.
     We quantize the input tensors of all layers and the output tensors
     of the last layers. We quantize every activations tensors and weight
-    tensors using this method. NOTE: the acti and weight have different 
+    tensors using this method. NOTE: the acti and weight have different
     quantize type.
     """
 
@@ -37,7 +37,7 @@ class VitisQuantizer(ModelQuantizer):
     def module_type_to_quant_input(self) -> tuple:
         return super().module_type_to_quant_input + (
             torch.nn.Conv2d,
-            qnni.ConvBn2d, 
+            qnni.ConvBn2d,
             qnni.ConvReLU2d,
             qnni.ConvBnReLU2d
         )
@@ -66,7 +66,7 @@ class VitisQuantizer(ModelQuantizer):
             # Prelu mostly do not merge.
             torch.nn.PReLU,
             torch.nn.Upsample,
-        ) 
+        )
 
 
     @property
@@ -82,7 +82,7 @@ class VitisQuantizer(ModelQuantizer):
             torch.nn.functional.conv2d,
             torch.nn.functional.linear,
             torch.nn.functional.interpolate,
-        ] 
+        ]
 
     @property
     def function_type_not_to_quant_alone(self) -> List:
@@ -120,14 +120,14 @@ class VitisQuantizer(ModelQuantizer):
                 for _node in input_node_list:
                     if isinstance(_node, torch.fx.node.Node):
                         if self._is_implicit_merge(modules, (node, _node)):
-                            logger.info("Implicit merge: {} + {}".format(_node.name, node.name))
+                            logger.info(f"Implicit merge: {_node.name} + {node.name}")
                             continue
                         if (_node.op == 'placeholder') or \
                             ((_node.op == 'call_function' or _node.op == 'call_method') and
                                 _node.target in self.function_type_not_to_quant_alone):
                             if _node not in getitem2node:
                                 self.node_need_to_quantize_output.append(_node)
-                            logger.info(f'Add {_node.name}/{_node.target}/{_node.op} to input quantize')                        
+                            logger.info(f'Add {_node.name}/{_node.target}/{_node.op} to input quantize')
                 self.node_need_to_quantize_output.append(node)
                 logger.info(f'Add {node.name} to output quantize')
         return self.node_need_to_quantize_output
@@ -148,11 +148,11 @@ class VitisQuantizer(ModelQuantizer):
                     ret = ret[a]
                 except (IndexError, KeyError):
                     return {}
-            return ret 
+            return ret
         nodes = list(model.graph.nodes)
         # the getitem's call graph
         getitem_args_dict = {}
-        # the dict used in the model 
+        # the dict used in the model
         original_key_dict = {}
         getitem2node = {}
         for node in nodes:
@@ -216,7 +216,7 @@ class VitisQuantizer(ModelQuantizer):
                         logger.info(f'{node.target} has been set to quant type <param/bias>')
         for node in inputs_type_set:
             if isinstance(node.target, str) and node.target in module_dict:
-                next_op = module_dict[node.target]    
+                next_op = module_dict[node.target]
                 if isinstance(next_op, TqtFakeQuantize):
                     next_op.set_quant_type('input')
                     logger.info(f'{node.target} has been set to quant type <input>')

@@ -40,7 +40,7 @@ def dsq_function_per_channel(x, scale, zero_point, quant_min, quant_max, ch_axis
 
 class DSQFakeQuantize(QuantizeBase):
     def __init__(self, observer, alpha=0.4, **observer_kwargs):
-        super(DSQFakeQuantize, self).__init__(observer, **observer_kwargs)
+        super().__init__(observer, **observer_kwargs)
         self.register_buffer('scale', torch.tensor([1.0], dtype=torch.float))
         self.register_buffer('zero_point', torch.tensor([0], dtype=torch.int))
         self.alpha = alpha

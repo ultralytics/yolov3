@@ -1,6 +1,7 @@
 '''this is for activation quantizer in BRECQ and QDrop'''
 import torch
 from torch.nn.parameter import Parameter
+
 from mqbench.fake_quantize.quantize_base import QuantizeBase
 
 
@@ -10,7 +11,7 @@ class QDropFakeQuantize(QuantizeBase):
     """
 
     def __init__(self, observer, **observer_kwargs):
-        super(QDropFakeQuantize, self).__init__(observer, **observer_kwargs)
+        super().__init__(observer, **observer_kwargs)
         # self.register_buffer('scale', torch.tensor([1.0], dtype=torch.float))
         self.scale = Parameter(torch.tensor([1.0], dtype=torch.float))
         self.register_buffer('zero_point', torch.tensor([0], dtype=torch.int))

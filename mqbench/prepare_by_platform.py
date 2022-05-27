@@ -5,36 +5,18 @@ from typing import Any, Dict
 import torch
 from torch.fx import Tracer
 from torch.fx.graph_module import GraphModule
-from torch.quantization.quantize_fx import _swap_ff_with_fxff
 from torch.quantization import QConfig
+from torch.quantization.quantize_fx import _swap_ff_with_fxff
 
-
-from mqbench.fake_quantize import (
-    LearnableFakeQuantize,
-    NNIEFakeQuantize,
-    FixedFakeQuantize,
-    DoReFaFakeQuantize,
-    DSQFakeQuantize,
-    PACTFakeQuantize,
-    TqtFakeQuantize,
-    AdaRoundFakeQuantize,
-    QDropFakeQuantize,
-)
-from mqbench.observer import (
-    ClipStdObserver,
-    LSQObserver,
-    MinMaxFloorObserver,
-    MinMaxObserver,
-    EMAMinMaxObserver,
-    PoTModeObserver,
-    EMAQuantileObserver,
-    MSEObserver,
-    EMAMSEObserver,
-)
+from mqbench.fake_quantize import (AdaRoundFakeQuantize, DoReFaFakeQuantize, DSQFakeQuantize, FixedFakeQuantize,
+                                   LearnableFakeQuantize, NNIEFakeQuantize, PACTFakeQuantize, QDropFakeQuantize,
+                                   TqtFakeQuantize)
 from mqbench.fuser_method_mappings import fuse_custom_config_dict
+from mqbench.observer import (ClipStdObserver, EMAMinMaxObserver, EMAMSEObserver, EMAQuantileObserver, LSQObserver,
+                              MinMaxFloorObserver, MinMaxObserver, MSEObserver, PoTModeObserver)
+from mqbench.scheme import QuantizeScheme
 from mqbench.utils.logger import logger
 from mqbench.utils.registry import DEFAULT_MODEL_QUANTIZER
-from mqbench.scheme import QuantizeScheme
 
 __all__ = ['prepare_by_platform']
 
@@ -177,22 +159,22 @@ def get_qconfig_by_platform(deploy_backend: BackendType, extra_qparams: Dict):
     w_observer = extra_qparams.get('w_observer', None)
     if w_observer:
         assert w_observer in ObserverDict, \
-            'Do not support observer name: {}'.format(w_observer)
+            f'Do not support observer name: {w_observer}'
         w_observer = ObserverDict[w_observer]
     a_observer = extra_qparams.get('a_observer', None)
     if a_observer:
         assert a_observer in ObserverDict, \
-            'Do not support observer name: {}'.format(a_observer)
+            f'Do not support observer name: {a_observer}'
         a_observer = ObserverDict[a_observer]
     w_fakequantize = extra_qparams.get('w_fakequantize', None)
     if w_fakequantize:
         assert w_fakequantize in FakeQuantizeDict, \
-            'Do not support fakequantize name: {}'.format(w_fakequantize)
+            f'Do not support fakequantize name: {w_fakequantize}'
         w_fakequantize = FakeQuantizeDict[w_fakequantize]
     a_fakequantize = extra_qparams.get('a_fakequantize', None)
     if a_fakequantize:
         assert a_fakequantize in FakeQuantizeDict, \
-            'Do not support fakequantize name: {}'.format(a_fakequantize)
+            f'Do not support fakequantize name: {a_fakequantize}'
         a_fakequantize = FakeQuantizeDict[a_fakequantize]
     backend_params = ParamsTable[deploy_backend]
 
@@ -352,7 +334,7 @@ def prepare_by_platform(
 
     """
     model_mode = 'Training' if model.training else 'Eval'
-    logger.info("Quantize model Scheme: {} Mode: {}".format(deploy_backend, model_mode))
+    logger.info(f"Quantize model Scheme: {deploy_backend} Mode: {model_mode}")
 
     # Get Qconfig
     extra_qconfig_dict = prepare_custom_config_dict.get('extra_qconfig_dict', {})
@@ -400,6 +382,6 @@ def prepare_by_platform(
                 cur_module = getattr(prepared, submodule_name)
             preserve_attr_list = prepare_custom_config_dict['preserve_attr'][submodule_name]
             for attr in preserve_attr_list:
-                logger.info("Preserve attr: {}.{}".format(submodule_name, attr))
+                logger.info(f"Preserve attr: {submodule_name}.{attr}")
                 setattr(cur_module, attr, preserve_attr_dict[submodule_name][attr])
     return prepared

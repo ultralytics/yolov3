@@ -6,19 +6,8 @@ from onnx import numpy_helper
 from onnxsim import simplify
 
 from ..utils.logger import logger
-from .deploy_linear import (
-    LinearQuantizer_process,
-    ALL_FAKEQUANTIZER,
-    PERCHANNEL_FAKEQUANTIZER,
-    PERTENSOR_FAKEQUANTIZER
-)
-from .common import (
-    update_inp2node_out2node,
-    prepare_initializer,
-    prepare_data,
-    OnnxPreprocess,
-    get_constant_inputs
-)
+from .common import OnnxPreprocess, get_constant_inputs, prepare_data, prepare_initializer, update_inp2node_out2node
+from .deploy_linear import ALL_FAKEQUANTIZER, PERCHANNEL_FAKEQUANTIZER, PERTENSOR_FAKEQUANTIZER, LinearQuantizer_process
 
 
 class Tengine_process(LinearQuantizer_process):
@@ -84,7 +73,7 @@ class Tengine_process(LinearQuantizer_process):
                         # suppose onnx version be 11
                         # for relu6
                         if pre_node.op_type == "Clip" and \
-                            not (self.get_constant(out2node[pre_node.input[1]]) == 0 and 
+                            not (self.get_constant(out2node[pre_node.input[1]]) == 0 and
                                  self.get_constant(out2node[pre_node.input[2]]) == 6):
                             continue
 

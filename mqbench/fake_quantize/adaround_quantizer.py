@@ -3,7 +3,6 @@ from torch.nn.parameter import Parameter
 
 from mqbench.fake_quantize.quantize_base import QuantizeBase
 
-
 _version_under_1100 = int(torch.__version__.split('.')[1]) < 10
 
 def _rectified_sigmoid(alpha, zeta, gamma):
@@ -44,7 +43,7 @@ class AdaRoundFakeQuantize(QuantizeBase):
     """
 
     def __init__(self, observer, **observer_kwargs):
-        super(AdaRoundFakeQuantize, self).__init__(observer, **observer_kwargs)
+        super().__init__(observer, **observer_kwargs)
         self.register_buffer('scale', torch.tensor([1.0], dtype=torch.float))
         self.register_buffer('zero_point', torch.tensor([0], dtype=torch.int))
         self.adaround = False

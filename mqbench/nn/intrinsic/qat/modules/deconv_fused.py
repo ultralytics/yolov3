@@ -1,18 +1,16 @@
 import math
+from typing import TypeVar
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
 from torch.nn.intrinsic import _FusedModule
-from torch.nn.parameter import Parameter
 from torch.nn.modules.utils import _pair, _single
-
-from typing import TypeVar
+from torch.nn.parameter import Parameter
 
 import mqbench.nn.intrinsic as qnni
 import mqbench.nn.qat as qnnqat
-
 
 _BN_CLASS_MAP = {
     1: nn.BatchNorm1d,
@@ -100,7 +98,7 @@ class _ConvTransposeBnNd(nn.modules.conv._ConvTransposeNd, _FusedModule):
             init.uniform_(self.bias, -bound, bound)
 
     def reset_parameters(self):
-        super(_ConvTransposeBnNd, self).reset_parameters()
+        super().reset_parameters()
 
     def update_bn_stats(self):
         self.freeze_bn = False
@@ -141,7 +139,7 @@ class _ConvTransposeBnNd(nn.modules.conv._ConvTransposeNd, _FusedModule):
 
     def extra_repr(self):
         # TODO(jerryzh): extend
-        return super(_ConvTransposeBnNd, self).extra_repr()
+        return super().extra_repr()
 
     def forward(self, input):
         return self._forward(input)
@@ -209,8 +207,7 @@ class _ConvTransposeBnNd(nn.modules.conv._ConvTransposeNd, _FusedModule):
                 elif strict:
                     missing_keys.append(prefix + v2_name)
 
-        super(_ConvTransposeBnNd,
-              self)._load_from_state_dict(state_dict, prefix, local_metadata,
+        super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                           strict, missing_keys,
                                           unexpected_keys, error_msgs)
 
@@ -322,8 +319,7 @@ class ConvTransposeBnReLU2d(ConvTransposeBn2d):
         #                                             padding_mode, eps, momentum,
         #                                             freeze_bn,
         #                                             qconfig)
-        super(ConvTransposeBnReLU2d,
-              self).__init__(in_channels,
+        super().__init__(in_channels,
                              out_channels,
                              kernel_size,
                              stride=stride,
@@ -344,7 +340,7 @@ class ConvTransposeBnReLU2d(ConvTransposeBn2d):
 
     @classmethod
     def from_float(cls, mod):
-        return super(ConvTransposeBnReLU2d, cls).from_float(mod)
+        return super().from_float(mod)
 
 
 class ConvTransposeReLU2d(qnnqat.ConvTranspose2d):
@@ -369,8 +365,7 @@ class ConvTransposeReLU2d(qnnqat.ConvTranspose2d):
             padding_mode='zeros',
             qconfig=None):
 
-        super(ConvTransposeReLU2d,
-              self).__init__(in_channels,
+        super().__init__(in_channels,
                              out_channels,
                              kernel_size,
                              stride=stride,

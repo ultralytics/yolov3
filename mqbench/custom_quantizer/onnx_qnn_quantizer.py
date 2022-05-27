@@ -1,17 +1,16 @@
 import operator
-from typing import Dict, Callable, List
+from typing import Callable, Dict, List
 
 import torch
 from torch.fx import GraphModule
 from torch.quantization.quantization_mappings import get_default_qat_module_mappings
 from torch.quantization.utils import get_combined_dict
 
-
-import mqbench.nn as qnn 
-import mqbench.nn.intrinsic as qnni 
-from mqbench.utils.registry import register_model_quantizer
-from mqbench.prepare_by_platform import BackendType
+import mqbench.nn as qnn
+import mqbench.nn.intrinsic as qnni
 from mqbench.custom_quantizer import ModelQuantizer
+from mqbench.prepare_by_platform import BackendType
+from mqbench.utils.registry import register_model_quantizer
 
 
 @register_model_quantizer(BackendType.ONNX_QNN)

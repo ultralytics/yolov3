@@ -38,7 +38,7 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-from models.common import Conv,Quan_Conv, Quan_Conv_10bit
+from models.common import Conv, Quan_Conv, Quan_Conv_10bit
 from models.experimental import attempt_load
 from models.yolo import Detect
 from utils.activations import SiLU

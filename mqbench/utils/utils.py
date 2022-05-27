@@ -36,7 +36,7 @@ def pot_quantization(tensor: torch.Tensor, mode='round'):
     if mode == 'round':
         log2t = (torch.round(log2t) - log2t).detach() + log2t
     else:
-        assert mode == 'floor' 
+        assert mode == 'floor'
         log2t = (torch.floor(log2t) - log2t).detach() + log2t
     return 2 ** log2t
 
@@ -65,7 +65,7 @@ def deepcopy_graphmodule(gm: GraphModule):
     """Rewrite the deepcopy of GraphModule. (Copy its 'graph'.)
 
     Args:
-        gm (GraphModule): 
+        gm (GraphModule):
 
     Returns:
         GraphModule: A deepcopied gm.
@@ -110,12 +110,12 @@ def getitem2node(model: GraphModule) -> dict:
                 ret = ret[a]
             except (IndexError, KeyError):
                 return {}
-        return ret 
+        return ret
     import operator
     nodes = list(model.graph.nodes)
     # the getitem's call graph
     getitem_args_dict = {}
-    # the dict used in the model 
+    # the dict used in the model
     original_key_dict = {}
     getitem2node = {}
     for node in nodes:
@@ -162,11 +162,11 @@ def _fix_succ_recursivly(args, target_node, inserted_node):
                 _tmp[k] = v
         return _tmp
     else:
-        raise NotImplementedError('{} can not be handled now.'.format(type(args)))
+        raise NotImplementedError(f'{type(args)} can not be handled now.')
 
 
 def topology_order(model):
     node2idx = {}
     for idx, node in enumerate(model.graph.nodes):
-        node2idx[node] = idx 
+        node2idx[node] = idx
     return node2idx

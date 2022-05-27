@@ -2,17 +2,16 @@ import copy
 from collections import OrderedDict
 from typing import List
 
-
 import torch
 from torch.fx import GraphModule
 from torch.quantization import propagate_qconfig_
 from torch.quantization.fx.qconfig_utils import get_flattened_qconfig_dict
 
-from mqbench.utils import is_symmetric_quant, getitem2node
+from mqbench.custom_quantizer import ModelQuantizer
+from mqbench.prepare_by_platform import BackendType
+from mqbench.utils import getitem2node, is_symmetric_quant
 from mqbench.utils.logger import logger
 from mqbench.utils.registry import register_model_quantizer
-from mqbench.prepare_by_platform import BackendType
-from mqbench.custom_quantizer import ModelQuantizer
 
 
 @register_model_quantizer(BackendType.Academic)
@@ -40,7 +39,7 @@ class AcademicQuantizer(ModelQuantizer):
         wqconfig_8bit.weight.p.keywords['quant_max'] = 2 ** (8 - 1) - 1 if wq_symmetry else 2 ** 8 - 1
         for name, module in model.named_modules():
             if name in self.io_module.keys():
-                logger.info("Set layer {} to 8 bit.".format(name))
+                logger.info(f"Set layer {name} to 8 bit.")
                 module.qconfig = wqconfig_8bit
         flattened_qconfig_dict = get_flattened_qconfig_dict({'': qconfig})
         propagate_qconfig_(model, flattened_qconfig_dict)
@@ -93,7 +92,7 @@ class AcademicQuantizer(ModelQuantizer):
                 ((node.op == 'call_function' or node.op == 'call_method') and
                  node.target in self.exclude_function_type) or
                     node.name in self.exclude_node_name) and node.name not in self.additional_node_name:
-                logger.info("Exclude skip: {}".format(node.name))
+                logger.info(f"Exclude skip: {node.name}")
                 continue
             if (node.op == "call_module" and isinstance(modules[node.target], self.module_type_to_quant_input)) or \
                 ((node.op == 'call_function' or node.op == 'call_method') and
@@ -104,7 +103,7 @@ class AcademicQuantizer(ModelQuantizer):
                     continue
                 for _node in input_node_list:
                     if self._is_implicit_merge(modules, (node, _node)):
-                        logger.info("Implicit merge: {} + {}".format(_node.name, node.name))
+                        logger.info(f"Implicit merge: {_node.name} + {node.name}")
                         continue
                     if _node in g2node:
                         _node = g2node[_node]
@@ -125,13 +124,13 @@ class AcademicQuantizer(ModelQuantizer):
         aqconfig_8bit.p.keywords['quant_max'] = 2 ** (8 - 1) - 1 if aq_symmetry else 2 ** 8 - 1
         for node in node_to_quantize_output:
             if node.name in self.post_act_8bit_node_name:
-                logger.info("Set {} post act quantize to 8 bit.".format(node.name))
+                logger.info(f"Set {node.name} post act quantize to 8 bit.")
                 fake_quantizer = aqconfig_8bit()
             else:
                 fake_quantizer = qconfig.activation()
             quantizer_name = node.name + quantizer_prefix
             setattr(model, quantizer_name, fake_quantizer)
-            logger.info("Insert act quant {}".format(quantizer_name))
+            logger.info(f"Insert act quant {quantizer_name}")
             with graph.inserting_after(node):
                 inserted_node = graph.create_node("call_module", quantizer_name, (node,), {})
                 for _node in nodes:

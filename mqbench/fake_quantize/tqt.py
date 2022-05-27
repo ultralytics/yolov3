@@ -8,7 +8,7 @@ from mqbench.utils import is_symmetric_quant
 
 class TqtFakeQuantize(QuantizeBase):
     def __init__(self, observer, scale=1., zero_point=0., **observer_kwargs):
-        super(TqtFakeQuantize, self).__init__(observer, **observer_kwargs)
+        super().__init__(observer, **observer_kwargs)
         self.register_buffer('scale', torch.tensor([scale]))
         self.register_buffer('zero_point', torch.tensor([zero_point]))
         self.register_buffer('eps', torch.tensor([torch.finfo(torch.float32).eps]))

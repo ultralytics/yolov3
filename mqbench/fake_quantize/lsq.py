@@ -17,7 +17,7 @@ class LearnableFakeQuantize(QuantizeBase):
     """
 
     def __init__(self, observer, scale=1., zero_point=0., use_grad_scaling=True, **observer_kwargs):
-        super(LearnableFakeQuantize, self).__init__(observer, **observer_kwargs)
+        super().__init__(observer, **observer_kwargs)
         self.use_grad_scaling = use_grad_scaling
         self.scale = Parameter(torch.tensor([scale]))
         self.zero_point = Parameter(torch.tensor([zero_point]))

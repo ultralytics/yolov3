@@ -12,18 +12,18 @@ anchors:
 # darknet53 backbone
 backbone:
   # [from, number, module, args]
-  [[-1, 1, Quan_Conv_10bit, [32, 3, 1]],  
-   [-1, 1, Quan_Conv_10bit, [64, 3, 2]],  
+  [[-1, 1, Quan_Conv_10bit, [32, 3, 1]],
+   [-1, 1, Quan_Conv_10bit, [64, 3, 2]],
    [-1, 1, Quan_Bottleneck_10bit, [64]],
-   [-1, 1, Quan_Conv_10bit, [128, 3, 2]],  
+   [-1, 1, Quan_Conv_10bit, [128, 3, 2]],
    [-1, 2, Quan_Bottleneck_10bit, [128]],
-   [-1, 1, Quan_Conv_10bit, [256, 3, 2]],  
+   [-1, 1, Quan_Conv_10bit, [256, 3, 2]],
    [-1, 8, Quan_Bottleneck_10bit, [256]],
-   [-1, 1, Quan_Conv_10bit, [512, 3, 2]],  
+   [-1, 1, Quan_Conv_10bit, [512, 3, 2]],
    [-1, 8, Quan_Bottleneck_10bit, [512]],
    [-1, 1, Quan_Conv_4bit, [1024, 3, 2]],  #44  4bit
    [-1, 4, Quan_Bottleneck_4bit, [1024]],  #45~52  4bit
-   
+
   ]
 
 # YOLOv3 head

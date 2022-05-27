@@ -1,9 +1,9 @@
 import torch
 from torch.fx import GraphModule
 
-from mqbench.utils.registry import register_model_quantizer
-from mqbench.prepare_by_platform import BackendType
 from mqbench.custom_quantizer import ModelQuantizer
+from mqbench.prepare_by_platform import BackendType
+from mqbench.utils.registry import register_model_quantizer
 
 
 @register_model_quantizer(BackendType.PPLCUDA)
@@ -23,7 +23,7 @@ class TotalINTQuantizer(ModelQuantizer):
     @property
     def _passed_func_type(self):
         return (
-            torch.nn.functional.relu, 
+            torch.nn.functional.relu,
             torch.nn.functional.relu6,
             torch.flatten
         )

@@ -53,7 +53,7 @@ class Detect(nn.Module):
         for i in range(self.nl):
             print(x[i].shape)
             print(x[i])
-            np.save("{}".format(i),x[i].cpu().data.numpy())
+            np.save(f"{i}",x[i].cpu().data.numpy())
             x[i] = self.m[i](x[i])  # conv
             # print(x[i].shape)
             # print(x[i])

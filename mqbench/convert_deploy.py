@@ -4,22 +4,14 @@ import torch
 from torch.fx import GraphModule
 
 import mqbench.custom_symbolic_opset  # noqa: F401
-import mqbench.fusion_method          # noqa: F401
+import mqbench.fusion_method  # noqa: F401
+from mqbench.deploy import (ONNXQLinearPass, ONNXQNNPass, remove_fakequantize_and_collect_params,
+                            remove_fakequantize_and_collect_params_nnie, remove_fakequantize_and_collect_params_tengine,
+                            replace_fakequantize_and_collect_params_openvino)
 from mqbench.prepare_by_platform import BackendType
 from mqbench.utils import deepcopy_graphmodule
 from mqbench.utils.logger import logger
-from mqbench.utils.registry import (
-    BACKEND_DEPLOY_FUNCTION,
-    register_deploy_function,
-    FUSED_MODULE_CONVERT_FUNCTION
-)
-from mqbench.deploy import (
-    remove_fakequantize_and_collect_params_nnie,
-    remove_fakequantize_and_collect_params,
-    replace_fakequantize_and_collect_params_openvino,
-    remove_fakequantize_and_collect_params_tengine,
-    ONNXQLinearPass, ONNXQNNPass
-)
+from mqbench.utils.registry import BACKEND_DEPLOY_FUNCTION, FUSED_MODULE_CONVERT_FUNCTION, register_deploy_function
 
 __all__ = ['convert_deploy']
 
@@ -173,7 +165,7 @@ def convert_deploy(model: GraphModule, backend_type: BackendType,
         'dummy_input': dummy_input,
         'output_path': output_path,
         'model_name': model_name,
-        'onnx_model_path': osp.join(output_path, '{}.onnx'.format(model_name)),
+        'onnx_model_path': osp.join(output_path, f'{model_name}.onnx'),
         'deploy_to_qlinear': deploy_to_qlinear
     }
     kwargs.update(extra_kwargs)

@@ -1,9 +1,9 @@
 import torch
 from torch.fx import GraphModule
 
-from mqbench.utils.registry import register_model_quantizer
-from mqbench.prepare_by_platform import BackendType
 from mqbench.custom_quantizer import ModelQuantizer
+from mqbench.prepare_by_platform import BackendType
+from mqbench.utils.registry import register_model_quantizer
 
 
 @register_model_quantizer(BackendType.Tengine_u8)

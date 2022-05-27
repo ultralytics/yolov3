@@ -1,22 +1,16 @@
 import json
 import os
 
-
-import onnx
 import numpy as np
+import onnx
 from onnx import numpy_helper
 
+from mqbench.deploy.common import (OnnxPreprocess, get_constant_inputs, prepare_data, prepare_initializer,
+                                   update_inp2node_out2node)
 from mqbench.utils.logger import logger
-from mqbench.deploy.common import (
-    update_inp2node_out2node,
-    prepare_initializer,
-    prepare_data,
-    OnnxPreprocess,
-    get_constant_inputs
-)
 
 
-class NNIE_process(object):
+class NNIE_process:
     def gen_gfpq_param_file(self, graph, clip_val):
         nnie_exclude_layer_type = ['Flatten', 'Relu', 'PRelu', 'Sigmoid', 'Reshape',
                                    'Softmax', 'CaffeSoftmax', 'Clip', 'GlobalAveragePool', 'Mul']
@@ -91,10 +85,10 @@ class NNIE_process(object):
         gfpq_param_dict = self.gen_gfpq_param_file(graph, clip_ranges)
 
         output_path = os.path.dirname(onnx_path)
-        gfpq_param_file = os.path.join(output_path, '{}_gfpq_param_dict.json'.format(model_name))
+        gfpq_param_file = os.path.join(output_path, f'{model_name}_gfpq_param_dict.json')
         with open(gfpq_param_file, 'w') as f:
             json.dump({"nnie": {"gfpq_param_dict": gfpq_param_dict}}, f, indent=4)
-        onnx_filename = os.path.join(output_path, '{}_deploy_model.onnx'.format(model_name))
+        onnx_filename = os.path.join(output_path, f'{model_name}_deploy_model.onnx')
         onnx.save(model, onnx_filename)
         logger.info("Finish deploy process.")
 

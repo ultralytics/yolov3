@@ -1,7 +1,6 @@
 import logging
 import sys
 
-
 MQBENCH_LOGGER_NAME = "MQBENCH"
 logger = logging.getLogger(MQBENCH_LOGGER_NAME)
 logger.propagate = False

@@ -6,7 +6,7 @@ from mqbench.fake_quantize.quantize_base import QuantizeBase
 
 class PACTFakeQuantize(QuantizeBase):
     def __init__(self, observer, alpha=6.0, **observer_kwargs):
-        super(PACTFakeQuantize, self).__init__(observer, **observer_kwargs)
+        super().__init__(observer, **observer_kwargs)
         self.alpha = Parameter(torch.tensor([alpha]))
         if not self.is_symmetric_quant:
             self.n_alpha = Parameter(torch.tensor([-alpha]))

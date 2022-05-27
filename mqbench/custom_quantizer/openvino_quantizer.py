@@ -9,11 +9,11 @@ from torch.quantization import propagate_qconfig_
 from torch.quantization.fx.qconfig_utils import get_flattened_qconfig_dict
 from torch.quantization.quantize_fx import _fuse_fx
 
+from mqbench.custom_quantizer import ModelQuantizer
+from mqbench.prepare_by_platform import BackendType
 from mqbench.utils import is_symmetric_quant
 from mqbench.utils.logger import logger
 from mqbench.utils.registry import register_model_quantizer
-from mqbench.prepare_by_platform import BackendType
-from mqbench.custom_quantizer import ModelQuantizer
 
 
 @register_model_quantizer(BackendType.OPENVINO)
@@ -161,7 +161,7 @@ class OPENVINOQuantizer(ModelQuantizer):
 
         def node_in_pattern(node, pattern):
             return ((node.op == 'call_function' or node.op == 'call_method') and node.target in pattern['func_type']) or \
-                (node.op == "call_module" and isinstance(modules[node.target], pattern['module_type'])) 
+                (node.op == "call_module" and isinstance(modules[node.target], pattern['module_type']))
 
         def propagated_pattern(prev_node, cur_node):
             return node_in_pattern(prev_node, prev_nodes_pattern) and node_in_pattern(cur_node, cur_nodes_pattern)
@@ -246,7 +246,7 @@ class OPENVINOQuantizer(ModelQuantizer):
         for node in node_to_quantize_output:
             if aq_symmetry:
                 if real_unsigned(node):
-                    logger.info("Set {} post act quantize to 8 bit unsigned type.".format(node.name))
+                    logger.info(f"Set {node.name} post act quantize to 8 bit unsigned type.")
                     fake_quantizer = aqconfig_8bit()
                 elif maybe_unsigned(node):
                     is_unsigned = False
@@ -279,14 +279,14 @@ class OPENVINOQuantizer(ModelQuantizer):
                         break
                     fake_quantizer = aqconfig_8bit() if is_unsigned else qconfig.activation()
                     if is_unsigned:
-                        logger.info("Set {} post act quantize to 8 bit unsigned type.".format(node.name))
+                        logger.info(f"Set {node.name} post act quantize to 8 bit unsigned type.")
                 else:
                     fake_quantizer = qconfig.activation()
             else:
                 fake_quantizer = qconfig.activation()
             quantizer_name = node.name + quantizer_postfix
             setattr(model, quantizer_name, fake_quantizer)
-            logger.info("Insert act quant {}".format(quantizer_name))
+            logger.info(f"Insert act quant {quantizer_name}")
             with graph.inserting_after(node):
                 inserted_node = graph.create_node("call_module", quantizer_name, (node,), {})
                 for _node in nodes:

@@ -2,14 +2,13 @@ import torch
 
 from mqbench.fake_quantize.quantize_base import QuantizeBase
 
-
 _version_under_1100 = int(torch.__version__.split('.')[1]) < 10
 
 class FixedFakeQuantize(QuantizeBase):
     """This is actually torch.quantization.FakeQuantize.
     """
     def __init__(self, observer, **observer_kwargs):
-        super(FixedFakeQuantize, self).__init__(observer, **observer_kwargs)
+        super().__init__(observer, **observer_kwargs)
         self.register_buffer('scale', torch.tensor([1.0], dtype=torch.float))
         self.register_buffer('zero_point', torch.tensor([0], dtype=torch.int))
 
@@ -43,13 +42,13 @@ class FixedFakeQuantize(QuantizeBase):
                'scale={}, zero_point={}'.format(
                    self.fake_quant_enabled, self.observer_enabled,
                    self.quant_min, self.quant_max,
-                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List', 
+                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List',
                    self.zero_point if self.ch_axis == -1 else 'List')
 
     def _save_to_state_dict(self, destination, prefix, keep_vars):
         # We cannot currently register scalar values as buffers, so need to manually
         # specify serialization here.
-        super(FixedFakeQuantize, self)._save_to_state_dict(destination, prefix, keep_vars)
+        super()._save_to_state_dict(destination, prefix, keep_vars)
         destination[prefix + 'scale'] = self.scale
         destination[prefix + 'zero_point'] = self.zero_point
 
@@ -81,5 +80,5 @@ class FixedFakeQuantize(QuantizeBase):
                         self.zero_point.copy_(val)
             elif strict:
                 missing_keys.append(key)
-        super(FixedFakeQuantize, self)._load_from_state_dict(state_dict, prefix, local_metadata, strict,
+        super()._load_from_state_dict(state_dict, prefix, local_metadata, strict,
                                                              missing_keys, unexpected_keys, error_msgs)

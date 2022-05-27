@@ -5,35 +5,35 @@ YOLOv3 🚀 v9.6.0-15-gf212505 torch 1.8.1+cu102 CUDA:1 (NVIDIA GeForce RTX 2080
 [34m[1mhyperparameters: [0mlr0=0.01, lrf=0.1, momentum=0.937, weight_decay=0.0005, warmup_epochs=3.0, warmup_momentum=0.8, warmup_bias_lr=0.1, box=0.05, cls=0.5, cls_pw=1.0, obj=1.0, obj_pw=1.0, iou_t=0.2, anchor_t=4.0, fl_gamma=0.0, hsv_h=0.015, hsv_s=0.7, hsv_v=0.4, degrees=0.0, translate=0.1, scale=0.5, shear=0.0, perspective=0.0, flipud=0.0, fliplr=0.5, mosaic=1.0, mixup=0.0, copy_paste=0.0
 [34m[1mTensorBoard: [0mStart with 'tensorboard --logdir runs/train', view at http://localhost:6006/
 
-                 from  n    params  module                                  arguments                     
-  0                -1  1       928  models.common.Conv                      [3, 32, 3, 1]                 
-  1                -1  1     18560  models.common.Conv                      [32, 64, 3, 2]                
-  2                -1  1     20672  models.common.Bottleneck                [64, 64]                      
-  3                -1  1     73984  models.common.Conv                      [64, 128, 3, 2]               
-  4                -1  2    164608  models.common.Bottleneck                [128, 128]                    
-  5                -1  1    295424  models.common.Conv                      [128, 256, 3, 2]              
-  6                -1  8   2627584  models.common.Bottleneck                [256, 256]                    
-  7                -1  1   1180672  models.common.Conv                      [256, 512, 3, 2]              
-  8                -1  8  10498048  models.common.Bottleneck                [512, 512]                    
-  9                -1  1   4720640  models.common.Conv                      [512, 1024, 3, 2]             
- 10                -1  4  20983808  models.common.Bottleneck                [1024, 1024]                  
- 11                -1  1   5245952  models.common.Bottleneck                [1024, 1024, False]           
- 12                -1  1    525312  models.common.Conv                      [1024, 512, 1, 1]             
- 13                -1  1   4720640  models.common.Conv                      [512, 1024, 3, 1]             
- 14                -1  1    525312  models.common.Conv                      [1024, 512, 1, 1]             
- 15                -1  1   4720640  models.common.Conv                      [512, 1024, 3, 1]             
- 16                -2  1    131584  models.common.Conv                      [512, 256, 1, 1]              
- 17                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']          
- 18           [-1, 8]  1         0  models.common.Concat                    [1]                           
- 19                -1  1   1377792  models.common.Bottleneck                [768, 512, False]             
- 20                -1  1   1312256  models.common.Bottleneck                [512, 512, False]             
- 21                -1  1    131584  models.common.Conv                      [512, 256, 1, 1]              
- 22                -1  1   1180672  models.common.Conv                      [256, 512, 3, 1]              
- 23                -2  1     33024  models.common.Conv                      [256, 128, 1, 1]              
- 24                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']          
- 25           [-1, 6]  1         0  models.common.Concat                    [1]                           
- 26                -1  1    344832  models.common.Bottleneck                [384, 256, False]             
- 27                -1  2    656896  models.common.Bottleneck                [256, 256, False]             
+                 from  n    params  module                                  arguments
+  0                -1  1       928  models.common.Conv                      [3, 32, 3, 1]
+  1                -1  1     18560  models.common.Conv                      [32, 64, 3, 2]
+  2                -1  1     20672  models.common.Bottleneck                [64, 64]
+  3                -1  1     73984  models.common.Conv                      [64, 128, 3, 2]
+  4                -1  2    164608  models.common.Bottleneck                [128, 128]
+  5                -1  1    295424  models.common.Conv                      [128, 256, 3, 2]
+  6                -1  8   2627584  models.common.Bottleneck                [256, 256]
+  7                -1  1   1180672  models.common.Conv                      [256, 512, 3, 2]
+  8                -1  8  10498048  models.common.Bottleneck                [512, 512]
+  9                -1  1   4720640  models.common.Conv                      [512, 1024, 3, 2]
+ 10                -1  4  20983808  models.common.Bottleneck                [1024, 1024]
+ 11                -1  1   5245952  models.common.Bottleneck                [1024, 1024, False]
+ 12                -1  1    525312  models.common.Conv                      [1024, 512, 1, 1]
+ 13                -1  1   4720640  models.common.Conv                      [512, 1024, 3, 1]
+ 14                -1  1    525312  models.common.Conv                      [1024, 512, 1, 1]
+ 15                -1  1   4720640  models.common.Conv                      [512, 1024, 3, 1]
+ 16                -2  1    131584  models.common.Conv                      [512, 256, 1, 1]
+ 17                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']
+ 18           [-1, 8]  1         0  models.common.Concat                    [1]
+ 19                -1  1   1377792  models.common.Bottleneck                [768, 512, False]
+ 20                -1  1   1312256  models.common.Bottleneck                [512, 512, False]
+ 21                -1  1    131584  models.common.Conv                      [512, 256, 1, 1]
+ 22                -1  1   1180672  models.common.Conv                      [256, 512, 3, 1]
+ 23                -2  1     33024  models.common.Conv                      [256, 128, 1, 1]
+ 24                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']
+ 25           [-1, 6]  1         0  models.common.Concat                    [1]
+ 26                -1  1    344832  models.common.Bottleneck                [384, 256, False]
+ 27                -1  2    656896  models.common.Bottleneck                [256, 256, False]
  28      [27, 22, 15]  1    457725  models.yolo_quantize.Detect             [80, [[10, 13, 16, 30, 33, 23], [30, 61, 62, 45, 59, 119], [116, 90, 156, 198, 373, 326]], [256, 512, 1024]]
 Model Summary: 333 layers, 61949149 parameters, 61949149 gradients, 156.3 GFLOPs
 
@@ -44,7 +44,7 @@ Scaled weight_decay = 0.0005
 [34m[1mWeights & Biases: [0mrun 'pip install wandb' to automatically track and visualize YOLOv3 🚀 runs (RECOMMENDED)
 [34m[1mtrain: [0mScanning '/data/niko/datasets/coco128/labels/train2017.cache' images and labels... 128 found, 0 missing, 2 empty, 0 corrupted: 100%|██████████| 128/128 [00:00<?, ?it/s][34m[1mtrain: [0mScanning '/data/niko/datasets/coco128/labels/train2017.cache' images and labels... 128 found, 0 missing, 2 empty, 0 corrupted: 100%|██████████| 128/128 [00:00<?, ?it/s]
 [34m[1mval: [0mScanning '/data/niko/datasets/coco128/labels/train2017.cache' images and labels... 128 found, 0 missing, 2 empty, 0 corrupted: 100%|██████████| 128/128 [00:00<?, ?it/s][34m[1mval: [0mScanning '/data/niko/datasets/coco128/labels/train2017.cache' images and labels... 128 found, 0 missing, 2 empty, 0 corrupted: 100%|██████████| 128/128 [00:00<?, ?it/s]
-Plotting labels to runs/train/exp6/labels.jpg... 
+Plotting labels to runs/train/exp6/labels.jpg...
 
 [34m[1mAutoAnchor: [0m4.27 anchors/target, 0.994 Best Possible Recall (BPR). Current anchors are a good fit to dataset ✅
 Image sizes 640 train, 640 val
@@ -155,7 +155,7 @@ Starting training for 300 epochs...
 
      Epoch   gpu_mem       box       obj       cls    labels  img_size
   0%|          | 0/16 [00:00<?, ?it/s]                                          [MQBENCH] INFO: Disable observer and Enable quantize.
-  0%|          | 0/16 [00:00<?, ?it/s]                                          
+  0%|          | 0/16 [00:00<?, ?it/s]
 Traceback (most recent call last):
   File "train.py", line 688, in <module>
     main(opt)

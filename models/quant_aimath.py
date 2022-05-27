@@ -1,17 +1,13 @@
-from os import XATTR_SIZE_MAX
 import math
 import time
-from sympy import N
+from os import XATTR_SIZE_MAX
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-from torch.autograd import Function
 import torch.nn.functional as F
-import torch.nn as nn
-
-
-
-
+from sympy import N
+from torch.autograd import Function
 
 # class Quantizer(Function):
 #     @staticmethod
@@ -111,7 +107,7 @@ class QuanConv(nn.Conv2d):
                  nbit_a=32, stride=1,
                  padding=0, dilation=1, groups=1,
                  bias=True):
-        super(QuanConv, self).__init__(
+        super().__init__(
             in_channels, out_channels, kernel_size, stride, padding, dilation,
             groups, bias)
         self.nbit_w = nbit_w
@@ -125,7 +121,7 @@ class QuanConv(nn.Conv2d):
 
     # @weak_script_method
     def forward(self, input):
-        
+
         # print("start QuanConv")
         if self.nbit_w <=32:
             #量化卷积
@@ -145,7 +141,7 @@ class QuanConv(nn.Conv2d):
 
         #做真正的卷积运算
         x = input
-        
+
         output = F.conv2d(x, w, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
         return output
@@ -153,7 +149,7 @@ class QuanConv(nn.Conv2d):
 
 class Linear_Q(nn.Linear):
     def __init__(self, in_features, out_features, bias=True, quan_name_w='dorefa', quan_name_a='dorefa', nbit_w=32, nbit_a=32):
-        super(Linear_Q, self).__init__(in_features, out_features, bias)
+        super().__init__(in_features, out_features, bias)
         self.nbit_w = nbit_w
         self.nbit_a = nbit_a
         name_w_dict = {'dorefa': quan_w}
@@ -179,5 +175,3 @@ class Linear_Q(nn.Linear):
         output = F.linear(x, w, self.bias)
 
         return output
-
-

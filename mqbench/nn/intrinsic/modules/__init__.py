@@ -1,1 +1,3 @@
-from .fused import LinearBn1d, ConvTransposeBn2d, ConvTransposeReLU2d, ConvTransposeBnReLU2d, ConvBnReLU2d, ConvBn2d, ConvReLU2d, ConvFreezebn2d, ConvFreezebnReLU2d, ConvTransposeFreezebn2d, ConvTransposeFreezebnReLU2d
+from .fused import (ConvBn2d, ConvBnReLU2d, ConvFreezebn2d, ConvFreezebnReLU2d, ConvReLU2d, ConvTransposeBn2d,
+                    ConvTransposeBnReLU2d, ConvTransposeFreezebn2d, ConvTransposeFreezebnReLU2d, ConvTransposeReLU2d,
+                    LinearBn1d)

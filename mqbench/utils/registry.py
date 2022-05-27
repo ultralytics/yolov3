@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-
 DEFAULT_MODEL_QUANTIZER = OrderedDict()
 
 
@@ -33,7 +32,7 @@ def register_convert_function(module_type):
     return insert
 
 
-WEIGHT_EQUALIZATION_FUNCTION = OrderedDict() 
+WEIGHT_EQUALIZATION_FUNCTION = OrderedDict()
 
 
 def register_weight_equalization_function(layer1, layer2):

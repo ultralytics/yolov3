@@ -6,7 +6,7 @@ from mqbench.utils import no_jit_trace
 
 class NNIEFakeQuantize(QuantizeBase):
     def __init__(self, observer, **observer_kwargs):
-        super(NNIEFakeQuantize, self).__init__(observer, **observer_kwargs)
+        super().__init__(observer, **observer_kwargs)
         self.register_buffer('data_max', torch.tensor(float('-inf')))
 
     def forward(self, X):

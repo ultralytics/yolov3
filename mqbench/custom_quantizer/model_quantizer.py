@@ -1,43 +1,26 @@
 import copy
 import operator
 from collections import OrderedDict
-from typing import (
-    List, Dict, Any, Callable
-)
+from typing import Any, Callable, Dict, List
 
 import torch
-from torch.fx import (
-    GraphModule
-)
-from torch.quantization import (
-    propagate_qconfig_,
-    swap_module
-)
-from torch.nn.intrinsic import (
-    _FusedModule
-)
-from torch.quantization.quantization_mappings import (
-    get_default_qat_module_mappings,
-    get_default_static_quant_module_mappings
-)
-from torch.quantization.utils import (
-    get_combined_dict
-)
-from torch.quantization.fx.qconfig_utils import (
-    get_flattened_qconfig_dict
-)
-from torch.quantization.quantize_fx import (
-    _fuse_fx
-)
+from torch.fx import GraphModule
+from torch.nn.intrinsic import _FusedModule
+from torch.quantization import propagate_qconfig_, swap_module
+from torch.quantization.fx.qconfig_utils import get_flattened_qconfig_dict
+from torch.quantization.quantization_mappings import (get_default_qat_module_mappings,
+                                                      get_default_static_quant_module_mappings)
+from torch.quantization.quantize_fx import _fuse_fx
+from torch.quantization.utils import get_combined_dict
 
+from mqbench.prepare_by_platform import BackendType
 from mqbench.utils.logger import logger
 from mqbench.utils.registry import register_model_quantizer
-from mqbench.prepare_by_platform import BackendType
 
 
 @register_model_quantizer(BackendType.Tensorrt)
 @register_model_quantizer(BackendType.NNIE)
-class ModelQuantizer(object):
+class ModelQuantizer:
     """General model quantizer class.
     First, replace common float module to nn.qat.modules to make weight fake
     quantized.
@@ -80,7 +63,7 @@ class ModelQuantizer(object):
             fake_quantizer = qconfig.activation()
             quantizer_name = node.name + quantizer_prefix
             setattr(model, quantizer_name, fake_quantizer)
-            logger.info("Insert act quant {}".format(quantizer_name))
+            logger.info(f"Insert act quant {quantizer_name}")
             with graph.inserting_after(node):
                 inserted_node = graph.create_node("call_module", quantizer_name, (node,), {})
                 for _node in nodes:
@@ -116,7 +99,7 @@ class ModelQuantizer(object):
                     _tmp[k] = v
             return _tmp
         else:
-            raise NotImplementedError('{} can not be handled now.'.format(type(args)))
+            raise NotImplementedError(f'{type(args)} can not be handled now.')
 
     def _weight_quant(self, model: GraphModule, qconfig):
         logger.info("Replace module to qat module.")
@@ -225,7 +208,7 @@ class ModelQuantizer(object):
                 ((node.op == 'call_function' or node.op == 'call_method') and
                  node.target in self.exclude_function_type) or
                     node.name in self.exclude_node_name) and node.name not in self.additional_node_name:
-                logger.info("Exclude skip: {}".format(node.name))
+                logger.info(f"Exclude skip: {node.name}")
                 continue
             if (node.op == "call_module" and isinstance(modules[node.target], self.module_type_to_quant_input)) or \
                 ((node.op == 'call_function' or node.op == 'call_method') and
@@ -236,7 +219,7 @@ class ModelQuantizer(object):
                     continue
                 for _node in input_node_list:
                     if self._is_implicit_merge(modules, (node, _node)):
-                        logger.info("Implicit merge: {} + {}".format(_node.name, node.name))
+                        logger.info(f"Implicit merge: {_node.name} + {node.name}")
                         continue
                     node_need_to_quantize_output.append(_node)
         return node_need_to_quantize_output
@@ -256,7 +239,7 @@ class ModelQuantizer(object):
         reassign = {}
         for name, mod in module.named_children():
             # fused modules are swapped as one unit
-            new_scope = "{}.{}".format(scope, name) if scope != '' else name
+            new_scope = f"{scope}.{name}" if scope != '' else name
             if new_scope in self.exclude_module_name:
                 logger.info("Skip quant layer: " + new_scope)
                 continue

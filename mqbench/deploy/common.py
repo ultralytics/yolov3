@@ -1,17 +1,16 @@
 import copy
-import onnx
-import numpy as np
-from onnx import numpy_helper
-from onnx import TensorProto
 
+import numpy as np
+import onnx
+from onnx import TensorProto, numpy_helper
 
 from mqbench.utils.logger import logger
 
 
-class ONNXGraph(object):
+class ONNXGraph:
     def __init__(self, onnx_model_path):
         '''Describe onnx graph
-        args: 
+        args:
             input_map[tensor_name] = node which input is tensor_name
             output_map[tensor_name] = node which output is tensor_name
         '''
@@ -147,7 +146,7 @@ class ONNXGraph(object):
         self.model.opset_import.insert(0, opset_info)
 
 
-class OnnxPreprocess(object):
+class OnnxPreprocess:
     def replace_resize_op_with_upsample(self, graph, out2node):
         nodes_to_be_removed = []
         idx = 0
@@ -241,9 +240,9 @@ def parse_attrs(node_attrs):
         elif attr.type == onnx.AttributeProto.AttributeType.STRING:
             attrs[attr.name] = str(attr.s)
         elif attr.type == onnx.AttributeProto.AttributeType.STRINGS:
-            attrs[attr.name] = tuple([str(x) for x in attr.strings])
+            attrs[attr.name] = tuple(str(x) for x in attr.strings)
         else:
-            raise Exception("ATTR Type [{}] Not Supported!".format(attr.type))
+            raise Exception(f"ATTR Type [{attr.type}] Not Supported!")
     return attrs
 
 

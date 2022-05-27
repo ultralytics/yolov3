@@ -102,7 +102,7 @@ def profile(input, ops, n=10, device=None):
     #     profile(input, [m1, m2], n=100)  # profile over 100 iterations
 
     results = []
-    
+
     device = device or select_device()
     print(f"{'Params':>12s}{'GFLOPs':>12s}{'GPU_mem (GB)':>14s}{'forward (ms)':>14s}{'backward (ms)':>14s}"
           f"{'input':>24s}{'output':>24s}")
@@ -294,7 +294,7 @@ def choose_backend(args):
         return BackendType.NNIE
     if args.BackendType == "Tensorrt":
         return BackendType.Tensorrt
-    if args.BackendType == "SNPE":    
+    if args.BackendType == "SNPE":
         return BackendType.SNPE
     if args.BackendType == "PPLW8A16":
         return BackendType.PPLW8A16

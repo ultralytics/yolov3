@@ -6,11 +6,10 @@ Common modules
 import json
 import math
 import platform
-from turtle import forward
 import warnings
 from copy import copy
 from pathlib import Path
-import torch.nn.functional as F
+from turtle import forward
 
 import cv2
 import numpy as np
@@ -18,16 +17,17 @@ import pandas as pd
 import requests
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from PIL import Image
 from torch.cuda import amp
 
+from models.quant_aimath import QuanConv
 from utils.datasets import exif_transpose, letterbox
 from utils.general import (LOGGER, check_requirements, check_suffix, colorstr, increment_path, make_divisible,
                            non_max_suppression, scale_coords, xywh2xyxy, xyxy2xywh)
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import time_sync
 
-from models.quant_aimath import QuanConv
 # from models.quant_dorefa import QuanConv
 
 def autopad(k, p=None):  # kernel, padding
@@ -62,14 +62,14 @@ class Quan_Conv_copy(nn.Module):
         self.conv = QuanConv(c1, c2, k, 'dorefa', 'dorefa', nbit_w, nbit_a, s, autopad(k, p), 1, groups=g, bias=False )
         self.bn = nn.BatchNorm2d(c2)
         self.act = nn.LeakyReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
-    
+
     def forward(self, x):
         # print("start Quan_Conv")
         # x=self.quant(x)
         x=self.act(self.bn(self.conv(x)))
         # x=self.dequant(x)
         return x
-    
+
     def forward_fuse(self, x):
         return self.act(self.conv(x))
 
@@ -80,16 +80,16 @@ class Quan_Conv(nn.Module):
         self.conv = QuanConv(c1, c2, k, 'dorefa', 'dorefa', 4, 16, s, autopad(k, p), 1, groups=g, bias=False )
         self.bn = nn.BatchNorm2d(c2)
         self.act = nn.LeakyReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
-    
+
     def forward(self, x):
         x=self.act(self.bn(self.conv(x)))
         return x
-    
+
     def forward_fuse(self, x):
         return self.act(self.conv(x))
-    
 
-    
+
+
 class Quan_Conv_4bit(nn.Module):
     # Quantized convolution
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):
@@ -99,14 +99,14 @@ class Quan_Conv_4bit(nn.Module):
         self.conv = QuanConv(c1, c2, k, 'dorefa', 'dorefa', 4, 16, s, autopad(k, p), 1, groups=g, bias=False )
         self.bn = nn.BatchNorm2d(c2)
         self.act = nn.LeakyReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
-    
+
     def forward(self, x):
         # x=self.quant(x)
         x=self.act(self.bn(self.conv(x)))
         # x=self.dequant(x)
         return x
         # return self.act(self.bn(self.conv(x)))
-    
+
     def forward_fuse(self, x):
         return self.act(self.conv(x))
 
@@ -119,14 +119,14 @@ class Quan_Conv_6bit(nn.Module):
         self.conv = QuanConv(c1, c2, k, 'dorefa', 'dorefa', 6, 16, s, autopad(k, p), 1, groups=g, bias=False )
         self.bn = nn.BatchNorm2d(c2)
         self.act = nn.LeakyReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
-    
+
     def forward(self, x):
         # x=self.quant(x)
         x=self.act(self.bn(self.conv(x)))
         # x=self.dequant(x)
         return x
         # return self.act(self.bn(self.conv(x)))
-    
+
     def forward_fuse(self, x):
         return self.act(self.conv(x))
 
@@ -139,14 +139,14 @@ class Quan_Conv_10bit(nn.Module):
         self.conv = QuanConv(c1, c2, k, 'dorefa', 'dorefa', 10, 16, s, autopad(k, p), 1, groups=g, bias=False )
         self.bn = nn.BatchNorm2d(c2)
         self.act = nn.LeakyReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
-    
+
     def forward(self, x):
         x=self.act(self.bn(self.conv(x)))
         return x
-    
+
     def forward_fuse(self, x):
         return self.act(self.conv(x))
-    
+
 class Bottleneck(nn.Module):
     # Standard bottleneck
     def __init__(self, c1, c2, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
@@ -171,7 +171,7 @@ class Quan_Bottleneck(nn.Module):
     def forward(self, x):
         # print("start Quan_Bottleneck")
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
-    
+
 class Quan_Bottleneck_4bit(nn.Module):
     # Quantized bottleneck
     def __init__(self, c1, c2, p=None, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
@@ -184,7 +184,7 @@ class Quan_Bottleneck_4bit(nn.Module):
     def forward(self, x):
         # print("start Quan_Bottleneck")
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
-    
+
 class Quan_Bottleneck_4bit_false(nn.Module):
     # Quantized bottleneck
     def __init__(self, c1, c2, p=None, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
@@ -197,7 +197,7 @@ class Quan_Bottleneck_4bit_false(nn.Module):
     def forward(self, x):
         # print("start Quan_Bottleneck")
         return self.cv2(self.cv1(x))
-     
+
 class Quan_Bottleneck_6bit(nn.Module):
     # Quantized_10bit bottleneck
     def __init__(self, c1, c2, p=None, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
@@ -210,7 +210,7 @@ class Quan_Bottleneck_6bit(nn.Module):
     def forward(self, x):
         # print("start Quan_Bottleneck_6bit_false")
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
-       
+
 class Quan_Bottleneck_6bit_false(nn.Module):
     # Quantized_10bit bottleneck
     def __init__(self, c1, c2, p=None, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
@@ -224,7 +224,7 @@ class Quan_Bottleneck_6bit_false(nn.Module):
         # print("start Quan_Bottleneck_6bit_false")
         # return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
         return self.cv2(self.cv1(x))
-    
+
 class Quan_Bottleneck_10bit(nn.Module):
     # Quantized_10bit bottleneck
     def __init__(self, c1, c2, p=None, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
@@ -251,7 +251,7 @@ class Quan_Bottleneck_10bit_false(nn.Module):
         # print("start Quan_Bottleneck_10bit")
         return self.cv2(self.cv1(x))
 
-    
+
 class DWConv(Conv):
     # Depth-wise convolution class
     def __init__(self, c1, c2, k=1, s=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups

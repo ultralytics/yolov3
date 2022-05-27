@@ -50,8 +50,6 @@ from utils.metrics import fitness
 from utils.plots import plot_evolve, plot_labels
 from utils.torch_utils import EarlyStopping, ModelEMA, de_parallel, select_device, torch_distributed_zero_first
 
-
-
 # LOGGER = logging.getLogger(__name__)
 LOCAL_RANK = int(os.getenv('LOCAL_RANK', -1))  # https://pytorch.org/docs/stable/elastic/run.html
 RANK = int(os.getenv('RANK', -1))
@@ -68,11 +66,11 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
         opt.resume, opt.noval, opt.nosave, opt.workers, opt.freeze
 
     if opt.quantize:
+        from models.yolo_quantize import Model
         from mqbench.convert_deploy import convert_deploy
-        from mqbench.prepare_by_platform import prepare_by_platform, BackendType
+        from mqbench.prepare_by_platform import BackendType, prepare_by_platform
         from mqbench.utils.state import enable_calibration, enable_quantization
         from utils.torch_utils import choose_backend
-        from models.yolo_quantize import Model
     else:
         from models.yolo import Model
 
@@ -194,7 +192,7 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
         if ckpt['optimizer'] is not None:
             optimizer.load_state_dict(ckpt['optimizer'])
             best_fitness = ckpt['best_fitness']
-        
+
         if not opt.quantize:
             # EMA
             if ema and ckpt.get('ema'):
@@ -283,14 +281,14 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
                 f'Using {train_loader.num_workers * WORLD_SIZE} dataloader workers\n'
                 f"Logging results to {colorstr('bold', save_dir)}\n"
                 f'Starting training for {epochs} epochs...')
-    
-    if opt.quantize:        
+
+    if opt.quantize:
         # quantize
         model.train()
         model = prepare_by_platform(model, choose_backend(opt))
-        
+
         model.to(device)
-        
+
         model.eval()
         enable_calibration(model)
         calibration_flag = True
@@ -514,13 +512,13 @@ def parse_opt(known=False):
     parser.add_argument('--freeze', type=int, default=0, help='Number of layers to freeze. backbone=10, all=24')
     parser.add_argument('--save-period', type=int, default=-1, help='Save checkpoint every x epochs (disabled if < 1)')
     parser.add_argument('--local_rank', type=int, default=-1, help='DDP parameter, do not modify')
-    
+
 
 
      # Quantize
     parser.add_argument('--quantize', action='store_true', help='run QAT with yolo')
     parser.add_argument('--BackendType', type=str, default='Tensorrt', help='backend for QAT deployment')
- 
+
     # Weights & Biases arguments
     parser.add_argument('--entity', default=None, help='W&B: Entity')
     parser.add_argument('--upload_dataset', action='store_true', help='W&B: Upload dataset as artifact table')
@@ -537,7 +535,7 @@ def parse_opt(known=False):
 
 def main(opt, callbacks=Callbacks()):
     # Checks
-    
+
     if RANK in [-1, 0]:
         print_args(FILE.stem, opt)
         check_git_status()

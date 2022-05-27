@@ -1,14 +1,17 @@
 import math
+from typing import TypeVar
+
 import torch
 import torch.nn as nn
-import torch.nn.intrinsic as nni
 import torch.nn.functional as F
+import torch.nn.intrinsic as nni
 from torch.nn import init
 from torch.nn.modules.utils import _pair, _single
 from torch.nn.parameter import Parameter
-from typing import TypeVar
+
 import mqbench.nn.intrinsic as qnni
 from mqbench.nn.modules import FrozenBatchNorm2d
+
 from .deconv_fused import _ConvTransposeBnNd
 
 MOD = TypeVar('MOD', bound=nn.modules.conv._ConvNd)
@@ -73,7 +76,7 @@ class _ConvFreezebnNd(nn.modules.conv._ConvNd, nni._FusedModule):
             init.uniform_(self.bias, -bound, bound)
 
     def reset_parameters(self):
-        super(_ConvFreezebnNd, self).reset_parameters()
+        super().reset_parameters()
 
     def update_bn_stats(self):
         self.freeze_bn = False
@@ -109,7 +112,7 @@ class _ConvFreezebnNd(nn.modules.conv._ConvNd, nni._FusedModule):
 
     def extra_repr(self):
         # TODO(jerryzh): extend
-        return super(_ConvFreezebnNd, self).extra_repr()
+        return super().extra_repr()
 
     def forward(self, input):
         return self._forward(input)
@@ -176,7 +179,7 @@ class _ConvFreezebnNd(nn.modules.conv._ConvNd, nni._FusedModule):
                 elif strict:
                     missing_keys.append(prefix + v2_name)
 
-        super(_ConvFreezebnNd, self)._load_from_state_dict(
+        super()._load_from_state_dict(
             state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs)
 
     @classmethod
@@ -272,14 +275,14 @@ class ConvFreezebnReLU2d(ConvFreezebn2d):
                  # Args for this module
                  freeze_bn=False,
                  qconfig=None):
-        super(ConvFreezebnReLU2d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode, eps, momentum, freeze_bn, qconfig)
+        super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode, eps, momentum, freeze_bn, qconfig)
 
     def forward(self, input):
         return F.relu(ConvFreezebn2d._forward(self, input))
 
     @classmethod
     def from_float(cls, mod):
-        return super(ConvFreezebnReLU2d, cls).from_float(mod)
+        return super().from_float(mod)
 
 
 class _ConvTransposeFreezebnNd(_ConvTransposeBnNd):
@@ -423,8 +426,7 @@ class ConvTransposeFreezebnReLU2d(ConvTransposeFreezebn2d):
         #                                             padding_mode, eps, momentum,
         #                                             freeze_bn,
         #                                             qconfig)
-        super(ConvTransposeFreezebnReLU2d,
-              self).__init__(in_channels,
+        super().__init__(in_channels,
                              out_channels,
                              kernel_size,
                              stride=stride,
@@ -445,4 +447,4 @@ class ConvTransposeFreezebnReLU2d(ConvTransposeFreezebn2d):
 
     @classmethod
     def from_float(cls, mod):
-        return super(ConvTransposeFreezebnReLU2d, cls).from_float(mod)
+        return super().from_float(mod)

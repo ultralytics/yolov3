@@ -2,12 +2,11 @@ import torch
 
 from mqbench.fake_quantize.quantize_base import QuantizeBase
 
-
 _version_under_1100 = int(torch.__version__.split('.')[1]) < 10
 
 class DoReFaFakeQuantize(QuantizeBase):
     def __init__(self, observer, **observer_kwargs):
-        super(DoReFaFakeQuantize, self).__init__(observer, **observer_kwargs)
+        super().__init__(observer, **observer_kwargs)
         self.register_buffer('scale', torch.tensor([1.0], dtype=torch.float))
         self.register_buffer('zero_point', torch.tensor([0], dtype=torch.int))
 
@@ -28,7 +27,7 @@ class DoReFaFakeQuantize(QuantizeBase):
         if self.fake_quant_enabled[0] == 1:
             if self.is_per_channel:
                 X = torch.fake_quantize_per_channel_affine(
-                    X, self.scale, 
+                    X, self.scale,
                     self.zero_point.long() if _version_under_1100 else self.zero_point,
                     self.ch_axis, self.quant_min, self.quant_max)
             else:

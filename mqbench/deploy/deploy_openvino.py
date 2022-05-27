@@ -1,32 +1,24 @@
 import os
 
-import onnx
 import numpy as np
-from onnx import numpy_helper
+import onnx
+from onnx import helper, numpy_helper
 
-from onnx import helper
-
+from mqbench.deploy.common import (ONNXGraph, OnnxPreprocess, get_constant_inputs, parse_attrs, prepare_data,
+                                   update_inp2node_out2node)
 from mqbench.utils.logger import logger
-from mqbench.deploy.common import (
-    update_inp2node_out2node,
-    prepare_data,
-    OnnxPreprocess,
-    ONNXGraph,
-    get_constant_inputs,
-    parse_attrs
-)
 
-PERCHANNEL_FAKEQUANTIZER = ['FakeQuantizeLearnablePerchannelAffine', 
+PERCHANNEL_FAKEQUANTIZER = ['FakeQuantizeLearnablePerchannelAffine',
                             'FixedPerChannelAffine',
                             'FakeQuantizeDSQPerchannel']
-PERTENSOR_FAKEQUANTIZER = ['LearnablePerTensorAffine', 
+PERTENSOR_FAKEQUANTIZER = ['LearnablePerTensorAffine',
                            'FixedPerTensorAffine',
                            'FakeQuantizeDSQPertensor',
                            'FakeQuantizeTqtAffine']
 ALL_FAKEQUANTIZER = PERCHANNEL_FAKEQUANTIZER + PERTENSOR_FAKEQUANTIZER
 
 
-class OPENVINO_process(object):
+class OPENVINO_process:
 
     def parse_qparams(self, node, name2data):
         tensor_name, scale, zero_point = node.input[:3]
@@ -122,7 +114,7 @@ class OPENVINO_process(object):
         onnx_graph.prepare_initializer()
         onnx_graph.optimize_model()
         output_path = os.path.dirname(onnx_path)
-        onnx_filename = os.path.join(output_path, '{}_deploy_model.onnx'.format(model_name))
+        onnx_filename = os.path.join(output_path, f'{model_name}_deploy_model.onnx')
         onnx.save(model, onnx_filename)
         logger.info("Finish deploy process.")
 

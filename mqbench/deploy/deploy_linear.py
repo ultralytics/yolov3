@@ -1,33 +1,25 @@
 import json
 import os
 
-
-import onnx
 import numpy as np
+import onnx
 from onnx import numpy_helper
 
+from mqbench.deploy.common import (OnnxPreprocess, get_constant_inputs, parse_attrs, prepare_data, prepare_initializer,
+                                   update_inp2node_out2node)
 from mqbench.utils.logger import logger
-from mqbench.deploy.common import (
-    update_inp2node_out2node,
-    prepare_initializer,
-    prepare_data,
-    OnnxPreprocess,
-    get_constant_inputs,
-    parse_attrs
-)
 
-
-PERCHANNEL_FAKEQUANTIZER = ['FakeQuantizeLearnablePerchannelAffine', 
+PERCHANNEL_FAKEQUANTIZER = ['FakeQuantizeLearnablePerchannelAffine',
                             'FixedPerChannelAffine',
                             'FakeQuantizeDSQPerchannel']
-PERTENSOR_FAKEQUANTIZER = ['LearnablePerTensorAffine', 
+PERTENSOR_FAKEQUANTIZER = ['LearnablePerTensorAffine',
                            'FixedPerTensorAffine',
                            'FakeQuantizeDSQPertensor',
                            'FakeQuantizeTqtAffine']
 ALL_FAKEQUANTIZER = PERCHANNEL_FAKEQUANTIZER + PERTENSOR_FAKEQUANTIZER
 
 
-class LinearQuantizer_process(object):
+class LinearQuantizer_process:
     # some method like dorefa need pre-compute weights
     def weight_preprocess(self, target_tensor, out2node, inp2node, named_initializer):
         def find_weight(tensor):
@@ -181,7 +173,7 @@ class LinearQuantizer_process(object):
                     nodes_to_be_removed.extend(redundant_nodes)
                     self.clip_weight(node, name2data, inp2node, named_initializer)
                 elif len(next_nodes) == 1 and next_nodes[0][1] == 2 and next_nodes[0][0].op_type in ['Gemm', 'Conv']:
-                    # fake quantize for bias 
+                    # fake quantize for bias
                     assert backend == 'vitis'
                     redundant_nodes = self.deal_with_weight_fakequant(node, out2node, inp2node, named_initializer)
                     tensor_name, scale, zero_point, qmin, qmax = self.parse_qparams(node, name2data)
@@ -238,15 +230,15 @@ class LinearQuantizer_process(object):
         elif backend == 'ppl-cuda':
             context = {'ppl-cuda': clip_ranges}
         output_path = os.path.dirname(onnx_path)
-        context_filename = os.path.join(output_path, '{}_clip_ranges.json'.format(model_name))
+        context_filename = os.path.join(output_path, f'{model_name}_clip_ranges.json')
         with open(context_filename, 'w') as f:
             json.dump(context, f, indent=4)
-        onnx_filename = os.path.join(output_path, '{}_deploy_model.onnx'.format(model_name))
+        onnx_filename = os.path.join(output_path, f'{model_name}_deploy_model.onnx')
         onnx.save(model, onnx_filename)
         if backend == 'ppl-cuda':
             with open(context_filename, 'w') as f:
                 for k, v in clip_ranges.items():
-                    f.write('{}: {}\n'.format(k, v))
+                    f.write(f'{k}: {v}\n')
         if backend == 'vitis':
             logger.info(f"To finish xmodel converting process, call \
                 $ mqbench.deploy.convert_xir -Q {onnx_filename} -C {onnx_path} -N <name> \

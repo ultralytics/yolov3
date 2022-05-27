@@ -1,16 +1,14 @@
 import math
+from typing import TypeVar
 
 import torch
 import torch.nn as nn
-import torch.nn.intrinsic as nni
 import torch.nn.functional as F
+import torch.nn.intrinsic as nni
 from torch.nn import init
 from torch.nn.intrinsic import _FusedModule
-from torch.nn.parameter import Parameter
 from torch.nn.modules.utils import _pair
-
-from typing import TypeVar 
-
+from torch.nn.parameter import Parameter
 
 import mqbench.nn.qat as qnnqat
 from mqbench.quantization.default_bias_fake_quant import bias_fake_quantizer
@@ -84,7 +82,7 @@ class _ConvBnNd(nn.modules.conv._ConvNd, _FusedModule):
             init.uniform_(self.bias, -bound, bound)
 
     def reset_parameters(self):
-        super(_ConvBnNd, self).reset_parameters()
+        super().reset_parameters()
 
     def update_bn_stats(self):
         self.freeze_bn = False
@@ -109,14 +107,14 @@ class _ConvBnNd(nn.modules.conv._ConvNd, _FusedModule):
         # will be added later
         if self.bias is not None:
             zero_bias = torch.zeros_like(self.bias)
-            conv_bias = self.bias 
+            conv_bias = self.bias
         else:
             zero_bias = torch.zeros(self.out_channels, device=scaled_weight.device)
             conv_bias = torch.zeros_like(zero_bias, device=scaled_weight.device)
         if self.bn.affine:
-            full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias 
+            full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias
         else:
-            full_bias = (conv_bias - self.bn.running_mean) / running_std 
+            full_bias = (conv_bias - self.bn.running_mean) / running_std
         quant_bias = self.bias_fake_quant(full_bias)
         conv_with_bias = self._conv_forward(input, scaled_weight, quant_bias)
         conv_orig = (conv_with_bias - full_bias.reshape(bias_shape)) / scale_factor.reshape(bias_shape) + conv_bias.reshape(bias_shape)
@@ -125,7 +123,7 @@ class _ConvBnNd(nn.modules.conv._ConvNd, _FusedModule):
 
     def extra_repr(self):
         # TODO(jerryzh): extend
-        return super(_ConvBnNd, self).extra_repr()
+        return super().extra_repr()
 
     def forward(self, input):
         return self._forward(input)
@@ -192,7 +190,7 @@ class _ConvBnNd(nn.modules.conv._ConvNd, _FusedModule):
                 elif strict:
                     missing_keys.append(prefix + v2_name)
 
-        super(_ConvBnNd, self)._load_from_state_dict(
+        super()._load_from_state_dict(
             state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs)
 
     @classmethod
@@ -347,7 +345,7 @@ class ConvBnReLU2d(ConvBn2d):
                  # Args for this module
                  freeze_bn=False,
                  qconfig=None):
-        super(ConvBnReLU2d, self).__init__(in_channels, out_channels, kernel_size, stride,
+        super().__init__(in_channels, out_channels, kernel_size, stride,
                                            padding, dilation, groups, bias,
                                            padding_mode, eps, momentum,
                                            freeze_bn,
@@ -358,7 +356,7 @@ class ConvBnReLU2d(ConvBn2d):
 
     @classmethod
     def from_float(cls, mod):
-        return super(ConvBnReLU2d, cls).from_float(mod)
+        return super().from_float(mod)
 
 class ConvReLU2d(qnnqat.Conv2d, _FusedModule):
     r"""A ConvReLU2d module is a fused module of Conv2d and ReLU, attached with
@@ -381,7 +379,7 @@ class ConvReLU2d(qnnqat.Conv2d, _FusedModule):
                  padding=0, dilation=1, groups=1,
                  bias=True, padding_mode='zeros',
                  qconfig=None):
-        super(ConvReLU2d, self).__init__(in_channels, out_channels, kernel_size,
+        super().__init__(in_channels, out_channels, kernel_size,
                                          stride=stride, padding=padding, dilation=dilation,
                                          groups=groups, bias=bias, padding_mode=padding_mode,
                                          qconfig=qconfig)

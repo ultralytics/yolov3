@@ -1,7 +1,7 @@
-import torch 
+import torch
 
 
-class QuantizeScheme(object):
+class QuantizeScheme:
     """Describe quantization scheme.
     """
     def __init__(self, symmetry=True, per_channel=False, pot_scale=False, bit=8, **kwargs):

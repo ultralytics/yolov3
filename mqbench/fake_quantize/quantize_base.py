@@ -1,7 +1,7 @@
 import torch
 from torch.quantization import FakeQuantizeBase
-from torch.quantization.observer import MovingAverageMinMaxObserver
 from torch.quantization.fake_quantize import _is_per_channel, _is_per_tensor
+from torch.quantization.observer import MovingAverageMinMaxObserver
 
 from mqbench.utils import is_symmetric_quant
 

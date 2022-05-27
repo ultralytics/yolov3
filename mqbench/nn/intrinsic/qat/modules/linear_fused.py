@@ -3,8 +3,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import init
-from torch.nn import Linear
+from torch.nn import Linear, init
 from torch.nn.intrinsic import _FusedModule
 from torch.nn.parameter import Parameter
 
@@ -62,7 +61,7 @@ class LinearBn1d(Linear, _FusedModule):
             init.uniform_(self.bias, -bound, bound)
 
     def reset_parameters(self):
-        super(LinearBn1d, self).reset_parameters()
+        super().reset_parameters()
 
     def update_bn_stats(self):
         self.freeze_bn = False
@@ -72,7 +71,7 @@ class LinearBn1d(Linear, _FusedModule):
     def freeze_bn_stats(self):
         self.freeze_bn = True
         self.bn.training = False
-        return self 
+        return self
 
     def _forward(self, input):
         assert self.bn.running_var is not None
@@ -102,7 +101,7 @@ class LinearBn1d(Linear, _FusedModule):
         return linear_out
 
     def extra_repr(self):
-        return super(LinearBn1d, self).extra_repr()
+        return super().extra_repr()
 
     def forward(self, input):
         return self._forward(input)
@@ -147,7 +146,7 @@ class LinearBn1d(Linear, _FusedModule):
                 elif strict:
                     missing_keys.append(prefix + v2_name)
 
-        super(LinearBn1d, self)._load_from_state_dict(
+        super()._load_from_state_dict(
             state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs)
 
     @classmethod

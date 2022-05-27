@@ -1,17 +1,18 @@
-import numpy as np
-import onnx
 import os
 
-from mqbench.utils.logger import logger
+import numpy as np
+import onnx
 from onnx import numpy_helper
-from .deploy_onnx_qnn import ONNXQNNPass, FAKE_QUANTIZE_OP
-from .common import parse_attrs, prepare_data, prepare_initializer
 
+from mqbench.utils.logger import logger
+
+from .common import parse_attrs, prepare_data, prepare_initializer
+from .deploy_onnx_qnn import FAKE_QUANTIZE_OP, ONNXQNNPass
 
 
 class ONNXQLinearPass(ONNXQNNPass):
     def __init__(self, onnx_model_path):
-        super(ONNXQLinearPass, self).__init__(onnx_model_path)
+        super().__init__(onnx_model_path)
         self.onnx_model_path = onnx_model_path
 
     def parse_qparams(self, node, name2data):

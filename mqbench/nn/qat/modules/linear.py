@@ -1,5 +1,5 @@
-import torch.nn.qat.modules as nnqat
 import torch.nn.functional as F
+import torch.nn.qat.modules as nnqat
 
 
 class Linear(nnqat.Linear):
@@ -10,4 +10,4 @@ class Linear(nnqat.Linear):
         self.bias_fake_quant = qconfig.bias(**factory_kwargs)
 
     def forward(self, input):
-        return F.linear(input, self.weight_fake_quant(self.weight), self.bias_fake_quant(self.bias)) 
+        return F.linear(input, self.weight_fake_quant(self.weight), self.bias_fake_quant(self.bias))

@@ -1,7 +1,7 @@
 import torch
 import torch.nn.intrinsic.qat as nniqat
-from torch.fx import GraphModule, Node
 from torch import fx, nn
+from torch.fx import GraphModule, Node
 from torch.nn import Module
 
 USE_LINK = False
@@ -19,15 +19,16 @@ except (ModuleNotFoundError, AssertionError):
     if torch.distributed.is_initialized():
         USE_DDP = True
 
-import numpy as np
 from typing import List
 
-from mqbench.utils.logger import logger
-from mqbench.utils.hook import DataSaverHook, StopForwardException
-from mqbench.utils import deepcopy_graphmodule, deepcopy_mixedmodule, topology_order, getitem2node
-from mqbench.utils.utils import _fix_succ_recursivly
-from mqbench.utils.state import enable_quantization, disable_all
+import numpy as np
+
 import mqbench.nn.intrinsic.qat as qnniqat
+from mqbench.utils import deepcopy_graphmodule, deepcopy_mixedmodule, getitem2node, topology_order
+from mqbench.utils.hook import DataSaverHook, StopForwardException
+from mqbench.utils.logger import logger
+from mqbench.utils.state import disable_all, enable_quantization
+from mqbench.utils.utils import _fix_succ_recursivly
 
 _ADAROUND_SUPPORT_TYPE = (torch.nn.Conv2d, torch.nn.Linear)
 _FUSED_TYPE = (nniqat.ConvBnReLU2d, nniqat.ConvBn2d, qnniqat.ConvFreezebn2d, qnniqat.ConvFreezebnReLU2d)
@@ -47,7 +48,7 @@ def layer_has_weights(nodes, modules):
         if node in modules:
             if isinstance(modules[node], _WEIGHTS_MODULE_TYPE):
                 has_weights = True
-                break 
+                break
     return has_weights
 
 
@@ -229,7 +230,7 @@ def _flatten_args(node):
 
 
 def find_used_times(nodes, target):
-    used = len([_node for _node in target.users if _node in nodes])    
+    used = len([_node for _node in target.users if _node in nodes])
     return used
 
 
@@ -246,10 +247,10 @@ def find_cur_node(layer_node_list):
     not_used_later = [node for node in layer_node_list if node not in used_later]
     single_branch = dict()
     for node in not_used_later:
-        single_branch[node] = set([node])
+        single_branch[node] = {node}
         q = [node]
         while True:
-            now_args = sum([_flatten_args(_node.args) for _node in q], [])
+            now_args = sum((_flatten_args(_node.args) for _node in q), [])
             p = [_node for _node in now_args if isinstance(_node, torch.fx.Node) and find_used_times(layer_node_list, _node) == 1]
             single_branch[node] = single_branch[node].union(set(p))
             if len(p) == 0:
@@ -264,7 +265,7 @@ def find_cur_node(layer_node_list):
     unwanted = set()
     for key in single_branch:
         if key is node:
-            continue 
+            continue
         else:
             unwanted = unwanted.union(single_branch[key])
     layer_node_list = [_node for _node in layer_node_list if _node not in unwanted]
@@ -290,7 +291,7 @@ def subgraph_reconstruction(subgraph, cached_inps, cached_oups, config):
             w_para += [weight_quantizer.alpha]
         if isinstance(layer, torch.quantization.FakeQuantizeBase) and 'post_act_fake_quantize' in name:
             if hasattr(config, 'scale_lr'):
-                logger.info('learn the scale for {}'.format(name))
+                logger.info(f'learn the scale for {name}')
                 a_para += [layer.scale]
             layer.prob = config.prob
     if len(a_para) != 0:
@@ -308,7 +309,7 @@ def subgraph_reconstruction(subgraph, cached_inps, cached_oups, config):
     else:
         world_size = 1
 
-    logger.info('The world size is {}.'.format(world_size))
+    logger.info(f'The world size is {world_size}.')
     '''start training'''
     logger.info('start tuning by adaround')
     if config.prob < 1.0:
@@ -353,7 +354,7 @@ def subgraph_reconstruction(subgraph, cached_inps, cached_oups, config):
         if a_scheduler:
             a_scheduler.step()
     torch.cuda.empty_cache()
-    for name, layer in subgraph.named_modules():        
+    for name, layer in subgraph.named_modules():
         if isinstance(layer, _FUSED_TYPE):
             # We need to do bn fold simulation here.
             weight_quantizer = layer.weight_fake_quant
@@ -363,7 +364,7 @@ def subgraph_reconstruction(subgraph, cached_inps, cached_oups, config):
             layer.weight.data = merged_rounded_weight / scale_factor.reshape([-1] + [1] * (len(merged_rounded_weight.shape) - 1))
             weight_quantizer.adaround = False
         elif isinstance(layer, _ADAROUND_SUPPORT_TYPE):
-            assert not hasattr(layer, 'bn'), 'Layer {} with type {} has BN ! Should not reach here.'.format(name, type(layer))
+            assert not hasattr(layer, 'bn'), f'Layer {name} with type {type(layer)} has BN ! Should not reach here.'
             weight_quantizer = layer.weight_fake_quant
             layer.weight.data = weight_quantizer.get_hard_value(layer.weight.data)
             weight_quantizer.adaround = False
@@ -417,7 +418,7 @@ def extract_layer(node, fp32_modules):
     cur_node = node
     is_next_block = False  # check whether stoped by a block
     while True:
-        logger.debug('cur_node in layer is {}'.format(cur_node))
+        logger.debug(f'cur_node in layer is {cur_node}')
         layer_node_list.append(cur_node)  # valid node here
         stop = (len(cur_node.users) == 0)
         for user in cur_node.users:
@@ -465,7 +466,7 @@ def extract_block(input_nodes, fp32_modules, depth=0):
                 p.remove(user)
     while len(q) != 0:
         cur_node = q.pop(0)  # valid node here
-        logger.debug('cur node is {}'.format(cur_node))
+        logger.debug(f'cur node is {cur_node}')
         if cur_node.target == 'update':
             continue
         if len(p) == 0 and len(q) == 0:
@@ -481,7 +482,7 @@ def extract_block(input_nodes, fp32_modules, depth=0):
             if cnt[user] == 0:
                 q.append(user)
                 p.remove(user)
-        logger.debug('uncompleted nodes are {}'.format(p))
+        logger.debug(f'uncompleted nodes are {p}')
     if not cur_node:
         return layer_node_list
     exp_nodes, is_next_block = extract_layer(cur_node, fp32_modules)
@@ -583,7 +584,7 @@ def ptq_reconstruction(model: GraphModule, cali_data: list, config: dict, graph_
         if node in checked_nodes:
             continue
         if node.op == "call_module" and isinstance(quant_modules[node], _ADAROUND_SUPPORT_TYPE):
-            logger.info('prepare {} reconstruction for {}'.format(config.pattern, node))
+            logger.info(f'prepare {config.pattern} reconstruction for {node}')
             if config.pattern == 'layer':
                 layer_node_list, _ = extract_layer(node, fp32_modules)
             elif config.pattern == 'block':
@@ -638,7 +639,7 @@ def ptq_reconstruction(model: GraphModule, cali_data: list, config: dict, graph_
                     fp32_inp_module = fp32_modules[_node]
                     quant_module = quant_modules[_node]
                     # fp32 inps: [out_b1, out_b2, ...]
-                    _, fp32_inps = save_inp_oup_data(fp32_model, None, fp32_inp_module, cali_data, 
+                    _, fp32_inps = save_inp_oup_data(fp32_model, None, fp32_inp_module, cali_data,
                                                      store_inp=False, store_oup=(config.prob < 1.0), keep_gpu=config.keep_gpu)
                     _, fp32_oups = save_inp_oup_data(fp32_model, None, fp32_module, cali_data,
                                                      store_inp=False, store_oup=(not out_is_cached), keep_gpu=config.keep_gpu)

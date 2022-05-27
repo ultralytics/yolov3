@@ -1,15 +1,15 @@
-import onnx
 import numpy as np
+import onnx
 
 from mqbench.utils.logger import logger
-from .common import ONNXGraph
 
+from .common import ONNXGraph
 
 FAKE_QUANTIZE_OP = ['FakeQuantizeLearnablePerchannelAffine', 'FixedPerChannelAffine', 'FakeQuantizeDSQPerchannel',
                     'LearnablePerTensorAffine', 'FixedPerTensorAffine', 'FakeQuantizeDSQPertensor']
 
 
-class ONNXQNNPass(object):
+class ONNXQNNPass:
     def __init__(self, onnx_model_path):
         self.onnx_model = ONNXGraph(onnx_model_path)
 
@@ -26,7 +26,7 @@ class ONNXQNNPass(object):
             :return: attribute in {key: value} format.
         '''
         if (attribute.type == 0):
-            raise ValueError('attribute {} does not have type specified.'.format(attribute.name))
+            raise ValueError(f'attribute {attribute.name} does not have type specified.')
 
         # Based on attribute type definitions from AttributeProto
         # definition in https://github.com/onnx/onnx/blob/master/onnx/onnx.proto
@@ -51,7 +51,7 @@ class ONNXQNNPass(object):
         elif (attribute.type == 10):
             value = attribute.graphs
         else:
-            raise ValueError('attribute {} has unsupported type {}.'.format(attribute.name, attribute.type))
+            raise ValueError(f'attribute {attribute.name} has unsupported type {attribute.type}.')
 
         return {attribute.name: value}
 
@@ -99,7 +99,7 @@ class ONNXQNNPass(object):
         for attribute in node.attribute:
             kwargs.update(ONNXQNNPass.attribute_to_kwarg(attribute))
         node_type = "QLinearConv" if is_conv else "QLinearGemm"
-        qlinear_conv_node = onnx.helper.make_node(node_type, 
+        qlinear_conv_node = onnx.helper.make_node(node_type,
                                                   qlinear_conv_inputs,
                                                   qlinear_conv_output,
                                                   node.name + '_quantized',
@@ -132,7 +132,7 @@ class ONNXQNNPass(object):
         kwargs = {}
         for attribute in node.attribute:
             kwargs.update(ONNXQNNPass.attribute_to_kwarg(attribute))
-        qlinear_add_node = onnx.helper.make_node("QLinearAdd", 
+        qlinear_add_node = onnx.helper.make_node("QLinearAdd",
                                                  qlinear_add_input,
                                                  qlinear_add_output,
                                                  node.name + '_quantized',
@@ -155,7 +155,7 @@ class ONNXQNNPass(object):
             kwargs.update(ONNXQNNPass.attribute_to_kwarg(attribute))
         qlinear_add_output = node.output
         node_type = "QLinearGlobalAveragePool" if is_global else "QLinearAveragePool"
-        qlinear_pool_node = onnx.helper.make_node(node_type, 
+        qlinear_pool_node = onnx.helper.make_node(node_type,
                                                   qlinear_pool_input,
                                                   qlinear_add_output,
                                                   node.name + '_quantized',
@@ -281,4 +281,4 @@ class ONNXQNNPass(object):
             onnx.checker.check_model(self.onnx_model.model)
         except onnx.checker.ValidationError as e:
             logger.critical('The model is invalid: %s' % e)
-        self.onnx_model.save_onnx_model('{}.onnx'.format(model_name))
+        self.onnx_model.save_onnx_model(f'{model_name}.onnx')

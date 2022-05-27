@@ -1,11 +1,12 @@
 import math
+from copy import deepcopy
 from functools import partial
 from typing import Tuple
-from copy import deepcopy
+
 import torch
 from torch.quantization.observer import _ObserverBase
 
-from mqbench.utils import sync_tensor, pot_quantization, is_symmetric_quant
+from mqbench.utils import is_symmetric_quant, pot_quantization, sync_tensor
 from mqbench.utils.logger import logger
 
 
@@ -30,7 +31,7 @@ class ObserverBase(_ObserverBase):
                  factory_kwargs=None):
         factory_kwargs = deepcopy(factory_kwargs)
         self.not_calc_quant_min_max = factory_kwargs.pop('not_calc_quant_min_max', False) if isinstance(factory_kwargs, dict) else False
-        super(ObserverBase, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max)
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max)
         # for compatibility with 1.10, prevent the value of self.quant_min,self.quant_max being modified
         self.quant_min = quant_min
         self.quant_max = quant_max
@@ -132,7 +133,7 @@ class MinMaxObserver(ObserverBase):
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine,
                  reduce_range=False, quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False,
                  factory_kwargs=None):
-        super(MinMaxObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
                                              ch_axis, pot_scale, factory_kwargs)
 
     def forward(self, x_orig):
@@ -164,7 +165,7 @@ class MinMaxFloorObserver(ObserverBase):
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine,
                  reduce_range=False, quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False,
                  factory_kwargs=None):
-        super(MinMaxFloorObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
                                                   ch_axis, pot_scale, factory_kwargs)
         '''
         The quant_type could be 'input', 'param', 'tensor', the co-responding
@@ -240,7 +241,7 @@ class EMAMinMaxObserver(ObserverBase):
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine, reduce_range=False,
                  quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False, ema_ratio=0.9,
                  factory_kwargs=None):
-        super(EMAMinMaxObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
                                                 ch_axis, pot_scale, factory_kwargs)
         self.ema_ratio = ema_ratio
 
@@ -278,7 +279,7 @@ class PoTModeObserver(ObserverBase):
 
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine, reduce_range=False,
                  quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False, factory_kwargs=None):
-        super(PoTModeObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max, ch_axis, pot_scale, factory_kwargs)
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max, ch_axis, pot_scale, factory_kwargs)
         self.quant_type = None
         self.counter = [0] * 20
 
@@ -350,7 +351,7 @@ class EMAQuantileObserver(ObserverBase):
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine, reduce_range=False,
                  quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False, ema_ratio=0.9,
                  threshold=0.99999, bins=2048, factory_kwargs=None):
-        super(EMAQuantileObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
                                                   ch_axis, pot_scale, factory_kwargs)
         assert self.ch_axis == -1, "Quantile observer only support in per-tensor scheme."
         self.ema_ratio = ema_ratio
@@ -389,7 +390,7 @@ class ClipStdObserver(ObserverBase):
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine, reduce_range=False,
                  quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False, std_scale=2.6,
                  factory_kwargs=None):
-        super(ClipStdObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
                                               ch_axis, pot_scale, factory_kwargs=None)
         self.std_scale = std_scale
 
@@ -430,7 +431,7 @@ class LSQObserver(ObserverBase):
 
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine, reduce_range=False,
                  quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False, factory_kwargs=None):
-        super(LSQObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
                                           ch_axis, pot_scale, factory_kwargs)
         self.tensor_norm = None
 
@@ -475,7 +476,7 @@ class LSQPlusObserver(ObserverBase):
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine, reduce_range=False,
                  quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False, factory_kwargs=None):
 
-        super(LSQPlusObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
                                               ch_axis, pot_scale, factory_kwargs)
         self.mean = None
         self.std = None
@@ -524,7 +525,7 @@ class MSEObserver(ObserverBase):
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine,
                  reduce_range=False, quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False, p=2.0,
                  factory_kwargs=None):
-        super(MSEObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
                                           ch_axis, pot_scale, factory_kwargs)
         self.p = p
 
@@ -583,7 +584,7 @@ class EMAMSEObserver(ObserverBase):
     def __init__(self, dtype=torch.quint8, qscheme=torch.per_tensor_affine,
                  reduce_range=False, quant_min=None, quant_max=None, ch_axis=-1, pot_scale=False,
                  p=2.0, ema_ratio=0.9, factory_kwargs=None):
-        super(EMAMSEObserver, self).__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
+        super().__init__(dtype, qscheme, reduce_range, quant_min, quant_max,
                                              ch_axis, pot_scale, factory_kwargs)
         self.ema_ratio = ema_ratio
         self.p = p

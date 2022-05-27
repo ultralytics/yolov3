@@ -2,15 +2,15 @@ from typing import Optional, Type
 
 import torch
 import torch.nn as nn
+from torch.fx.graph import Node
 from torch.quantization.fx.fusion_patterns import ConvBNReLUFusion, ModuleReLUFusion
 from torch.quantization.fx.quantization_types import QuantizerCls
-from torch.fx.graph import Node
 
 import mqbench.nn as qnn
 import mqbench.nn.intrinsic as qnni
 import mqbench.nn.intrinsic.qat as qnniqat
-from mqbench.utils.fusion import fuse_deconv_bn_eval
 from mqbench.nn.modules import FrozenBatchNorm2d
+from mqbench.utils.fusion import fuse_deconv_bn_eval
 
 
 class ConvFreezebnReLUFusion(ConvBNReLUFusion):
