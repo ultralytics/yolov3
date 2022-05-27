@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from models.common import Conv
+from models.common import Conv,Quan_Conv
 from utils.downloads import attempt_download
 
 
@@ -107,6 +107,8 @@ def attempt_load(weights, map_location=None, inplace=True, fuse=True):
                     delattr(m, 'anchor_grid')
                     setattr(m, 'anchor_grid', [torch.zeros(1)] * m.nl)
         elif t is Conv:
+            m._non_persistent_buffers_set = set()  # torch 1.6.0 compatibility
+        elif t is Quan_Conv:
             m._non_persistent_buffers_set = set()  # torch 1.6.0 compatibility
         elif t is nn.Upsample and not hasattr(m, 'recompute_scale_factor'):
             m.recompute_scale_factor = None  # torch 1.11.0 compatibility
