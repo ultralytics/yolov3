@@ -83,6 +83,11 @@ def yolov3_tiny(pretrained=True, channels=3, classes=80, autoshape=True, verbose
     # YOLOv3-tiny model https://github.com/ultralytics/yolov3
     return _create('yolov3-tiny', pretrained, channels, classes, autoshape, verbose, device)
 
+def yolov3_quan(pretrained=True, channels=3, classes=80, autoshape=True, verbose=True, device=None):
+    # YOLOv3-tiny model https://github.com/ultralytics/yolov3
+    return _create('yolov3-quan', pretrained, channels, classes, autoshape, verbose, device)
+
+
 
 if __name__ == '__main__':
     model = _create(name='yolov3-tiny', pretrained=True, channels=3, classes=80, autoshape=True, verbose=True)  # pretrained

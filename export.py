@@ -38,7 +38,7 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-from models.common import Conv
+from models.common import Conv,Quan_Conv, Quan_Conv_10bit
 from models.experimental import attempt_load
 from models.yolo import Detect
 from utils.activations import SiLU
@@ -296,6 +296,12 @@ def run(data=ROOT / 'data/coco128.yaml',  # 'dataset.yaml path'
         if isinstance(m, Conv):  # assign export-friendly activations
             if isinstance(m.act, nn.SiLU):
                 m.act = SiLU()
+        elif isinstance(m, Quan_Conv):  # assign export-friendly activations
+            if isinstance(m.act, nn.SiLU):
+                m.act = SiLU()
+        elif isinstance(m, Quan_Conv_10bit):  # assign export-friendly activations
+            if isinstance(m.act, nn.SiLU):
+                m.act = SiLU()
         elif isinstance(m, Detect):
             m.inplace = inplace
             m.onnx_dynamic = dynamic
@@ -337,7 +343,8 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='dataset.yaml path')
     parser.add_argument('--weights', type=str, default=ROOT / 'yolov3.pt', help='weights path')
-    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640, 640], help='image (h, w)')
+    # parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640, 640], help='image (h, w)')
+    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[416, 416], help='image (h, w)')
     parser.add_argument('--batch-size', type=int, default=1, help='batch size')
     parser.add_argument('--device', default='cpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--half', action='store_true', help='FP16 half-precision export')
