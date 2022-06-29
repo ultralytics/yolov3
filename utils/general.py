@@ -343,7 +343,7 @@ def check_file(file, suffix=''):
     if Path(file).is_file() or file == '':  # exists
         return file
     elif file.startswith(('http:/', 'https:/')):  # download
-        url = str(Path(file)).replace(':/', '://')  # Pathlib turns :// -> :/
+        url = str(Path(file).as_posix()).replace(':/', '://')  # Pathlib turns :// -> :/
         file = Path(urllib.parse.unquote(file).split('?')[0]).name  # '%2F' to '/', split https://url.com/file.txt?auth
         if Path(file).is_file():
             print(f'Found {url} locally at {file}')  # file already exists
