@@ -96,6 +96,7 @@ wheels/
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+*.txt
 
 # Unit test / coverage reports
 htmlcov/
@@ -161,6 +162,10 @@ ENV*/
 
 # mypy
 .mypy_cache/
+
+# Dataset
+/inria
+/inria.tar
 
 
 # https://github.com/github/gitignore/blob/master/Global/macOS.gitignore -----------------------------------------------
