@@ -20,7 +20,7 @@ class loss1(object):
         # Dataloader informations
         self.img_dir = '/home/andread98/yolov3/MyWork/data_mask'    # train images location
         self.mask_dir = '/home/andread98/yolov3/MyWork/data_mask/mask'  # train labels location
-        self.batch_size = 5
+        self.batch_size = 20
         self.n_epochs = 25
 
         # Loss function 

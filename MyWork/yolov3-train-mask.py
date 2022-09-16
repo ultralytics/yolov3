@@ -189,13 +189,13 @@ if __name__ == '__main__':
     # 1: Ellipse
     # 2: Square 
     # 3: Rectangle
-    # 4: Traingle 
+    # 4: Triangle 
     # 5: Trapezoid
     # 6: Double Circle 
     # 7: Double Ellipse
     # 8: Double Square 
     # 9: Double Rectangle
-    # 10: Double Traingle 
+    # 10: Double Triangle 
     # 11: Double Trapezoid
 
     # for mode in modes:
@@ -211,7 +211,7 @@ if __name__ == '__main__':
     # trainer.train()
 
     mode = 'max_prob_class'
-    for tile in range(11,12):
+    for tile in range(1,2):
         print('Training tile n: ', tile)
         trainer = PatchTrainer(mode,tile)
         trainer.train()

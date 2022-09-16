@@ -237,12 +237,12 @@ class Tile_Creator_Double_Circle(object):
 ####################################################################################################
 
 class Tile_Creator_Ellipse(object):
-    
+
     def __init__(self):
         pass
-
+    
     def __call__(self,dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         for i in range(dim):
             for j in range(dim):
@@ -261,7 +261,7 @@ class Tile_Creator_Ellipse(object):
     def Params_Creator(self):
         a = torch.tensor(0.50)
         a.requires_grad_(True)
-        b = torch.tensor(0.50)
+        b = torch.tensor(0.5)
         b.requires_grad_(True)
         color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
@@ -269,9 +269,8 @@ class Tile_Creator_Ellipse(object):
         color2.requires_grad_(True)
 
         params = [a, b, color1, color2]
-
         return params
-    
+
     def Params_Clamp(self,params):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, factor)
@@ -728,7 +727,7 @@ class Tile_Creator_Double_Trapezoid(object):
     def Params_Creator(self):
         a = torch.tensor(0.50)
         a.requires_grad_(True)
-        a2 = torch.tensor(0.5)
+        a2 = torch.tensor(0.50)
         a2.requires_grad_(True)
         b = torch.tensor(0.50)
         b.requires_grad_(True)
