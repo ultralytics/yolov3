@@ -307,7 +307,7 @@ class Tile_Creator_Double_Ellipse(object):
         color2_image = color2_image.expand(-1, dim, dim)
 
         color3_image = params[6].unsqueeze(-1).unsqueeze(-1)
-        color3_image = color2_image.expand(-1, dim, dim)
+        color3_image = color3_image.expand(-1, dim, dim)
 
         return coeff*color1_image + (coeff2-coeff)*color2_image + (1 - coeff2)*color3_image, color1_image
 
@@ -418,7 +418,7 @@ class Tile_Creator_Double_Square(object):
     def Params_Creator(self):
         a = torch.tensor(0.50)
         a.requires_grad_(True)
-        a2 = torch.tensor(0.50)
+        a2 = torch.tensor(0.5)
         a2.requires_grad_(True)
         color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
@@ -517,7 +517,7 @@ class Tile_Creator_Double_Rectangle(object):
     def Params_Creator(self):
         a = torch.tensor(0.50)
         a.requires_grad_(True)
-        a2 = torch.tensor(0.5)
+        a2 = torch.tensor(0.50)
         a2.requires_grad_(True)
         b = torch.tensor(0.50)
         b.requires_grad_(True)
@@ -621,7 +621,7 @@ class Tile_Creator_Double_Triangle(object):
         return coeff*color1_image + (coeff2-coeff)*color2_image + (1 - coeff2)*color3_image, color1_image
 
     def Params_Creator(self):
-        a = torch.tensor(0.75)
+        a = torch.tensor(0.50)
         a.requires_grad_(True)
         a2 = torch.tensor(0.5)
         a2.requires_grad_(True)
@@ -726,7 +726,7 @@ class Tile_Creator_Double_Trapezoid(object):
         return coeff*color1_image + (coeff2-coeff)*color2_image + (1 - coeff2)*color3_image, color1_image
 
     def Params_Creator(self):
-        a = torch.tensor(0.75)
+        a = torch.tensor(0.50)
         a.requires_grad_(True)
         a2 = torch.tensor(0.5)
         a2.requires_grad_(True)

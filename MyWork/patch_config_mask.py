@@ -21,18 +21,18 @@ class loss1(object):
         self.img_dir = '/home/andread98/yolov3/MyWork/data_mask'    # train images location
         self.mask_dir = '/home/andread98/yolov3/MyWork/data_mask/mask'  # train labels location
         self.batch_size = 5
-        self.n_epochs = 50
+        self.n_epochs = 25
 
         # Loss function 
         self.loss_function = max_prob_class(0)
 
         # Patch functions
         # self.list_classes_tile = [Tile_Creator_Circle, Tile_Creator_Ellipse, Tile_Creator_Square, Tile_Creator_Rectangle, Tile_Creator_Triangle, Tile_Creator_Trapezoid]
-        self.list_classes_tile = [Tile_Creator_Double_Circle, Tile_Creator_Double_Ellipse, Tile_Creator_Double_Square, Tile_Creator_Double_Rectangle, Tile_Creator_Double_Triangle, Tile_Creator_Double_Trapezoid]
+        self.list_classes_tile = [Tile_Creator_Circle, Tile_Creator_Ellipse, Tile_Creator_Square, Tile_Creator_Rectangle, Tile_Creator_Triangle, Tile_Creator_Trapezoid, Tile_Creator_Double_Circle, Tile_Creator_Double_Ellipse, Tile_Creator_Double_Square, Tile_Creator_Double_Rectangle, Tile_Creator_Double_Triangle, Tile_Creator_Double_Trapezoid]
         # self.list_function_params = [Params_Creator_Circle, Params_Creator_Ellipse, Params_Creator_Square, Params_Creator_Rectangle, Params_Creator_Triangle, Params_Creator_Trapezoid]
         self.mask_function = Mask_Creator
 
-        self.dim_tile = 8
+        self.dim_tile = 16
         self.dim_patch = 640
         self.mul_fact = 4 # multiplying factor, how big can the tile be wrt the dim_tile 
 

@@ -17,6 +17,12 @@ from torchvision import transforms
 import time
 import os
 
+# Transforming from PIL to Tensor
+transform1 = transforms.ToTensor()
+
+# Transforming from Tensor to PIL
+transform2 = transforms.ToPILImage()
+
 if __name__ == '__main__':
 
     class PatchTrainer(object):
@@ -57,10 +63,7 @@ if __name__ == '__main__':
             :return: Nothing
             """
 
-            img_size = self.config.img_size  # 640 for this yolov3
-            factor = math.sqrt(2)/2
-
-            name = mode + '_' + str(tile)
+            name = str(tile) + '_' + mode 
             destination_path = "./yolov3/MyWork/txt_results/"
             destination_name = name + '_batch.txt'
             destination_name2 = name + '_epoch.txt'
@@ -113,10 +116,10 @@ if __name__ == '__main__':
                     # p_img_batch = self.patch_applier(img_batch, adv_batch_t)
                     # p_img_batch = F.interpolate(p_img_batch, (img_size, img_size))
                     attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch)
-
+                    
                     output = self.model(attacked_img_batch)  # TODO apply YOLOv2 to all (patched) images in the batch (6)
                     loss = torch.mean(self.loss_function(output))
-                    print(loss)
+                    # print(loss)
                     ep_loss += loss
 
                     loss.backward()
@@ -125,22 +128,11 @@ if __name__ == '__main__':
 
                     params = self.tile_class.Params_Clamp(params)
 
-                    # if len(params)==3:
-                    #     params[0].data.clamp_(0, factor)
-                    #     params[1].data.clamp_(0, 1)
-                    #     params[2].data.clamp_(0, 1)  # keep patch in image range
-                    #     print(params)
-                    # else:
-                    #     params[0].data.clamp_(0, factor)
-                    #     params[1].data.clamp_(0, factor)
-                    #     params[2].data.clamp_(0, 1)
-                    #     params[3].data.clamp_(0, 1)  # keep patch in image range
-                    #     print(params)
-
                     bt1 = time.time()  # batch end
                     if i_batch % 1 == 0:
                         print('  BATCH NR: ', i_batch)
                         print('BATCH LOSS: ', loss)
+                        print('PARAMETERS: ', params)
                         print('BATCH TIME: ', bt1 - bt0)
 
                         # textfile2.write(f'{i_batch} {loss} {det_loss} {nps_loss} {tv_loss}\n')
@@ -175,6 +167,11 @@ if __name__ == '__main__':
                     # plt.imshow(im)
                     # plt.show()
                     # im.save("./yolov3_ultralytics_obj.png")
+                    if epoch%8 == 0:
+                        att_image = attacked_img_batch[0].squeeze(0)
+                        att_image_PIL = transform2(att_image)
+                        att_image_PIL.save("./yolov3/MyWork/SampleImages/" + name + '_epoch_' + str(epoch) + '.png')
+
 
                     torch.save(params, './yolov3/MyWork/params_results/' + name + '.pt')
 
@@ -194,15 +191,27 @@ if __name__ == '__main__':
     # 3: Rectangle
     # 4: Traingle 
     # 5: Trapezoid
+    # 6: Double Circle 
+    # 7: Double Ellipse
+    # 8: Double Square 
+    # 9: Double Rectangle
+    # 10: Double Traingle 
+    # 11: Double Trapezoid
 
     # for mode in modes:
     #     for tile in range(1,6):
     #         trainer = PatchTrainer(mode,tile)
     #         trainer.train()
 
-    # In this way we are training all the possible combination of loss and tile 
+    # # In this way we are training all the possible combination of loss and tile 
     
+    # mode = 'max_prob_class'
+    # tile = 1
+    # trainer = PatchTrainer(mode,tile)
+    # trainer.train()
+
     mode = 'max_prob_class'
-    tile = 1
-    trainer = PatchTrainer(mode,tile)
-    trainer.train()
+    for tile in range(11,12):
+        print('Training tile n: ', tile)
+        trainer = PatchTrainer(mode,tile)
+        trainer.train()
