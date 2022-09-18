@@ -1,4 +1,3 @@
-
 # Caricare il modello test, senza autoshape = False
 
 # Usare 20 immagini come test set
@@ -72,7 +71,9 @@ if __name__ == '__main__':
                             batch_size=self.config.batch_size_test,
                             shuffle=True,
                             num_workers=10)
-                self.epoch_length = len(test_loader)
+                self.iteration_length = len(test_loader)
+
+                #I can do better than this with the code##########################################################
 
                 baseline_loss = 0
                 for i_batch, (img_batch, masks_batch) in enumerate(test_loader):
@@ -87,7 +88,7 @@ if __name__ == '__main__':
                             # print(loss)
                             baseline_loss += loss
                 
-                baseline_loss = baseline_loss/self.epoch_length
+                baseline_loss = baseline_loss/self.iteration_length
                 line = 'baseline_loss   ' + str(baseline_loss) + '\n'
                 f.write(line)
 
@@ -106,7 +107,7 @@ if __name__ == '__main__':
                             # print(loss)
                             white_loss += loss
                 
-                white_loss = white_loss/self.epoch_length
+                white_loss = white_loss/self.iteration_length
                 line = 'white_loss   ' + str(white_loss) + '\n'
                 f.write(line)
 
@@ -126,7 +127,7 @@ if __name__ == '__main__':
                             # print(loss)
                             black_loss += loss
                 
-                black_loss = black_loss/self.epoch_length
+                black_loss = black_loss/self.iteration_length
                 line = 'black_loss   ' + str(black_loss) + '\n'
                 f.write(line)
 
@@ -146,16 +147,18 @@ if __name__ == '__main__':
                             # print(loss)
                             random_loss += loss
                 
-                random_loss = random_loss/self.epoch_length
+                random_loss = random_loss/self.iteration_length
                 line = 'random_loss   ' + str(random_loss) + '\n'
                 f.write(line)
+
+                ####################################################################################################
                 
-                tensors = [f for f in os.listdir("/home/andread98/yolov3/MyWork/params_results") if f.endswith('.pt')]
+                tensors = [f for f in os.listdir("/home/andread98/yolov3/MyWork/params_results/17-09-2022") if f.endswith('.pt')]
 
             
                 for tensor in tensors:
                     tensor_loss = 0
-                    path = '/home/andread98/yolov3/MyWork/params_results/' + tensor
+                    path = '/home/andread98/yolov3/MyWork/params_results/17-09-2022/' + tensor
                     params = torch.load(path)
                     print(params)
                     tile = int(tensor[:-18])
@@ -194,7 +197,7 @@ if __name__ == '__main__':
                         # print(loss)
                         tensor_loss += loss
                     
-                    tensor_loss = tensor_loss/self.epoch_length
+                    tensor_loss = tensor_loss/self.iteration_length
                     line = tensor[:-3] + '   ' + str(tensor_loss) + '\n'
                     f.write(line)
                 
@@ -207,26 +210,14 @@ if __name__ == '__main__':
     # 1: Ellipse
     # 2: Square 
     # 3: Rectangle
-    # 4: Traingle 
+    # 4: Triangle 
     # 5: Trapezoid
     # 6: Double Circle 
     # 7: Double Ellipse
     # 8: Double Square 
     # 9: Double Rectangle
-    # 10: Double Traingle 
+    # 10: Double Triangle 
     # 11: Double Trapezoid
-
-    # for mode in modes:
-    #     for tile in range(1,6):
-    #         trainer = PatchTrainer(mode,tile)
-    #         trainer.train()
-
-    # # In this way we are training all the possible combination of loss and tile 
-    
-    # mode = 'max_prob_class'
-    # tile = 1
-    # trainer = PatchTrainer(mode,tile)
-    # trainer.train()
 
     mode = 'test'
     tester = PatchTester(mode)

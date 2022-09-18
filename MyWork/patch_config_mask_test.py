@@ -21,7 +21,7 @@ class test(object):
         self.img_dir_test = '/home/andread98/yolov3/MyWork/data_mask_test'    # test images location
         self.mask_dir_test = '/home/andread98/yolov3/MyWork/data_mask_test/mask'  # test labels location
         self.batch_size_test = 1
-        self.n_epochs = 1
+        self.n_iterations = 1
 
         # Loss function 
         self.loss_function = max_prob_class(0)

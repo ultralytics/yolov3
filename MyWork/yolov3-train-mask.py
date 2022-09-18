@@ -65,15 +65,14 @@ if __name__ == '__main__':
 
             name = str(tile) + '_' + mode 
             destination_path = "./yolov3/MyWork/txt_results/"
-            destination_name = name + '_batch.txt'
-            destination_name2 = name + '_epoch.txt'
-            # destination_name3 = 'loss_tracking_compatc_epochs_yv3_ultra_obj_noepoch.txt'
+
+            destination_name = name + '_iteration.txt'
+            destination_name2 = name + '_batch.txt'
             destination = os.path.join(destination_path, destination_name)
             destination2 = os.path.join(destination_path, destination_name2)
-            # destination3 = os.path.join(destination_path, destination_name3)
+
             textfile = open(destination, 'w+')
             textfile2 = open(destination2, 'w+')
-            # textfile3 = open(destination3, 'w+')
 
             params = self.tile_class.Params_Creator()
 
@@ -83,8 +82,8 @@ if __name__ == '__main__':
                 batch_size=self.config.batch_size,
                 shuffle=True,
                 num_workers=10)
-            self.epoch_length = len(train_loader)
-            print(f'One epoch is {len(train_loader)}')
+            self.iteration_length = len(train_loader)
+            print(f'One iteration is {len(train_loader)}')
 
             learning_rate = 0.03 # Mettere questo nel configuration file
 
@@ -92,14 +91,14 @@ if __name__ == '__main__':
             scheduler = self.config.scheduler_factory(optimizer)
             # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=50) # write it directly
 
-            n_epochs = self.config.n_epochs
+            n_iterations = self.config.n_iterations
 
-            et0 = time.time()  # epoch start
-            for epoch in range(n_epochs):
+            et0 = time.time()  # iteration start
+            for iteration in range(n_iterations):
                 ep_loss = 0
                 bt0 = time.time()  # batch start
-                for i_batch, (img_batch, masks_batch) in tqdm(enumerate(train_loader), desc=f'Running epoch {epoch}',
-                                                            total=self.epoch_length):
+                for i_batch, (img_batch, masks_batch) in tqdm(enumerate(train_loader), desc=f'Running iteration {iteration}',
+                                                            total=self.iteration_length):
                     self.gen_function.populate(params)
                     adv_patch = self.gen_function.application()
 
@@ -148,32 +147,27 @@ if __name__ == '__main__':
 
                     bt0 = time.time()
 
-                et1 = time.time()  # epoch end
+                et1 = time.time()  # iteration end
 
                 ep_loss = ep_loss / len(train_loader)
 
                 scheduler.step(ep_loss)
 
                 if True:
-                    print('  EPOCH NR: ', epoch),
-                    print('EPOCH LOSS: ', ep_loss)
-                    print('EPOCH TIME: ', et1 - et0)
+                    print('  iteration NR: ', iteration),
+                    print('iteration LOSS: ', ep_loss)
+                    print('iteration TIME: ', et1 - et0)
 
-                    textfile.write(f'\ni_epoch: {epoch}\ne_total_loss:{ep_loss}\n\n')
-                    # textfile3.write(f'{ep_loss}\n')
+                    textfile.write(f'\ni_iteration: {iteration}\ne_total_loss:{ep_loss}\n\n')
 
-                    # Plot the final adv_patch (learned) and save it
-                    # im = transforms.ToPILImage('RGB')(adv_patch)
-                    # plt.imshow(im)
-                    # plt.show()
-                    # im.save("./yolov3_ultralytics_obj.png")
-                    if epoch%8 == 0:
+                    # Save a sample image from the last iteration
+                    if iteration%(n_iterations-1) == 0:
                         att_image = attacked_img_batch[0].squeeze(0)
                         att_image_PIL = transform2(att_image)
-                        att_image_PIL.save("./yolov3/MyWork/SampleImages/" + name + '_epoch_' + str(epoch) + '.png')
+                        att_image_PIL.save("./yolov3/MyWork/SampleImages/" + name + '_iteration_' + str(iteration) + '.png')
 
 
-                    torch.save(params, './yolov3/MyWork/params_results/' + name + '.pt')
+                    torch.save(params, './yolov3/MyWork/params_results/17-09-2022/' + name + '.pt')
 
                     del output, attacked_img_batch, loss
 
@@ -211,7 +205,7 @@ if __name__ == '__main__':
     # trainer.train()
 
     mode = 'max_prob_class'
-    for tile in range(1,2):
+    for tile in range(0,12):
         print('Training tile n: ', tile)
         trainer = PatchTrainer(mode,tile)
         trainer.train()
