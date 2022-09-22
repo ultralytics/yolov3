@@ -32,6 +32,10 @@ if __name__ == '__main__':
             # Select the confing file 
             self.config = patch_config_mask.patch_configs[mode]()  # select the mode for the patch
 
+            # Backgroun mode
+            #   -Used for the Fractal Creator
+            #   -Used for the patch applier 
+
             # Device
             self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -40,21 +44,21 @@ if __name__ == '__main__':
 
             if use_cuda:
                 self.model = self.model.eval().to(self.device)  
-                self.patch_applier = PatchApplierMask().to(self.device)
+                self.patch_applier = PatchApplierMask(self.config.BackgroundStyle).to(self.device)
                 # self.patch_transformer = PatchTransformer().to(self.device)
                 self.loss_function = self.config.loss_function.to(self.device)
                 self.tile_class = self.config.list_classes_tile[tile]()
                 # self.params_function = self.config.list_function_params[tile]
-                self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.mask_function,self.config.rotation_mode).to(self.device)
+                self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.rotation_mode,self.config.BackgroundStyle,self.config.mask_function).to(self.device)
 
             else:
                 self.model = self.model.eval()  # TODO: Why eval?
-                self.patch_applier = PatchApplierMask()
+                self.patch_applier = PatchApplierMask(self.config.BackgroundStyle)
                 # self.patch_transformer = PatchTransformer()
                 self.loss_function = self.config.loss_function
                 self.tile_class = self.config.list_classes_tile[tile]()
                 # self.params_function = self.config.list_function_params[tile]
-                self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.mask_function,self.config.rotation_mode)
+                self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.rotation_mode,self.config.BackgroundStyle,self.config.mask_function)
 
         def train(self):
 
@@ -100,7 +104,7 @@ if __name__ == '__main__':
                 for i_batch, (img_batch, masks_batch) in tqdm(enumerate(train_loader), desc=f'Running iteration {iteration}',
                                                             total=self.iteration_length):
                     self.gen_function.populate(params)
-                    adv_patch = self.gen_function.application()
+                    adv_patch, mask_attack = self.gen_function.application()
 
                     if use_cuda:
                         img_batch = img_batch.to(self.device)
@@ -114,7 +118,7 @@ if __name__ == '__main__':
                     # adv_batch_t = self.patch_transformer(adv_patch, lab_batch, img_size, do_rotate=True, rand_loc=False)
                     # p_img_batch = self.patch_applier(img_batch, adv_batch_t)
                     # p_img_batch = F.interpolate(p_img_batch, (img_size, img_size))
-                    attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch)
+                    attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch, mask_attack)
                     
                     output = self.model(attacked_img_batch)  # TODO apply YOLOv2 to all (patched) images in the batch (6)
                     loss = torch.mean(self.loss_function(output))
@@ -140,7 +144,7 @@ if __name__ == '__main__':
                     if i_batch + 1 >= len(train_loader):
                         print('\n')
                     else:
-                        del output, attacked_img_batch, loss
+                        del output, attacked_img_batch, loss, adv_patch, mask_attack
 
                         if use_cuda:
                             torch.cuda.empty_cache()
