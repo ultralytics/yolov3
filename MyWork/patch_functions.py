@@ -421,9 +421,9 @@ class Tile_Creator_Square(object):
     def Params_Creator(self):
         a = torch.tensor(0.50)
         a.requires_grad_(True)
-        color1 = torch.tensor([1.0,0,0])
+        color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0, 1.0, 0])
+        color2 = torch.tensor([0.5,0.5,0.5])
         color2.requires_grad_(True)
 
         params = [a, color1, color2]

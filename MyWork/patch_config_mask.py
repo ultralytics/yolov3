@@ -6,7 +6,7 @@ from dataset_functions import *
 
 class standard(object):
     """
-    Using the loss max_prob_class
+    Using the loss max_prob_class, standard application
     """
 
     def __init__(self):
@@ -51,7 +51,7 @@ class standard(object):
 
 class perlin_noise(standard):
     """
-    Using the loss max_prob_class2
+    Using the loss max_prob_class, perlin noise application
     """
     def __init__(self):
         """
@@ -66,7 +66,7 @@ class perlin_noise(standard):
 
 class perlin_noise_inverted(standard):
     """
-    Using the loss max_prob_obj
+    Using the loss max_prob_class, inverted perlin noise application
     """
     def __init__(self):
         """
@@ -79,7 +79,7 @@ class perlin_noise_inverted(standard):
 
 class ghost(standard):
     """
-    Using the loss new_loss_tprob
+    Using the loss max_prob_class, ghost application
     """
     def __init__(self):
         """

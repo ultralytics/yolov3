@@ -68,7 +68,7 @@ if __name__ == '__main__':
             """
 
             name = str(tile) + '_' + mode 
-            destination_path = "./yolov3/MyWork/txt_results/"
+            destination_path = "./yolov3/MyWork/txt_results/22-09-2022/"
 
             destination_name = name + '_iteration.txt'
             destination_name2 = name + '_batch.txt'
@@ -110,16 +110,19 @@ if __name__ == '__main__':
                         img_batch = img_batch.to(self.device)
                         masks_batch = masks_batch.to(self.device)
                         adv_patch = adv_patch.to(self.device)
+                        mask_attack = mask_attack.to(self.device)
                     else:
                         img_batch = img_batch
                         masks_batch = masks_batch
                         adv_patch = adv_patch
+                        mask_attack = mask_attack
 
                     # adv_batch_t = self.patch_transformer(adv_patch, lab_batch, img_size, do_rotate=True, rand_loc=False)
                     # p_img_batch = self.patch_applier(img_batch, adv_batch_t)
                     # p_img_batch = F.interpolate(p_img_batch, (img_size, img_size))
                     attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch, mask_attack)
-                    
+                    attacked_img_batch = attacked_img_batch.type(torch.cuda.FloatTensor)
+
                     output = self.model(attacked_img_batch)  # TODO apply YOLOv2 to all (patched) images in the batch (6)
                     loss = torch.mean(self.loss_function(output))
                     # print(loss)
@@ -166,12 +169,13 @@ if __name__ == '__main__':
 
                     # Save a sample image from the last iteration
                     if iteration%(n_iterations-1) == 0:
+                    #if iteration == 0:
                         att_image = attacked_img_batch[0].squeeze(0)
                         att_image_PIL = transform2(att_image)
-                        att_image_PIL.save("./yolov3/MyWork/SampleImages/" + name + '_iteration_' + str(iteration) + '.png')
+                        att_image_PIL.save("./yolov3/MyWork/SampleImages/22-09-2022/" + name + '_iteration_' + str(iteration) + '.png')
 
 
-                    torch.save(params, './yolov3/MyWork/params_results/17-09-2022/' + name + '.pt')
+                    torch.save(params, './yolov3/MyWork/params_results/22-09-2022/' + name + '.pt')
 
                     del output, attacked_img_batch, loss
 
@@ -208,8 +212,10 @@ if __name__ == '__main__':
     # trainer = PatchTrainer(mode,tile)
     # trainer.train()
 
-    mode = 'max_prob_class'
-    for tile in range(0,12):
-        print('Training tile n: ', tile)
-        trainer = PatchTrainer(mode,tile)
-        trainer.train()
+    modes = ['perlin_noise_inverted', 'ghost']
+
+    for mode in modes:
+        for tile in range(0,12):
+            print('Training tile n: ', tile)
+            trainer = PatchTrainer(mode,tile)
+            trainer.train()
