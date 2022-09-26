@@ -21,8 +21,9 @@ class standard(object):
         self.img_dir = '/home/andread98/yolov3/MyWork/data_mask'    # train images location
         self.mask_dir = '/home/andread98/yolov3/MyWork/data_mask/mask'  # train labels location
         self.batch_size = 20
-        self.n_iterations = 200
+        self.n_iterations = 50
         self.BackgroundStyle = 0
+        self.list_of_shape = [3,0,0,0,0,0]
 
         # Loss function 
         self.loss_function = max_prob_class(0)
@@ -40,7 +41,7 @@ class standard(object):
         # 0: no rotation of the tile
         # 1: rotation of a multiple of 90
         # 2: random rotation. Attention, then the radius has to be at most sart(2)/2
-        self.rotation_mode = 2
+        self.rotation_mode = 1
         
         # Optimizer informations
         self.start_learning_rate = 0.03

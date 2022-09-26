@@ -20,10 +20,10 @@ class Tile_Creator(object):
                                   Tile_Creator_Rectangle, Tile_Creator_Triangle, Tile_Creator_Trapezoid]
         self.number_of_params = [5,6,5,6,6,6]
         self.list_of_shape = list_of_shape
-        self.params_navigator = 0 
 
     def __call__(self, dim, params):
         flag = 0
+        self.params_navigator = 0 
         mask_tot = torch.zeros((3,dim,dim))
         color = torch.zeros((3,dim,dim))
         
@@ -34,7 +34,7 @@ class Tile_Creator(object):
                 # define the specific tile creator
                 tile_creator_shape = self.list_classes_tile[i]()
                 # add the needed number of shapes
-                for _ in range(self.list_of_shape[i]):
+                for j in range(self.list_of_shape[i]):
                     tile, color, mask = tile_creator_shape(dim,params[self.params_navigator:self.params_navigator+self.number_of_params[i]])
                     mask_tot += mask
                     self.params_navigator += self.number_of_params[i]
@@ -67,11 +67,18 @@ class Tile_Creator(object):
         return params
     
     def Params_Clamp(self,params):
-        params[0].data.clamp_(0, factor)
-        params[1].data.clamp_(0, 1)
-        params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1)
-        params[4].data.clamp_(0, 1)
+        self.params_navigator = 0 
+
+        # going through the list of the number of shapes 
+        for i in range(len(self.list_of_shape)):
+            # check if we have to use some shape (are there circles?)
+            if self.list_of_shape[i] != 0:
+                # define the specific tile creator
+                tile_creator_shape = self.list_classes_tile[i]()
+                # add the needed number of shapes
+                for _ in range(self.list_of_shape[i]):
+                    params[self.params_navigator:self.params_navigator+self.number_of_params[i]] = tile_creator_shape.Params_Clamp(params[self.params_navigator:self.params_navigator+self.number_of_params[i]])
+                    self.params_navigator += self.number_of_params[i]
 
         return params
     
@@ -106,9 +113,9 @@ class Tile_Creator_Circle(object):
     def Params_Creator(self):
         a = torch.tensor(0.50)
         a.requires_grad_(True)
-        color1 = torch.tensor([1,0.5,0.5])
+        color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,1])
+        color2 = torch.tensor([0.5,0.5,0.5])
         color2.requires_grad_(True)
         x = torch.tensor(random.uniform(0,1))
         x.requires_grad_(True)
@@ -159,9 +166,9 @@ class Tile_Creator_Ellipse(object):
         a.requires_grad_(True)
         b = torch.tensor(0.8)
         b.requires_grad_(True)
-        color1 = torch.tensor([1,0.5,0.5])
+        color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,1])
+        color2 = torch.tensor([0.5,0.5,0.5])
         color2.requires_grad_(True)
         x = torch.tensor(random.uniform(0,1))
         x.requires_grad_(True)
@@ -211,9 +218,9 @@ class Tile_Creator_Square(object):
     def Params_Creator(self):
         a = torch.tensor(0.50)
         a.requires_grad_(True)
-        color1 = torch.tensor([1.0,1.0,1.0])
+        color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([1.0,1.0,1.0])
+        color2 = torch.tensor([0.5,0.5,0.5])
         color2.requires_grad_(True)
         x = torch.tensor(random.uniform(0,1))
         x.requires_grad_(True)
@@ -264,9 +271,9 @@ class Tile_Creator_Rectangle(object):
         a.requires_grad_(True)
         b = torch.tensor(0.25)
         b.requires_grad_(True)
-        color1 = torch.tensor([1,0.5,0.5])
+        color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,1])
+        color2 = torch.tensor([0.5,0.5,0.5])
         color2.requires_grad_(True)
         x = torch.tensor(random.uniform(0,1))
         x.requires_grad_(True)
@@ -318,9 +325,9 @@ class Tile_Creator_Triangle(object):
         a.requires_grad_(True)
         b = torch.tensor(0.5)
         b.requires_grad_(True)
-        color1 = torch.tensor([1,0.5,0.5])
+        color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,1])
+        color2 = torch.tensor([0.5,0.5,0.5])
         color2.requires_grad_(True)
         x = torch.tensor(random.uniform(0,1))
         x.requires_grad_(True)
@@ -372,9 +379,9 @@ class Tile_Creator_Trapezoid(object):
         a.requires_grad_(True)
         b = torch.tensor(0.5)
         b.requires_grad_(True)
-        color1 = torch.tensor([1,0.5,0.5])
+        color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,1])
+        color2 = torch.tensor([0.5,0.5,0.5])
         color2.requires_grad_(True)
         x = torch.tensor(random.uniform(0,1))
         x.requires_grad_(True)

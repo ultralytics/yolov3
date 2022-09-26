@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from patch_functions import *
 from loss_functions import *
 from dataset_functions import *
+from tile_functions import Tile_Creator
 import torch.optim as optim
 import patch_config_mask as patch_config_mask
 import math
@@ -27,7 +28,7 @@ if __name__ == '__main__':
 
     class PatchTrainer(object):
 
-        def __init__(self, mode, tile):
+        def __init__(self, mode, tile = None):
 
             # Select the confing file 
             self.config = patch_config_mask.patch_configs[mode]()  # select the mode for the patch
@@ -47,7 +48,16 @@ if __name__ == '__main__':
                 self.patch_applier = PatchApplierMask(self.config.BackgroundStyle).to(self.device)
                 # self.patch_transformer = PatchTransformer().to(self.device)
                 self.loss_function = self.config.loss_function.to(self.device)
-                self.tile_class = self.config.list_classes_tile[tile]()
+
+                # Which type of attack do we want to do?
+                #------------------------------------------------------------------------------------------------
+                # # Classes for all the possible types of tiles
+                # self.tile_class = self.config.list_classes_tile[tile]()
+
+                # One class fits all
+                self.tile_class = Tile_Creator(self.config.list_of_shape)
+                #------------------------------------------------------------------------------------------------
+
                 # self.params_function = self.config.list_function_params[tile]
                 self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.rotation_mode,self.config.BackgroundStyle,self.config.mask_function).to(self.device)
 
@@ -56,19 +66,29 @@ if __name__ == '__main__':
                 self.patch_applier = PatchApplierMask(self.config.BackgroundStyle)
                 # self.patch_transformer = PatchTransformer()
                 self.loss_function = self.config.loss_function
-                self.tile_class = self.config.list_classes_tile[tile]()
+
+                # Which type of attack do we want to do?
+                #------------------------------------------------------------------------------------------------
+                # # Classes for all the possible types of tiles
+                # self.tile_class = self.config.list_classes_tile[tile]()
+
+                # One class fits all
+                self.tile_class = Tile_Creator(self.config.list_of_shape)
+                #------------------------------------------------------------------------------------------------
+
                 # self.params_function = self.config.list_function_params[tile]
                 self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.rotation_mode,self.config.BackgroundStyle,self.config.mask_function)
 
-        def train(self):
+        def train(self, name):
 
             """
             Optimize a patch to generate an adversarial example.
             :return: Nothing
             """
 
-            name = str(tile) + '_' + mode 
-            destination_path = "./yolov3/MyWork/txt_results/22-09-2022/"
+            # name = str(tile) + '_' + mode 
+            name = name + '_' + mode 
+            destination_path = "./yolov3/MyWork/txt_results/25-09-2022/"
 
             destination_name = name + '_iteration.txt'
             destination_name2 = name + '_batch.txt'
@@ -79,6 +99,7 @@ if __name__ == '__main__':
             textfile2 = open(destination2, 'w+')
 
             params = self.tile_class.Params_Creator()
+            print(params)
 
             train_loader = torch.utils.data.DataLoader(
                 VOCmask(self.config.img_dir, self.config.mask_dir, self.config.img_size,
@@ -168,14 +189,15 @@ if __name__ == '__main__':
                     textfile.write(f'\ni_iteration: {iteration}\ne_total_loss:{ep_loss}\n\n')
 
                     # Save a sample image from the last iteration
-                    if iteration%(n_iterations-1) == 0:
+                    # if iteration%(n_iterations-1) == 0:
+                    if iteration%5 == 0:
                     #if iteration == 0:
                         att_image = attacked_img_batch[0].squeeze(0)
                         att_image_PIL = transform2(att_image)
-                        att_image_PIL.save("./yolov3/MyWork/SampleImages/22-09-2022/" + name + '_iteration_' + str(iteration) + '.png')
+                        att_image_PIL.save("./yolov3/MyWork/SampleImages/25-09-2022/" + name + '_iteration_' + str(iteration) + '.png')
 
 
-                    torch.save(params, './yolov3/MyWork/params_results/22-09-2022/' + name + '.pt')
+                    torch.save(params, './yolov3/MyWork/params_results/25-09-2022/' + name + '.pt')
 
                     del output, attacked_img_batch, loss
 
@@ -185,7 +207,6 @@ if __name__ == '__main__':
                 et0 = time.time()
 
     use_cuda = 1
-    modes = ["max_prob_class","max_prob_class2","max_prob_obj","new_loss_tprob"]
     # Tile options
     # 0: Circle 
     # 1: Ellipse
@@ -212,10 +233,9 @@ if __name__ == '__main__':
     # trainer = PatchTrainer(mode,tile)
     # trainer.train()
 
-    modes = ['perlin_noise_inverted', 'ghost']
+    modes = ['perlin_noise']
 
     for mode in modes:
-        for tile in range(0,12):
-            print('Training tile n: ', tile)
-            trainer = PatchTrainer(mode,tile)
-            trainer.train()
+        trainer = PatchTrainer(mode)
+        name = '3_circles'
+        trainer.train(name)
