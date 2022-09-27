@@ -83,7 +83,15 @@ class Tile_Creator(object):
         return params
     
     def Give_Color_Perlin(self,params):
-        return params[1]
+        self.params_navigator = 0 
+
+        # returning the color first external color 
+        for i in range(len(self.list_of_shape)):
+            # check if we have to use some shape (are there circles?)
+            if self.list_of_shape[i] != 0:
+                # define the specific tile creator
+                tile_creator_shape = self.list_classes_tile[i]()
+                return tile_creator_shape.Give_Color_Perlin(params[self.params_navigator:self.params_navigator+self.number_of_params[i]])
 
 ####################################################################################################
 ####################################################################################################
@@ -115,7 +123,7 @@ class Tile_Creator_Circle(object):
         a.requires_grad_(True)
         color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,0.5])
+        color2 = torch.tensor([1,0.5,0.5])
         color2.requires_grad_(True)
         x = torch.tensor(random.uniform(0,1))
         x.requires_grad_(True)

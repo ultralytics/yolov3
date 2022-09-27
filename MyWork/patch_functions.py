@@ -111,14 +111,15 @@ class Fractal_Patch_Generator(nn.Module):
                 if self.angle_type == 0:
                     self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = self.patches[chosen_dim-1]
 
-                elif self.angle_type == 1:
-                    angle = random.choice([0,90,180,270])
-                    #Apply the patch to the image
-                    self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = TF.rotate(self.patches[chosen_dim-1],angle)
-
                 else:
-                    #Select the angle
-                    angle = random.uniform(0,360)
+                    if self.angle_type == 1:
+                        angle = random.choice([0,90,180,270])
+                    # #Apply the patch to the image
+                    # self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = TF.rotate(self.patches[chosen_dim-1],angle)
+
+                    else:
+                        #Select the angle
+                        angle = random.uniform(0,360)
 
                     
 
