@@ -123,7 +123,7 @@ class Tile_Creator_Circle(object):
         a.requires_grad_(True)
         color1 = torch.tensor([0.5,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([1,0.5,0.5])
+        color2 = torch.tensor([0.5,0.5,0.5])
         color2.requires_grad_(True)
         x = torch.tensor(random.uniform(0,1))
         x.requires_grad_(True)

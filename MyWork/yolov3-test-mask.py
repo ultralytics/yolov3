@@ -10,7 +10,7 @@
 # Create a txt and evry line is '2_max_prob_class.pt accuracy'
 
 """
-Testing code for Adversarial patch training
+Testing code for Adversarial patch
 """
 
 from tqdm import tqdm
@@ -21,6 +21,7 @@ from loss_functions import *
 from dataset_functions import *
 import torch.optim as optim
 import patch_config_mask_test as patch_config_mask_test
+from tile_functions import Tile_Creator
 import math
 
 from torch import autograd
@@ -51,12 +52,12 @@ if __name__ == '__main__':
 
             if use_cuda:
                 self.model_test = self.model_test.eval().to(self.device)  
-                self.patch_applier = PatchApplierMask().to(self.device)
+                self.patch_applier = PatchApplierMask(self.config.BackgroundStyle).to(self.device)
                 # self.loss_function = self.config.loss_function.to(self.device)
 
             else:
                 self.model_test = self.model_test.eval()  # TODO: Why eval?
-                self.patch_applier = PatchApplierMask()
+                self.patch_applier = PatchApplierMask(self.config.BackgroundStyle)
                 # self.loss_function = self.config.loss_function
             
         def test(self):
@@ -64,7 +65,7 @@ if __name__ == '__main__':
             Optimize a patch to generate an adversarial example.
             :return: Nothing
             """
-            with open('/home/andread98/yolov3/MyWork/test_results.txt', 'a') as f:
+            with open('/home/andread98/yolov3/MyWork/test_results/22-09-2022/ghost/test_results.txt', 'a') as f:
                 test_loader = torch.utils.data.DataLoader(
                             VOCmask(self.config.img_dir_test, self.config.mask_dir_test, self.config.img_size,
                                         shuffle=True),
@@ -153,28 +154,51 @@ if __name__ == '__main__':
 
                 ####################################################################################################
                 
-                tensors = [f for f in os.listdir("/home/andread98/yolov3/MyWork/params_results/17-09-2022") if f.endswith('.pt')]
+                tensors = [f for f in os.listdir("/home/andread98/yolov3/MyWork/params_results/22-09-2022/ghost") if f.endswith('.pt')]
 
             
                 for tensor in tensors:
                     tensor_loss = 0
-                    path = '/home/andread98/yolov3/MyWork/params_results/17-09-2022/' + tensor
+                    path = '/home/andread98/yolov3/MyWork/params_results/22-09-2022/ghost/' + tensor
                     params = torch.load(path)
                     print(params)
-                    tile = int(tensor[:-18])
-                    print(tile)
+                    # standard
+                    # tile = int(tensor[:-18])
+                    # perlin_noise
+                    # tile = int(tensor[:-16])
+                    # ghost 
+                    tile = int(tensor[:-9])
+                    print('Tile: ', tile)
                     
                     if use_cuda:
+                        # Which type of attack do we want to do?
+                        #------------------------------------------------------------------------------------------------
+                        # Classes for all the possible types of tiles
                         self.tile_class = self.config.list_classes_tile[tile]()
-                        self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.mask_function,self.config.rotation_mode).to(self.device)
+
+                        # # One class fits all
+                        # self.tile_class = Tile_Creator(self.config.list_of_shape)
+                        #------------------------------------------------------------------------------------------------
+
+                        # self.params_function = self.config.list_function_params[tile]
+                        self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.rotation_mode,self.config.BackgroundStyle,self.config.mask_function).to(self.device)
 
                     else:
+                        # Which type of attack do we want to do?
+                        #------------------------------------------------------------------------------------------------
+                        # Classes for all the possible types of tiles
                         self.tile_class = self.config.list_classes_tile[tile]()
-                        self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.mask_function,self.config.rotation_mode)
+
+                        # # One class fits all
+                        # self.tile_class = Tile_Creator(self.config.list_of_shape)
+                        #------------------------------------------------------------------------------------------------
+
+                        # self.params_function = self.config.list_function_params[tile]
+                        self.gen_function = Fractal_Patch_Generator(self.config.dim_tile, self.config.dim_patch, self.config.mul_fact,self.tile_class,self.config.rotation_mode,self.config.BackgroundStyle,self.config.mask_function)
 
                     for i_batch, (img_batch, masks_batch) in enumerate(test_loader):
                         self.gen_function.populate(params)
-                        adv_patch = self.gen_function.application()
+                        adv_patch, mask_attack = self.gen_function.application()
 
                         if use_cuda:
                             img_batch = img_batch.to(self.device)
@@ -184,8 +208,9 @@ if __name__ == '__main__':
                             img_batch = img_batch
                             masks_batch = masks_batch
                             adv_patch = adv_patch
-
-                        attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch)
+                        attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch, mask_attack)
+                        attacked_img_batch = attacked_img_batch.type(torch.cuda.FloatTensor)
+                        # attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch)
                         print(i_batch)
                         img_PIL = transform2(attacked_img_batch.squeeze(0))
 
@@ -219,6 +244,6 @@ if __name__ == '__main__':
     # 10: Double Triangle 
     # 11: Double Trapezoid
 
-    mode = 'test'
+    mode = 'ghost'
     tester = PatchTester(mode)
     tester.test()
