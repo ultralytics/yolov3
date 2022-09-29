@@ -4,7 +4,7 @@ from loss_functions import *
 from dataset_functions import *
 
 
-class test(object):
+class standard(object):
     """
     Using the loss max_prob_class
     """
@@ -22,6 +22,8 @@ class test(object):
         self.mask_dir_test = '/home/andread98/yolov3/MyWork/data_mask_test/mask'  # test labels location
         self.batch_size_test = 1
         self.n_iterations = 1
+        self.BackgroundStyle = 0
+        self.list_of_shape = [3,0,0,0,0,0]
 
         # Loss function 
         self.loss_function = max_prob_class(0)
@@ -42,6 +44,50 @@ class test(object):
         self.rotation_mode = 2
 
 
+class perlin_noise(standard):
+    """
+    Using the loss max_prob_class, perlin noise application
+    """
+    def __init__(self):
+        """
+        Change stuff...
+        """
+        super().__init__()
+
+        self.patch_name = 'perlin_noise'
+        self.BackgroundStyle = 1
+        
+
+
+class perlin_noise_inverted(standard):
+    """
+    Using the loss max_prob_class, inverted perlin noise application
+    """
+    def __init__(self):
+        """
+        Change stuff...
+        """
+        super().__init__()
+
+        self.patch_name = 'perlin_noise_inverted'
+        self.BackgroundStyle = 2
+
+class ghost(standard):
+    """
+    Using the loss max_prob_class, ghost application
+    """
+    def __init__(self):
+        """
+        Change stuff...
+        """
+        super().__init__()
+
+        self.patch_name = 'ghost'
+        self.BackgroundStyle = 3
+
 patch_configs = {
-    "test": test
+    "standard": standard,
+    "perlin_noise": perlin_noise,
+    "perlin_noise_inverted": perlin_noise_inverted,
+    "ghost": ghost
 }

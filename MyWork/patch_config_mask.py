@@ -21,7 +21,7 @@ class standard(object):
         self.img_dir = '/home/andread98/yolov3/MyWork/data_mask'    # train images location
         self.mask_dir = '/home/andread98/yolov3/MyWork/data_mask/mask'  # train labels location
         self.batch_size = 20
-        self.n_iterations = 50
+        self.n_iterations = 100
         self.BackgroundStyle = 0
         self.list_of_shape = [3,0,0,0,0,0]
 

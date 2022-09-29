@@ -148,7 +148,6 @@ if __name__ == '__main__':
                     loss = torch.mean(self.loss_function(output))
                     # print(loss)
                     ep_loss += loss
-
                     loss.backward()
                     optimizer.step()
                     optimizer.zero_grad()
