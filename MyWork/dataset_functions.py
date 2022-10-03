@@ -121,26 +121,12 @@ class InriaDataset(Dataset):
         return padded_lab
 
 class VOCmask(Dataset):
-    """InriaDataset: representation of the INRIA person dataset.
-
-    Internal representation of the commonly used INRIA person dataset.
-    Available at: http://pascal.inrialpes.fr/data/human/
-
-    Attributes:
-        len: An integer number of elements in the
-        img_dir: Directory containing the images of the INRIA dataset.
-        lab_dir: Directory containing the labels of the INRIA dataset.
-        img_names: List of all image file names in img_dir.
-        shuffle: Whether or not to shuffle the dataset.
-
-    """
-
+    
     def __init__(self, img_dir, mask_dir, imgsize, shuffle=True):
         n_png_images = len(fnmatch.filter(os.listdir(img_dir), '*.png'))
         n_jpg_images = len(fnmatch.filter(os.listdir(img_dir), '*.jpg'))
         n_images = n_png_images + n_jpg_images
         n_masks = len(fnmatch.filter(os.listdir(mask_dir), '*.pt'))
-
         assert n_images == n_masks, "Number of images and number of labels don't match"
         self.len = n_images
         self.img_dir = img_dir
@@ -165,8 +151,10 @@ class VOCmask(Dataset):
         mask_path = os.path.join(self.mask_dir, self.img_names[idx]).replace('.jpg', '.pt').replace('.png', '.pt')
         image = Image.open(img_path).convert('RGB')
         mask = torch.load(mask_path)
+        print(mask.shape)
         mask.unsqueeze_(0)
-
+        print(mask.shape)
+        
         image, mask = self.pad_and_scale(image, mask)
         transform = transforms.ToTensor()
         image = transform(image)
@@ -200,6 +188,7 @@ class VOCmask(Dataset):
                 mask = F.pad(input=mask, pad=(0, 0, padding, padding), mode='constant', value=0)
         resize = transforms.Resize((self.imgsize,self.imgsize)) # make a square image of dim 416 x 416
         padded_img = resize(padded_img)     #choose here
-        mask = mask.expand(3,-1,-1)
+        # mask = mask.expand(3,-1,-1)
         mask = resize(mask)
+        mask.squeeze_(0)
         return padded_img, mask

@@ -18,8 +18,8 @@ class standard(object):
         self.img_size = 640
 
         # Dataloader informations
-        self.img_dir = '/home/andread98/yolov3/MyWork/data_mask'    # train images location
-        self.mask_dir = '/home/andread98/yolov3/MyWork/data_mask/mask'  # train labels location
+        self.img_dir = '/home/andread98/yolov3/MyWork/data_first'    # train images location
+        self.mask_dir = '/home/andread98/yolov3/MyWork/data_first/mask'  # train labels location
         self.batch_size = 20
         self.n_iterations = 100
         self.BackgroundStyle = 0

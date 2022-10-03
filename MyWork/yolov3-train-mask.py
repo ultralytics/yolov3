@@ -124,6 +124,8 @@ if __name__ == '__main__':
                 bt0 = time.time()  # batch start
                 for i_batch, (img_batch, masks_batch) in tqdm(enumerate(train_loader), desc=f'Running iteration {iteration}',
                                                             total=self.iteration_length):
+                    print(img_batch.shape)
+                    print(masks_batch.shape)
                     self.gen_function.populate(params)
                     adv_patch, mask_attack = self.gen_function.application()
 
@@ -190,7 +192,7 @@ if __name__ == '__main__':
 
                     # Save a sample image from the last iteration
                     # if iteration%(n_iterations-1) == 0:
-                    if iteration%10 == 0:
+                    if iteration%2 == 0:
                     #if iteration == 0:
                         att_image = attacked_img_batch[0].squeeze(0)
                         att_image_PIL = transform2(att_image)
@@ -233,7 +235,7 @@ if __name__ == '__main__':
     # trainer = PatchTrainer(mode,tile)
     # trainer.train()
 
-    modes = ['ghost']
+    modes = ['perlin_noise']
 
     for mode in modes:
         trainer = PatchTrainer(mode)
