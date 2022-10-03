@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torchvision.transforms.functional as TF
 import math
+import sys
 import torchvision.transforms as transforms
 import torch.nn.functional as F
 import torch.nn as nn
@@ -20,6 +21,7 @@ class Tile_Creator(object):
                                   Tile_Creator_Rectangle, Tile_Creator_Triangle, Tile_Creator_Trapezoid]
         self.number_of_params = [5,6,5,6,6,6]
         self.list_of_shape = list_of_shape
+        self.Centroids_Creator()
 
     def __call__(self, dim, params):
         flag = 0
@@ -47,13 +49,17 @@ class Tile_Creator(object):
         
         mask_tot.data.clamp_(0, 1)
         return tensor, color_tot, mask_tot
-
-                    
+    
+    def Centroids_Creator(self):
+        k = sum(self.list_of_shape)
+        centroids = initialize(k)
+        self.centroids = [torch.from_numpy(item).float() for item in centroids]
 
     def Params_Creator(self):
         #define the base of the tile 
         params = []
-        
+        count = 0
+
         # going through the list of the number of shapes 
         for i in range(len(self.list_of_shape)):
             # check if we have to use some shape 
@@ -62,8 +68,9 @@ class Tile_Creator(object):
                 tile_creator_shape = self.list_classes_tile[i]()
                 # add the needed number of shapes
                 for j in range(self.list_of_shape[i]):
-                    params = params + tile_creator_shape.Params_Creator()
-        
+                    params = params + tile_creator_shape.Params_Creator(self.centroids[count])
+                    count += 1
+
         return params
     
     def Params_Clamp(self,params):
@@ -95,6 +102,47 @@ class Tile_Creator(object):
 
 ####################################################################################################
 ####################################################################################################
+		
+# function to compute euclidean distance
+def distance(p1, p2):
+	return np.sum((p1 - p2)**2)
+
+# initialization algorithm
+def initialize(k):
+	
+    # Create the 500 random points in the space [0,1]x[0,1]
+    data = np.random.uniform(low=0,high=1,size=(500,2))
+
+    np.random.shuffle(data)
+    centroids = []
+    centroids.append(data[np.random.randint(data.shape[0]), :])
+
+	## compute remaining k - 1 centroids
+    for c_id in range(k - 1):
+        
+        ## initialize a list to store distances of data
+        ## points from nearest centroid
+        dist = []
+        for i in range(data.shape[0]):
+            point = data[i, :]
+            d = sys.maxsize
+            
+            ## compute distance of 'point' from each of the previously
+            ## selected centroid and store the minimum distance
+            for j in range(len(centroids)):
+                temp_dist = distance(point, centroids[j])
+                d = min(d, temp_dist)
+            dist.append(d)
+            
+        ## select data point with maximum distance as our next centroid
+        dist = np.array(dist)
+        next_centroid = data[np.argmax(dist), :]
+        centroids.append(next_centroid)
+        dist = []   
+    return centroids
+
+####################################################################################################
+####################################################################################################
 
 class Tile_Creator_Circle(object):
     
@@ -118,27 +166,34 @@ class Tile_Creator_Circle(object):
 
         return coeff*color1_image + (1-coeff)*color2_image, color1_image, (1-coeff)
 
-    def Params_Creator(self):
-        a = torch.tensor(0.50)
+    def Params_Creator(self, centroids):
+        a = torch.tensor(0.33)
         a.requires_grad_(True)
-        color1 = torch.tensor([0.5,0.5,0.5])
+        color1 = torch.tensor([1,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,0.5])
+        color2 = torch.tensor([0.5,0.5,1])
         color2.requires_grad_(True)
-        x = torch.tensor(random.uniform(0,1))
+        # x = torch.tensor(random.uniform(0,1))
+        # x.requires_grad_(True)
+        # y = torch.tensor(random.uniform(0,1))
+        # y.requires_grad_(True)
+        x = centroids[0]
         x.requires_grad_(True)
-        y = torch.tensor(random.uniform(0,1))
+        y = centroids[1]
         y.requires_grad_(True)
 
         params = [a, color1, color2, x, y]
         return params
     
     def Params_Clamp(self,params):
-        params[0].data.clamp_(0, factor)
+        # Defining the shape characteristics
+        params[0].data.clamp_(0, 0.95)
+        # Defining the colors: background and geometrical shape
         params[1].data.clamp_(0, 1)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1)
-        params[4].data.clamp_(0, 1)
+        # Defining the coordinates of the geometrical shape
+        params[3].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
+        params[4].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
     
@@ -169,30 +224,38 @@ class Tile_Creator_Ellipse(object):
 
         return coeff*color1_image + (1-coeff)*color2_image, color1_image, (1-coeff)
 
-    def Params_Creator(self):
-        a = torch.tensor(0.50)
+    def Params_Creator(self, centroids):
+        a = torch.tensor(0.25)
         a.requires_grad_(True)
-        b = torch.tensor(0.8)
+        b = torch.tensor(0.5)
         b.requires_grad_(True)
-        color1 = torch.tensor([0.5,0.5,0.5])
+        color1 = torch.tensor([1,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,0.5])
+        color2 = torch.tensor([0.5,0.5,1])
         color2.requires_grad_(True)
-        x = torch.tensor(random.uniform(0,1))
+        # x = torch.tensor(random.uniform(0,1))
+        # x.requires_grad_(True)
+        # y = torch.tensor(random.uniform(0,1))
+        # y.requires_grad_(True)
+        x = centroids[0]
         x.requires_grad_(True)
-        y = torch.tensor(random.uniform(0,1))
+        y = centroids[1]
         y.requires_grad_(True)
+
 
         params = [a, b, color1, color2, x, y]
         return params
 
     def Params_Clamp(self,params):
-        params[0].data.clamp_(0, factor)
-        params[1].data.clamp_(0, factor)
+        # Defining the shape characteristics
+        params[0].data.clamp_(0, 0.95)
+        params[1].data.clamp_(0, 0.95)
+        # Defining the colors: background and geometrical shape
         params[2].data.clamp_(0, 1)
         params[3].data.clamp_(0, 1)
-        params[4].data.clamp_(0, 1)
-        params[5].data.clamp_(0, 1)
+        # Defining the coordinates of the geometrical shape
+        params[4].data.clamp_(params[1]/2 + 0.025, 1-params[1]/2 - 0.025)
+        params[5].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
     
@@ -223,28 +286,34 @@ class Tile_Creator_Square(object):
 
         return coeff*color1_image + (1-coeff)*color2_image, color1_image, (1-coeff)
 
-    def Params_Creator(self):
-        a = torch.tensor(0.50)
+    def Params_Creator(self, centroids):
+        a = torch.tensor(0.33)
         a.requires_grad_(True)
-        color1 = torch.tensor([0.5,0.5,0.5])
+        color1 = torch.tensor([1,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,0.5])
+        color2 = torch.tensor([0.5,0.5,1])
         color2.requires_grad_(True)
-        x = torch.tensor(random.uniform(0,1))
+        # x = torch.tensor(random.uniform(0,1))
+        # x.requires_grad_(True)
+        # y = torch.tensor(random.uniform(0,1))
+        # y.requires_grad_(True)
+        x = centroids[0]
         x.requires_grad_(True)
-        y = torch.tensor(random.uniform(0,1))
+        y = centroids[1]
         y.requires_grad_(True)
 
         params = [a, color1, color2, x, y]
         return params
 
     def Params_Clamp(self,params):
-        params[0].data.clamp_(0, factor)
+        # Defining the shape characteristics
+        params[0].data.clamp_(0, 0.95)
+        # Defining the colors: background and geometrical shape
         params[1].data.clamp_(0, 1)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1)
-        params[4].data.clamp_(0, 1)
-
+        # Defining the coordinates of the geometrical shape
+        params[3].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
+        params[4].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
         return params
     
     def Give_Color_Perlin(self,params):
@@ -274,30 +343,37 @@ class Tile_Creator_Rectangle(object):
 
         return coeff*color1_image + (1-coeff)*color2_image, color1_image, (1-coeff)
 
-    def Params_Creator(self):
-        a = torch.tensor(0.50)
+    def Params_Creator(self, centroids):
+        a = torch.tensor(0.5)
         a.requires_grad_(True)
         b = torch.tensor(0.25)
         b.requires_grad_(True)
-        color1 = torch.tensor([0.5,0.5,0.5])
+        color1 = torch.tensor([1,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,0.5])
+        color2 = torch.tensor([0.5,0.5,1])
         color2.requires_grad_(True)
-        x = torch.tensor(random.uniform(0,1))
+        # x = torch.tensor(random.uniform(0,1))
+        # x.requires_grad_(True)
+        # y = torch.tensor(random.uniform(0,1))
+        # y.requires_grad_(True)
+        x = centroids[0]
         x.requires_grad_(True)
-        y = torch.tensor(random.uniform(0,1))
+        y = centroids[1]
         y.requires_grad_(True)
 
         params = [a, b, color1, color2, x, y]
         return params
 
     def Params_Clamp(self,params):
-        params[0].data.clamp_(0, factor)
-        params[1].data.clamp_(0, factor)
+        # Defining the shape characteristics
+        params[0].data.clamp_(0, 0.95)
+        params[1].data.clamp_(0, 0.95)
+        # Defining the colors: background and geometrical shape
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
-        params[4].data.clamp_(0, 1)
-        params[5].data.clamp_(0, 1)
+        params[3].data.clamp_(0, 1)
+        # Defining the coordinates of the geometrical shape
+        params[4].data.clamp_(params[1]/2 + 0.025, 1-params[1]/2 - 0.025)
+        params[5].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
     
@@ -328,30 +404,37 @@ class Tile_Creator_Triangle(object):
 
         return coeff*color1_image + (1-coeff)*color2_image, color1_image, (1-coeff)
 
-    def Params_Creator(self):
-        a = torch.tensor(0.50)
+    def Params_Creator(self, centroids):
+        a = torch.tensor(0.33)
         a.requires_grad_(True)
-        b = torch.tensor(0.5)
+        b = torch.tensor(0.33)
         b.requires_grad_(True)
-        color1 = torch.tensor([0.5,0.5,0.5])
+        color1 = torch.tensor([1,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,0.5])
+        color2 = torch.tensor([0.5,0.5,1])
         color2.requires_grad_(True)
-        x = torch.tensor(random.uniform(0,1))
+        # x = torch.tensor(random.uniform(0,1))
+        # x.requires_grad_(True)
+        # y = torch.tensor(random.uniform(0,1))
+        # y.requires_grad_(True)
+        x = centroids[0]
         x.requires_grad_(True)
-        y = torch.tensor(random.uniform(0,1))
+        y = centroids[1]
         y.requires_grad_(True)
 
         params = [a, b, color1, color2, x, y]
         return params
 
     def Params_Clamp(self,params):
-        params[0].data.clamp_(0, factor)
-        params[1].data.clamp_(0, factor)
+        # Defining the shape characteristics
+        params[0].data.clamp_(0, 0.95)
+        params[1].data.clamp_(0, 0.95)
+        # Defining the colors: background and geometrical shape
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
-        params[4].data.clamp_(0, 1)
-        params[5].data.clamp_(0, 1)
+        params[3].data.clamp_(0, 1)
+        # Defining the coordinates of the geometrical shape
+        params[4].data.clamp_(params[1]/2 + 0.025, 1-params[1]/2 - 0.025)
+        params[5].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
     
@@ -382,30 +465,37 @@ class Tile_Creator_Trapezoid(object):
 
         return coeff*color1_image + (1-coeff)*color2_image, color1_image, (1-coeff)
 
-    def Params_Creator(self):
-        a = torch.tensor(0.50)
+    def Params_Creator(self, centroids):
+        a = torch.tensor(0.33)
         a.requires_grad_(True)
         b = torch.tensor(0.5)
         b.requires_grad_(True)
-        color1 = torch.tensor([0.5,0.5,0.5])
+        color1 = torch.tensor([1,0.5,0.5])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,0.5])
+        color2 = torch.tensor([0.5,0.5,1])
         color2.requires_grad_(True)
-        x = torch.tensor(random.uniform(0,1))
+        # x = torch.tensor(random.uniform(0,1))
+        # x.requires_grad_(True)
+        # y = torch.tensor(random.uniform(0,1))
+        # y.requires_grad_(True)
+        x = centroids[0]
         x.requires_grad_(True)
-        y = torch.tensor(random.uniform(0,1))
+        y = centroids[1]
         y.requires_grad_(True)
 
         params = [a, b, color1, color2, x, y]
         return params
 
     def Params_Clamp(self,params):
-        params[0].data.clamp_(0, factor)
-        params[1].data.clamp_(0, factor)
+        # Defining the shape characteristics
+        params[0].data.clamp_(0, 0.95)
+        params[1].data.clamp_(0, 0.95)
+        # Defining the colors: background and geometrical shape
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
-        params[4].data.clamp_(0, 1)
-        params[5].data.clamp_(0, 1)
+        params[3].data.clamp_(0, 1)
+        # Defining the coordinates of the geometrical shape
+        params[4].data.clamp_(params[1]/2 + 0.025, 1-params[1]/2 - 0.025)
+        params[5].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
     

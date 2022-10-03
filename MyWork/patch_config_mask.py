@@ -23,7 +23,7 @@ class standard(object):
         self.batch_size = 20
         self.n_iterations = 100
         self.BackgroundStyle = 0
-        self.list_of_shape = [3,0,0,0,0,0]
+        self.list_of_shape = [1,1,1,0,0,1]
 
         # Loss function 
         self.loss_function = max_prob_class(0)
