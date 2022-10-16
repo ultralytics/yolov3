@@ -51,7 +51,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -qr requirements.txt -f https://download.pytorch.org/whl/cpu/torch_stable.html
-          pip install -q onnx tensorflow-cpu keras==2.6.0  # wandb  # extras
           python --version
           pip --version
           pip list
@@ -83,7 +82,7 @@ jobs:
           # Export
           python models/yolo.py --cfg ${{ matrix.model }}.yaml  # build PyTorch model
           # python models/tf.py --weights ${{ matrix.model }}.pt  # build TensorFlow model (YOLOv3 not supported)
-          python export.py --img 64 --batch 1 --weights runs/train/exp/weights/last.pt --include torchscript onnx  # export
+          python export.py --img 64 --batch 1 --weights runs/train/exp/weights/last.pt --include torchscript  # export
           # Python
           python - <<EOF
           import torch
