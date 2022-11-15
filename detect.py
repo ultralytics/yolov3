@@ -194,13 +194,13 @@ def run(weights=ROOT / 'yolov3.pt',  # model.pt path(s)
                     vid_writer[i].write(im0)
 
     if save_txt and save_empty_file:
-        
+
         all_labels = [Path(label[0]).stem for label in dataset]
         saved_labels = [Path(label).stem for label in list(save_dir.glob('labels/*.txt'))]
         missed_labels = [label + '.txt' for label in all_labels if label not in saved_labels]
-        
+
         for missed_label in missed_labels:
-            with open(save_dir / 'labels' / missed_label, 'w') as f: f.write('')                    
+            with open(save_dir / 'labels' / missed_label, 'w') as f: f.write('')
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
