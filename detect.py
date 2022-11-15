@@ -133,7 +133,8 @@ def run(weights=ROOT / 'yolov3.pt',  # model.pt path(s)
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # to Path
-            save_path = str(save_dir / p.name)  # im.jpg
+            (save_dir / 'images').mkdir(parents=True, exist_ok=True) if save_txt else save_dir
+            save_path = str(save_dir / 'images' / p.name) if save_txt else str(save_dir / p.name) # im.jpg
             txt_path = str(save_dir / 'labels' / p.stem) + ('' if dataset.mode == 'image' else f'_{frame}')  # im.txt
             s += '%gx%g ' % im.shape[2:]  # print string
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
