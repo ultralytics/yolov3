@@ -61,6 +61,7 @@ def run(weights=ROOT / 'yolov3.pt',  # model.pt path(s)
         hide_conf=False,  # hide confidences
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
+        save_empty_file=False,  # Create and save empty file if no object has been detected
         ):
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -192,6 +193,15 @@ def run(weights=ROOT / 'yolov3.pt',  # model.pt path(s)
                         vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                     vid_writer[i].write(im0)
 
+    if save_txt and save_empty_file:
+        
+        all_labels = [Path(label[0]).stem for label in dataset]
+        saved_labels = [Path(label).stem for label in list(save_dir.glob('labels/*.txt'))]
+        missed_labels = [label + '.txt' for label in all_labels if label not in saved_labels]
+        
+        for missed_label in missed_labels:
+            with open(save_dir / 'labels' / missed_label, 'w') as f: f.write('')                    
+
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
@@ -229,6 +239,7 @@ def parse_opt():
     parser.add_argument('--hide-conf', default=False, action='store_true', help='hide confidences')
     parser.add_argument('--half', action='store_true', help='use FP16 half-precision inference')
     parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
+    parser.add_argument('--save-empty-file', action='store_true', help='create and save empty file if no objects are present in a frame (if save-txt)')
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
     print_args(FILE.stem, opt)
