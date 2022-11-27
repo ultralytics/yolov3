@@ -28,6 +28,10 @@ import numpy as np
 import tensorflow as tf
 import torch
 import torch.nn as nn
+from keras import backend
+from keras.engine.base_layer import Layer
+from keras.engine.input_spec import InputSpec
+from keras.utils import conv_utils
 from tensorflow import keras
 
 from models.common import C3, SPP, SPPF, Bottleneck, BottleneckCSP, Concat, Conv, DWConv, Focus, autopad
@@ -35,11 +39,6 @@ from models.experimental import CrossConv, MixConv2d, attempt_load
 from models.yolo import Detect
 from utils.activations import SiLU
 from utils.general import LOGGER, make_divisible, print_args
-
-from keras import backend
-from keras.engine.base_layer import Layer
-from keras.engine.input_spec import InputSpec
-from keras.utils import conv_utils
 
 # isort: off
 from tensorflow.python.util.tf_export import keras_export
