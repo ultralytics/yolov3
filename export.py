@@ -317,7 +317,7 @@ def run(data=ROOT / 'data/coco128.yaml',  # 'dataset.yaml path'
     if any(tf_exports):
         pb, tflite, tfjs = tf_exports[1:]
         assert not (tflite and tfjs), 'TFLite and TF.js models must be exported separately, please pass only one type.'
-        model = export_saved_model(model, im, file, dynamic, tf_nms=tfjs, agnostic_nms=tfjs,
+        model = export_saved_model(model.cpu(), im, file, dynamic, tf_nms=tfjs, agnostic_nms=tfjs,
                                    topk_per_class=topk_per_class, topk_all=topk_all, conf_thres=conf_thres,
                                    iou_thres=iou_thres)  # keras model
         if pb or tfjs:  # pb prerequisite to tfjs
