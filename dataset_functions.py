@@ -1,12 +1,14 @@
-import torch
-import torchvision.transforms as transforms
-import torch.nn.functional as F
 import fnmatch
-from torch.utils.data import Dataset
-from PIL import Image
-import numpy as np
-import torch.nn as nn
 import os
+
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torchvision.transforms as transforms
+from PIL import Image
+from torch.utils.data import Dataset
+
 # import random
 # import math
 # import torchvision.transforms.functional as TF
@@ -64,7 +66,7 @@ class InriaDataset(Dataset):
         img_path = os.path.join(self.img_dir, self.img_names[idx])
         lab_path = os.path.join(self.lab_dir, self.img_names[idx]).replace('.jpg', '.txt').replace('.png', '.txt')
         image = Image.open(img_path).convert('RGB')
-        if os.path.getsize(lab_path):       #check to see if label file contains data. 
+        if os.path.getsize(lab_path):       #check to see if label file contains data.
             label = np.loadtxt(lab_path)
         else:
             label = np.ones([5])

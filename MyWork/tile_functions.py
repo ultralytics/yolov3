@@ -1,24 +1,26 @@
-from xmlrpc.server import DocXMLRPCRequestHandler
-import torch
+import math
 import random
-import numpy as np
-import torchvision.transforms.functional as TF
-import math
 import sys
-import torchvision.transforms as transforms
-import torch.nn.functional as F
+from xmlrpc.server import DocXMLRPCRequestHandler
+
+import numpy as np
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
+import torchvision.transforms as transforms
+import torchvision.transforms.functional as TF
+from perlin_noise import Inverted_Perlin_Noise_Creator, Perlin_Noise_Creator
+
 from median_pool import MedianPool2d
-import math
-from perlin_noise import Perlin_Noise_Creator, Inverted_Perlin_Noise_Creator
+
 factor = math.sqrt(2)/2
 
 # Here we have the tile function and the 6 base functions
 
-class Tile_Creator(object):
-    
+class Tile_Creator:
+
     def __init__(self, list_of_shape):
-        # self.list_classes_tile = [Tile_Creator_Circle, Tile_Creator_Ellipse, Tile_Creator_Square, 
+        # self.list_classes_tile = [Tile_Creator_Circle, Tile_Creator_Ellipse, Tile_Creator_Square,
         #                           Tile_Creator_Rectangle, Tile_Creator_Triangle, Tile_Creator_Trapezoid]
         self.list_classes_tile = [Tile_Creator_Ellipse, Tile_Creator_Rectangle, Tile_Creator_Triangle, Tile_Creator_Trapezoid]
         # self.number_of_params = [5,6,5,6,6,6]
@@ -28,11 +30,11 @@ class Tile_Creator(object):
 
     def __call__(self, dim, params):
         flag = 0
-        self.params_navigator = 0 
+        self.params_navigator = 0
         mask_tot = torch.zeros((3,dim,dim))
         color = torch.zeros((3,dim,dim))
-        
-        # going through the list of the number of shapes 
+
+        # going through the list of the number of shapes
         for i in range(len(self.list_of_shape)):
             # check if we have to use some shape (is there a specific shape?)
             if self.list_of_shape[i] != 0:
@@ -49,23 +51,23 @@ class Tile_Creator(object):
                         flag = 1
                     else:
                         tensor = tensor*(1-mask) + tile*mask
-        
+
         mask_tot.data.clamp_(0, 1)
         return tensor, color_tot, mask_tot
-    
+
     def Centroids_Creator(self):
         k = sum(self.list_of_shape)
         centroids = initialize(k)
         self.centroids = [torch.from_numpy(item).float() for item in centroids]
 
     def Params_Creator(self):
-        #define the base of the tile 
+        #define the base of the tile
         params = []
         count = 0
 
-        # going through the list of the number of shapes 
+        # going through the list of the number of shapes
         for i in range(len(self.list_of_shape)):
-            # check if we have to use some shape 
+            # check if we have to use some shape
             if self.list_of_shape[i] != 0:
                 # define the specific tile creator
                 tile_creator_shape = self.list_classes_tile[i]()
@@ -75,11 +77,11 @@ class Tile_Creator(object):
                     count += 1
 
         return params
-    
-    def Params_Clamp(self,params):
-        self.params_navigator = 0 
 
-        # going through the list of the number of shapes 
+    def Params_Clamp(self,params):
+        self.params_navigator = 0
+
+        # going through the list of the number of shapes
         for i in range(len(self.list_of_shape)):
             # check if we have to use some shape (are there circles?)
             if self.list_of_shape[i] != 0:
@@ -91,11 +93,11 @@ class Tile_Creator(object):
                     self.params_navigator += self.number_of_params[i]
 
         return params
-    
-    def Give_Color_Perlin(self,params):
-        self.params_navigator = 0 
 
-        # returning the color first external color 
+    def Give_Color_Perlin(self,params):
+        self.params_navigator = 0
+
+        # returning the color first external color
         for i in range(len(self.list_of_shape)):
             # check if we have to use some shape (are there circles?)
             if self.list_of_shape[i] != 0:
@@ -105,14 +107,14 @@ class Tile_Creator(object):
 
 ####################################################################################################
 ####################################################################################################
-		
+
 # function to compute euclidean distance
 def distance(p1, p2):
 	return np.sum((p1 - p2)**2)
 
 # initialization algorithm
 def initialize(k):
-	
+
     # Create the 500 random points in the space [0,1]x[0,1]
     data = np.random.uniform(low=0,high=1,size=(500,2))
 
@@ -122,38 +124,38 @@ def initialize(k):
 
 	## compute remaining k - 1 centroids
     for c_id in range(k - 1):
-        
+
         ## initialize a list to store distances of data
         ## points from nearest centroid
         dist = []
         for i in range(data.shape[0]):
             point = data[i, :]
             d = sys.maxsize
-            
+
             ## compute distance of 'point' from each of the previously
             ## selected centroid and store the minimum distance
             for j in range(len(centroids)):
                 temp_dist = distance(point, centroids[j])
                 d = min(d, temp_dist)
             dist.append(d)
-            
+
         ## select data point with maximum distance as our next centroid
         dist = np.array(dist)
         next_centroid = data[np.argmax(dist), :]
         centroids.append(next_centroid)
-        dist = []   
+        dist = []
     return centroids
 
 ####################################################################################################
 ####################################################################################################
 
-class Tile_Creator_Circle(object):
-    
+class Tile_Creator_Circle:
+
     def __init__(self):
         pass
 
     def __call__(self, dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         for i in range(dim):
             for j in range(dim):
@@ -187,7 +189,7 @@ class Tile_Creator_Circle(object):
 
         params = [a, color1, color2, x, y]
         return params
-    
+
     def Params_Clamp(self,params):
         # Defining the shape characteristics
         params[0].data.clamp_(0, 0.95)
@@ -199,17 +201,17 @@ class Tile_Creator_Circle(object):
         params[4].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[1]
 
 ####################################################################################################
 
-class Tile_Creator_Ellipse(object):
+class Tile_Creator_Ellipse:
 
     def __init__(self):
         pass
-    
+
     def __call__(self,dim, params):
         # Distances Tensor
         image = torch.zeros((3,dim,dim))
@@ -261,19 +263,19 @@ class Tile_Creator_Ellipse(object):
         params[5].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]
 
 ####################################################################################################
 
-class Tile_Creator_Square(object):
+class Tile_Creator_Square:
 
     def __init__(self):
         pass
-    
+
     def __call__(self, dim, params):
-        # Tensore delle distanze 
+        # Tensore delle distanze
         image = torch.zeros((3,dim,dim))
         for i in range(dim):
             for j in range(dim):
@@ -318,17 +320,17 @@ class Tile_Creator_Square(object):
         params[3].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
         params[4].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[1]
 
 ####################################################################################################
 
-class Tile_Creator_Rectangle(object):
+class Tile_Creator_Rectangle:
 
     def __init__(self):
         pass
-    
+
     def __call__(self,dim, params):
         # Distances Tensor
         image = torch.zeros((3,dim,dim))
@@ -379,13 +381,13 @@ class Tile_Creator_Rectangle(object):
         params[5].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]
 
 ####################################################################################################
 
-class Tile_Creator_Triangle(object):
+class Tile_Creator_Triangle:
 
     def __init__(self):
         pass
@@ -440,7 +442,7 @@ class Tile_Creator_Triangle(object):
         params[5].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]
 
@@ -472,7 +474,7 @@ class Tile_Creator_Triangle(object):
 #         delta_x = params[4] - 0.5
 #         delta_y = params[5] - 0.5
 
-        
+
 
 #         # Rotation
 #         angle = random.uniform(0,360)
@@ -515,19 +517,19 @@ class Tile_Creator_Triangle(object):
 #         params[5].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
 #         return params
-    
+
 #     def Give_Color_Perlin(self,params):
 #         return params[2]
 
 ####################################################################################################
 
-class Tile_Creator_Trapezoid(object):
+class Tile_Creator_Trapezoid:
 
     def __init__(self):
         pass
 
     def __call__(self,dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         for i in range(dim):
             for j in range(dim):
@@ -576,6 +578,6 @@ class Tile_Creator_Trapezoid(object):
         params[5].data.clamp_(params[0]/2 + 0.025, 1-params[0]/2 - 0.025)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]

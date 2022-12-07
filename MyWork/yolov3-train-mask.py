@@ -2,21 +2,21 @@
 Training code for Adversarial patch training
 """
 
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-
-from patch_functions import *
-from loss_functions import *
-from dataset_functions import *
-from tile_functions import Tile_Creator
-import torch.optim as optim
-import patch_config_mask as patch_config_mask
 import math
+import os
+import time
 
+import matplotlib.pyplot as plt
+import patch_config_mask as patch_config_mask
+import torch.optim as optim
+from tile_functions import Tile_Creator
 from torch import autograd
 from torchvision import transforms
-import time
-import os
+from tqdm import tqdm
+
+from dataset_functions import *
+from loss_functions import *
+from patch_functions import *
 
 # Transforming from PIL to Tensor
 transform1 = transforms.ToTensor()
@@ -26,18 +26,18 @@ transform2 = transforms.ToPILImage()
 
 if __name__ == '__main__':
 
-    class PatchTrainer(object):
+    class PatchTrainer:
 
         def __init__(self, mode, list_of_shape, tile = None):
 
             self.mode = mode
 
-            # Select the confing file 
+            # Select the confing file
             self.config = patch_config_mask.patch_configs[mode]()  # select the mode for the patch
 
             # Backgroun mode
             #   -Used for the Fractal Creator
-            #   -Used for the patch applier 
+            #   -Used for the patch applier
 
             # Device
             self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -46,7 +46,7 @@ if __name__ == '__main__':
             self.model = torch.hub.load('ultralytics/yolov3', 'yolov3', autoshape = False)  # or yolov3-spp, yolov3-tiny, custom
 
             if use_cuda:
-                self.model = self.model.eval().to(self.device)  
+                self.model = self.model.eval().to(self.device)
                 self.patch_applier = PatchApplierMask(self.config.BackgroundStyle).to(self.device)
                 # self.patch_transformer = PatchTransformer().to(self.device)
                 self.loss_function = self.config.loss_function.to(self.device)
@@ -88,9 +88,9 @@ if __name__ == '__main__':
             :return: Nothing
             """
 
-            # name = str(tile) + '_' + mode 
-            name = name + '_' + mode 
-            destination_path = "./yolov3/MyWork/txt_results/25-09-2022/" + self.mode + '/' 
+            # name = str(tile) + '_' + mode
+            name = name + '_' + mode
+            destination_path = "./yolov3/MyWork/txt_results/25-09-2022/" + self.mode + '/'
             # image_path = "./yolov3/MyWork/SampleImages/16-10-2022/" + self.mode
             # params_path = './yolov3/MyWork/params_results/16-10-2022/' + self.mode
 
@@ -139,14 +139,14 @@ if __name__ == '__main__':
                     self.gen_function.populate(params)
                     adv_patch, mask_attack = self.gen_function.application()
 
-                    
+
 
                     # adv_patch = adv_patch.type(torch.cuda.FloatTensor)
                     # adv_patch.requires_grad_(True)
                     # adv_patch.retain_grad()
 
                     # print(self.gen_function.patches[0].grad_fn)
-                    
+
 
                     if use_cuda:
                         img_batch = img_batch.to(self.device)
@@ -230,17 +230,17 @@ if __name__ == '__main__':
 
     use_cuda = 1
     # Tile options
-    # 0: Circle 
+    # 0: Circle
     # 1: Ellipse
-    # 2: Square 
+    # 2: Square
     # 3: Rectangle
-    # 4: Triangle 
+    # 4: Triangle
     # 5: Trapezoid
-    # 6: Double Circle 
+    # 6: Double Circle
     # 7: Double Ellipse
-    # 8: Double Square 
+    # 8: Double Square
     # 9: Double Rectangle
-    # 10: Double Triangle 
+    # 10: Double Triangle
     # 11: Double Trapezoid
 
     # for mode in modes:
@@ -248,8 +248,8 @@ if __name__ == '__main__':
     #         trainer = PatchTrainer(mode,tile)
     #         trainer.train()
 
-    # # In this way we are training all the possible combination of loss and tile 
-    
+    # # In this way we are training all the possible combination of loss and tile
+
     # mode = 'max_prob_class'
     # tile = 1
     # trainer = PatchTrainer(mode,tile)
@@ -292,7 +292,7 @@ if __name__ == '__main__':
         [0,0,1,2]
 
     ]
-    
+
     # mode = 'perlin_noise'
     # for i in [15,16,17,19,21]:
     #     configuration = configurations[i]

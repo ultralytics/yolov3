@@ -1,10 +1,11 @@
 from torch import optim
-from patch_functions import *
-from loss_functions import *
+
 from dataset_functions import *
+from loss_functions import *
+from patch_functions import *
 
 
-class loss1(object):
+class loss1:
     """
     Using the loss max_prob_class
     """
@@ -24,7 +25,7 @@ class loss1(object):
         self.n_epochs = 20
         self.max_lab = 30
 
-        # Loss function 
+        # Loss function
         self.loss_function = max_prob_class(0)
 
         # Patch functions
@@ -33,7 +34,7 @@ class loss1(object):
         self.mask_function = Mask_Creator
         self.dim_tile = 16
         self.dim_patch = 640
-        self.mul_fact = 4 # multiplying factor, how big can the tile be wrt the dim_tile 
+        self.mul_fact = 4 # multiplying factor, how big can the tile be wrt the dim_tile
         self.rotation_mode = 2
         # 0: no rotation of the tile
         # 1: rotation of a multiple of 90

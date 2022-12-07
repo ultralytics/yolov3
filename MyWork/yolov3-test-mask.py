@@ -1,7 +1,7 @@
 # Caricare il modello test, senza autoshape = False
 
 # Usare 20 immagini come test set
-# Creare il dataloader con batch = 1 
+# Creare il dataloader con batch = 1
 # il modello test non prende come input dei tensori
 
 # Caricare ogni tensore trovato dopo l'ottimizzazione
@@ -13,23 +13,24 @@
 Testing code for Adversarial patch
 """
 
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-
-from patch_functions import *
-from loss_functions import *
-from dataset_functions import *
-import torch.optim as optim
-import patch_config_mask_test as patch_config_mask_test
-from tile_functions import Tile_Creator
-from count_people import count_people
 import math
+import os
+import time
 
+import cv2
+import matplotlib.pyplot as plt
+import patch_config_mask_test as patch_config_mask_test
+import torch.optim as optim
+from count_people import count_people
+from tile_functions import Tile_Creator
 from torch import autograd
 from torchvision import transforms
-import time
-import os
-import cv2
+from tqdm import tqdm
+
+from dataset_functions import *
+from loss_functions import *
+from patch_functions import *
+
 
 def classifier_attack(attack_path, dimension, multiplier):
     # Open the attack
@@ -49,7 +50,7 @@ def classifier_attack(attack_path, dimension, multiplier):
     tiling_PIL = Image.fromarray(np.uint8(tiling_np))
     # PIL to tensor
     tiling_torch = transform1(tiling_PIL)
-    
+
     return tiling_torch.unsqueeze(0)
 
 configurations = [
@@ -98,13 +99,13 @@ transform2 = transforms.ToPILImage()
 
 if __name__ == '__main__':
 
-    class PatchTester(object):
+    class PatchTester:
 
         def __init__(self, flag, mode = None):
 
             self.flag = flag
 
-            # Select the confing file 
+            # Select the confing file
             self.config = patch_config_mask_test.patch_configs['standard']()  # select the mode for the patch
 
             # Device
@@ -115,13 +116,13 @@ if __name__ == '__main__':
 
             # print(self.config.BackgroundStyle)
             if use_cuda:
-                self.model_test = self.model_test.eval().to(self.device)  
+                self.model_test = self.model_test.eval().to(self.device)
                 self.patch_applier = PatchApplierMask(self.config.BackgroundStyle).to(self.device)
 
             else:
                 self.model_test = self.model_test.eval()
                 self.patch_applier = PatchApplierMask(self.config.BackgroundStyle)
-            
+
         def test(self, date, IoU_thresh, Confidence_thresh):
             """
             Optimize a patch to generate an adversarial example.
@@ -136,8 +137,8 @@ if __name__ == '__main__':
                             shuffle=True,
                             num_workers=10)
                 self.iteration_length = len(test_loader)
-                
-                 
+
+
             #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 BB_path = '/home/andread98/yolov3/MyWork/BB-results'
                 # if self.flag:
@@ -166,13 +167,13 @@ if __name__ == '__main__':
                 #                     adv_patch = torch.rand((1,3,640,640))
                 #                 # Apply the attack
                 #                 attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch)
-                #                 # Transform the image tensor in image PIL 
+                #                 # Transform the image tensor in image PIL
                 #                 img_PIL = transform2(attacked_img_batch.squeeze(0))
 
                 #             # Get the output for each image
                 #             output = self.model_test(img_PIL)
 
-                #             # save the BB image 
+                #             # save the BB image
                 #             array = np.squeeze(output.render())
                 #             PIL_image = Image.fromarray(np.uint8(array)).convert('RGB')
                 #             PIL_image.save(destination)
@@ -181,7 +182,7 @@ if __name__ == '__main__':
                 #             # Select only the object that are people
                 #             array = array[array[:,-1] == 0]
 
-                #             # Define the path were the output has to be saved in 
+                #             # Define the path were the output has to be saved in
                 #             final_path = images_path + img_name[0][:-3] + 'txt'
 
                 #             with open(final_path, "w") as txt_file:
@@ -193,8 +194,8 @@ if __name__ == '__main__':
                 #         line = mode + ','  + str(number_people) + '\n'
                 #         f.write(line)
 
-                        
-                
+
+
             #     # #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
             #         path_attacks = '/home/andread98/yolov3/MyWork/classifier_attack'
@@ -207,16 +208,16 @@ if __name__ == '__main__':
             #             for dimension in dimensions:
             #                 attack_path = path_attacks + '/' + attack
             #                 multiplier = int(640/dimension)
-                            
+
             #                 # Obtain the adv_patch
             #                 adv_patch =classifier_attack(attack_path, dimension, multiplier)
 
             #                 for i_batch, (img_batch, masks_batch, img_name) in enumerate(test_loader):
             #                     print(i_batch)
-                                
+
             #                     # Apply the attack
             #                     attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch)
-            #                     # Transform the image tensor in image PIL 
+            #                     # Transform the image tensor in image PIL
             #                     img_PIL = transform2(attacked_img_batch.squeeze(0))
             #                     # img_PIL.show()
 
@@ -226,7 +227,7 @@ if __name__ == '__main__':
             #                     # Select only the object that are people
             #                     array = array[array[:,-1] == 0]
 
-            #                     # Define the path were the output has to be saved in 
+            #                     # Define the path were the output has to be saved in
             #                     final_path = images_path + img_name[0][:-3] + 'txt'
 
             #                     with open(final_path, "w") as txt_file:
@@ -237,16 +238,16 @@ if __name__ == '__main__':
             #                 number_people = count_people(IoU_thresh, Confidence_thresh)
             #                 line = 'attack_' + attack[:-4] + '_' + str(dimension) + ',' + str(number_people) + '\n'
             #                 f.write(line)
-                        
+
             #         self.flag = False
 
                 ####################################################################################################
-                
+
                 # modes = ['standard', 'perlin_noise', 'perlin_noise_inverted', 'ghost']
                 modes = ['ghost']
 
                 for mode in modes:
-                    # Select the confing file 
+                    # Select the confing file
                     self.config = patch_config_mask_test.patch_configs[mode]()  # select the mode for the patch
 
                     print(self.config.BackgroundStyle)
@@ -256,10 +257,10 @@ if __name__ == '__main__':
                     else:
                         self.patch_applier = PatchApplierMask(self.config.BackgroundStyle)
 
-                    starting_path = '/home/andread98/yolov3/MyWork/params_results/' + date + '/' + mode 
+                    starting_path = '/home/andread98/yolov3/MyWork/params_results/' + date + '/' + mode
                     tensors = [f for f in os.listdir(starting_path) if f.endswith('.pt')]
                     tensors = sorted(tensors)
-                
+
                     for tensor in tensors:
                         print(mode)
                         directory = BB_path + '/' + tensor
@@ -271,13 +272,13 @@ if __name__ == '__main__':
                         print(params)
                         tile = int(tensor[:-self.config.number_for_name])
                         print('Tile: ', tile)
-                        
+
                         # Which type of attack do we want to do?
                         #------------------------------------------------------------------------------------------------
                         if date == '22-09-2022':
                             # Classes for all the possible types of tiles
                             self.tile_class = self.config.list_classes_tile[tile]()
-                        else: 
+                        else:
                             # One class fits all
                             self.tile_class = Tile_Creator(configurations[tile])
                         #------------------------------------------------------------------------------------------------
@@ -315,11 +316,11 @@ if __name__ == '__main__':
                             attacked_img_batch = attacked_img_batch.type(torch.cuda.FloatTensor)
                             # attacked_img_batch = self.patch_applier(img_batch, masks_batch, adv_patch)
                             print(i_batch)
-                            img_PIL = transform2(attacked_img_batch.squeeze(0))                        
+                            img_PIL = transform2(attacked_img_batch.squeeze(0))
 
-                            output = self.model_test(img_PIL)  
+                            output = self.model_test(img_PIL)
 
-                            # save the BB image 
+                            # save the BB image
                             array = np.squeeze(output.render())
                             PIL_image = Image.fromarray(np.uint8(array)).convert('RGB')
                             PIL_image.save(destination)
@@ -328,7 +329,7 @@ if __name__ == '__main__':
                             # Select only the object that are people
                             array = array[array[:,-1] == 0]
 
-                            # Define the path were the output has to be saved in 
+                            # Define the path were the output has to be saved in
                             final_path = images_path + img_name[0][:-3] + 'txt'
 
                             with open(final_path, "w") as txt_file:
@@ -339,23 +340,23 @@ if __name__ == '__main__':
                         number_people = count_people(IoU_thresh, Confidence_thresh)
                         line = tensor + ',' + str(number_people) + '\n'
                         f.write(line)
-                
+
 
 
     use_cuda = 1
-    
+
     # Tile options
-    # 0: Circle 
+    # 0: Circle
     # 1: Ellipse
-    # 2: Square 
+    # 2: Square
     # 3: Rectangle
-    # 4: Triangle 
+    # 4: Triangle
     # 5: Trapezoid
-    # 6: Double Circle 
+    # 6: Double Circle
     # 7: Double Ellipse
-    # 8: Double Square 
+    # 8: Double Square
     # 9: Double Rectangle
-    # 10: Double Triangle 
+    # 10: Double Triangle
     # 11: Double Trapezoid
 
     # Which experiment do you want to evaluate?
@@ -364,7 +365,7 @@ if __name__ == '__main__':
     flag = True
 
     for date in dates:
-        
+
         for i in range(5):
             IoU_thresh = 0.5
             Confidence_thresh = 0.4
@@ -375,8 +376,8 @@ if __name__ == '__main__':
             # torch.save(img_tensor, 'img_tensor.pt')
             # cv2.imshow('Color image', img_tensor.cpu().detach().numpy()*255)
             # cv2.waitKey(0)
-            
 
- 
 
-    
+
+
+

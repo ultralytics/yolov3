@@ -75,7 +75,7 @@ def Perlin_Noise_Creator(dim, color):
     tensor_channel2 = pn_tensor_3dim.clone()*color[1]
     tensor_channel3 = pn_tensor_3dim.clone()*color[2]
     total = torch.stack([tensor_channel1, tensor_channel2, tensor_channel3], dim=1)
-    
+
     final_tensor = total.squeeze(0)
 
     return final_tensor
@@ -107,7 +107,7 @@ def Inverted_Perlin_Noise_Creator(dim, color):
     tensor_channel2 = pn_tensor_3dim.clone()*(1-color[1])
     tensor_channel3 = pn_tensor_3dim.clone()*(1-color[2])
     total = torch.stack([tensor_channel1, tensor_channel2, tensor_channel3], dim=1)
-    
+
     final_tensor = color_image + total.squeeze(0)
 
     return final_tensor

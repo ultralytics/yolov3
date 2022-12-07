@@ -1,23 +1,24 @@
+import fnmatch
+import os
+import shutil
 from email.mime import image
+
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy
 import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision.transforms as transforms
+from PIL import Image
+from torch.autograd import Variable
+from torch.utils.data import Dataset
 from torchvision import datasets
 from torchvision.transforms import ToTensor
-import torchvision.transforms as transforms
-import matplotlib.pyplot as plt
-import torch.optim as optim
-import torch.nn as nn
-import numpy as np
-from torch.autograd import Variable
-import os
-import fnmatch
-from torch.utils.data import Dataset
-from PIL import Image
-from patch_functions import *
-from loss_functions import *
+
 from dataset_functions import *
-import torch.optim as optim
-import shutil
-import scipy
+from loss_functions import *
+from patch_functions import *
 
 # Transforming from PIL to Tensor
 transform1 = transforms.ToTensor()
@@ -42,7 +43,7 @@ transform2 = transforms.ToPILImage()
 #     random_attack = torch.ones((3,w,h))
 #     image_final_tensor = random_attack*mask_tensor + image_tensor*(1 - mask_tensor)
 #     image_final_tensor_PIL = transform2(image_final_tensor)
-#     image_final_tensor_PIL.show() 
+#     image_final_tensor_PIL.show()
 #     image_final_tensor_PIL.show()
 
 # Masks to pad

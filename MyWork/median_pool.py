@@ -5,7 +5,7 @@ from torch.nn.modules.utils import _pair, _quadruple
 
 class MedianPool2d(nn.Module):
     """ Median pool (usable as median filter when stride=1) module.
-    
+
     Args:
          kernel_size: size of pooling kernel, int or 2-tuple
          stride: pool stride, int or 2-tuple
@@ -13,7 +13,7 @@ class MedianPool2d(nn.Module):
          same: override padding and enforce same padding, boolean
     """
     def __init__(self, kernel_size=3, stride=1, padding=0, same=False):
-        super(MedianPool2d, self).__init__()
+        super().__init__()
 
         self.k = _pair(kernel_size)
         self.stride = _pair(stride)
@@ -43,9 +43,9 @@ class MedianPool2d(nn.Module):
         else:  # 'same' no: input dim =/= output dim
             padding = self.padding
         return padding
-    
+
     def forward(self, x):  # x = adv_patch image
-        # using existing pytorch functions and tensor ops so that we get autograd, 
+        # using existing pytorch functions and tensor ops so that we get autograd,
         # would likely be more efficient to implement from scratch at C/Cuda level
 
         # NB in F.pad (https://pytorch.org/docs/stable/nn.functional.html):

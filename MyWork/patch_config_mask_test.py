@@ -1,10 +1,11 @@
 from torch import optim
-from patch_functions import *
-from loss_functions import *
+
 from dataset_functions import *
+from loss_functions import *
+from patch_functions import *
 
 
-class standard(object):
+class standard:
     """
     Using the loss max_prob_class
     """
@@ -26,7 +27,7 @@ class standard(object):
         self.number_for_name = 12
         # self.list_of_shape = [3,0,0,0,0,0]
 
-        # Loss function 
+        # Loss function
         self.loss_function = max_prob_class(0)
 
         # Patch functions
@@ -37,7 +38,7 @@ class standard(object):
 
         self.dim_tile = 16
         self.dim_patch = 640
-        self.mul_fact = 4 # multiplying factor, how big can the tile be wrt the dim_tile 
+        self.mul_fact = 4 # multiplying factor, how big can the tile be wrt the dim_tile
 
         # 0: no rotation of the tile
         # 1: rotation of a multiple of 90
@@ -58,7 +59,7 @@ class perlin_noise(standard):
         self.patch_name = 'perlin_noise'
         self.BackgroundStyle = 1
         self.number_for_name = 16
-        
+
 
 
 class perlin_noise_inverted(standard):

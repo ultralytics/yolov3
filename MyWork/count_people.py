@@ -1,7 +1,9 @@
-import os
 import glob
-import torch
+import os
+
 import cv2
+import torch
+
 
 def IoUArea(x1,y1,w1,h1,x2,y2,w2,h2):
     x_start_point1 = x1-w1/2
@@ -42,7 +44,7 @@ def count_people(IoU_thresh, Confidence_thresh):
 
         with open(ground_truth_path) as fp:
             ground_truth = []
-            # x,y,w,h da estrarre per ogni riga del txt 
+            # x,y,w,h da estrarre per ogni riga del txt
             for line in fp:
                 numbers = []
                 #Append the list of numbers to the result array
@@ -50,13 +52,13 @@ def count_people(IoU_thresh, Confidence_thresh):
                 #Split each line of whitespace
                 numbers.extend( [float(item) for item in line.split()])
                 ground_truth.append(numbers)
-        
+
         # print(f'Ground truth: {ground_truth}')
         people_ground_truth += len(ground_truth)
 
         with open(prediction_path) as fp:
             prediction = []
-            # x,y,w,h da estrarre per ogni riga del txt 
+            # x,y,w,h da estrarre per ogni riga del txt
             for line in fp:
                 numbers = []
                 #Append the list of numbers to the result array
@@ -75,7 +77,7 @@ def count_people(IoU_thresh, Confidence_thresh):
 
             area_ground_truth = w_gt*h_gt
 
-            max_area_ratio = 0 
+            max_area_ratio = 0
             max_pos = None
 
             for j in range(len(prediction)):

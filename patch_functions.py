@@ -1,12 +1,15 @@
-import torch
-import random
-import numpy as np
-import torchvision.transforms.functional as TF
 import math
-import torchvision.transforms as transforms
-import torch.nn.functional as F
+import random
+
+import numpy as np
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
+import torchvision.transforms as transforms
+import torchvision.transforms.functional as TF
+
 from median_pool import MedianPool2d
+
 # import os
 # import fnmatch
 # from torch.utils.data import Dataset
@@ -24,9 +27,9 @@ from median_pool import MedianPool2d
 class Fractal_Patch_Generator(nn.Module):
 
     def __init__(self, dim_patch, dim_image, max_dim, tile_function, mask_function, angle_type):
-        super(Fractal_Patch_Generator, self).__init__()
+        super().__init__()
         #Dimension of the patch, smallest component of the attack
-        self.dim_patch = dim_patch 
+        self.dim_patch = dim_patch
         #Dimension of the image we want to create
         self.dim_image = dim_image
         #Max dimension for the patch
@@ -44,7 +47,7 @@ class Fractal_Patch_Generator(nn.Module):
 
         # How many lines in the grid?
         self.dim_grid = int(self.dim_image/self.dim_patch)
-    
+
     def populate(self, params):
         self.patches = []
         self.ex_colors = []
@@ -57,12 +60,12 @@ class Fractal_Patch_Generator(nn.Module):
             self.patches.append(patch)
             self.ex_colors.append(ex_color)
             self.masks.append(mask)
-            
-    
+
+
     def application(self):
         #Creation of the complete image
         self.image = torch.rand((3,self.dim_image,self.dim_image))
-        #Creation of the bool vector 
+        #Creation of the bool vector
         self.bool_matrix = np.ones((self.dim_grid,self.dim_grid), dtype=int)
         #Creation of the index vector
         self.index_vector = np.arange(0,(self.dim_grid**2))
@@ -79,7 +82,7 @@ class Fractal_Patch_Generator(nn.Module):
             #Check if the corner is still available
             if self.bool_matrix[i][j]:
                 av_dim = self.available_dimensions(i,j)
-                
+
                 #Choose randomly the dimension
                 chosen_dim = int(np.random.choice(av_dim, 1))
                 # print(chosen_dim)
@@ -108,7 +111,7 @@ class Fractal_Patch_Generator(nn.Module):
                     self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = out
 
         return self.image
-        
+
     def available_dimensions(self,i,j):
         #It is always possible to put the smallest version of the patch
         av_dim = [1]
@@ -119,7 +122,7 @@ class Fractal_Patch_Generator(nn.Module):
                 av_dim.append(dim)
             else:
                 break
-        
+
         return av_dim
 
 ####################################################################################################
@@ -137,14 +140,14 @@ def Mask_Creator(dim):
 ####################################################################################################
 
 def Tile_Creator_Circle(dim, params):
-     # Tensore delle distanze 
+     # Tensore delle distanze
     image = torch.zeros((3,dim,dim))
     for i in range(dim):
         for j in range(dim):
             image[:,i,j] = torch.sqrt(torch.tensor((i-(dim-1)/2)**2 + (j-(dim-1)/2)**2)) - (dim/2)*params[0]
     coeff = image.sigmoid()
 
-    # Creazione dei tensori per i colori 
+    # Creazione dei tensori per i colori
     color1_image = params[1].unsqueeze(-1).unsqueeze(-1)
     color1_image = color1_image.expand(-1, dim, dim)
 
@@ -167,14 +170,14 @@ def Params_Creator_Circle():
 ####################################################################################################
 
 def Tile_Creator_Ellipse(dim, params):
-     # Tensore delle distanze 
+     # Tensore delle distanze
     image = torch.zeros((3,dim,dim))
     for i in range(dim):
         for j in range(dim):
             image[:,i,j] = ((i-(dim-1)/2)*(dim/2)*params[1])**2 + ((j-(dim-1)/2)*(dim/2)*params[0])**2-((dim/2)*params[0]*(dim/2)*params[1])**2
     coeff = image.sigmoid()
 
-    # Creazione dei tensori per i colori 
+    # Creazione dei tensori per i colori
     color1_image = params[2].unsqueeze(-1).unsqueeze(-1)
     color1_image = color1_image.expand(-1, dim, dim)
 
@@ -199,14 +202,14 @@ def Params_Creator_Ellipse():
 ####################################################################################################
 
 def Tile_Creator_Square(dim, params):
-     # Tensore delle distanze 
+     # Tensore delle distanze
     image = torch.zeros((3,dim,dim))
     for i in range(dim):
         for j in range(dim):
             image[:,i,j] = torch.max(torch.abs(torch.tensor(i-(dim-1)/2)/params[0]),torch.abs(torch.tensor(j-(dim-1)/2))/params[0]) - dim/2
     coeff = image.sigmoid()
 
-    # Creazione dei tensori per i colori 
+    # Creazione dei tensori per i colori
     color1_image = params[1].unsqueeze(-1).unsqueeze(-1)
     color1_image = color1_image.expand(-1, dim, dim)
 
@@ -229,14 +232,14 @@ def Params_Creator_Square():
 ####################################################################################################
 
 def Tile_Creator_Rectangle(dim, params):
-     # Tensore delle distanze 
+     # Tensore delle distanze
     image = torch.zeros((3,dim,dim))
     for i in range(dim):
         for j in range(dim):
             image[:,i,j] = torch.max(torch.abs(torch.tensor(i-(dim-1)/2)/params[0]),torch.abs(torch.tensor(j-(dim-1)/2))/params[1]) - dim/2
     coeff = image.sigmoid()
 
-    # Creazione dei tensori per i colori 
+    # Creazione dei tensori per i colori
     color1_image = params[2].unsqueeze(-1).unsqueeze(-1)
     color1_image = color1_image.expand(-1, dim, dim)
 
@@ -261,14 +264,14 @@ def Params_Creator_Rectangle():
 ####################################################################################################
 
 def Tile_Creator_Triangle(dim, params):
-     # Tensore delle distanze 
+     # Tensore delle distanze
     image = torch.zeros((3,dim,dim))
     for i in range(dim):
         for j in range(dim):
             image[:,i,j] = torch.max(torch.abs(-(i-(dim-1)/2)/params[1]),torch.abs(2*(j-(dim-1)/2)/params[0]) + (i-(dim-1)/2)/params[1]) - dim/2
     coeff = image.sigmoid()
 
-    # Creazione dei tensori per i colori 
+    # Creazione dei tensori per i colori
     color1_image = params[2].unsqueeze(-1).unsqueeze(-1)
     color1_image = color1_image.expand(-1, dim, dim)
 
@@ -293,14 +296,14 @@ def Params_Creator_Triangle():
 ####################################################################################################
 
 def Tile_Creator_Trapezoid(dim, params):
-     # Tensore delle distanze 
+     # Tensore delle distanze
     image = torch.zeros((3,dim,dim))
     for i in range(dim):
         for j in range(dim):
             image[:,i,j] = torch.max(torch.abs(2*(i-(dim-1)/2)/params[1]),torch.abs(3*(j-(dim-1)/2)/params[0]) + (i-(dim-1)/2)/params[1]) - dim
     coeff = image.sigmoid()
 
-    # Creazione dei tensori per i colori 
+    # Creazione dei tensori per i colori
     color1_image = params[2].unsqueeze(-1).unsqueeze(-1)
     color1_image = color1_image.expand(-1, dim, dim)
 
@@ -321,7 +324,7 @@ def Params_Creator_Trapezoid():
 
     params = [a, b, color1, color2]
     return params
-    
+
 ####################################################################################################
 ####################################################################################################
 
@@ -335,12 +338,12 @@ class PatchTransformer(nn.Module):
     """
 
     def __init__(self):
-        super(PatchTransformer, self).__init__()
-        
+        super().__init__()
+
         # os.environ['CUDA_VISIBLE_DEVICES'] = '3'
         # self.device = 'cuda:3' if torch.cuda.is_available() else 'cpu'
 
-        
+
         self.min_contrast = 0.99
         self.max_contrast = 1.01
         self.min_brightness = -0.01
@@ -597,7 +600,7 @@ class PatchApplier(nn.Module):
     """
 
     def __init__(self):
-        super(PatchApplier, self).__init__()
+        super().__init__()
 
     def forward(self, img_batch, adv_batch):
 

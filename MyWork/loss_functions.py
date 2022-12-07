@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+
 # import torchvision.transforms as transforms
 # import torch.nn.functional as F
 # import numpy as np
@@ -28,7 +29,7 @@ class max_prob_class(nn.Module):
     """
 
     def __init__(self, cls_id):
-        super(max_prob_class, self).__init__()
+        super().__init__()
         self.cls_id = cls_id
 
     def forward(self, outputs):
@@ -46,7 +47,7 @@ class max_prob_class(nn.Module):
         yolo_output3 = torch.reshape(yolo_output3, (batch_dim,3*20*20,85)).sigmoid()
 
         final_tensor = torch.cat((yolo_output1,yolo_output2,yolo_output3), dim=1)
-    
+
         objectness = final_tensor[:, :, 4]
         cond_prob_targeted_class = final_tensor[:, :, 5+self.cls_id]
 
@@ -65,7 +66,7 @@ class max_prob_class2(nn.Module):
     """
 
     def __init__(self, cls_id):
-        super(max_prob_class2, self).__init__()
+        super().__init__()
         self.cls_id = cls_id
 
     def forward(self, outputs):
@@ -83,7 +84,7 @@ class max_prob_class2(nn.Module):
         yolo_output3 = torch.reshape(yolo_output3, (batch_dim,3*20*20,85))
 
         final_tensor = torch.cat((yolo_output1,yolo_output2,yolo_output3), dim=1)
-    
+
         cond_prob_targeted_class = final_tensor[:, :, 5+self.cls_id]
 
         max_conf, _ = torch.max(cond_prob_targeted_class, dim=1)
@@ -99,7 +100,7 @@ class max_prob_obj(nn.Module):
     """
 
     def __init__(self):
-        super(max_prob_obj, self).__init__()
+        super().__init__()
 
     def forward(self, outputs):
         # Compute the batch dimension
@@ -116,7 +117,7 @@ class max_prob_obj(nn.Module):
         yolo_output3 = torch.reshape(yolo_output3, (batch_dim,3*20*20,85))
 
         final_tensor = torch.cat((yolo_output1,yolo_output2,yolo_output3), dim=1)
-    
+
         objectness = final_tensor[:, :, 4]
 
         max_conf, _ = torch.max(objectness, dim=1)
@@ -132,7 +133,7 @@ class new_loss_tprob(nn.Module):
     """
 
     def __init__(self, cls_id):
-        super(new_loss_tprob, self).__init__()
+        super().__init__()
         self.cls_id = cls_id
 
     def forward(self, outputs):

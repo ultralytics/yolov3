@@ -2,28 +2,28 @@
 Training code for Adversarial patch training
 """
 
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-
-from patch_functions import *
-from loss_functions import *
-from dataset_functions import *
-import torch.optim as optim
-import patch_config
 import math
+import os
+import time
 
+import matplotlib.pyplot as plt
+import torch.optim as optim
 from torch import autograd
 from torchvision import transforms
-import time
-import os
+from tqdm import tqdm
+
+import patch_config
+from dataset_functions import *
+from loss_functions import *
+from patch_functions import *
 
 if __name__ == '__main__':
 
-    class PatchTrainer(object):
+    class PatchTrainer:
 
         def __init__(self, mode, tile):
 
-            # Select the confing file 
+            # Select the confing file
             self.config = patch_config.patch_configs[mode]()  # select the mode for the patch
 
             # Device
@@ -33,7 +33,7 @@ if __name__ == '__main__':
             self.model = torch.hub.load('ultralytics/yolov3', 'yolov3', autoshape = False)  # or yolov3-spp, yolov3-tiny, custom
 
             if use_cuda:
-                self.model = self.model.eval().to(self.device)  
+                self.model = self.model.eval().to(self.device)
                 self.patch_applier = PatchApplier().to(self.device)
                 self.patch_transformer = PatchTransformer().to(self.device)
                 self.loss_function = self.config.loss_function.to(self.device)
@@ -112,7 +112,7 @@ if __name__ == '__main__':
                     adv_batch_t = self.patch_transformer(adv_patch, lab_batch, img_size, do_rotate=True, rand_loc=False)
                     p_img_batch = self.patch_applier(img_batch, adv_batch_t)
                     p_img_batch = F.interpolate(p_img_batch, (img_size, img_size))
-                    
+
                     output = self.model(p_img_batch)  # TODO apply YOLOv2 to all (patched) images in the batch (6)
                     loss = torch.mean(self.loss_function(output))
                     print(loss)
@@ -122,7 +122,7 @@ if __name__ == '__main__':
                     optimizer.step()
                     optimizer.zero_grad()
 
-                    
+
                     if len(params)==3:
                         params[0].data.clamp_(0, factor)
                         params[1].data.clamp_(0, 1)
@@ -186,11 +186,11 @@ if __name__ == '__main__':
     use_cuda = 1
     modes = ["max_prob_class","max_prob_class2","max_prob_obj","new_loss_tprob"]
     # Tile options
-    # 0: Circle 
+    # 0: Circle
     # 1: Ellipse
-    # 2: Square 
+    # 2: Square
     # 3: Rectangle
-    # 4: Traingle 
+    # 4: Traingle
     # 5: Trapezoid
 
     for mode in modes:
@@ -198,6 +198,4 @@ if __name__ == '__main__':
             trainer = PatchTrainer(mode,tile)
             trainer.train()
 
-    # In this way we are training all the possible combination of loss and tile 
-
-
+    # In this way we are training all the possible combination of loss and tile

@@ -1,16 +1,18 @@
 # from this import d
 # from turtle import forward
-import torch
+import math
 import random
+
 import numpy as np
-import torchvision.transforms.functional as TF
-import math
-import torchvision.transforms as transforms
-import torch.nn.functional as F
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
+import torchvision.transforms as transforms
+import torchvision.transforms.functional as TF
+from perlin_noise import Inverted_Perlin_Noise_Creator, Perlin_Noise_Creator
+
 from median_pool import MedianPool2d
-import math
-from perlin_noise import Perlin_Noise_Creator, Inverted_Perlin_Noise_Creator
+
 factor = math.sqrt(2)/2
 # import os
 # import fnmatch
@@ -29,9 +31,9 @@ factor = math.sqrt(2)/2
 class Fractal_Patch_Generator(nn.Module):
 
     def __init__(self, dim_patch, dim_image, max_dim, tile_class, angle_type, BackgroundStyle, mask_function = None):
-        super(Fractal_Patch_Generator, self).__init__()
+        super().__init__()
         #Dimension of the patch, smallest component of the attack
-        self.dim_patch = dim_patch 
+        self.dim_patch = dim_patch
         #Dimension of the image we want to create
         self.dim_image = dim_image
         #Max dimension for the patch
@@ -51,7 +53,7 @@ class Fractal_Patch_Generator(nn.Module):
 
         # How many lines in the grid?
         self.dim_grid = int(self.dim_image/self.dim_patch)
-    
+
     def populate(self, params):
 
         if self.BackgroundStyle == 0: # Normal situation with a plain color
@@ -76,14 +78,14 @@ class Fractal_Patch_Generator(nn.Module):
                 self.patches.append(patch)
                 self.ex_colors.append(ex_color)
                 self.masks.append(mask)
-        
+
         else: # Using the perlin noise in the background
             self.patches = []
             self.masks = []
             # Creation of the perlin noise with the function in perlin_noise.py
             if self.BackgroundStyle == 1:
                 self.perlin_noise = Perlin_Noise_Creator(self.dim_image, self.tile_class.Give_Color_Perlin(params))
-           
+
                 # self.perlin_noise = self.perlin_noise.type(torch.cuda.FloatTensor)
                 self.perlin_noise.requires_grad_(True)
                 self.perlin_noise.retain_grad()
@@ -106,7 +108,7 @@ class Fractal_Patch_Generator(nn.Module):
                 mask.retain_grad()
 
                 self.patches.append(patch)
-                self.masks.append(mask) 
+                self.masks.append(mask)
 
     # def populate(self, params):
 
@@ -129,13 +131,13 @@ class Fractal_Patch_Generator(nn.Module):
     #         self.patch = patch
     #         self.ex_color = ex_color
     #         self.mask = mask
-        
+
     #     else: # Using the perlin noise in the background
-            
+
     #         # Creation of the perlin noise with the function in perlin_noise.py
     #         if self.BackgroundStyle == 1:
     #             self.perlin_noise = Perlin_Noise_Creator(self.dim_image, self.tile_class.Give_Color_Perlin(params))
-           
+
     #             # self.perlin_noise = self.perlin_noise.type(torch.cuda.FloatTensor)
     #             self.perlin_noise.requires_grad_(True)
     #             self.perlin_noise.retain_grad()
@@ -159,12 +161,12 @@ class Fractal_Patch_Generator(nn.Module):
     #         mask.retain_grad()
 
     #         self.patch = patch
-    #         self.mask = mask               
-    
+    #         self.mask = mask
+
     def application(self):
         #Creation of the complete image
         self.image = torch.rand((3,self.dim_image,self.dim_image))
-        #Creation of the bool vector 
+        #Creation of the bool vector
         self.bool_matrix = np.ones((self.dim_grid,self.dim_grid), dtype=int)
         #Creation of the index vector
         self.index_vector = np.arange(0,(self.dim_grid**2))
@@ -180,7 +182,7 @@ class Fractal_Patch_Generator(nn.Module):
             #Check if the corner is still available
             if self.bool_matrix[i][j]:
                 av_dim = self.available_dimensions(i,j)
-                
+
                 #Choose randomly the dimension
                 chosen_dim = int(np.random.choice(av_dim, 1))
                 # print(chosen_dim)
@@ -201,7 +203,7 @@ class Fractal_Patch_Generator(nn.Module):
                         #Select the angle
                         angle = random.uniform(0,360)
 
-                    
+
 
                     if self.BackgroundStyle == 0: # Normal case
                         #Rotate
@@ -221,11 +223,11 @@ class Fractal_Patch_Generator(nn.Module):
                         out = TF.rotate(self.patches[chosen_dim-1], angle)
                         # Rotate the mask
                         out2 = TF.rotate(self.masks[chosen_dim-1], angle)
-                        
-                        # Apply the patch to the image  
+
+                        # Apply the patch to the image
                         self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = out
-                        
-                        # Tiling all the tile together to create to complete mask 
+
+                        # Tiling all the tile together to create to complete mask
                         self.complete_mask[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = out2
 
         if self.BackgroundStyle == 0:
@@ -235,11 +237,11 @@ class Fractal_Patch_Generator(nn.Module):
             return self.image, self.complete_mask
         else:
             return  self.complete_mask*self.image, self.complete_mask
-    
+
     # def application(self):
     #     #Creation of the complete image
     #     self.image = torch.rand((3,self.dim_image,self.dim_image))
-    #     #Creation of the bool vector 
+    #     #Creation of the bool vector
     #     self.bool_matrix = np.ones((self.dim_grid,self.dim_grid), dtype=int)
     #     #Creation of the index vector
     #     self.index_vector = np.arange(0,(self.dim_grid**2))
@@ -255,10 +257,10 @@ class Fractal_Patch_Generator(nn.Module):
     #         #Check if the corner is still available
     #         if self.bool_matrix[i][j]:
     #             av_dim = self.available_dimensions(i,j)
-                
+
     #             #Choose randomly the dimension
     #             chosen_dim = int(np.random.choice(av_dim, 1))
-                
+
     #             #Compute the scale factor
     #             sf = chosen_dim/self.max_dim
 
@@ -282,7 +284,7 @@ class Fractal_Patch_Generator(nn.Module):
     #                     #Select the angle
     #                     angle = random.uniform(0,360)
 
-                    
+
 
     #                 if self.BackgroundStyle == 0: # Normal case
     #                     #Rotate
@@ -302,11 +304,11 @@ class Fractal_Patch_Generator(nn.Module):
     #                     out = TF.rotate(rescaled_patch, angle)
     #                     # Rotate the mask
     #                     out2 = TF.rotate(rescaled_mask, angle)
-                        
-    #                     # Apply the patch to the image  
+
+    #                     # Apply the patch to the image
     #                     self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = out
-                        
-    #                     # Tiling all the tile together to create to complete mask 
+
+    #                     # Tiling all the tile together to create to complete mask
     #                     self.complete_mask[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = out2
 
     #     if self.BackgroundStyle == 0:
@@ -316,7 +318,7 @@ class Fractal_Patch_Generator(nn.Module):
     #         return self.image, self.complete_mask
     #     else:
     #         return  self.complete_mask*self.image, self.complete_mask
-        
+
     def available_dimensions(self,i,j):
         #It is always possible to put the smallest version of the patch
         av_dim = [1]
@@ -327,7 +329,7 @@ class Fractal_Patch_Generator(nn.Module):
                 av_dim.append(dim)
             else:
                 break
-        
+
         return av_dim
 
 ####################################################################################################
@@ -343,13 +345,13 @@ def Mask_Creator(dim):
     return mask
 
 ####################################################################################################
-class Tile_Creator_Circle(object):
-    
+class Tile_Creator_Circle:
+
     def __init__(self):
         pass
 
     def __call__(self, dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         for i in range(dim):
             for j in range(dim):
@@ -375,26 +377,26 @@ class Tile_Creator_Circle(object):
 
         params = [a, color1, color2]
         return params
-    
+
     def Params_Clamp(self,params):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, 1)
         params[2].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[1]
 
 #-----------------------------------------------------------------------------------------------------
 
-class Tile_Creator_Double_Circle(object):
-    
+class Tile_Creator_Double_Circle:
+
     def __init__(self):
         pass
 
     def __call__(self, dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         image2 = torch.zeros((3,dim,dim))
         for i in range(dim):
@@ -404,7 +406,7 @@ class Tile_Creator_Double_Circle(object):
         coeff = image.sigmoid()
         coeff2 = image2.sigmoid()
 
-        # Creation of the colors tensors 
+        # Creation of the colors tensors
         color1_image = params[2].unsqueeze(-1).unsqueeze(-1)
         color1_image = color1_image.expand(-1, dim, dim)
 
@@ -440,17 +442,17 @@ class Tile_Creator_Double_Circle(object):
         params[4].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]
 
 ####################################################################################################
 
-class Tile_Creator_Ellipse(object):
+class Tile_Creator_Ellipse:
 
     def __init__(self):
         pass
-    
+
     def __call__(self,dim, params):
         # Distances Tensor
         image = torch.zeros((3,dim,dim))
@@ -485,22 +487,22 @@ class Tile_Creator_Ellipse(object):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, factor)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
+        params[3].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]
 
 #-----------------------------------------------------------------------------------------------------
 
-class Tile_Creator_Double_Ellipse(object):
-    
+class Tile_Creator_Double_Ellipse:
+
     def __init__(self):
         pass
 
     def __call__(self,dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         image2 = torch.zeros((3,dim,dim))
         for i in range(dim):
@@ -546,25 +548,25 @@ class Tile_Creator_Double_Ellipse(object):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, factor)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
+        params[3].data.clamp_(0, 1)
         params[4].data.clamp_(0, 1)
-        params[5].data.clamp_(0, 1) 
+        params[5].data.clamp_(0, 1)
         params[6].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[4]
 
 ####################################################################################################
 
-class Tile_Creator_Square(object):
+class Tile_Creator_Square:
 
     def __init__(self):
         pass
-    
+
     def __call__(self, dim, params):
-        # Tensore delle distanze 
+        # Tensore delle distanze
         image = torch.zeros((3,dim,dim))
         for i in range(dim):
             for j in range(dim):
@@ -597,19 +599,19 @@ class Tile_Creator_Square(object):
         params[2].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[1]
 
 #-----------------------------------------------------------------------------------------------------
 
-class Tile_Creator_Double_Square(object):
-    
+class Tile_Creator_Double_Square:
+
     def __init__(self):
         pass
 
     def __call__(self, dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         image2 = torch.zeros((3,dim,dim))
         for i in range(dim):
@@ -619,7 +621,7 @@ class Tile_Creator_Double_Square(object):
         coeff = image.sigmoid()
         coeff2 = image2.sigmoid()
 
-        # Creation of the colors tensors 
+        # Creation of the colors tensors
         color1_image = params[2].unsqueeze(-1).unsqueeze(-1)
         color1_image = color1_image.expand(-1, dim, dim)
 
@@ -646,7 +648,7 @@ class Tile_Creator_Double_Square(object):
 
         params = [a, a2, color1, color2, color3]
         return params
-    
+
     def Params_Clamp(self,params):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, 1)
@@ -655,17 +657,17 @@ class Tile_Creator_Double_Square(object):
         params[4].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]
 
 ####################################################################################################
 
-class Tile_Creator_Rectangle(object):
+class Tile_Creator_Rectangle:
 
     def __init__(self):
         pass
-    
+
     def __call__(self,dim, params):
         # Distances Tensor
         image = torch.zeros((3,dim,dim))
@@ -700,22 +702,22 @@ class Tile_Creator_Rectangle(object):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, factor)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
+        params[3].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]
 
 #-----------------------------------------------------------------------------------------------------
 
-class Tile_Creator_Double_Rectangle(object):
-    
+class Tile_Creator_Double_Rectangle:
+
     def __init__(self):
         pass
 
     def __call__(self,dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         image2 = torch.zeros((3,dim,dim))
         for i in range(dim):
@@ -761,19 +763,19 @@ class Tile_Creator_Double_Rectangle(object):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, factor)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
+        params[3].data.clamp_(0, 1)
         params[4].data.clamp_(0, 1)
-        params[5].data.clamp_(0, 1) 
+        params[5].data.clamp_(0, 1)
         params[6].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[4]
 
 ####################################################################################################
 
-class Tile_Creator_Triangle(object):
+class Tile_Creator_Triangle:
 
     def __init__(self):
         pass
@@ -812,22 +814,22 @@ class Tile_Creator_Triangle(object):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, factor)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
+        params[3].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]
 
 #-----------------------------------------------------------------------------------------------------
 
-class Tile_Creator_Double_Triangle(object):
-    
+class Tile_Creator_Double_Triangle:
+
     def __init__(self):
         pass
 
     def __call__(self,dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         image2 = torch.zeros((3,dim,dim))
         for i in range(dim):
@@ -873,25 +875,25 @@ class Tile_Creator_Double_Triangle(object):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, factor)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
+        params[3].data.clamp_(0, 1)
         params[4].data.clamp_(0, 1)
-        params[5].data.clamp_(0, 1) 
+        params[5].data.clamp_(0, 1)
         params[6].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[4]
 
 ####################################################################################################
 
-class Tile_Creator_Trapezoid(object):
+class Tile_Creator_Trapezoid:
 
     def __init__(self):
         pass
 
     def __call__(self,dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         for i in range(dim):
             for j in range(dim):
@@ -924,22 +926,22 @@ class Tile_Creator_Trapezoid(object):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, factor)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
+        params[3].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[2]
 
 #-----------------------------------------------------------------------------------------------------
 
-class Tile_Creator_Double_Trapezoid(object):
-    
+class Tile_Creator_Double_Trapezoid:
+
     def __init__(self):
         pass
 
     def __call__(self,dim, params):
-        # Distances Tensor 
+        # Distances Tensor
         image = torch.zeros((3,dim,dim))
         image2 = torch.zeros((3,dim,dim))
         for i in range(dim):
@@ -985,13 +987,13 @@ class Tile_Creator_Double_Trapezoid(object):
         params[0].data.clamp_(0, factor)
         params[1].data.clamp_(0, factor)
         params[2].data.clamp_(0, 1)
-        params[3].data.clamp_(0, 1) 
+        params[3].data.clamp_(0, 1)
         params[4].data.clamp_(0, 1)
-        params[5].data.clamp_(0, 1) 
+        params[5].data.clamp_(0, 1)
         params[6].data.clamp_(0, 1)
 
         return params
-    
+
     def Give_Color_Perlin(self,params):
         return params[4]
 
@@ -1008,12 +1010,12 @@ class PatchTransformer(nn.Module):
     """
 
     def __init__(self):
-        super(PatchTransformer, self).__init__()
-        
+        super().__init__()
+
         # os.environ['CUDA_VISIBLE_DEVICES'] = '3'
         # self.device = 'cuda:3' if torch.cuda.is_available() else 'cpu'
 
-        
+
         self.min_contrast = 0.99
         self.max_contrast = 1.01
         self.min_brightness = -0.01
@@ -1270,7 +1272,7 @@ class PatchApplier(nn.Module):
     """
 
     def __init__(self):
-        super(PatchApplier, self).__init__()
+        super().__init__()
 
     def forward(self, img_batch, adv_batch):
 
@@ -1296,11 +1298,11 @@ class PatchApplierMask(nn.Module):
 
     """
     def __init__(self,BackgroundStyle):
-        super(PatchApplierMask, self).__init__()
+        super().__init__()
         self.BackgroundStyle = BackgroundStyle
 
     def forward(self, img_batch, masks_batch, adv_patch, mask_attack = None):
-        if self.BackgroundStyle == 3: 
+        if self.BackgroundStyle == 3:
             att_img_batch = img_batch*((1-masks_batch) + masks_batch*(1-mask_attack))+ adv_patch*masks_batch*mask_attack
             return att_img_batch
         else:
