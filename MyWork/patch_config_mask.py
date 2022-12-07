@@ -18,12 +18,11 @@ class standard(object):
         self.img_size = 640
 
         # Dataloader informations
-        self.img_dir = '/home/andread98/yolov3/MyWork/data_first'    # train images location
-        self.mask_dir = '/home/andread98/yolov3/MyWork/data_first/mask'  # train labels location
+        self.img_dir = '/home/andread98/yolov3/MyWork/data_mask'    # train images location
+        self.mask_dir = '/home/andread98/yolov3/MyWork/data_mask/mask'  # train labels location
         self.batch_size = 20
-        self.n_iterations = 100
+        self.n_iterations = 40
         self.BackgroundStyle = 0
-        self.list_of_shape = [1,1,1,0,0,1]
 
         # Loss function 
         self.loss_function = max_prob_class(0)
@@ -42,9 +41,9 @@ class standard(object):
         # 1: rotation of a multiple of 90
         # 2: random rotation. Attention, then the radius has to be at most sart(2)/2
         self.rotation_mode = 1
-        
+
         # Optimizer informations
-        self.start_learning_rate = 0.03
+        self.start_learning_rate = 0.1
         self.scheduler_factory = lambda x: optim.lr_scheduler.ReduceLROnPlateau(x, 'min', patience=50)
         # reduce learning rate when a metric has stopped learning (keras??)
         # In min mode, lr will be reduced when the quantity monitored has stopped decreasing;

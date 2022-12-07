@@ -63,6 +63,16 @@ class Fractal_Patch_Generator(nn.Module):
                 patch, ex_color, _ = self.tile_class(self.dim_patch*i, params)
                 mask = self.mask_function(self.dim_patch*i)
 
+                patch = patch.type(torch.cuda.FloatTensor)
+                ex_color = ex_color.type(torch.cuda.FloatTensor)
+                mask = mask.type(torch.cuda.FloatTensor)
+                patch.requires_grad_(True)
+                ex_color.requires_grad_(True)
+                mask.requires_grad_(True)
+                patch.retain_grad()
+                ex_color.retain_grad()
+                mask.retain_grad()
+
                 self.patches.append(patch)
                 self.ex_colors.append(ex_color)
                 self.masks.append(mask)
@@ -73,13 +83,83 @@ class Fractal_Patch_Generator(nn.Module):
             # Creation of the perlin noise with the function in perlin_noise.py
             if self.BackgroundStyle == 1:
                 self.perlin_noise = Perlin_Noise_Creator(self.dim_image, self.tile_class.Give_Color_Perlin(params))
+           
+                # self.perlin_noise = self.perlin_noise.type(torch.cuda.FloatTensor)
+                self.perlin_noise.requires_grad_(True)
+                self.perlin_noise.retain_grad()
+
             if self.BackgroundStyle == 2:
                 self.perlin_noise = Inverted_Perlin_Noise_Creator(self.dim_image, self.tile_class.Give_Color_Perlin(params))
 
+                # self.perlin_noise = self.perlin_noise.type(torch.cuda.FloatTensor)
+                self.perlin_noise.requires_grad_(True)
+                self.perlin_noise.retain_grad()
+
             for i in range(1,self.max_dim+1):
                 patch, _, mask = self.tile_class(self.dim_patch*i, params)
+
+                patch = patch.type(torch.cuda.FloatTensor)
+                mask = mask.type(torch.cuda.FloatTensor)
+                patch.requires_grad_(True)
+                mask.requires_grad_(True)
+                patch.retain_grad()
+                mask.retain_grad()
+
                 self.patches.append(patch)
-                self.masks.append(mask)            
+                self.masks.append(mask) 
+
+    # def populate(self, params):
+
+    #     if self.BackgroundStyle == 0: # Normal situation with a plain color
+
+    #         i = self.max_dim
+    #         patch, ex_color, _ = self.tile_class(self.dim_patch*i, params)
+    #         mask = self.mask_function(self.dim_patch*i)
+
+    #         patch = patch.type(torch.cuda.FloatTensor)
+    #         ex_color = ex_color.type(torch.cuda.FloatTensor)
+    #         mask = mask.type(torch.cuda.FloatTensor)
+    #         patch.requires_grad_(True)
+    #         ex_color.requires_grad_(True)
+    #         mask.requires_grad_(True)
+    #         patch.retain_grad()
+    #         ex_color.retain_grad()
+    #         mask.retain_grad()
+
+    #         self.patch = patch
+    #         self.ex_color = ex_color
+    #         self.mask = mask
+        
+    #     else: # Using the perlin noise in the background
+            
+    #         # Creation of the perlin noise with the function in perlin_noise.py
+    #         if self.BackgroundStyle == 1:
+    #             self.perlin_noise = Perlin_Noise_Creator(self.dim_image, self.tile_class.Give_Color_Perlin(params))
+           
+    #             # self.perlin_noise = self.perlin_noise.type(torch.cuda.FloatTensor)
+    #             self.perlin_noise.requires_grad_(True)
+    #             self.perlin_noise.retain_grad()
+
+    #         if self.BackgroundStyle == 2:
+    #             self.perlin_noise = Inverted_Perlin_Noise_Creator(self.dim_image, self.tile_class.Give_Color_Perlin(params))
+
+    #             # self.perlin_noise = self.perlin_noise.type(torch.cuda.FloatTensor)
+    #             self.perlin_noise.requires_grad_(True)
+    #             self.perlin_noise.retain_grad()
+
+    #         # for i in range(1,self.max_dim+1):
+    #         i = self.max_dim
+    #         patch, _, mask = self.tile_class(self.dim_patch*i, params)
+
+    #         patch = patch.type(torch.cuda.FloatTensor)
+    #         mask = mask.type(torch.cuda.FloatTensor)
+    #         patch.requires_grad_(True)
+    #         mask.requires_grad_(True)
+    #         patch.retain_grad()
+    #         mask.retain_grad()
+
+    #         self.patch = patch
+    #         self.mask = mask               
     
     def application(self):
         #Creation of the complete image
@@ -126,12 +206,12 @@ class Fractal_Patch_Generator(nn.Module):
                     if self.BackgroundStyle == 0: # Normal case
                         #Rotate
                         out = TF.rotate(self.patches[chosen_dim-1], angle)
-                        # Getting the background color
-                        color = self.ex_colors[chosen_dim-1]
+                        # # Getting the background color
+                        # color = self.ex_colors[chosen_dim-1]
 
-                        # Color in the angles
-                        mask = self.masks[chosen_dim-1]
-                        out[mask] = color[mask]
+                        # # Color in the angles
+                        # mask = self.masks[chosen_dim-1]
+                        # out[mask] = color[mask]
 
                         # Apply the patch to the image
                         self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = out
@@ -155,6 +235,87 @@ class Fractal_Patch_Generator(nn.Module):
             return self.image, self.complete_mask
         else:
             return  self.complete_mask*self.image, self.complete_mask
+    
+    # def application(self):
+    #     #Creation of the complete image
+    #     self.image = torch.rand((3,self.dim_image,self.dim_image))
+    #     #Creation of the bool vector 
+    #     self.bool_matrix = np.ones((self.dim_grid,self.dim_grid), dtype=int)
+    #     #Creation of the index vector
+    #     self.index_vector = np.arange(0,(self.dim_grid**2))
+    #     #Creation of the shuffled version
+    #     shuffled_index_vector = np.random.choice(self.index_vector, size=self.dim_grid**2, replace=False)
+    #     self.complete_mask = torch.zeros((3,self.dim_image,self.dim_image))
+
+    #     for index in shuffled_index_vector:
+    #         #Translate the index in coordinates
+    #         i = int(index/self.dim_grid) #row
+    #         j = index%self.dim_grid      #column
+
+    #         #Check if the corner is still available
+    #         if self.bool_matrix[i][j]:
+    #             av_dim = self.available_dimensions(i,j)
+                
+    #             #Choose randomly the dimension
+    #             chosen_dim = int(np.random.choice(av_dim, 1))
+                
+    #             #Compute the scale factor
+    #             sf = chosen_dim/self.max_dim
+
+    #             #Interpolate the patch and the mask to the right dimension
+    #             rescaled_patch = F.interpolate(self.patch.unsqueeze(0), scale_factor=(sf,sf), mode='bilinear').squeeze(0)
+    #             rescaled_mask = F.interpolate(self.mask.unsqueeze(0), scale_factor=(sf,sf), mode='bilinear').squeeze(0)
+
+    #             #Change the bool in the bool matrix in False, no longer available
+    #             self.bool_matrix[i:i+chosen_dim,j:j+chosen_dim] = 0
+
+    #             if self.angle_type == 0:
+    #                 self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = rescaled_patch
+
+    #             else:
+    #                 if self.angle_type == 1:
+    #                     angle = random.choice([0,90,180,270])
+    #                 # #Apply the patch to the image
+    #                 # self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = TF.rotate(self.patches[chosen_dim-1],angle)
+
+    #                 else:
+    #                     #Select the angle
+    #                     angle = random.uniform(0,360)
+
+                    
+
+    #                 if self.BackgroundStyle == 0: # Normal case
+    #                     #Rotate
+    #                     out = TF.rotate(rescaled_patch, angle)
+    #                     # # Getting the background color
+    #                     # color = self.ex_colors[chosen_dim-1]
+
+    #                     # # Color in the angles
+    #                     # mask = self.masks[chosen_dim-1]
+    #                     # out[mask] = color[mask]
+
+    #                     # Apply the patch to the image
+    #                     self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = out
+
+    #                 else: # Perlin Noise
+    #                     #Rotate
+    #                     out = TF.rotate(rescaled_patch, angle)
+    #                     # Rotate the mask
+    #                     out2 = TF.rotate(rescaled_mask, angle)
+                        
+    #                     # Apply the patch to the image  
+    #                     self.image[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = out
+                        
+    #                     # Tiling all the tile together to create to complete mask 
+    #                     self.complete_mask[:,i*self.dim_patch:(i+chosen_dim)*self.dim_patch,j*self.dim_patch:(j+chosen_dim)*self.dim_patch] = out2
+
+    #     if self.BackgroundStyle == 0:
+    #         return self.image, self.complete_mask
+    #     elif self.BackgroundStyle == 1 or self.BackgroundStyle == 2:
+    #         self.image = self.complete_mask*self.image + (1-self.complete_mask)*self.perlin_noise
+    #         return self.image, self.complete_mask
+    #     else:
+    #         return  self.complete_mask*self.image, self.complete_mask
         
     def available_dimensions(self,i,j):
         #It is always possible to put the smallest version of the patch
@@ -202,14 +363,14 @@ class Tile_Creator_Circle(object):
         color2_image = params[2].unsqueeze(-1).unsqueeze(-1)
         color2_image = color2_image.expand(-1, dim, dim)
 
-        return coeff*color1_image + (1-coeff)*color2_image, color1_image, (1-coeff)
+        return color1_image, color2_image, coeff*color1_image + (1-coeff)*color2_image, (1-coeff)
 
     def Params_Creator(self):
         a = torch.tensor(0.50)
         a.requires_grad_(True)
-        color1 = torch.tensor([0.5,0.5,0.5])
+        color1 = torch.tensor([1.0,0,0])
         color1.requires_grad_(True)
-        color2 = torch.tensor([0.5,0.5,0.5])
+        color2 = torch.tensor([0,0,1.0])
         color2.requires_grad_(True)
 
         params = [a, color1, color2]

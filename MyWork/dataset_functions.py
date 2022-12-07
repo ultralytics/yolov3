@@ -148,18 +148,17 @@ class VOCmask(Dataset):
     def __getitem__(self, idx):
         assert idx <= len(self), 'index range error'
         img_path = os.path.join(self.img_dir, self.img_names[idx])
+        # print(self.img_names[idx])
         mask_path = os.path.join(self.mask_dir, self.img_names[idx]).replace('.jpg', '.pt').replace('.png', '.pt')
         image = Image.open(img_path).convert('RGB')
         mask = torch.load(mask_path)
-        print(mask.shape)
         mask.unsqueeze_(0)
-        print(mask.shape)
         
         image, mask = self.pad_and_scale(image, mask)
         transform = transforms.ToTensor()
         image = transform(image)
         # label = self.pad_lab(label)  # to make it agrees with max_lab dimensions. We choose a max_lab to say: no more than 14 persons could stand in one picture
-        return image, mask
+        return image, mask, self.img_names[idx]
 
     def pad_and_scale(self, img, mask): # this method for taking a non-square image and make it square by filling the difference in w and h with gray
                                        # needed to keep proportions

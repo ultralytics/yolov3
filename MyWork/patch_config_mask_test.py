@@ -13,7 +13,7 @@ class standard(object):
         """
         Set the defaults.
         """
-        self.patch_name = 'max_prob_class'
+        self.patch_name = 'standard'
 
         self.img_size = 640
 
@@ -21,9 +21,10 @@ class standard(object):
         self.img_dir_test = '/home/andread98/yolov3/MyWork/data_mask_test'    # test images location
         self.mask_dir_test = '/home/andread98/yolov3/MyWork/data_mask_test/mask'  # test labels location
         self.batch_size_test = 1
-        self.n_iterations = 1
+        # self.n_iterations = 1
         self.BackgroundStyle = 0
-        self.list_of_shape = [3,0,0,0,0,0]
+        self.number_for_name = 12
+        # self.list_of_shape = [3,0,0,0,0,0]
 
         # Loss function 
         self.loss_function = max_prob_class(0)
@@ -41,7 +42,7 @@ class standard(object):
         # 0: no rotation of the tile
         # 1: rotation of a multiple of 90
         # 2: random rotation. Attention, then the radius has to be at most sart(2)/2
-        self.rotation_mode = 2
+        self.rotation_mode = 1
 
 
 class perlin_noise(standard):
@@ -56,6 +57,7 @@ class perlin_noise(standard):
 
         self.patch_name = 'perlin_noise'
         self.BackgroundStyle = 1
+        self.number_for_name = 16
         
 
 
@@ -71,6 +73,7 @@ class perlin_noise_inverted(standard):
 
         self.patch_name = 'perlin_noise_inverted'
         self.BackgroundStyle = 2
+        self.number_for_name = 25
 
 class ghost(standard):
     """
@@ -84,6 +87,7 @@ class ghost(standard):
 
         self.patch_name = 'ghost'
         self.BackgroundStyle = 3
+        self.number_for_name = 9
 
 patch_configs = {
     "standard": standard,

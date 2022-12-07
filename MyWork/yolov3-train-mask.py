@@ -28,7 +28,9 @@ if __name__ == '__main__':
 
     class PatchTrainer(object):
 
-        def __init__(self, mode, tile = None):
+        def __init__(self, mode, list_of_shape, tile = None):
+
+            self.mode = mode
 
             # Select the confing file 
             self.config = patch_config_mask.patch_configs[mode]()  # select the mode for the patch
@@ -55,7 +57,7 @@ if __name__ == '__main__':
                 # self.tile_class = self.config.list_classes_tile[tile]()
 
                 # One class fits all
-                self.tile_class = Tile_Creator(self.config.list_of_shape)
+                self.tile_class = Tile_Creator(list_of_shape)
                 #------------------------------------------------------------------------------------------------
 
                 # self.params_function = self.config.list_function_params[tile]
@@ -88,7 +90,16 @@ if __name__ == '__main__':
 
             # name = str(tile) + '_' + mode 
             name = name + '_' + mode 
-            destination_path = "./yolov3/MyWork/txt_results/25-09-2022/"
+            destination_path = "./yolov3/MyWork/txt_results/25-09-2022/" + self.mode + '/' 
+            # image_path = "./yolov3/MyWork/SampleImages/16-10-2022/" + self.mode
+            # params_path = './yolov3/MyWork/params_results/16-10-2022/' + self.mode
+
+            # if not os.path.exists(destination_path):
+            #     os.makedirs(destination_path)
+            # if not os.path.exists(image_path):
+            #     os.makedirs(image_path)
+            # if not os.path.exists(params_path):
+            #     os.makedirs(params_path)
 
             destination_name = name + '_iteration.txt'
             destination_name2 = name + '_batch.txt'
@@ -99,6 +110,7 @@ if __name__ == '__main__':
             textfile2 = open(destination2, 'w+')
 
             params = self.tile_class.Params_Creator()
+            params = self.tile_class.Params_Clamp(params)
             print(params)
 
             train_loader = torch.utils.data.DataLoader(
@@ -106,13 +118,13 @@ if __name__ == '__main__':
                              shuffle=True),
                 batch_size=self.config.batch_size,
                 shuffle=True,
-                num_workers=10)
+                num_workers=0)
             self.iteration_length = len(train_loader)
             print(f'One iteration is {len(train_loader)}')
 
             learning_rate = 0.03 # Mettere questo nel configuration file
 
-            optimizer = optim.SGD(params, learning_rate)  # starting lr = 0.03
+            optimizer = optim.SGD(params, learning_rate)  # starting lr = 0.1
             scheduler = self.config.scheduler_factory(optimizer)
             # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=50) # write it directly
 
@@ -122,12 +134,19 @@ if __name__ == '__main__':
             for iteration in range(n_iterations):
                 ep_loss = 0
                 bt0 = time.time()  # batch start
-                for i_batch, (img_batch, masks_batch) in tqdm(enumerate(train_loader), desc=f'Running iteration {iteration}',
+                for i_batch, (img_batch, masks_batch,_) in tqdm(enumerate(train_loader), desc=f'Running iteration {iteration}',
                                                             total=self.iteration_length):
-                    print(img_batch.shape)
-                    print(masks_batch.shape)
                     self.gen_function.populate(params)
                     adv_patch, mask_attack = self.gen_function.application()
+
+                    
+
+                    # adv_patch = adv_patch.type(torch.cuda.FloatTensor)
+                    # adv_patch.requires_grad_(True)
+                    # adv_patch.retain_grad()
+
+                    # print(self.gen_function.patches[0].grad_fn)
+                    
 
                     if use_cuda:
                         img_batch = img_batch.to(self.device)
@@ -148,11 +167,12 @@ if __name__ == '__main__':
 
                     output = self.model(attacked_img_batch)  # TODO apply YOLOv2 to all (patched) images in the batch (6)
                     loss = torch.mean(self.loss_function(output))
-                    # print(loss)
                     ep_loss += loss
 
                     loss.backward()
+                    print(adv_patch.grad_fn)
                     optimizer.step()
+                    print('PARAMETERS GRAD: ', params[0].grad, params[1].grad, params[2].grad, params[3].grad)
                     optimizer.zero_grad()
 
                     params = self.tile_class.Params_Clamp(params)
@@ -191,15 +211,15 @@ if __name__ == '__main__':
                     textfile.write(f'\ni_iteration: {iteration}\ne_total_loss:{ep_loss}\n\n')
 
                     # Save a sample image from the last iteration
-                    # if iteration%(n_iterations-1) == 0:
-                    if iteration%2 == 0:
+                    if iteration%(n_iterations-1) == 0 or iteration == 25:
+                    # if iteration%25 == 0:
                     #if iteration == 0:
                         att_image = attacked_img_batch[0].squeeze(0)
                         att_image_PIL = transform2(att_image)
-                        att_image_PIL.save("./yolov3/MyWork/SampleImages/25-09-2022/" + name + '_iteration_' + str(iteration) + '.png')
+                        att_image_PIL.save("./yolov3/MyWork/SampleImages/25-09-2022/" + self.mode + '/' + name + '_iteration_' + str(iteration) + '.png')
 
 
-                    torch.save(params, './yolov3/MyWork/params_results/25-09-2022/' + name + '.pt')
+                    torch.save(params, './yolov3/MyWork/params_results/25-09-2022/' + self.mode + '/'  + name + '.pt')
 
                     del output, attacked_img_batch, loss
 
@@ -235,9 +255,61 @@ if __name__ == '__main__':
     # trainer = PatchTrainer(mode,tile)
     # trainer.train()
 
-    modes = ['perlin_noise']
+    # modes = ['standard', 'perlin_noise', 'perlin_noise_inverted', 'ghost']
+    modes = ['ghost']
+    configurations = [
+        [2,0,0,0],
+        [0,2,0,0],
+        [0,0,2,0],
+        [0,0,0,2],
 
-    for mode in modes:
-        trainer = PatchTrainer(mode)
-        name = '3_circles'
+        [1,1,0,0],
+        [0,1,1,0],
+        [0,0,1,1],
+        [1,0,0,1],
+        [0,1,0,1],
+        [1,0,1,0],
+
+        [3,0,0,0],
+        [0,3,0,0],
+        [0,0,3,0],
+        [0,0,0,3],
+
+        [2,1,0,0],
+        [2,0,1,0],
+        [2,0,0,1],
+
+        [1,2,0,0],
+        [0,2,1,0],
+        [0,2,0,1],
+
+        [1,0,2,0],
+        [0,1,2,0],
+        [0,0,2,1],
+
+        [1,0,0,2],
+        [0,1,0,2],
+        [0,0,1,2]
+
+    ]
+    
+    # mode = 'perlin_noise'
+    # for i in [15,16,17,19,21]:
+    #     configuration = configurations[i]
+    #     trainer = PatchTrainer(mode, configuration)
+    #     name = str(i)
+    #     trainer.train(name)
+
+    mode = 'perlin_noise_inverted'
+    for i in [24]:
+        configuration = configurations[i]
+        trainer = PatchTrainer(mode, configuration)
+        name = str(i)
+        trainer.train(name)
+
+    mode = 'ghost'
+    for i in [24]:
+        configuration = configurations[i]
+        trainer = PatchTrainer(mode, configuration)
+        name = str(i)
         trainer.train(name)
