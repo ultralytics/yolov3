@@ -45,7 +45,7 @@ ENV DEBIAN_FRONTEND teletype
 # Usage Examples -------------------------------------------------------------------------------------------------------
 
 # Build and Push
-# t=ultralytics/yolov3:latest && sudo docker build -f utils/docker/Dockerfile -t $t . && sudo docker push $t
+# t=ultralytics/yolov3:latest && sudo docker build -f Dockerfile -t $t . && sudo docker push $t
 
 # Pull and Run
 # t=ultralytics/yolov3:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus all $t
