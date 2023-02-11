@@ -1,6 +1,6 @@
 ## Contributing to YOLOv3 🚀
 
-We love your input! We want to make contributing to  as easy and transparent as possible, whether it's:
+We love your input! We want to make contributing to as easy and transparent as possible, whether it's:
 
 - Reporting a bug
 - Discussing the current state of the code
@@ -8,7 +8,7 @@ We love your input! We want to make contributing to  as easy and transparent as 
 - Proposing a new feature
 - Becoming a maintainer
 
- works so well due to our combined community effort, and for every small improvement you contribute you will be
+works so well due to our combined community effort, and for every small improvement you contribute you will be
 helping push the frontiers of what's possible in AI 😃!
 
 ## Submitting a Pull Request (PR) 🛠️
@@ -37,7 +37,7 @@ Change the `matplotlib` version from `3.2.2` to `3.3`.
 
 Click on the **Preview changes** tab to verify your updates. At the bottom of the screen select 'Create a **new branch**
 for this commit', assign your branch a descriptive name such as `fix/matplotlib_version` and click the green **Propose
-changes** button. All done, your PR is now submitted to  for review and approval 😃!
+changes** button. All done, your PR is now submitted to for review and approval 😃!
 
 <p align="center"><img width="800" alt="PR_step4" src="https://user-images.githubusercontent.com/26833433/122260856-0b208000-ced4-11eb-8e8e-77b6151cbcc3.png"></p>
 
@@ -50,7 +50,7 @@ To allow your work to be integrated as seamlessly as possible, we advise you to:
 
 <p align="center"><img width="751" alt="Screenshot 2022-08-29 at 22 47 15" src="https://user-images.githubusercontent.com/26833433/187295893-50ed9f44-b2c9-4138-a614-de69bd1753d7.png"></p>
 
-- ✅ Verify all  Continuous Integration (CI) **checks are passing**.
+- ✅ Verify all Continuous Integration (CI) **checks are passing**.
 
 <p align="center"><img width="751" alt="Screenshot 2022-08-29 at 22 47 03" src="https://user-images.githubusercontent.com/26833433/187296922-545c5498-f64a-4d8c-8300-5fa764360da6.png"></p>
 
@@ -59,7 +59,7 @@ To allow your work to be integrated as seamlessly as possible, we advise you to:
 
 ## Submitting a Bug Report 🐛
 
-If you spot a problem with  please submit a Bug Report!
+If you spot a problem with please submit a Bug Report!
 
 For us to start investigating a possible problem we need to be able to reproduce it ourselves first. We've created a few
 short guidelines below to help users provide what we need to get started.

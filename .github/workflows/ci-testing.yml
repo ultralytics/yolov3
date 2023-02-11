@@ -5,9 +5,9 @@ name: YOLOv3 CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
   schedule:
     - cron: '0 0 * * *'  # runs at 00:00 UTC every day
 
@@ -17,9 +17,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest ]
-        python-version: [ '3.9' ]  # requires python<=3.9
-        model: [ yolov3-tiny ]
+        os: [ubuntu-latest]
+        python-version: ['3.9']  # requires python<=3.9
+        model: [yolov3-tiny]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -57,9 +57,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-latest ]  # macos-latest bug https://github.com/ultralytics/yolov5/pull/9049
-        python-version: [ '3.10' ]
-        model: [ yolov5n ]
+        os: [ubuntu-latest, windows-latest]  # macos-latest bug https://github.com/ultralytics/yolov5/pull/9049
+        python-version: ['3.10']
+        model: [yolov5n]
         include:
           - os: ubuntu-latest
             python-version: '3.7'  # '3.6.8' min
