@@ -12,10 +12,10 @@ body:
     attributes:
       label: Search before asking
       description: >
-        Please search the [issues](https://github.com/ultralytics/yolov3/issues) to see if a similar bug report already exists.
+        Please search the [issues](https://github.com/ultralytics/yolov5/issues) to see if a similar bug report already exists.
       options:
         - label: >
-            I have searched the YOLOv3 [issues](https://github.com/ultralytics/yolov3/issues) and found no similar bug report.
+            I have searched the YOLOv3 [issues](https://github.com/ultralytics/yolov5/issues) and found no similar bug report.
           required: true
 
   - type: dropdown
@@ -79,7 +79,7 @@ body:
     attributes:
       label: Are you willing to submit a PR?
       description: >
-        (Optional) We encourage you to submit a [Pull Request](https://github.com/ultralytics/yolov3/pulls) (PR) to help improve YOLOv3 for everyone, especially if you have a good understanding of how to implement a fix or feature.
-        See the YOLOv3 [Contributing Guide](https://github.com/ultralytics/yolov3/blob/master/CONTRIBUTING.md) to get started.
+        (Optional) We encourage you to submit a [Pull Request](https://github.com/ultralytics/yolov5/pulls) (PR) to help improve YOLOv3 for everyone, especially if you have a good understanding of how to implement a fix or feature.
+        See the YOLOv3 [Contributing Guide](https://github.com/ultralytics/yolov5/blob/master/CONTRIBUTING.md) to get started.
       options:
         - label: Yes I'd like to help by submitting a PR!
