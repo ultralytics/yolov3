@@ -12,10 +12,10 @@ body:
     attributes:
       label: Search before asking
       description: >
-        Please search the [issues](https://github.com/ultralytics/yolov3/issues) and [discussions](https://github.com/ultralytics/yolov3/discussions) to see if a similar question already exists.
+        Please search the [issues](https://github.com/ultralytics/yolov5/issues) and [discussions](https://github.com/ultralytics/yolov5/discussions) to see if a similar question already exists.
       options:
         - label: >
-            I have searched the YOLOv3 [issues](https://github.com/ultralytics/yolov3/issues) and [discussions](https://github.com/ultralytics/yolov3/discussions) and found no similar questions.
+            I have searched the YOLOv3 [issues](https://github.com/ultralytics/yolov5/issues) and [discussions](https://github.com/ultralytics/yolov5/discussions) and found no similar questions.
           required: true
 
   - type: textarea

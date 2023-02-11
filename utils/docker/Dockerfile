@@ -1,6 +1,6 @@
 # YOLOv3 🚀 by Ultralytics, GPL-3.0 license
-# Builds ultralytics/yolov3:latest image on DockerHub https://hub.docker.com/r/ultralytics/yolov3
-# Image is CUDA-optimized for YOLOv3 single/multi-GPU training and inference
+# Builds ultralytics/yolov5:latest image on DockerHub https://hub.docker.com/r/ultralytics/yolov3
+# Image is CUDA-optimized for YOLOv5 single/multi-GPU training and inference
 
 # Start FROM NVIDIA PyTorch image https://ngc.nvidia.com/catalog/containers/nvidia:pytorch
 # FROM docker.io/pytorch/pytorch:latest
@@ -26,7 +26,7 @@ WORKDIR /usr/src/app
 
 # Copy contents
 # COPY . /usr/src/app  (issues as not a .git directory)
-RUN git clone https://github.com/ultralytics/yolov3 /usr/src/app
+RUN git clone https://github.com/ultralytics/yolov5 /usr/src/app
 
 # Install pip packages
 COPY requirements.txt .
@@ -45,22 +45,22 @@ ENV DEBIAN_FRONTEND teletype
 # Usage Examples -------------------------------------------------------------------------------------------------------
 
 # Build and Push
-# t=ultralytics/yolov3:latest && sudo docker build -f Dockerfile -t $t . && sudo docker push $t
+# t=ultralytics/yolov5:latest && sudo docker build -f utils/docker/Dockerfile -t $t . && sudo docker push $t
 
 # Pull and Run
-# t=ultralytics/yolov3:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus all $t
+# t=ultralytics/yolov5:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus all $t
 
 # Pull and Run with local directory access
-# t=ultralytics/yolov3:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus all -v "$(pwd)"/datasets:/usr/src/datasets $t
+# t=ultralytics/yolov5:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus all -v "$(pwd)"/datasets:/usr/src/datasets $t
 
 # Kill all
 # sudo docker kill $(sudo docker ps -q)
 
 # Kill all image-based
-# sudo docker kill $(sudo docker ps -qa --filter ancestor=ultralytics/yolov3:latest)
+# sudo docker kill $(sudo docker ps -qa --filter ancestor=ultralytics/yolov5:latest)
 
 # DockerHub tag update
-# t=ultralytics/yolov3:latest tnew=ultralytics/yolov3:v6.2 && sudo docker pull $t && sudo docker tag $t $tnew && sudo docker push $tnew
+# t=ultralytics/yolov5:latest tnew=ultralytics/yolov5:v6.2 && sudo docker pull $t && sudo docker tag $t $tnew && sudo docker push $tnew
 
 # Clean up
 # sudo docker system prune -a --volumes
@@ -72,4 +72,4 @@ ENV DEBIAN_FRONTEND teletype
 # python -m torch.distributed.run --nproc_per_node 2 --master_port 1 train.py --epochs 3
 
 # GCP VM from Image
-# docker.io/ultralytics/yolov3:latest
+# docker.io/ultralytics/yolov5:latest

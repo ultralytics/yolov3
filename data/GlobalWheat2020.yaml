@@ -1,10 +1,10 @@
 # YOLOv3 🚀 by Ultralytics, GPL-3.0 license
-# Global Wheat 2020 dataset http://www.global-wheat.com/
+# Global Wheat 2020 dataset http://www.global-wheat.com/ by University of Saskatchewan
 # Example usage: python train.py --data GlobalWheat2020.yaml
 # parent
-# ├── yolov3
+# ├── yolov5
 # └── datasets
-#     └── GlobalWheat2020  ← downloads here
+#     └── GlobalWheat2020  ← downloads here (7.0 GB)
 
 
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
@@ -26,13 +26,14 @@ test: # test images (optional) 1276 images
   - images/uq_1
 
 # Classes
-nc: 1  # number of classes
-names: ['wheat_head']  # class names
+names:
+  0: wheat_head
 
 
 # Download script/URL (optional) ---------------------------------------------------------------------------------------
 download: |
   from utils.general import download, Path
+
 
   # Download
   dir = Path(yaml['path'])  # dataset root dir
