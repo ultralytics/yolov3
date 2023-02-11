@@ -94,7 +94,9 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) 中下载。
 import torch
 
 # Model
-model = torch.hub.load('ultralytics/yolov3', 'yolov3')  # or yolov3-spp, yolov3-tiny, custom
+model = torch.hub.load(
+    "ultralytics/yolov3", "yolov3"
+)  # or yolov3-spp, yolov3-tiny, custom
 
 # Images
 img = "https://ultralytics.com/images/zidane.jpg"  # or file, Path, PIL, OpenCV, numpy, list
