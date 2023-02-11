@@ -76,8 +76,8 @@ pip install ultralytics
 =1.7**](https://pytorch.org/get-started/locally/) 。
 
 ```bash
-git clone https://github.com/ultralytics/yolov5  # clone
-cd yolov5
+git clone https://github.com/ultralytics/yolov3  # clone
+cd yolov3
 pip install -r requirements.txt  # install
 ```
 
@@ -94,7 +94,7 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) 中下载。
 import torch
 
 # Model
-model = torch.hub.load("ultralytics/yolov5", "yolov5s")  # or yolov5n - yolov5x6, custom
+model = torch.hub.load('ultralytics/yolov3', 'yolov3')  # or yolov3-spp, yolov3-tiny, custom
 
 # Images
 img = "https://ultralytics.com/images/zidane.jpg"  # or file, Path, PIL, OpenCV, numpy, list

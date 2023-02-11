@@ -81,8 +81,8 @@ Clone repo and install [requirements.txt](https://github.com/ultralytics/yolov5/
 [**PyTorch>=1.7**](https://pytorch.org/get-started/locally/).
 
 ```bash
-git clone https://github.com/ultralytics/yolov5  # clone
-cd yolov5
+git clone https://github.com/ultralytics/yolov3  # clone
+cd yolov3
 pip install -r requirements.txt  # install
 ```
 
@@ -99,7 +99,7 @@ inference. [Models](https://github.com/ultralytics/yolov5/tree/master/models) do
 import torch
 
 # Model
-model = torch.hub.load("ultralytics/yolov5", "yolov5s")  # or yolov5n - yolov5x6, custom
+model = torch.hub.load('ultralytics/yolov3', 'yolov3')  # or yolov3-spp, yolov3-tiny, custom
 
 # Images
 img = "https://ultralytics.com/images/zidane.jpg"  # or file, Path, PIL, OpenCV, numpy, list
@@ -215,7 +215,7 @@ models, and deploy to the real world in a seamless experience. Get started for *
 <a align="center" href="https://bit.ly/ultralytics_hub" target="_blank">
 <img width="100%" src="https://github.com/ultralytics/assets/raw/main/im/ultralytics-hub.png"></a>
 
-## <div align="center">Why </div>
+## <div align="center">Why YOLO</div>
 
 has been designed to be super easy to get started and simple to learn. We prioritize real-world results.
 
