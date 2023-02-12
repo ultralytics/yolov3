@@ -76,7 +76,7 @@ quickstart examples.
 <details open>
 <summary>Install</summary>
 
-Clone repo and install [requirements.txt](https://github.com/ultralytics/yolov5/blob/master/requirements.txt) in a
+Clone repo and install [requirements.txt](https://github.com/ultralytics/yolov3/blob/master/requirements.txt) in a
 [**Python>=3.7.0**](https://www.python.org/) environment, including
 [**PyTorch>=1.7**](https://pytorch.org/get-started/locally/).
 
@@ -514,7 +514,7 @@ is available under two different licenses:
 
 ## <div align="center">Contact</div>
 
-For bug reports and feature requests please visit [GitHub Issues](https://github.com/ultralytics/yolov5/issues) or
+For bug reports and feature requests please visit [GitHub Issues](https://github.com/ultralytics/yolov3/issues) or
 the [Ultralytics Community Forum](https://community.ultralytics.com/).
 
 <br>

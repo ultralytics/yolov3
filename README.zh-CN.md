@@ -72,7 +72,7 @@ pip install ultralytics
 <summary>安装</summary>
 
 克隆 repo，并要求在 [**Python>=3.7.0**](https://www.python.org/)
-环境中安装 [requirements.txt](https://github.com/ultralytics/yolov5/blob/master/requirements.txt) ，且要求 [**PyTorch>
+环境中安装 [requirements.txt](https://github.com/ultralytics/yolov3/blob/master/requirements.txt) ，且要求 [**PyTorch>
 =1.7**](https://pytorch.org/get-started/locally/) 。
 
 ```bash
@@ -502,7 +502,7 @@ YOLOv5 在两种不同的 License 下可用：
 
 ## <div align="center">联系我们</div>
 
-请访问 [GitHub Issues](https://github.com/ultralytics/yolov5/issues)
+请访问 [GitHub Issues](https://github.com/ultralytics/yolov3/issues)
 或 [Ultralytics Community Forum](https://community.ultralytis.com) 以报告 YOLOv5 错误和请求功能。
 
 <br>
