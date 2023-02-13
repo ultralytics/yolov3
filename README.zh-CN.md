@@ -7,8 +7,8 @@
 [英文](README.md)|[简体中文](README.zh-CN.md)<br>
 
 <div>
-    <a href="https://github.com/ultralytics/yolov5/actions/workflows/ci-testing.yml"><img src="https://github.com/ultralytics/yolov5/actions/workflows/ci-testing.yml/badge.svg" alt="YOLOv5 CI"></a>
-    <a href="https://zenodo.org/badge/latestdoi/264818686"><img src="https://zenodo.org/badge/264818686.svg" alt="YOLOv5 Citation"></a>
+    <a href="https://github.com/ultralytics/yolov5/actions/workflows/ci-testing.yml"><img src="https://github.com/ultralytics/yolov5/actions/workflows/ci-testing.yml/badge.svg" alt="YOLOv3 CI"></a>
+    <a href="https://zenodo.org/badge/latestdoi/264818686"><img src="https://zenodo.org/badge/264818686.svg" alt="YOLOv3 Citation"></a>
     <a href="https://hub.docker.com/r/ultralytics/yolov5"><img src="https://img.shields.io/docker/pulls/ultralytics/yolov5?logo=docker" alt="Docker Pulls"></a>
     <br>
     <a href="https://bit.ly/yolov5-paperspace-notebook"><img src="https://assets.paperspace.io/img/gradient-badge.svg" alt="Run on Gradient"></a>
@@ -17,7 +17,7 @@
   </div>
   <br>
 
-YOLOv5 🚀 是世界上最受欢迎的视觉 AI，代表<a href="https://ultralytics.com"> Ultralytics </a>对未来视觉 AI 方法的开源研究，结合在数千小时的研究和开发中积累的经验教训和最佳实践。
+YOLOv3 🚀 是世界上最受欢迎的视觉 AI，代表<a href="https://ultralytics.com"> Ultralytics </a>对未来视觉 AI 方法的开源研究，结合在数千小时的研究和开发中积累的经验教训和最佳实践。
 
 如果要申请企业许可证，请填写表格<a href="https://ultralytics.com/license">Ultralytics 许可</a>.
 
@@ -65,7 +65,7 @@ pip install ultralytics
 
 ## <div align="center">文档</div>
 
-有关训练、测试和部署的完整文档见[YOLOv5 文档](https://docs.ultralytics.com)。请参阅下面的快速入门示例。
+有关训练、测试和部署的完整文档见[YOLOv3 文档](https://docs.ultralytics.com)。请参阅下面的快速入门示例。
 
 <details open>
 <summary>安装</summary>
@@ -73,8 +73,8 @@ pip install ultralytics
 克隆 repo，并要求在 [**Python>=3.7.0**](https://www.python.org/) 环境中安装 [requirements.txt](https://github.com/ultralytics/yolov5/blob/master/requirements.txt) ，且要求 [**PyTorch>=1.7**](https://pytorch.org/get-started/locally/) 。
 
 ```bash
-git clone https://github.com/ultralytics/yolov5  # clone
-cd yolov5
+git clone https://github.com/ultralytics/yolov3  # clone
+cd yolov3
 pip install -r requirements.txt  # install
 ```
 
@@ -83,14 +83,14 @@ pip install -r requirements.txt  # install
 <details>
 <summary>推理</summary>
 
-使用 YOLOv5 [PyTorch Hub](https://github.com/ultralytics/yolov5/issues/36) 推理。最新 [模型](https://github.com/ultralytics/yolov5/tree/master/models) 将自动的从
-YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) 中下载。
+使用 YOLOv3 [PyTorch Hub](https://github.com/ultralytics/yolov5/issues/36) 推理。最新 [模型](https://github.com/ultralytics/yolov5/tree/master/models) 将自动的从
+YOLOv3 [release](https://github.com/ultralytics/yolov5/releases) 中下载。
 
 ```python
 import torch
 
 # Model
-model = torch.hub.load("ultralytics/yolov5", "yolov5s")  # or yolov5n - yolov5x6, custom
+model = torch.hub.load("ultralytics/yolov5", "yolov3")  # or yolov5n - yolov5x6, custom
 
 # Images
 img = "https://ultralytics.com/images/zidane.jpg"  # or file, Path, PIL, OpenCV, numpy, list
@@ -128,12 +128,12 @@ python detect.py --weights yolov5s.pt --source 0                               #
 <details>
 <summary>训练</summary>
 
-下面的命令重现 YOLOv5 在 [COCO](https://github.com/ultralytics/yolov5/blob/master/data/scripts/get_coco.sh) 数据集上的结果。
+下面的命令重现 YOLOv3 在 [COCO](https://github.com/ultralytics/yolov5/blob/master/data/scripts/get_coco.sh) 数据集上的结果。
 最新的 [模型](https://github.com/ultralytics/yolov5/tree/master/models) 和 [数据集](https://github.com/ultralytics/yolov5/tree/master/data)
-将自动的从 YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) 中下载。
+将自动的从 YOLOv3 [release](https://github.com/ultralytics/yolov5/releases) 中下载。
 YOLOv5n/s/m/l/x 在 V100 GPU 的训练时间为 1/2/4/6/8 天（ [多GPU](https://github.com/ultralytics/yolov5/issues/475) 训练速度更快）。
 尽可能使用更大的 `--batch-size` ，或通过 `--batch-size -1` 实现
-YOLOv5 [自动批处理](https://github.com/ultralytics/yolov5/pull/5092) 。下方显示的 batchsize 适用于 V100-16GB。
+YOLOv3 [自动批处理](https://github.com/ultralytics/yolov5/pull/5092) 。下方显示的 batchsize 适用于 V100-16GB。
 
 ```bash
 python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov5n.yaml  --batch-size 128
@@ -193,18 +193,18 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov5n.yaml  -
 
 |                                      Roboflow                                      |                                 ClearML ⭐ 新                                 |                                     Comet ⭐ 新                                     |                                    Neural Magic ⭐ 新                                    |
 | :--------------------------------------------------------------------------------: | :-------------------------------------------------------------------------: | :-------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------: |
-| 将您的自定义数据集进行标注并直接导出到 YOLOv5 以进行训练 [Roboflow](https://roboflow.com/?ref=ultralytics) | 自动跟踪、可视化甚至远程训练 YOLOv5 [ClearML](https://cutt.ly/yolov5-readme-clearml)（开源！） | 永远免费，[Comet](https://bit.ly/yolov5-readme-comet)可让您保存 YOLOv5 模型、恢复训练以及交互式可视化和调试预测 | 使用 [Neural Magic DeepSparse](https://bit.ly/yolov5-neuralmagic)，运行 YOLOv5 推理的速度最高可提高6倍 |
+| 将您的自定义数据集进行标注并直接导出到 YOLOv3 以进行训练 [Roboflow](https://roboflow.com/?ref=ultralytics) | 自动跟踪、可视化甚至远程训练 YOLOv3 [ClearML](https://cutt.ly/yolov5-readme-clearml)（开源！） | 永远免费，[Comet](https://bit.ly/yolov5-readme-comet)可让您保存 YOLOv3 模型、恢复训练以及交互式可视化和调试预测 | 使用 [Neural Magic DeepSparse](https://bit.ly/yolov5-neuralmagic)，运行 YOLOv3 推理的速度最高可提高6倍 |
 
 ## <div align="center">Ultralytics HUB</div>
 
-[Ultralytics HUB](https://bit.ly/ultralytics_hub) 是我们的⭐**新的**用于可视化数据集、训练 YOLOv5 🚀 模型并以无缝体验部署到现实世界的无代码解决方案。现在开始 **免费** 使用他！
+[Ultralytics HUB](https://bit.ly/ultralytics_hub) 是我们的⭐**新的**用于可视化数据集、训练 YOLOv3 🚀 模型并以无缝体验部署到现实世界的无代码解决方案。现在开始 **免费** 使用他！
 
 <a align="center" href="https://bit.ly/ultralytics_hub" target="_blank">
 <img width="100%" src="https://github.com/ultralytics/assets/raw/main/im/ultralytics-hub.png"></a>
 
-## <div align="center">为什么选择 YOLOv5</div>
+## <div align="center">为什么选择 YOLOv3</div>
 
-YOLOv5 超级容易上手，简单易学。我们优先考虑现实世界的结果。
+YOLOv3 超级容易上手，简单易学。我们优先考虑现实世界的结果。
 
 <p align="left"><img width="800" src="https://user-images.githubusercontent.com/26833433/155040763-93c22a27-347c-4e3c-847a-8094621d3f4e.png"></p>
 <details>
@@ -419,7 +419,7 @@ python export.py --weights yolov5s-cls.pt resnet50.pt efficientnet_b0.pt --inclu
 
 ## <div align="center">环境</div>
 
-使用下面我们经过验证的环境，在几秒钟内开始使用 YOLOv5 。单击下面的图标了解详细信息。
+使用下面我们经过验证的环境，在几秒钟内开始使用 YOLOv3 。单击下面的图标了解详细信息。
 
 <div align="center">
   <a href="https://bit.ly/yolov5-paperspace-notebook">
@@ -443,7 +443,7 @@ python export.py --weights yolov5s-cls.pt resnet50.pt efficientnet_b0.pt --inclu
 
 ## <div align="center">贡献</div>
 
-我们喜欢您的意见或建议！我们希望尽可能简单和透明地为 YOLOv5 做出贡献。请看我们的 [投稿指南](CONTRIBUTING.md)，并填写 [YOLOv5调查](https://ultralytics.com/survey?utm_source=github&utm_medium=social&utm_campaign=Survey) 向我们发送您的体验反馈。感谢我们所有的贡献者！
+我们喜欢您的意见或建议！我们希望尽可能简单和透明地为 YOLOv3 做出贡献。请看我们的 [投稿指南](CONTRIBUTING.md)，并填写 [YOLOv5调查](https://ultralytics.com/survey?utm_source=github&utm_medium=social&utm_campaign=Survey) 向我们发送您的体验反馈。感谢我们所有的贡献者！
 
 <!-- SVG image from https://opencollective.com/ultralytics/contributors.svg?width=990 -->
 
@@ -452,14 +452,14 @@ python export.py --weights yolov5s-cls.pt resnet50.pt efficientnet_b0.pt --inclu
 
 ## <div align="center">License</div>
 
-YOLOv5 在两种不同的 License 下可用：
+YOLOv3 在两种不同的 License 下可用：
 
 - **GPL-3.0 License**： 查看 [License](https://github.com/ultralytics/yolov5/blob/master/LICENSE) 文件的详细信息。
 - **企业License**：在没有 GPL-3.0 开源要求的情况下为商业产品开发提供更大的灵活性。典型用例是将 Ultralytics 软件和 AI 模型嵌入到商业产品和应用程序中。在以下位置申请企业许可证 [Ultralytics 许可](https://ultralytics.com/license) 。
 
 ## <div align="center">联系我们</div>
 
-请访问 [GitHub Issues](https://github.com/ultralytics/yolov5/issues) 或 [Ultralytics Community Forum](https://community.ultralytis.com) 以报告 YOLOv5 错误和请求功能。
+请访问 [GitHub Issues](https://github.com/ultralytics/yolov5/issues) 或 [Ultralytics Community Forum](https://community.ultralytis.com) 以报告 YOLOv3 错误和请求功能。
 
 <br>
 <div align="center">
