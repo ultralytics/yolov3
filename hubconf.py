@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, GPL-3.0 license
+# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
 """
 PyTorch Hub models https://pytorch.org/hub/ultralytics_yolov5
 
