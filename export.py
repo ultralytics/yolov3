@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, GPL-3.0 license
+# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
 """
 Export a YOLOv3 PyTorch model to other formats. TensorFlow exports authored by https://github.com/zldrobit
 
