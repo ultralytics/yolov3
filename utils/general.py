@@ -382,7 +382,7 @@ def check_version(current='0.0.0', minimum='0.0.0', name='version ', pinned=Fals
 @TryExcept()
 def check_requirements(requirements=ROOT.parent / 'requirements.txt', exclude=(), install=True, cmds=''):
     """
-    Check if installed dependencies meet YOLOv5 requirements and attempt to auto-update if needed.
+    Check if installed dependencies meet YOLOv3 requirements and attempt to auto-update if needed.
 
     Args:
         requirements (Union[Path, str, List[str]]): Path to a requirements.txt file, a single package requirement as a
@@ -419,7 +419,7 @@ def check_requirements(requirements=ROOT.parent / 'requirements.txt', exclude=()
                 n += 1
 
     if s and install and AUTOINSTALL:  # check environment variable
-        LOGGER.info(f"{prefix} YOLOv8 requirement{'s' * (n > 1)} {s}not found, attempting AutoUpdate...")
+        LOGGER.info(f"{prefix} YOLOv3 requirement{'s' * (n > 1)} {s}not found, attempting AutoUpdate...")
         try:
             assert check_online(), 'AutoUpdate skipped (offline)'
             LOGGER.info(subprocess.check_output(f'pip install {s} {cmds}', shell=True).decode())
