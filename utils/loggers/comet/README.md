@@ -180,7 +180,7 @@ using [Comet Artifacts](https://www.comet.com/docs/v2/guides/data-management/usi
 you can do so using the `upload_dataset` flag.
 
 The dataset be organized in the way described in
-the [YOLOv5 documentation](https://docs.ultralytics.com/tutorials/train-custom-datasets/). The
+the [YOLOv5 documentation](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data/). The
 dataset config `yaml` file must follow the same format as that of the `coco128.yaml` file.
 
 ```shell
