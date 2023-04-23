@@ -118,7 +118,7 @@ jobs:
               model = torch.hub.load('.', 'custom', path=path, source='local')
           EOF
       - name: Notify on failure
-        if: failure() && github.event_name == 'schedule'
+        if: failure() && github.repository == 'ultralytics/yolov5' && (github.event_name == 'schedule' || github.event_name == 'push')
         uses: slackapi/slack-github-action@v1.23.0
         with:
           payload: |
