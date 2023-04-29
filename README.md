@@ -465,7 +465,7 @@ YOLOv3 is available under two different licenses:
 
 ## <div align="center">Contact</div>
 
-For YOLOv3 bug reports and feature requests please visit [GitHub Issues](https://github.com/ultralytics/ultralytics/issues), and join our [Discord](https://discord.gg/n6cFeSPZdD) community for questions and discussions!
+For YOLOv3 bug reports and feature requests please visit [GitHub Issues](https://github.com/ultralytics/yolov3/issues), and join our [Discord](https://discord.gg/n6cFeSPZdD) community for questions and discussions!
 
 <br>
 <div align="center">
