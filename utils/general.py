@@ -26,7 +26,6 @@ from pathlib import Path
 from subprocess import check_output
 from tarfile import is_tarfile
 from typing import Optional
-from ultralytics.yolo.utils.checks import check_requirements
 from zipfile import ZipFile, is_zipfile
 
 import cv2
@@ -37,6 +36,7 @@ import pkg_resources as pkg
 import torch
 import torchvision
 import yaml
+from ultralytics.yolo.utils.checks import check_requirements
 
 from utils import TryExcept, emojis
 from utils.downloads import gsutil_getsize
