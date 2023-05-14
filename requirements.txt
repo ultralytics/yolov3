@@ -3,6 +3,7 @@
 
 # Base ------------------------------------------------------------------------
 gitpython>=3.1.30
+ipython  # interactive notebook
 matplotlib>=3.3
 numpy>=1.18.5
 opencv-python>=4.1.1
