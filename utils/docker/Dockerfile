@@ -30,10 +30,10 @@ RUN git clone https://github.com/ultralytics/yolov5 /usr/src/app
 # Install pip packages
 COPY requirements.txt .
 RUN python3 -m pip install --upgrade pip wheel
+RUN pip install --nocache nvidia-tensorrt --index-url https://pypi.ngc.nvidia.com
 RUN pip install --no-cache -r requirements.txt albumentations comet gsutil notebook \
-    coremltools onnx onnx-simplifier onnxruntime 'openvino-dev>=2022.3' \
-    nvidia-tensorrt --index-url https://pypi.ngc.nvidia.com
-    # tensorflow tensorflowjs \
+    coremltools onnx onnx-simplifier onnxruntime 'openvino-dev>=2022.3'
+    # tensorflow tensorflowjs
 
 # Set environment variables
 ENV OMP_NUM_THREADS=1
