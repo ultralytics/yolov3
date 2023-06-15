@@ -23,10 +23,7 @@ jobs:
         model: [yolov5n]
         include:
           - os: ubuntu-latest
-            python-version: '3.7'  # '3.6.8' min
-            model: yolov5n
-          - os: ubuntu-latest
-            python-version: '3.8'
+            python-version: '3.8'  # '3.6.8' min
             model: yolov5n
           - os: ubuntu-latest
             python-version: '3.9'
@@ -124,8 +121,8 @@ jobs:
     if: always() # This ensures the job runs even if previous jobs fail
     steps:
       - name: Check for failure and notify
-        if: needs.Tests.result == 'failure' && github.repository == 'ultralytics/yolov3' && (github.event_name == 'schedule' || github.event_name == 'push')
-        uses: slackapi/slack-github-action@v1.23.0
+        if: (needs.Tests.result == 'failure' || needs.Tests.result == 'cancelled') && github.repository == 'ultralytics/yolov3' && (github.event_name == 'schedule' || github.event_name == 'push')
+        uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
             {"text": "<!channel> GitHub Actions error for ${{ github.workflow }} ❌\n\n\n*Repository:* https://github.com/${{ github.repository }}\n*Action:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n*Author:* ${{ github.actor }}\n*Event:* ${{ github.event_name }}\n"}
