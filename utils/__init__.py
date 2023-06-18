@@ -58,6 +58,7 @@ def notebook_init(verbose=True):
     from utils.torch_utils import select_device  # imports
 
     check_font()
+    os.system('pip uninstall -y wandb')
 
     import psutil
     from IPython import display  # to display images and clear console output
