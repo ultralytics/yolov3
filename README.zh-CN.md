@@ -61,6 +61,11 @@ YOLOv8 旨在快速、准确且易于使用，使其成为广泛的物体检测�
 pip install ultralytics
 ```
 
+<div align="center">
+  <a href="https://ultralytics.com/yolov8" target="_blank">
+  <img width="100%" src="https://raw.githubusercontent.com/ultralytics/assets/main/yolov8/yolo-comparison-plots.png"></a>
+</div>
+
 ## <div align="center">文档</div>
 
 有关训练、测试和部署的完整文档见[YOLOv3 文档](https://docs.ultralytics.com)。请参阅下面的快速入门示例。
