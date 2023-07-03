@@ -29,7 +29,6 @@ from typing import Optional
 from zipfile import ZipFile, is_zipfile
 
 import cv2
-import IPython
 import numpy as np
 import pandas as pd
 import pkg_resources as pkg
@@ -39,7 +38,7 @@ import yaml
 from ultralytics.yolo.utils.checks import check_requirements
 
 from utils import TryExcept, emojis
-from utils.downloads import gsutil_getsize
+from utils.downloads import curl_download, gsutil_getsize
 from utils.metrics import box_iou, fitness
 
 FILE = Path(__file__).resolve()
@@ -60,6 +59,7 @@ pd.options.display.max_columns = 10
 cv2.setNumThreads(0)  # prevent OpenCV from multithreading (incompatible with PyTorch DataLoader)
 os.environ['NUMEXPR_MAX_THREADS'] = str(NUM_THREADS)  # NumExpr max threads
 os.environ['OMP_NUM_THREADS'] = '1' if platform.system() == 'darwin' else str(NUM_THREADS)  # OpenMP (PyTorch and SciPy)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress verbose TF compiler warnings in Colab
 
 
 def is_ascii(s=''):
@@ -78,10 +78,18 @@ def is_colab():
     return 'google.colab' in sys.modules
 
 
-def is_notebook():
-    # Is environment a Jupyter notebook? Verified on Colab, Jupyterlab, Kaggle, Paperspace
-    ipython_type = str(type(IPython.get_ipython()))
-    return 'colab' in ipython_type or 'zmqshell' in ipython_type
+def is_jupyter():
+    """
+    Check if the current script is running inside a Jupyter Notebook.
+    Verified on Colab, Jupyterlab, Kaggle, Paperspace.
+
+    Returns:
+        bool: True if running inside a Jupyter Notebook, False otherwise.
+    """
+    with contextlib.suppress(Exception):
+        from IPython import get_ipython
+        return get_ipython() is not None
+    return False
 
 
 def is_kaggle():
@@ -395,7 +403,7 @@ def check_img_size(imgsz, s=32, floor=0):
 def check_imshow(warn=False):
     # Check if environment supports image displays
     try:
-        assert not is_notebook()
+        assert not is_jupyter()
         assert not is_docker()
         cv2.imshow('test', np.zeros((1, 1, 3)))
         cv2.waitKey(1)
@@ -596,9 +604,7 @@ def download(url, dir='.', unzip=True, delete=True, curl=False, threads=1, retry
             LOGGER.info(f'Downloading {url} to {f}...')
             for i in range(retry + 1):
                 if curl:
-                    s = 'sS' if threads > 1 else ''  # silent
-                    r = subprocess.run(f'curl -# -{s}L "{url}" -o "{f}" --retry 9 -C -'.split())
-                    success = r == 0
+                    success = curl_download(url, f, silent=(threads > 1))
                 else:
                     torch.hub.download_url_to_file(url, f, progress=threads == 1)  # torch download
                     success = f.is_file()
@@ -1080,13 +1086,13 @@ def increment_path(path, exist_ok=False, sep='', mkdir=False):
 imshow_ = cv2.imshow  # copy to avoid recursion errors
 
 
-def imread(path, flags=cv2.IMREAD_COLOR):
-    return cv2.imdecode(np.fromfile(path, np.uint8), flags)
+def imread(filename, flags=cv2.IMREAD_COLOR):
+    return cv2.imdecode(np.fromfile(filename, np.uint8), flags)
 
 
-def imwrite(path, im):
+def imwrite(filename, img):
     try:
-        cv2.imencode(Path(path).suffix, im)[1].tofile(path)
+        cv2.imencode(Path(filename).suffix, img)[1].tofile(filename)
         return True
     except Exception:
         return False
@@ -1096,6 +1102,7 @@ def imshow(path, im):
     imshow_(path.encode('unicode_escape').decode(), im)
 
 
-cv2.imread, cv2.imwrite, cv2.imshow = imread, imwrite, imshow  # redefine
+if Path(inspect.stack()[0].filename).parent.parent.as_posix() in inspect.stack()[-1].filename:
+    cv2.imread, cv2.imwrite, cv2.imshow = imread, imwrite, imshow  # redefine
 
 # Variables ------------------------------------------------------------------------------------------------------------

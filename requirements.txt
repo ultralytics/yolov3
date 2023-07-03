@@ -3,7 +3,6 @@
 
 # Base ------------------------------------------------------------------------
 gitpython>=3.1.30
-ipython  # interactive notebook
 matplotlib>=3.3
 numpy>=1.18.5
 opencv-python>=4.1.1
@@ -20,7 +19,7 @@ ultralytics>=8.0.111
 # protobuf<=3.20.1  # https://github.com/ultralytics/yolov5/issues/8012
 
 # Logging ---------------------------------------------------------------------
-tensorboard>=2.4.1
+# tensorboard>=2.4.1
 # clearml>=1.2.0
 # comet
 
