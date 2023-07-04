@@ -44,7 +44,7 @@ from utils.general import (DATASETS_DIR, LOGGER, TQDM_BAR_FORMAT, WorkingDirecto
                            check_requirements, colorstr, download, increment_path, init_seeds, print_args, yaml_save)
 from utils.loggers import GenericLogger
 from utils.plots import imshow_cls
-from utils.torch_utils import (ModelEMA, model_info, reshape_classifier_output, select_device, smart_DDP,
+from utils.torch_utils import (ModelEMA, de_parallel, model_info, reshape_classifier_output, select_device, smart_DDP,
                                smart_optimizer, smartCrossEntropyLoss, torch_distributed_zero_first)
 
 LOCAL_RANK = int(os.getenv('LOCAL_RANK', -1))  # https://pytorch.org/docs/stable/elastic/run.html
@@ -57,7 +57,7 @@ def train(opt, device):
     init_seeds(opt.seed + 1 + RANK, deterministic=True)
     save_dir, data, bs, epochs, nw, imgsz, pretrained = \
         opt.save_dir, Path(opt.data), opt.batch_size, opt.epochs, min(os.cpu_count() - 1, opt.workers), \
-            opt.imgsz, str(opt.pretrained).lower() == 'true'
+        opt.imgsz, str(opt.pretrained).lower() == 'true'
     cuda = device.type != 'cpu'
 
     # Directories
@@ -78,7 +78,7 @@ def train(opt, device):
             LOGGER.info(f'\nDataset not found ⚠️, missing path {data_dir}, attempting download...')
             t = time.time()
             if str(data) == 'imagenet':
-                subprocess.run(f"bash {ROOT / 'data/scripts/get_imagenet.sh'}", shell=True, check=True)
+                subprocess.run(['bash', str(ROOT / 'data/scripts/get_imagenet.sh')], shell=True, check=True)
             else:
                 url = f'https://github.com/ultralytics/yolov5/releases/download/v1.0/{data}.zip'
                 download(url, dir=data_dir.parent)
@@ -260,7 +260,7 @@ def train(opt, device):
         # Plot examples
         images, labels = (x[:25] for x in next(iter(testloader)))  # first 25 images and labels
         pred = torch.max(ema.ema(images.to(device)), 1)[1]
-        file = imshow_cls(images, labels, pred, model.names, verbose=False, f=save_dir / 'test_images.jpg')
+        file = imshow_cls(images, labels, pred, de_parallel(model).names, verbose=False, f=save_dir / 'test_images.jpg')
 
         # Log results
         meta = {'epochs': epochs, 'top1_acc': best_fitness, 'date': datetime.now().isoformat()}
