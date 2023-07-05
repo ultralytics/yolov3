@@ -469,6 +469,14 @@ def parse_opt(known=False):
     parser.add_argument('--save-period', type=int, default=-1, help='Save checkpoint every x epochs (disabled if < 1)')
     parser.add_argument('--seed', type=int, default=0, help='Global training seed')
     parser.add_argument('--local_rank', type=int, default=-1, help='Automatic DDP Multi-GPU argument, do not modify')
+    parser.add_argument('--task', type = int, default=1, help='define task')
+    #warp
+    
+    
+
+    #finetune
+
+
 
     # Logger arguments
     parser.add_argument('--entity', default=None, help='Entity')
@@ -485,8 +493,24 @@ def main(opt, callbacks=Callbacks()):
         print_args(vars(opt))
         check_git_status()
         check_requirements(ROOT / 'requirements.txt')
+    
+
+    if opt.task == 1:
+        exp = f'2007_base_15_5'
+    elif opt.task == 2:
+        exp = f'2007_task2_15_5'
+    else:
+        exp = f'2007_ft_15_5'
+    
+    # Load image store
+    # TODO
+
+
+    # Finetune load image store 
+
 
     # Resume (from specified or most recent last.pt)
+    #this thing is for resume training should be consider for loading weight from previous task toooo
     if opt.resume and not check_comet_resume(opt) and not opt.evolve:
         last = Path(check_file(opt.resume) if isinstance(opt.resume, str) else get_latest_run())
         opt_yaml = last.parent.parent / 'opt.yaml'  # train options yaml
