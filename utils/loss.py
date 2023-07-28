@@ -99,7 +99,7 @@ class ComputeLoss:
         # Define criteria
         BCEcls = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['cls_pw']], device=device))
         BCEobj = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['obj_pw']], device=device))
-
+        self.sigmoid = nn.Sigmoid()
         # Class label smoothing https://arxiv.org/pdf/1902.04103.pdf eqn 3
         self.cp, self.cn = smooth_BCE(eps=h.get('label_smoothing', 0.0))  # positive, negative BCE targets
 
@@ -117,28 +117,85 @@ class ComputeLoss:
         self.nl = m.nl  # number of layers
         self.anchors = m.anchors
         self.device = device
+        self.base_class = h['base_class']
+        # self.base_class = 19
+        self.mse = nn.MSELoss()
 
-    def __call__(self, p, targets):  # predictions, targets
+    def __call__(self, p, targets, p_prev= None):  # pis, targets
+        # print(p.shape)
+        # print(target.shape)
         lcls = torch.zeros(1, device=self.device)  # class loss
         lbox = torch.zeros(1, device=self.device)  # box loss
         lobj = torch.zeros(1, device=self.device)  # object loss
         tcls, tbox, indices, anchors = self.build_targets(p, targets)  # targets
+        # print(anchors == self.anchors)
+        # print(anchors[0])
+        # pri)
+        if p_prev is not None:
+            thresh1 = 0.1
+            thresh2 = 0.5
+            alpha = 2
+            gamma = 0.01
+            lcls_distill = torch.zeros(1, device=self.device)  # class loss
+            lbox_distill = torch.zeros(1, device=self.device)  # box loss
+            lobj_distill = torch.zeros(1, device=self.device)  # object loss
 
+
+        
         # Losses
-        for i, pi in enumerate(p):  # layer index, layer predictions
+        for i, pi in enumerate(p):  # layer index, layer pis
+            # print(pi.shape)
+            if p_prev is not None:
+                prev_preds = p_prev[i]
+                # print(self.base_class)
+                prev_preds[...,4] = self.sigmoid(prev_preds[...,4])
+                cls_prev_score = self.sigmoid(prev_preds[..., 5:5+self.base_class])
+                # print(torch.max(cls_prev_score, dim = -1)[1])
+                score = prev_preds[..., 4] * torch.max(cls_prev_score, dim = -1)[0]
+                obj_conf = score >= thresh2
+                box_conf = (obj_conf) | (prev_preds[...,4] >= 0.99)
+                obj_not_sure = score >= thresh1
+                noobj = score < thresh1
+
+                lobj_distill += self.BCEobj(pi[..., 4][obj_not_sure], prev_preds[...,4][obj_not_sure]) * self.balance[i]
+                # lobj_distill += self.BCEobj(pi[..., 4], prev_preds[...,4]) * self.balance[i]
+
+                class_prob = cls_prev_score[obj_conf]
+                std_prob, mean_prob = torch.std_mean(class_prob, dim = -1, keepdim = True)
+                thres = mean_prob + alpha * std_prob
+
+
+                obj_cls = class_prob > thres
+                lcls_distill += self.BCEcls(pi[..., 5:5+self.base_class][obj_conf][obj_cls],\
+                cls_prev_score[obj_conf][obj_cls])
+                # lcls_distill += self.BCEcls(pi[..., 5:5+self.base_class], cls_prev_score)
+
+                # prev_pxy, prev_pwh, _, prev_pcls = pi[b, a, gj, gi].split((2, 2, 1, self.nc), 1)  # target-subset of pis
+                lbox_distill += self.mse(self.sigmoid(pi[..., :4][box_conf]),\
+                                            self.sigmoid(prev_preds[..., :4][box_conf]))
+                # lbox_distill += self.mse(self.sigmoid(pi[..., :4]),\
+                #                             self.sigmoid(prev_preds[..., :4]))
+                # print(lcls_distill)
+                # print(lbox_distill)
+                # print(lobj_distill)
+            
             b, a, gj, gi = indices[i]  # image, anchor, gridy, gridx
             tobj = torch.zeros(pi.shape[:4], dtype=pi.dtype, device=self.device)  # target obj
 
             n = b.shape[0]  # number of targets
+            # print(b.shape)
+            # print(a.shape)
+            # print(gj.shape)
+            # print(gi.shape)
             if n:
                 # pxy, pwh, _, pcls = pi[b, a, gj, gi].tensor_split((2, 4, 5), dim=1)  # faster, requires torch 1.8.0
-                pxy, pwh, _, pcls = pi[b, a, gj, gi].split((2, 2, 1, self.nc), 1)  # target-subset of predictions
-
+                pxy, pwh, _, pcls = pi[b, a, gj, gi].split((2, 2, 1, self.nc), 1)  # target-subset of pis
+                # print(pxy.shape)
                 # Regression
                 pxy = pxy.sigmoid() * 2 - 0.5
                 pwh = (pwh.sigmoid() * 2) ** 2 * anchors[i]
                 pbox = torch.cat((pxy, pwh), 1)  # predicted box
-                iou = bbox_iou(pbox, tbox[i], CIoU=True).squeeze()  # iou(prediction, target)
+                iou = bbox_iou(pbox, tbox[i], CIoU=True).squeeze()  # iou(pi, target)
                 lbox += (1.0 - iou).mean()  # iou loss
 
                 # Objectness
@@ -153,6 +210,10 @@ class ComputeLoss:
                 # Classification
                 if self.nc > 1:  # cls loss (only if multiple classes)
                     t = torch.full_like(pcls, self.cn, device=self.device)  # targets
+                    # new_cls_id = sum(tcls[i]==j for j in range(self.base_class, 20)).bool()
+                    # t[range(n)][~new_cls_id] = 0.0
+                    # t[range(n), tcls[i]][~new_cls_id] = 1.0
+                    # print(tcls[i].shape)
                     t[range(n), tcls[i]] = self.cp
                     lcls += self.BCEcls(pcls, t)  # BCE
 
@@ -160,6 +221,12 @@ class ComputeLoss:
                 # with open('targets.txt', 'a') as file:
                 #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
 
+            # if p_prev is not None:
+            #     obj_conf = tobj > 0
+            #     nobj_conf = (tobj == 0) | (noobj)
+            #     obji = self.BCEobj(pi[...,4][nobj_conf], tobj[nobj_conf]) + self.BCEobj(pi[...,4][obj_conf], tobj[obj_conf])
+            # else:
+            #     obji = self.BCEobj(pi[..., 4], tobj)
             obji = self.BCEobj(pi[..., 4], tobj)
             lobj += obji * self.balance[i]  # obj loss
             if self.autobalance:
@@ -171,7 +238,13 @@ class ComputeLoss:
         lobj *= self.hyp['obj']
         lcls *= self.hyp['cls']
         bs = tobj.shape[0]  # batch size
-
+        if p_prev is not None:
+            lobj_distill *= self.hyp["obj"]
+            lcls_distill *= self.hyp["cls"] * 2.0
+            lbox_distill *= self.hyp["box"]
+            # return bs * ((lobj_distill + lcls_distill + lbox_distill) * gamma + (1-gamma) * (lbox + lobj + lcls)), torch.cat((lbox, lobj, lcls, lbox_distill,\
+            # lobj_distill, lcls_distill)).detach()
+            return bs * ((lobj_distill + lcls_distill + lbox_distill) * gamma + (1-gamma) * (lbox + lobj + lcls)), torch.cat((lbox, lobj, lcls)).detach()
         return (lbox + lobj + lcls) * bs, torch.cat((lbox, lobj, lcls)).detach()
 
     def build_targets(self, p, targets):

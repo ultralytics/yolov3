@@ -174,14 +174,14 @@ class DetectionModel(BaseModel):
                 self.yaml = yaml.safe_load(f)  # model dict
 
         # Define model
-        ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
+        self.ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override yaml value
         if anchors:
             LOGGER.info(f'Overriding model.yaml anchors with anchors={anchors}')
             self.yaml['anchors'] = round(anchors)  # override yaml value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=[ch])  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=[self.ch])  # model, savelist
         self.names = [str(i) for i in range(self.yaml['nc'])]  # default names
         self.inplace = self.yaml.get('inplace', True)
 
@@ -260,6 +260,45 @@ class DetectionModel(BaseModel):
             mi.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
 
 
+    def adaptation(self, num_class, old_class):
+        with torch.no_grad():
+            m = self.model[-1]
+            # anchors = m.anchors
+            # print(len(m.anchors))
+            # print(anchors)
+            # old_module = self.model[-1]
+            # print(anchors * m.stride.view(-1, 1, 1))
+            anchor = deepcopy(self.yaml)["anchors"]
+            if isinstance(anchor, int):  # number of anchors
+                anchor = [list(range(anchor * 2))] * 3
+            
+            self.model[-1] = Detect(nc = num_class, anchors = anchor, ch = [256, 512, 1024])
+            detect_n = self.model[-1]
+            np = sum(x.numel() for x in detect_n.parameters())
+            detect_n.stride = m.stride
+            detect_n.anchors /= m.stride.view(-1, 1, 1).cpu()
+            detect_n.i, detect_n.f, detect_n.type, detect_n.np = m.i, m.f, m.type, np
+            num_fea_old = 5 + old_class
+            # print(self.model[-1].m)
+            # print(m.m)
+            for mi, m_new in zip(m.m, detect_n.m):
+                print(mi.weight.shape)
+                print(m_new.weight.shape)
+                old_weight = mi.weight
+                old_bias = mi.bias
+                m_new.weight[:num_fea_old] = old_weight[:num_fea_old]
+                m_new.weight[num_fea_old + (num_class - old_class): 2*num_fea_old + (num_class - old_class)] =\
+                old_weight[num_fea_old: 2* num_fea_old]
+                m_new.weight[2* num_fea_old + 2 * (num_class - old_class): 3*num_fea_old + 2 * (num_class - old_class)] =\
+                old_weight[2* num_fea_old:]
+                m_new.bias[:num_fea_old] = old_bias[:num_fea_old]
+                m_new.bias[num_fea_old + (num_class - old_class): 2*num_fea_old + (num_class - old_class)] =\
+                old_bias[num_fea_old: 2* num_fea_old]
+                m_new.bias[2* num_fea_old + 2 * (num_class - old_class): 3*num_fea_old + 2 * (num_class - old_class)] =\
+                old_bias[2* num_fea_old:]
+
+
+
 Model = DetectionModel  # retain  'Model' class for backwards compatibility
 
 
@@ -304,7 +343,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
         LOGGER.info(f"{colorstr('activation:')} {act}")  # print
     na = (len(anchors[0]) // 2) if isinstance(anchors, list) else anchors  # number of anchors
     no = na * (nc + 5)  # number of outputs = anchors * (classes + 5)
-
+    # print(f)
     layers, save, c2 = [], [], ch[-1]  # layers, savelist, ch out
     for i, (f, n, m, args) in enumerate(d['backbone'] + d['head']):  # from, number, module, args
         m = eval(m) if isinstance(m, str) else m  # eval strings
@@ -335,6 +374,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                 args[1] = [list(range(args[1] * 2))] * len(f)
             if m is Segment:
                 args[3] = make_divisible(args[3] * gw, 8)
+            # print(f"This is {args}")
         elif m is Contract:
             c2 = ch[f] * args[0] ** 2
         elif m is Expand:
