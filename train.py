@@ -132,8 +132,11 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         else:
             model = Model(cfg or ckpt['model'].yaml, ch=3, nc= nc).to(device)
         exclude = ['anchor'] if (cfg or hyp.get('anchors')) and not resume else []  # exclude keys
-        csd = ckpt['model'].float().state_dict()  # checkpoint state_dict as FP32
-        # csd = ckpt
+        if task != 0 or opt.resume:
+          csd = ckpt['model'].float().state_dict()  # checkpoint state_dict as FP32
+          # print(csd.keys())
+        else:
+          csd = ckpt
         csd = intersect_dicts(csd, model.state_dict(), exclude=exclude)  # intersect
         model.load_state_dict(csd, strict=False)  # load
         LOGGER.info(f'Transferred {len(csd)}/{len(model.state_dict())} items from {weights}')  # report
@@ -198,7 +201,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
     accumulate = max(round(nbs / batch_size), 1)  # accumulate loss before optimizing
     hyp['weight_decay'] *= batch_size * accumulate / nbs  # scale weight_decay
     optimizer = smart_optimizer(model, opt.optimizer, hyp['lr0'], hyp['momentum'], hyp['weight_decay'])
-    optimizer_meta = smart_optimizer(model, "SGD", hyp['lr0'], hyp['momentum'], 0)
+    optimizer_meta = smart_optimizer(model, "SGD", 0.009, hyp['momentum'], 0)
 
     # Scheduler
     if opt.cos_lr:
