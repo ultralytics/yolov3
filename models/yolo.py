@@ -7,6 +7,7 @@ Usage:
 """
 
 import argparse
+import contextlib
 import os
 import platform
 import sys
@@ -239,7 +240,7 @@ class DetectionModel(BaseModel):
         return p
 
     def _clip_augmented(self, y):
-        # Clip  augmented inference tails
+        # Clip YOLOv3 augmented inference tails
         nl = self.model[-1].nl  # number of detection layers (P3-P5)
         g = sum(4 ** x for x in range(nl))  # grid points
         e = 1  # exclude layer count
@@ -260,23 +261,23 @@ class DetectionModel(BaseModel):
             mi.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
 
 
-Model = DetectionModel  # retain  'Model' class for backwards compatibility
+Model = DetectionModel  # retain YOLOv3 'Model' class for backwards compatibility
 
 
 class SegmentationModel(DetectionModel):
-    #  segmentation model
+    # YOLOv3 segmentation model
     def __init__(self, cfg='yolov5s-seg.yaml', ch=3, nc=None, anchors=None):
         super().__init__(cfg, ch, nc, anchors)
 
 
 class ClassificationModel(BaseModel):
-    #  classification model
+    # YOLOv3 classification model
     def __init__(self, cfg=None, model=None, nc=1000, cutoff=10):  # yaml, model, number of classes, cutoff index
         super().__init__()
         self._from_detection_model(model, nc, cutoff) if model is not None else self._from_yaml(cfg)
 
     def _from_detection_model(self, model, nc=1000, cutoff=10):
-        # Create a  classification model from a  detection model
+        # Create a YOLOv3 classification model from a YOLOv3 detection model
         if isinstance(model, DetectMultiBackend):
             model = model.model  # unwrap DetectMultiBackend
         model.model = model.model[:cutoff]  # backbone
@@ -291,12 +292,12 @@ class ClassificationModel(BaseModel):
         self.nc = nc
 
     def _from_yaml(self, cfg):
-        # Create a  classification model from a *.yaml file
+        # Create a YOLOv3 classification model from a *.yaml file
         self.model = None
 
 
 def parse_model(d, ch):  # model_dict, input_channels(3)
-    # Parse a  model.yaml dictionary
+    # Parse a YOLOv3 model.yaml dictionary
     LOGGER.info(f"\n{'':>3}{'from':>18}{'n':>3}{'params':>10}  {'module':<40}{'arguments':<30}")
     anchors, nc, gd, gw, act = d['anchors'], d['nc'], d['depth_multiple'], d['width_multiple'], d.get('activation')
     if act:

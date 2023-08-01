@@ -1,6 +1,6 @@
 # YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
 """
-Train a YOLOv5 classifier model on a classification dataset
+Train a YOLOv3 classifier model on a classification dataset
 
 Usage - Single-GPU training:
     $ python classify/train.py --model yolov5s-cls.pt --data imagenette160 --epochs 5 --img 224
@@ -9,7 +9,7 @@ Usage - Multi-GPU DDP training:
     $ python -m torch.distributed.run --nproc_per_node 4 --master_port 2022 classify/train.py --model yolov5s-cls.pt --data imagenet --epochs 5 --img 224 --device 0,1,2,3
 
 Datasets:           --data mnist, fashion-mnist, cifar10, cifar100, imagenette, imagewoof, imagenet, or 'path/to/data'
-YOLOv5-cls models:  --model yolov5n-cls.pt, yolov5s-cls.pt, yolov5m-cls.pt, yolov5l-cls.pt, yolov5x-cls.pt
+YOLOv3-cls models:  --model yolov5n-cls.pt, yolov5s-cls.pt, yolov5m-cls.pt, yolov5l-cls.pt, yolov5x-cls.pt
 Torchvision models: --model resnet50, efficientnet_b0, etc. See https://pytorch.org/vision/stable/models.html
 """
 
@@ -31,7 +31,7 @@ from torch.cuda import amp
 from tqdm import tqdm
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[1]  # YOLOv5 root directory
+ROOT = FILE.parents[1]  # YOLOv3 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
@@ -115,7 +115,7 @@ def train(opt, device):
             m = hub.list('ultralytics/yolov5')  # + hub.list('pytorch/vision')  # models
             raise ModuleNotFoundError(f'--model {opt.model} not found. Available models are: \n' + '\n'.join(m))
         if isinstance(model, DetectionModel):
-            LOGGER.warning("WARNING ⚠️ pass YOLOv5 classifier model with '-cls' suffix, i.e. '--model yolov5s-cls.pt'")
+            LOGGER.warning("WARNING ⚠️ pass YOLOv3 classifier model with '-cls' suffix, i.e. '--model yolov5s-cls.pt'")
             model = ClassificationModel(model=model, nc=nc, cutoff=opt.cutoff or 10)  # convert to classification model
         reshape_classifier_output(model, nc)  # update class count
     for m in model.modules():

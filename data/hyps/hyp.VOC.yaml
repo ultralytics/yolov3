@@ -3,7 +3,7 @@
 # python train.py --batch 128 --weights yolov5m6.pt --data VOC.yaml --epochs 50 --img 512 --hyp hyp.scratch-med.yaml --evolve
 # See Hyperparameter Evolution tutorial for details https://github.com/ultralytics/yolov5#tutorials
 
-# YOLOv5 Hyperparameter Evolution Results
+# YOLOv3 Hyperparameter Evolution Results
 # Best generation: 467
 # Last generation: 996
 #    metrics/precision,       metrics/recall,      metrics/mAP_0.5, metrics/mAP_0.5:0.95,         val/box_loss,         val/obj_loss,         val/cls_loss

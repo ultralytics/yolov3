@@ -1,6 +1,6 @@
 # YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
 """
-Validate a trained  segment model on a segment dataset
+Validate a trained YOLOv3 segment model on a segment dataset
 
 Usage:
     $ bash data/scripts/get_coco.sh --val --segments  # download COCO-segments val split (1G, 5000 images)
@@ -33,7 +33,7 @@ import torch
 from tqdm import tqdm
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[1]  # root directory
+ROOT = FILE.parents[1]  # YOLOv3 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
@@ -462,7 +462,7 @@ def main(opt):
                     r, _, t = run(**vars(opt), plots=False)
                     y.append(r + t)  # results and times
                 np.savetxt(f, y, fmt='%10.4g')  # save
-            subprocess.run('zip -r study.zip study_*.txt'.split())
+            subprocess.run(['zip', '-r', 'study.zip', 'study_*.txt'])
             plot_val_study(x=x)  # plot
         else:
             raise NotImplementedError(f'--task {opt.task} not in ("train", "val", "test", "speed", "study")')

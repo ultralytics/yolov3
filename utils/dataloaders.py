@@ -188,7 +188,7 @@ class _RepeatSampler:
 
 
 class LoadScreenshots:
-    # YOLOv5 screenshot dataloader, i.e. `python detect.py --source "screen 0 100 100 512 256"`
+    # YOLOv3 screenshot dataloader, i.e. `python detect.py --source "screen 0 100 100 512 256"`
     def __init__(self, source, img_size=640, stride=32, auto=True, transforms=None):
         # source = [screen_number left top width height] (pixels)
         check_requirements('mss')
@@ -237,7 +237,7 @@ class LoadScreenshots:
 
 
 class LoadImages:
-    # YOLOv5 image/video dataloader, i.e. `python detect.py --source image.jpg/vid.mp4`
+    # YOLOv3 image/video dataloader, i.e. `python detect.py --source image.jpg/vid.mp4`
     def __init__(self, path, img_size=640, stride=32, auto=True, transforms=None, vid_stride=1):
         if isinstance(path, str) and Path(path).suffix == '.txt':  # *.txt file with img/vid/dir on each line
             path = Path(path).read_text().rsplit()
@@ -340,7 +340,7 @@ class LoadImages:
 
 
 class LoadStreams:
-    # YOLOv5 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
+    # YOLOv3 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
     def __init__(self, sources='file.streams', img_size=640, stride=32, auto=True, transforms=None, vid_stride=1):
         torch.backends.cudnn.benchmark = True  # faster for fixed-size inference
         self.mode = 'stream'
@@ -432,7 +432,7 @@ def img2label_paths(img_paths):
 
 
 class LoadImagesAndLabels(Dataset):
-    # YOLOv5 train_loader/val_loader, loads images and labels for training and validation
+    # YOLOv3 train_loader/val_loader, loads images and labels for training and validation
     cache_version = 0.6  # dataset labels *.cache version
     rand_interp_methods = [cv2.INTER_NEAREST, cv2.INTER_LINEAR, cv2.INTER_CUBIC, cv2.INTER_AREA, cv2.INTER_LANCZOS4]
 
@@ -531,13 +531,14 @@ class LoadImagesAndLabels(Dataset):
 
         # Update labels
         include_class = []  # filter labels to include only these classes (optional)
+        self.segments = list(self.segments)
         include_class_array = np.array(include_class).reshape(1, -1)
         for i, (label, segment) in enumerate(zip(self.labels, self.segments)):
             if include_class:
                 j = (label[:, 0:1] == include_class_array).any(1)
                 self.labels[i] = label[j]
                 if segment:
-                    self.segments[i] = segment[j]
+                    self.segments[i] = [segment[idx] for idx, elem in enumerate(j) if elem]
             if single_cls:  # single-class training, merge all classes into 0
                 self.labels[i][:, 0] = 0
 
@@ -748,7 +749,7 @@ class LoadImagesAndLabels(Dataset):
             np.save(f.as_posix(), cv2.imread(self.im_files[i]))
 
     def load_mosaic(self, index):
-        # YOLOv5 4-mosaic loader. Loads 1 image + 3 random images into a 4-image mosaic
+        # YOLOv3 4-mosaic loader. Loads 1 image + 3 random images into a 4-image mosaic
         labels4, segments4 = [], []
         s = self.img_size
         yc, xc = (int(random.uniform(-x, 2 * s + x)) for x in self.mosaic_border)  # mosaic center x, y
@@ -806,7 +807,7 @@ class LoadImagesAndLabels(Dataset):
         return img4, labels4
 
     def load_mosaic9(self, index):
-        # YOLOv5 9-mosaic loader. Loads 1 image + 8 random images into a 9-image mosaic
+        # YOLOv3 9-mosaic loader. Loads 1 image + 8 random images into a 9-image mosaic
         labels9, segments9 = [], []
         s = self.img_size
         indices = [index] + random.choices(self.indices, k=8)  # 8 additional image indices
@@ -1162,7 +1163,7 @@ class HUBDatasetStats():
 # Classification dataloaders -------------------------------------------------------------------------------------------
 class ClassificationDataset(torchvision.datasets.ImageFolder):
     """
-    YOLOv5 Classification Dataset.
+    YOLOv3 Classification Dataset.
     Arguments
         root:  Dataset path
         transform:  torchvision transforms, used by default
@@ -1202,7 +1203,7 @@ def create_classification_dataloader(path,
                                      rank=-1,
                                      workers=8,
                                      shuffle=True):
-    # Returns Dataloader object to be used with YOLOv5 Classifier
+    # Returns Dataloader object to be used with YOLOv3 Classifier
     with torch_distributed_zero_first(rank):  # init dataset *.cache only once if DDP
         dataset = ClassificationDataset(root=path, imgsz=imgsz, augment=augment, cache=cache)
     batch_size = min(batch_size, len(dataset))
