@@ -148,6 +148,10 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
     # print(model.model[-1].f)
     if task == 1:
         model.adaptation(num_class = nc, old_class = hyp["base_class"])
+        if opt.resume:
+            csd = ckpt['model'].float().state_dict()
+            csd = intersect_dicts(csd, model.state_dict(), exclude=exclude)  # intersect
+            model.load_state_dict(csd, strict=False)  # load
     # print(model.model[-1].f)
     
     model.to(device)
