@@ -77,6 +77,25 @@ from utils.torch_utils import select_device, smart_inference_mode
 MACOS = platform.system() == 'Darwin'  # macOS environment
 
 
+class iOSModel(torch.nn.Module):
+
+    def __init__(self, model, im):
+        super().__init__()
+        b, c, h, w = im.shape  # batch, channel, height, width
+        self.model = model
+        self.nc = model.nc  # number of classes
+        if w == h:
+            self.normalize = 1. / w
+        else:
+            self.normalize = torch.tensor([1. / w, 1. / h, 1. / w, 1. / h])  # broadcast (slower, smaller)
+            # np = model(im)[0].shape[1]  # number of points
+            # self.normalize = torch.tensor([1. / w, 1. / h, 1. / w, 1. / h]).expand(np, 4)  # explicit (faster, larger)
+
+    def forward(self, x):
+        xywh, conf, cls = self.model(x)[0].squeeze().split((4, 1, self.nc), 1)
+        return cls * conf, xywh * self.normalize  # confidence (3780, 80), coordinates (3780, 4)
+
+
 def export_formats():
     # YOLOv3 export formats
     x = [
@@ -186,7 +205,7 @@ def export_onnx(model, im, file, opset, dynamic, simplify, prefix=colorstr('ONNX
 
 
 @try_export
-def export_openvino(file, metadata, half, prefix=colorstr('OpenVINO:')):
+def export_openvino(file, metadata, half, int8, data, prefix=colorstr('OpenVINO:')):
     # YOLOv3 OpenVINO export
     check_requirements('openvino-dev>=2023.0')  # requires openvino-dev: https://pypi.org/project/openvino-dev/
     import openvino.runtime as ov  # noqa
@@ -196,8 +215,56 @@ def export_openvino(file, metadata, half, prefix=colorstr('OpenVINO:')):
     f = str(file).replace(file.suffix, f'_openvino_model{os.sep}')
     f_onnx = file.with_suffix('.onnx')
     f_ov = str(Path(f) / file.with_suffix('.xml').name)
+    if int8:
+        check_requirements('nncf>=2.4.0')  # requires at least version 2.4.0 to use the post-training quantization
+        import nncf
+        import numpy as np
+        from openvino.runtime import Core
 
-    ov_model = mo.convert_model(f_onnx, model_name=file.stem, framework='onnx', compress_to_fp16=half)  # export
+        from utils.dataloaders import create_dataloader
+        core = Core()
+        onnx_model = core.read_model(f_onnx)  # export
+
+        def prepare_input_tensor(image: np.ndarray):
+            input_tensor = image.astype(np.float32)  # uint8 to fp16/32
+            input_tensor /= 255.0  # 0 - 255 to 0.0 - 1.0
+
+            if input_tensor.ndim == 3:
+                input_tensor = np.expand_dims(input_tensor, 0)
+            return input_tensor
+
+        def gen_dataloader(yaml_path, task='train', imgsz=640, workers=4):
+            data_yaml = check_yaml(yaml_path)
+            data = check_dataset(data_yaml)
+            dataloader = create_dataloader(data[task],
+                                           imgsz=imgsz,
+                                           batch_size=1,
+                                           stride=32,
+                                           pad=0.5,
+                                           single_cls=False,
+                                           rect=False,
+                                           workers=workers)[0]
+            return dataloader
+
+        # noqa: F811
+
+        def transform_fn(data_item):
+            """
+            Quantization transform function. Extracts and preprocess input data from dataloader item for quantization.
+            Parameters:
+               data_item: Tuple with data item produced by DataLoader during iteration
+            Returns:
+                input_tensor: Input data for quantization
+            """
+            img = data_item[0].numpy()
+            input_tensor = prepare_input_tensor(img)
+            return input_tensor
+
+        ds = gen_dataloader(data)
+        quantization_dataset = nncf.Dataset(ds, transform_fn)
+        ov_model = nncf.quantize(onnx_model, quantization_dataset, preset=nncf.QuantizationPreset.MIXED)
+    else:
+        ov_model = mo.convert_model(f_onnx, model_name=file.stem, framework='onnx', compress_to_fp16=half)  # export
 
     ov.serialize(ov_model, f_ov)  # save
     yaml_save(Path(f) / file.with_suffix('.yaml').name, metadata)  # add metadata.yaml
@@ -220,7 +287,7 @@ def export_paddle(model, im, file, metadata, prefix=colorstr('PaddlePaddle:')):
 
 
 @try_export
-def export_coreml(model, im, file, int8, half, prefix=colorstr('CoreML:')):
+def export_coreml(model, im, file, int8, half, nms, prefix=colorstr('CoreML:')):
     # YOLOv3 CoreML export
     check_requirements('coremltools')
     import coremltools as ct
@@ -228,6 +295,8 @@ def export_coreml(model, im, file, int8, half, prefix=colorstr('CoreML:')):
     LOGGER.info(f'\n{prefix} starting export with coremltools {ct.__version__}...')
     f = file.with_suffix('.mlmodel')
 
+    if nms:
+        model = iOSModel(model, im)
     ts = torch.jit.trace(model, im, strict=False)  # TorchScript model
     ct_model = ct.convert(ts, inputs=[ct.ImageType('image', shape=im.shape, scale=1 / 255, bias=[0, 0, 0])])
     bits, mode = (8, 'kmeans_lut') if int8 else (16, 'linear') if half else (32, None)
@@ -410,7 +479,7 @@ def export_edgetpu(file, prefix=colorstr('Edge TPU:')):
     cmd = 'edgetpu_compiler --version'
     help_url = 'https://coral.ai/docs/edgetpu/compiler/'
     assert platform.system() == 'Linux', f'export only supported on Linux. See {help_url}'
-    if subprocess.run(f'{cmd} >/dev/null', shell=True).returncode != 0:
+    if subprocess.run(f'{cmd} > /dev/null 2>&1', shell=True).returncode != 0:
         LOGGER.info(f'\n{prefix} export requires Edge TPU compiler. Attempting install from {help_url}')
         sudo = subprocess.run('sudo --version >/dev/null', shell=True).returncode == 0  # sudo installed on system
         for c in (
@@ -424,8 +493,15 @@ def export_edgetpu(file, prefix=colorstr('Edge TPU:')):
     f = str(file).replace('.pt', '-int8_edgetpu.tflite')  # Edge TPU model
     f_tfl = str(file).replace('.pt', '-int8.tflite')  # TFLite model
 
-    cmd = f'edgetpu_compiler -s -d -k 10 --out_dir {file.parent} {f_tfl}'
-    subprocess.run(cmd.split(), check=True)
+    subprocess.run([
+        'edgetpu_compiler',
+        '-s',
+        '-d',
+        '-k',
+        '10',
+        '--out_dir',
+        str(file.parent),
+        f_tfl, ], check=True)
     return f, None
 
 
@@ -440,11 +516,14 @@ def export_tfjs(file, int8, prefix=colorstr('TensorFlow.js:')):
     f_pb = file.with_suffix('.pb')  # *.pb path
     f_json = f'{f}/model.json'  # *.json path
 
-    int8_export = ' --quantize_uint8 ' if int8 else ''
-
-    cmd = f'tensorflowjs_converter --input_format=tf_frozen_model {int8_export}' \
-          f'--output_node_names=Identity,Identity_1,Identity_2,Identity_3 {f_pb} {f}'
-    subprocess.run(cmd.split())
+    args = [
+        'tensorflowjs_converter',
+        '--input_format=tf_frozen_model',
+        '--quantize_uint8' if int8 else '',
+        '--output_node_names=Identity,Identity_1,Identity_2,Identity_3',
+        str(f_pb),
+        str(f), ]
+    subprocess.run([arg for arg in args if arg], check=True)
 
     json = Path(f_json).read_text()
     with open(f_json, 'w') as j:  # sort JSON Identity_* in ascending order
@@ -491,6 +570,129 @@ def add_tflite_metadata(file, metadata, num_outputs):
         populator.load_associated_files([str(tmp_file)])
         populator.populate()
         tmp_file.unlink()
+
+
+def pipeline_coreml(model, im, file, names, y, prefix=colorstr('CoreML Pipeline:')):
+    # YOLOv3 CoreML pipeline
+    import coremltools as ct
+    from PIL import Image
+
+    print(f'{prefix} starting pipeline with coremltools {ct.__version__}...')
+    batch_size, ch, h, w = list(im.shape)  # BCHW
+    t = time.time()
+
+    # YOLOv3 Output shapes
+    spec = model.get_spec()
+    out0, out1 = iter(spec.description.output)
+    if platform.system() == 'Darwin':
+        img = Image.new('RGB', (w, h))  # img(192 width, 320 height)
+        # img = torch.zeros((*opt.img_size, 3)).numpy()  # img size(320,192,3) iDetection
+        out = model.predict({'image': img})
+        out0_shape, out1_shape = out[out0.name].shape, out[out1.name].shape
+    else:  # linux and windows can not run model.predict(), get sizes from pytorch output y
+        s = tuple(y[0].shape)
+        out0_shape, out1_shape = (s[1], s[2] - 5), (s[1], 4)  # (3780, 80), (3780, 4)
+
+    # Checks
+    nx, ny = spec.description.input[0].type.imageType.width, spec.description.input[0].type.imageType.height
+    na, nc = out0_shape
+    # na, nc = out0.type.multiArrayType.shape  # number anchors, classes
+    assert len(names) == nc, f'{len(names)} names found for nc={nc}'  # check
+
+    # Define output shapes (missing)
+    out0.type.multiArrayType.shape[:] = out0_shape  # (3780, 80)
+    out1.type.multiArrayType.shape[:] = out1_shape  # (3780, 4)
+    # spec.neuralNetwork.preprocessing[0].featureName = '0'
+
+    # Flexible input shapes
+    # from coremltools.models.neural_network import flexible_shape_utils
+    # s = [] # shapes
+    # s.append(flexible_shape_utils.NeuralNetworkImageSize(320, 192))
+    # s.append(flexible_shape_utils.NeuralNetworkImageSize(640, 384))  # (height, width)
+    # flexible_shape_utils.add_enumerated_image_sizes(spec, feature_name='image', sizes=s)
+    # r = flexible_shape_utils.NeuralNetworkImageSizeRange()  # shape ranges
+    # r.add_height_range((192, 640))
+    # r.add_width_range((192, 640))
+    # flexible_shape_utils.update_image_size_range(spec, feature_name='image', size_range=r)
+
+    # Print
+    print(spec.description)
+
+    # Model from spec
+    model = ct.models.MLModel(spec)
+
+    # 3. Create NMS protobuf
+    nms_spec = ct.proto.Model_pb2.Model()
+    nms_spec.specificationVersion = 5
+    for i in range(2):
+        decoder_output = model._spec.description.output[i].SerializeToString()
+        nms_spec.description.input.add()
+        nms_spec.description.input[i].ParseFromString(decoder_output)
+        nms_spec.description.output.add()
+        nms_spec.description.output[i].ParseFromString(decoder_output)
+
+    nms_spec.description.output[0].name = 'confidence'
+    nms_spec.description.output[1].name = 'coordinates'
+
+    output_sizes = [nc, 4]
+    for i in range(2):
+        ma_type = nms_spec.description.output[i].type.multiArrayType
+        ma_type.shapeRange.sizeRanges.add()
+        ma_type.shapeRange.sizeRanges[0].lowerBound = 0
+        ma_type.shapeRange.sizeRanges[0].upperBound = -1
+        ma_type.shapeRange.sizeRanges.add()
+        ma_type.shapeRange.sizeRanges[1].lowerBound = output_sizes[i]
+        ma_type.shapeRange.sizeRanges[1].upperBound = output_sizes[i]
+        del ma_type.shape[:]
+
+    nms = nms_spec.nonMaximumSuppression
+    nms.confidenceInputFeatureName = out0.name  # 1x507x80
+    nms.coordinatesInputFeatureName = out1.name  # 1x507x4
+    nms.confidenceOutputFeatureName = 'confidence'
+    nms.coordinatesOutputFeatureName = 'coordinates'
+    nms.iouThresholdInputFeatureName = 'iouThreshold'
+    nms.confidenceThresholdInputFeatureName = 'confidenceThreshold'
+    nms.iouThreshold = 0.45
+    nms.confidenceThreshold = 0.25
+    nms.pickTop.perClass = True
+    nms.stringClassLabels.vector.extend(names.values())
+    nms_model = ct.models.MLModel(nms_spec)
+
+    # 4. Pipeline models together
+    pipeline = ct.models.pipeline.Pipeline(input_features=[('image', ct.models.datatypes.Array(3, ny, nx)),
+                                                           ('iouThreshold', ct.models.datatypes.Double()),
+                                                           ('confidenceThreshold', ct.models.datatypes.Double())],
+                                           output_features=['confidence', 'coordinates'])
+    pipeline.add_model(model)
+    pipeline.add_model(nms_model)
+
+    # Correct datatypes
+    pipeline.spec.description.input[0].ParseFromString(model._spec.description.input[0].SerializeToString())
+    pipeline.spec.description.output[0].ParseFromString(nms_model._spec.description.output[0].SerializeToString())
+    pipeline.spec.description.output[1].ParseFromString(nms_model._spec.description.output[1].SerializeToString())
+
+    # Update metadata
+    pipeline.spec.specificationVersion = 5
+    pipeline.spec.description.metadata.versionString = 'https://github.com/ultralytics/yolov5'
+    pipeline.spec.description.metadata.shortDescription = 'https://github.com/ultralytics/yolov5'
+    pipeline.spec.description.metadata.author = 'glenn.jocher@ultralytics.com'
+    pipeline.spec.description.metadata.license = 'https://github.com/ultralytics/yolov5/blob/master/LICENSE'
+    pipeline.spec.description.metadata.userDefined.update({
+        'classes': ','.join(names.values()),
+        'iou_threshold': str(nms.iouThreshold),
+        'confidence_threshold': str(nms.confidenceThreshold)})
+
+    # Save the model
+    f = file.with_suffix('.mlmodel')  # filename
+    model = ct.models.MLModel(pipeline.spec)
+    model.input_description['image'] = 'Input image'
+    model.input_description['iouThreshold'] = f'(optional) IOU Threshold override (default: {nms.iouThreshold})'
+    model.input_description['confidenceThreshold'] = \
+        f'(optional) Confidence Threshold override (default: {nms.confidenceThreshold})'
+    model.output_description['confidence'] = 'Boxes × Class confidence (see user-defined metadata "classes")'
+    model.output_description['coordinates'] = 'Boxes × [x, y, width, height] (relative to image size)'
+    model.save(f)  # pipelined
+    print(f'{prefix} pipeline success ({time.time() - t:.2f}s), saved as {f} ({file_size(f):.1f} MB)')
 
 
 @smart_inference_mode()
@@ -569,9 +771,11 @@ def run(
     if onnx or xml:  # OpenVINO requires ONNX
         f[2], _ = export_onnx(model, im, file, opset, dynamic, simplify)
     if xml:  # OpenVINO
-        f[3], _ = export_openvino(file, metadata, half)
+        f[3], _ = export_openvino(file, metadata, half, int8, data)
     if coreml:  # CoreML
-        f[4], _ = export_coreml(model, im, file, int8, half)
+        f[4], ct_model = export_coreml(model, im, file, int8, half, nms)
+        if nms:
+            pipeline_coreml(ct_model, im, file, model.names, y)
     if any((saved_model, pb, tflite, edgetpu, tfjs)):  # TensorFlow formats
         assert not tflite or not tfjs, 'TFLite and TF.js models must be exported separately, please pass only one type.'
         assert not isinstance(model, ClassificationModel), 'ClassificationModel export to TF formats not yet supported.'
@@ -624,10 +828,10 @@ def parse_opt(known=False):
     parser.add_argument('--batch-size', type=int, default=1, help='batch size')
     parser.add_argument('--device', default='cpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--half', action='store_true', help='FP16 half-precision export')
-    parser.add_argument('--inplace', action='store_true', help='set  Detect() inplace=True')
+    parser.add_argument('--inplace', action='store_true', help='set YOLOv3 Detect() inplace=True')
     parser.add_argument('--keras', action='store_true', help='TF: use Keras')
     parser.add_argument('--optimize', action='store_true', help='TorchScript: optimize for mobile')
-    parser.add_argument('--int8', action='store_true', help='CoreML/TF INT8 quantization')
+    parser.add_argument('--int8', action='store_true', help='CoreML/TF/OpenVINO INT8 quantization')
     parser.add_argument('--dynamic', action='store_true', help='ONNX/TF/TensorRT: dynamic axes')
     parser.add_argument('--simplify', action='store_true', help='ONNX: simplify model')
     parser.add_argument('--opset', type=int, default=17, help='ONNX: opset version')

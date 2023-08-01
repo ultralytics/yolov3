@@ -100,7 +100,7 @@ def check_comet_weights(opt):
 
     Args:
         opt (argparse.Namespace): Command Line arguments passed
-            to YOLOv5 training script
+            to YOLOv3 training script
 
     Returns:
         None/bool: Return True if weights are successfully downloaded
@@ -127,7 +127,7 @@ def check_comet_resume(opt):
 
     Args:
         opt (argparse.Namespace): Command Line arguments passed
-            to YOLOv5 training script
+            to YOLOv3 training script
 
     Returns:
         None/bool: Return True if the run is restored successfully

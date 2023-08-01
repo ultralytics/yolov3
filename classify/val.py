@@ -1,6 +1,6 @@
 # YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
 """
-Validate a trained YOLOv5 classification model on a classification dataset
+Validate a trained YOLOv3 classification model on a classification dataset
 
 Usage:
     $ bash data/scripts/get_imagenet.sh --val  # download ImageNet val split (6.3G, 50000 images)
@@ -29,7 +29,7 @@ import torch
 from tqdm import tqdm
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[1]  # root directory
+ROOT = FILE.parents[1]  # YOLOv3 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative

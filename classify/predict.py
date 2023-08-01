@@ -1,6 +1,6 @@
 # YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
 """
-Run  classification inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
+Run YOLOv3 classification inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
 
 Usage - sources:
     $ python classify/predict.py --weights yolov5s-cls.pt --source 0                               # webcam
@@ -38,17 +38,18 @@ import torch
 import torch.nn.functional as F
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[1]  # root directory
+ROOT = FILE.parents[1]  # YOLOv3 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
+
+from ultralytics.utils.plotting import Annotator
 
 from models.common import DetectMultiBackend
 from utils.augmentations import classify_transforms
 from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams
 from utils.general import (LOGGER, Profile, check_file, check_img_size, check_imshow, check_requirements, colorstr, cv2,
                            increment_path, print_args, strip_optimizer)
-from utils.plots import Annotator
 from utils.torch_utils import select_device, smart_inference_mode
 
 
@@ -144,7 +145,7 @@ def run(
             # Write results
             text = '\n'.join(f'{prob[j]:.2f} {names[j]}' for j in top5i)
             if save_img or view_img:  # Add bbox to image
-                annotator.text((32, 32), text, txt_color=(255, 255, 255))
+                annotator.text([32, 32], text, txt_color=(255, 255, 255))
             if save_txt:  # Write to file
                 with open(f'{txt_path}.txt', 'a') as f:
                     f.write(text + '\n')

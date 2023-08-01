@@ -307,7 +307,7 @@ class Loggers():
 
 class GenericLogger:
     """
-    YOLOv5 General purpose logger for non-task specific logging
+    YOLOv3 General purpose logger for non-task specific logging
     Usage: from utils.loggers import GenericLogger; logger = GenericLogger(...)
     Arguments
         opt:             Run arguments
@@ -398,4 +398,4 @@ def web_project_name(project):
     if not project.startswith('runs/train'):
         return project
     suffix = '-Classify' if project.endswith('-cls') else '-Segment' if project.endswith('-seg') else ''
-    return f'YOLOv5{suffix}'
+    return f'YOLOv3{suffix}'

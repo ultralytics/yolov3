@@ -31,7 +31,7 @@ import torch
 from tqdm import tqdm
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0]  # root directory
+ROOT = FILE.parents[0]  # YOLOv3 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
@@ -304,6 +304,8 @@ def run(
     if save_json and len(jdict):
         w = Path(weights[0] if isinstance(weights, list) else weights).stem if weights is not None else ''  # weights
         anno_json = str(Path('../datasets/coco/annotations/instances_val2017.json'))  # annotations
+        if not os.path.exists(anno_json):
+            anno_json = os.path.join(data['path'], 'annotations', 'instances_val2017.json')
         pred_json = str(save_dir / f'{w}_predictions.json')  # predictions
         LOGGER.info(f'\nEvaluating pycocotools mAP... saving {pred_json}...')
         with open(pred_json, 'w') as f:
@@ -398,7 +400,7 @@ def main(opt):
                     r, _, t = run(**vars(opt), plots=False)
                     y.append(r + t)  # results and times
                 np.savetxt(f, y, fmt='%10.4g')  # save
-            subprocess.run('zip -r study.zip study_*.txt'.split())
+            subprocess.run(['zip', '-r', 'study.zip', 'study_*.txt'])
             plot_val_study(x=x)  # plot
         else:
             raise NotImplementedError(f'--task {opt.task} not in ("train", "val", "test", "speed", "study")')

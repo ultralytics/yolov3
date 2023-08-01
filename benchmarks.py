@@ -1,6 +1,6 @@
 # YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
 """
-Run  benchmarks on all supported export formats
+Run YOLOv3 benchmarks on all supported export formats
 
 Format                      | `export.py --include`         | Model
 ---                         | ---                           | ---
@@ -34,7 +34,7 @@ from pathlib import Path
 import pandas as pd
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0]  # root directory
+ROOT = FILE.parents[0]  # YOLOv3 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 # ROOT = ROOT.relative_to(Path.cwd())  # relative
@@ -76,7 +76,12 @@ def run(
             if f == '-':
                 w = weights  # PyTorch format
             else:
-                w = export.run(weights=weights, imgsz=[imgsz], include=[f], device=device, half=half)[-1]  # all others
+                w = export.run(weights=weights,
+                               imgsz=[imgsz],
+                               include=[f],
+                               batch_size=batch_size,
+                               device=device,
+                               half=half)[-1]  # all others
             assert suffix in str(w), 'export failed'
 
             # Validate
@@ -145,7 +150,7 @@ def test(
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', type=str, default=ROOT / 'yolov5s.pt', help='weights path')
+    parser.add_argument('--weights', type=str, default=ROOT / 'yolov3-tiny.pt', help='weights path')
     parser.add_argument('--imgsz', '--img', '--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--batch-size', type=int, default=1, help='batch size')
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='dataset.yaml path')

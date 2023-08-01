@@ -5,8 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import yaml
-
-from utils.plots import Annotator, colors
+from ultralytics.utils.plotting import Annotator, colors
 
 try:
     import clearml
@@ -85,9 +84,9 @@ class ClearmlLogger:
         self.data_dict = None
         if self.clearml:
             self.task = Task.init(
-                project_name=opt.project if opt.project != 'runs/train' else 'YOLOv5',
+                project_name=opt.project if opt.project != 'runs/train' else 'YOLOv3',
                 task_name=opt.name if opt.name != 'exp' else 'Training',
-                tags=['YOLOv5'],
+                tags=['YOLOv3'],
                 output_uri=True,
                 reuse_last_task_id=opt.exist_ok,
                 auto_connect_frameworks={'pytorch': False}

@@ -10,7 +10,7 @@ import comet_ml
 logger = logging.getLogger(__name__)
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[3]  # YOLOv5 root directory
+ROOT = FILE.parents[3]  # YOLOv3 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 
@@ -26,7 +26,7 @@ COMET_PROJECT_NAME = config.get_string(os.getenv('COMET_PROJECT_NAME'), 'comet.p
 
 def get_args(known=False):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', type=str, default=ROOT / 'yolov5s.pt', help='initial weights path')
+    parser.add_argument('--weights', type=str, default=ROOT / 'yolov3-tiny.pt', help='initial weights path')
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='dataset.yaml path')
     parser.add_argument('--hyp', type=str, default=ROOT / 'data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
