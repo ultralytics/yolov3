@@ -272,7 +272,7 @@ class DetectionModel(BaseModel):
             if isinstance(anchor, int):  # number of anchors
                 anchor = [list(range(anchor * 2))] * 3
             
-            self.model[-1] = Detect(nc = num_class, anchors = anchor, ch = [256, 512, 1024])
+            self.model[-1] = Detect(nc = num_class, anchors = anchor, ch = [192, 384, 768])
             detect_n = self.model[-1]
             np = sum(x.numel() for x in detect_n.parameters())
             detect_n.stride = m.stride

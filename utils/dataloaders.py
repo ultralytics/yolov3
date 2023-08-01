@@ -516,8 +516,8 @@ class LoadImagesAndLabels(Dataset):
             self.store = store
             #this cannot be change 
             self.INSTANCES = self.store.retrieve()
-            self.IMAGES_STORES = ['../datasets/images/train2007/' + a.img_path.split('/')[-1] for a in self.INSTANCES] #change None to images list
-            self.LABELS_STORES_LIST = ['../datasets/labels/train2007/' + b.label_path.split('/')[-1] for b in self.INSTANCES] #change None to image list 
+            self.IMAGES_STORES = ['../datasets/PASCAL_VOC/images/train2007/' + a.img_path.split('/')[-1] for a in self.INSTANCES] #change None to images list
+            self.LABELS_STORES_LIST = ['../datasets/PASCAL_VOC/labels/train2007/' + b.label_path.split('/')[-1] for b in self.INSTANCES] #change None to image list 
         else:
             self.store = Store(20,10)
             self.IMAGES_STORES = []
@@ -1003,8 +1003,8 @@ class LoadImagesAndLabels(Dataset):
             self.instances = self.store.retrieve()
             # self.image_stores.clear()
             # self.labels_stores_list.clear()
-            self.image_stores = ['../datasets/images/train2007/' + a.img_path.split('/')[-1] for a in self.instances] #change None to images list
-            self.labels_stores_list = ['../datasets/labels/train2007/' + b.label_path.split('/')[-1] for b in self.instances] #change None to image list 
+            self.image_stores = ['../datasets/PASCAL_VOC/images/train2007/' + a.img_path.split('/')[-1] for a in self.instances] #change None to images list
+            self.labels_stores_list = ['../datasets/PASCAL_VOC/labels/train2007/' + b.label_path.split('/')[-1] for b in self.instances] #change None to image list 
             # cache_store_path = (Path(self.labels_stores_list[0]).parent).with_suffix('.store.cache')
             # cache_store = self.cache_labels_store(cache_store_path, '')
             # cache_store.pop('results') 
@@ -1091,7 +1091,7 @@ class LoadImagesAndLabels(Dataset):
             #     img, _, (h,w)
             else:
                 #load_instances 
-                if random.random() < 0:
+                if random.random() < 0.5:
                     index_store = random.choice(range(len(self.LABELS_STORES)))
                     # print(len(self.LABELS_STORES))
                         # if index_store != indices[index_of_main_image]:
