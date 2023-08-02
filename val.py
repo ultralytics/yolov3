@@ -277,7 +277,7 @@ def run(
         ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
         # if int(model.hyp['base_class']) != model.nc:
         #     ap_new = ap50[int(model.hyp['base_class']):model.nc].mean()
-        print(ap50[:int(model.hyp['base_class'])].mean())
+        # print(ap50[:int(model.hyp['base_class'])].mean())
         mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
     nt = np.bincount(stats[3].astype(int), minlength=nc)  # number of targets per class
 
