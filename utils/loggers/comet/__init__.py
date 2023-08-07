@@ -365,7 +365,7 @@ class CometLogger:
         data_dict['path'] = artifact_save_dir
 
         metadata_names = metadata.get('names')
-        if instance(metadata_names, dict):
+        if isinstance(metadata_names, dict):
             data_dict['names'] = {int(k): v for k, v in metadata.get('names').items()}
         elif isinstance(metadata_names, list):
             data_dict['names'] = {int(k): v for k, v in zip(range(len(metadata_names)), metadata_names)}
