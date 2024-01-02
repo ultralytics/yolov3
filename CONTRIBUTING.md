@@ -8,6 +8,8 @@ We love your input! We want to make contributing to YOLOv5 as easy and transpare
 - Proposing a new feature
 - Becoming a maintainer
 
+
+
 YOLOv5 works so well due to our combined community effort, and for every small improvement you contribute you will be helping push the frontiers of what's possible in AI 😃!
 
 ## Submitting a Pull Request (PR) 🛠️
