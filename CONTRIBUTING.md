@@ -1,5 +1,7 @@
 ## Contributing to YOLOv3 🚀
 
+
+
 We love your input! We want to make contributing to YOLOv5 as easy and transparent as possible, whether it's:
 
 - Reporting a bug
@@ -11,7 +13,6 @@ We love your input! We want to make contributing to YOLOv5 as easy and transpare
 YOLOv5 works so well due to our combined community effort, and for every small improvement you contribute you will be helping push the frontiers of what's possible in AI 😃!
 
 ## Submitting a Pull Request (PR) 🛠️
-
 Submitting a PR is easy! This example shows how to submit a PR for updating `requirements.txt` in 4 steps:
 
 ### 1. Select File to Update
