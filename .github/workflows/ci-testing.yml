@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [master]
   schedule:
-    - cron: '0 0 * * *'  # runs at 00:00 UTC every day
+    - cron: "0 0 * * *" # runs at 00:00 UTC every day
 
 jobs:
   Tests:
@@ -18,26 +18,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]  # macos-latest bug https://github.com/ultralytics/yolov5/pull/9049
-        python-version: ['3.11']
+        os: [ubuntu-latest, windows-latest] # macos-latest bug https://github.com/ultralytics/yolov5/pull/9049
+        python-version: ["3.11"]
         model: [yolov5n]
         include:
           - os: ubuntu-latest
-            python-version: '3.8'  # '3.6.8' min
+            python-version: "3.8" # '3.6.8' min
             model: yolov5n
           - os: ubuntu-latest
-            python-version: '3.9'
+            python-version: "3.9"
             model: yolov5n
           - os: ubuntu-latest
-            python-version: '3.8'  # torch 1.8.0 requires python >=3.6, <=3.8
+            python-version: "3.8" # torch 1.8.0 requires python >=3.6, <=3.8
             model: yolov5n
-            torch: '1.8.0'  # min torch version CI https://pypi.org/project/torchvision/
+            torch: "1.8.0" # min torch version CI https://pypi.org/project/torchvision/
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip' # caching pip dependencies
+          cache: "pip" # caching pip dependencies
       - name: Install requirements
         run: |
           python -m pip install --upgrade pip wheel
@@ -46,13 +46,13 @@ jobs:
           else
               pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
           fi
-        shell: bash  # for Windows compatibility
+        shell: bash # for Windows compatibility
       - name: Check environment
         run: |
           yolo checks
           pip list
       - name: Test detection
-        shell: bash  # for Windows compatibility
+        shell: bash # for Windows compatibility
         run: |
           # export PYTHONPATH="$PWD"  # to run '$ python *.py' files in subdirectories
           m=${{ matrix.model }}  # official weights
@@ -78,7 +78,7 @@ jobs:
               torch.jit.trace(model, [im])
           EOF
       - name: Test segmentation
-        shell: bash  # for Windows compatibility
+        shell: bash # for Windows compatibility
         run: |
           m=${{ matrix.model }}-seg  # official weights
           b=runs/train-seg/exp/weights/best  # best.pt checkpoint
@@ -92,7 +92,7 @@ jobs:
             done
           done
       - name: Test classification
-        shell: bash  # for Windows compatibility
+        shell: bash # for Windows compatibility
         run: |
           m=${{ matrix.model }}-cls.pt  # official weights
           b=runs/train-cls/exp/weights/best.pt  # best.pt checkpoint
