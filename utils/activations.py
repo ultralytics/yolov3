@@ -10,6 +10,7 @@ class SiLU(nn.Module):
     # SiLU activation https://arxiv.org/pdf/1606.08415.pdf
     @staticmethod
     def forward(x):
+        """Applies the SiLU activation function, as detailed in https://arxiv.org/pdf/1606.08415.pdf, on input tensor `x`."""
         return x * torch.sigmoid(x)
 
 
@@ -17,7 +18,7 @@ class Hardswish(nn.Module):
     # Hard-SiLU activation
     @staticmethod
     def forward(x):
-        # return x * F.hardsigmoid(x)  # for TorchScript and CoreML
+        """Applies Hardswish activation, suitable for TorchScript, CoreML, ONNX, modifying input `x` as per Hard-SiLU definition."""
         return x * F.hardtanh(x + 3, 0.0, 6.0) / 6.0  # for TorchScript, CoreML and ONNX
 
 
@@ -25,6 +26,7 @@ class Mish(nn.Module):
     # Mish activation https://github.com/digantamisra98/Mish
     @staticmethod
     def forward(x):
+        """Applies the Mish activation function, enhancing model performance and convergence. Reference: https://github.com/digantamisra98/Mish"""
         return x * F.softplus(x).tanh()
 
 
@@ -33,28 +35,33 @@ class MemoryEfficientMish(nn.Module):
     class F(torch.autograd.Function):
         @staticmethod
         def forward(ctx, x):
+            """Applies the Mish activation function in a memory-efficient manner, useful for enhancing model performance."""
             ctx.save_for_backward(x)
             return x.mul(torch.tanh(F.softplus(x)))  # x * tanh(ln(1 + exp(x)))
 
         @staticmethod
         def backward(ctx, grad_output):
+            """Computes gradient of the Mish activation function for backpropagation, returning the derivative with respect to the input."""
             x = ctx.saved_tensors[0]
             sx = torch.sigmoid(x)
             fx = F.softplus(x).tanh()
             return grad_output * (fx + x * sx * (1 - fx * fx))
 
     def forward(self, x):
+        """Applies Mish activation function, useful in neural networks for nonlinear transformation of inputs."""
         return self.F.apply(x)
 
 
 class FReLU(nn.Module):
     # FReLU activation https://arxiv.org/abs/2007.11824
     def __init__(self, c1, k=3):  # ch_in, kernel
+        """Initializes FReLU with specified channel size and kernel, implementing activation from https://arxiv.org/abs/2007.11824."""
         super().__init__()
         self.conv = nn.Conv2d(c1, c1, k, 1, 1, groups=c1, bias=False)
         self.bn = nn.BatchNorm2d(c1)
 
     def forward(self, x):
+        """Performs FReLU activation on input, returning the max of input and its 2D convolution."""
         return torch.max(x, self.bn(self.conv(x)))
 
 
@@ -65,12 +72,14 @@ class AconC(nn.Module):
     """
 
     def __init__(self, c1):
+        """Initializes ACON activation with learnable parameters p1, p2, and beta as per https://arxiv.org/pdf/2009.04759.pdf."""
         super().__init__()
         self.p1 = nn.Parameter(torch.randn(1, c1, 1, 1))
         self.p2 = nn.Parameter(torch.randn(1, c1, 1, 1))
         self.beta = nn.Parameter(torch.ones(1, c1, 1, 1))
 
     def forward(self, x):
+        """Applies a parametric activation function to tensor x; see https://arxiv.org/pdf/2009.04759.pdf for details."""
         dpx = (self.p1 - self.p2) * x
         return dpx * torch.sigmoid(self.beta * dpx) + self.p2 * x
 
@@ -82,6 +91,7 @@ class MetaAconC(nn.Module):
     """
 
     def __init__(self, c1, k=1, s=1, r=16):  # ch_in, kernel, stride, r
+        """Initializes MetaAconC activation with params c1, optional k (kernel=1), s (stride=1), r (16), defining activation dynamics."""
         super().__init__()
         c2 = max(r, c1 // r)
         self.p1 = nn.Parameter(torch.randn(1, c1, 1, 1))
@@ -92,6 +102,7 @@ class MetaAconC(nn.Module):
         # self.bn2 = nn.BatchNorm2d(c1)
 
     def forward(self, x):
+        """Applies a forward pass transforming input `x` using parametric operations and returns the modified tensor."""
         y = x.mean(dim=2, keepdims=True).mean(dim=3, keepdims=True)
         # batch-size 1 bug/instabilities https://github.com/ultralytics/yolov5/issues/2891
         # beta = torch.sigmoid(self.bn2(self.fc2(self.bn1(self.fc1(y)))))  # bug/unstable

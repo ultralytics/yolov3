@@ -147,6 +147,7 @@ def run(
 
 
 def parse_opt():
+    """Parses command-line options for model configuration and returns an argparse.Namespace of options."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, default=ROOT / "../datasets/mnist", help="dataset path")
     parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "yolov5s-cls.pt", help="model.pt path(s)")
@@ -166,6 +167,7 @@ def parse_opt():
 
 
 def main(opt):
+    """Executes the main pipeline, checks and installs requirements, then runs inference or training based on provided options."""
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))
 

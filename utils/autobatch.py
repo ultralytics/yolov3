@@ -11,13 +11,13 @@ from utils.torch_utils import profile
 
 
 def check_train_batch_size(model, imgsz=640, amp=True):
-    # Check YOLOv3 training batch size
+    """Checks and computes the optimal training batch size for YOLOv3, given model and image size."""
     with torch.cuda.amp.autocast(amp):
         return autobatch(deepcopy(model).train(), imgsz)  # compute optimal batch size
 
 
 def autobatch(model, imgsz=640, fraction=0.8, batch_size=16):
-    # Automatically estimate best YOLOv3 batch size to use `fraction` of available CUDA memory
+    """Estimates optimal YOLOv3 batch size using available CUDA memory; imgsz:int=640, fraction:float=0.8, batch_size:int=16."""
     # Usage:
     #     import torch
     #     from utils.autobatch import autobatch

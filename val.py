@@ -62,7 +62,7 @@ from utils.torch_utils import select_device, smart_inference_mode
 
 
 def save_one_txt(predn, save_conf, shape, file):
-    # Save one txt result
+    """Saves detection results in txt format; includes labels and optionally confidence scores if `save_conf` is True."""
     gn = torch.tensor(shape)[[1, 0, 1, 0]]  # normalization gain whwh
     for *xyxy, conf, cls in predn.tolist():
         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
@@ -72,7 +72,7 @@ def save_one_txt(predn, save_conf, shape, file):
 
 
 def save_one_json(predn, jdict, path, class_map):
-    # Save one JSON result {"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}
+    """Saves detection results in JSON format containing image_id, category_id, bbox, and score per detection."""
     image_id = int(path.stem) if path.stem.isnumeric() else path.stem
     box = xyxy2xywh(predn[:, :4])  # xywh
     box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
@@ -357,6 +357,7 @@ def run(
 
 
 def parse_opt():
+    """Parses and returns command-line options for dataset paths, model parameters, and inference settings."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, default=ROOT / "data/coco128.yaml", help="dataset.yaml path")
     parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "yolov3-tiny.pt", help="model path(s)")
@@ -389,6 +390,7 @@ def parse_opt():
 
 
 def main(opt):
+    """Executes model tasks including training, validation, and speed or study benchmarks based on specified options."""
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
 
     if opt.task in ("train", "val", "test"):  # run normally

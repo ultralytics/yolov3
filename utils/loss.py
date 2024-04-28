@@ -9,18 +9,20 @@ from utils.torch_utils import de_parallel
 
 
 def smooth_BCE(eps=0.1):  # https://github.com/ultralytics/yolov3/issues/238#issuecomment-598028441
-    # return positive, negative label smoothing BCE targets
+    """Applies label smoothing to BCE targets, returning smoothed positive/negative labels; eps default is 0.1."""
     return 1.0 - 0.5 * eps, 0.5 * eps
 
 
 class BCEBlurWithLogitsLoss(nn.Module):
     # BCEwithLogitLoss() with reduced missing label effects.
     def __init__(self, alpha=0.05):
+        """Initializes BCEBlurWithLogitsLoss with alpha to reduce missing label effects; default alpha is 0.05."""
         super().__init__()
         self.loss_fcn = nn.BCEWithLogitsLoss(reduction="none")  # must be nn.BCEWithLogitsLoss()
         self.alpha = alpha
 
     def forward(self, pred, true):
+        """Calculates modified BCEWithLogitsLoss factoring in missing labels, taking `pred` logits and `true` labels as inputs."""
         loss = self.loss_fcn(pred, true)
         pred = torch.sigmoid(pred)  # prob from logits
         dx = pred - true  # reduce only missing label effects
@@ -33,6 +35,7 @@ class BCEBlurWithLogitsLoss(nn.Module):
 class FocalLoss(nn.Module):
     # Wraps focal loss around existing loss_fcn(), i.e. criteria = FocalLoss(nn.BCEWithLogitsLoss(), gamma=1.5)
     def __init__(self, loss_fcn, gamma=1.5, alpha=0.25):
+        """Initializes FocalLoss with specified loss function, gamma, and alpha for enhanced training on imbalanced datasets."""
         super().__init__()
         self.loss_fcn = loss_fcn  # must be nn.BCEWithLogitsLoss()
         self.gamma = gamma
@@ -41,6 +44,7 @@ class FocalLoss(nn.Module):
         self.loss_fcn.reduction = "none"  # required to apply FL to each element
 
     def forward(self, pred, true):
+        """Computes the focal loss between `pred` and `true` using specific alpha and gamma, not applying the modulating factor."""
         loss = self.loss_fcn(pred, true)
         # p_t = torch.exp(-loss)
         # loss *= self.alpha * (1.000001 - p_t) ** self.gamma  # non-zero power for gradient stability
@@ -63,6 +67,7 @@ class FocalLoss(nn.Module):
 class QFocalLoss(nn.Module):
     # Wraps Quality focal loss around existing loss_fcn(), i.e. criteria = FocalLoss(nn.BCEWithLogitsLoss(), gamma=1.5)
     def __init__(self, loss_fcn, gamma=1.5, alpha=0.25):
+        """Initializes QFocalLoss with specified loss function, gamma, and alpha for element-wise focal loss application."""
         super().__init__()
         self.loss_fcn = loss_fcn  # must be nn.BCEWithLogitsLoss()
         self.gamma = gamma
@@ -71,6 +76,7 @@ class QFocalLoss(nn.Module):
         self.loss_fcn.reduction = "none"  # required to apply FL to each element
 
     def forward(self, pred, true):
+        """Computes focal loss between predictions and true labels using configured loss function, `gamma`, and `alpha`."""
         loss = self.loss_fcn(pred, true)
 
         pred_prob = torch.sigmoid(pred)  # prob from logits
@@ -91,6 +97,7 @@ class ComputeLoss:
 
     # Compute losses
     def __init__(self, model, autobalance=False):
+        """Initializes ComputeLoss with model's device and hyperparameters, and sets autobalance."""
         device = next(model.parameters()).device  # get model device
         h = model.hyp  # hyperparameters
 
@@ -117,6 +124,7 @@ class ComputeLoss:
         self.device = device
 
     def __call__(self, p, targets):  # predictions, targets
+        """Computes loss given predictions and targets, returning class, box, and object loss as tensors."""
         lcls = torch.zeros(1, device=self.device)  # class loss
         lbox = torch.zeros(1, device=self.device)  # box loss
         lobj = torch.zeros(1, device=self.device)  # object loss
@@ -173,7 +181,7 @@ class ComputeLoss:
         return (lbox + lobj + lcls) * bs, torch.cat((lbox, lobj, lcls)).detach()
 
     def build_targets(self, p, targets):
-        # Build targets for compute_loss(), input targets(image,class,x,y,w,h)
+        """Generates matching anchor targets for compute_loss() from given images and labels in format (image,class,x,y,w,h)."""
         na, nt = self.na, targets.shape[0]  # number of anchors, targets
         tcls, tbox, indices, anch = [], [], [], []
         gain = torch.ones(7, device=self.device)  # normalized to gridspace gain

@@ -49,6 +49,7 @@ class Detect(nn.Module):
     export = False  # export mode
 
     def __init__(self, nc=80, anchors=(), ch=(), inplace=True):  # detection layer
+        """Initializes YOLOv3 detection layer with class count, anchors, channels, and operation modes."""
         super().__init__()
         self.nc = nc  # number of classes
         self.no = nc + 5  # number of outputs per anchor
@@ -61,6 +62,7 @@ class Detect(nn.Module):
         self.inplace = inplace  # use inplace ops (e.g. slice assignment)
 
     def forward(self, x):
+        """Processes input through convolutional layers, reshaping output for detection. Expects x as list of tensors with shape(bs, C, H, W)."""
         z = []  # inference output
         for i in range(self.nl):
             x[i] = self.m[i](x[i])  # conv
@@ -86,6 +88,7 @@ class Detect(nn.Module):
         return x if self.training else (torch.cat(z, 1),) if self.export else (torch.cat(z, 1), x)
 
     def _make_grid(self, nx=20, ny=20, i=0, torch_1_10=check_version(torch.__version__, "1.10.0")):
+        """Generates a grid and corresponding anchor grid with shape `(1, num_anchors, ny, nx, 2)` for indexing anchors."""
         d = self.anchors[i].device
         t = self.anchors[i].dtype
         shape = 1, self.na, ny, nx, 2  # grid shape
@@ -99,6 +102,7 @@ class Detect(nn.Module):
 class Segment(Detect):
     # YOLOv3 Segment head for segmentation models
     def __init__(self, nc=80, anchors=(), nm=32, npr=256, ch=(), inplace=True):
+        """Initializes the YOLOv3 segment head with customizable class count, anchors, masks, protos, channels, and inplace option."""
         super().__init__(nc, anchors, ch, inplace)
         self.nm = nm  # number of masks
         self.npr = npr  # number of protos
@@ -108,6 +112,7 @@ class Segment(Detect):
         self.detect = Detect.forward
 
     def forward(self, x):
+        """Executes forward pass, returning predictions and protos, with different outputs based on training and export states."""
         p = self.proto(x[0])
         x = self.detect(self, x)
         return (x, p) if self.training else (x[0], p) if self.export else (x[0], p, x[1])
@@ -116,9 +121,11 @@ class Segment(Detect):
 class BaseModel(nn.Module):
     # YOLOv3 base model
     def forward(self, x, profile=False, visualize=False):
+        """Performs a single-scale inference or training step on input `x`, with options for profiling and visualization."""
         return self._forward_once(x, profile, visualize)  # single-scale inference, train
 
     def _forward_once(self, x, profile=False, visualize=False):
+        """Executes a single inference or training step, offering profiling and visualization options for input `x`."""
         y, dt = [], []  # outputs
         for m in self.model:
             if m.f != -1:  # if not from previous layer
@@ -132,6 +139,7 @@ class BaseModel(nn.Module):
         return x
 
     def _profile_one_layer(self, m, x, dt):
+        """Profiles a single layer of the model by measuring its execution time and computational cost."""
         c = m == self.model[-1]  # is final layer, copy input as inplace fix
         o = thop.profile(m, inputs=(x.copy() if c else x,), verbose=False)[0] / 1e9 * 2 if thop else 0  # FLOPs
         t = time_sync()
@@ -145,6 +153,7 @@ class BaseModel(nn.Module):
             LOGGER.info(f"{sum(dt):10.2f} {'-':>10s} {'-':>10s}  Total")
 
     def fuse(self):  # fuse model Conv2d() + BatchNorm2d() layers
+        """Fuses Conv2d() and BatchNorm2d() layers in the model to optimize inference speed."""
         LOGGER.info("Fusing layers... ")
         for m in self.model.modules():
             if isinstance(m, (Conv, DWConv)) and hasattr(m, "bn"):
@@ -155,10 +164,11 @@ class BaseModel(nn.Module):
         return self
 
     def info(self, verbose=False, img_size=640):  # print model information
+        """Prints model information; `verbose` for detailed, `img_size` for input image size (default 640)."""
         model_info(self, verbose, img_size)
 
     def _apply(self, fn):
-        # Apply to(), cpu(), cuda(), half() to model tensors that are not parameters or registered buffers
+        """Applies `to()`, `cpu()`, `cuda()`, `half()` to model tensors, excluding parameters or registered buffers."""
         self = super()._apply(fn)
         m = self.model[-1]  # Detect()
         if isinstance(m, (Detect, Segment)):
@@ -172,6 +182,7 @@ class BaseModel(nn.Module):
 class DetectionModel(BaseModel):
     # YOLOv3 detection model
     def __init__(self, cfg="yolov5s.yaml", ch=3, nc=None, anchors=None):  # model, input channels, number of classes
+        """Initializes YOLOv3 detection model with configurable YAML, input channels, classes, and anchors."""
         super().__init__()
         if isinstance(cfg, dict):
             self.yaml = cfg  # model dict
@@ -212,11 +223,13 @@ class DetectionModel(BaseModel):
         LOGGER.info("")
 
     def forward(self, x, augment=False, profile=False, visualize=False):
+        """Processes input through the model, with options for augmentation, profiling, and visualization."""
         if augment:
             return self._forward_augment(x)  # augmented inference, None
         return self._forward_once(x, profile, visualize)  # single-scale inference, train
 
     def _forward_augment(self, x):
+        """Performs augmented inference by scaling and flipping input images, returning concatenated predictions."""
         img_size = x.shape[-2:]  # height, width
         s = [1, 0.83, 0.67]  # scales
         f = [None, 3, None]  # flips (2-ud, 3-lr)
@@ -231,7 +244,7 @@ class DetectionModel(BaseModel):
         return torch.cat(y, 1), None  # augmented inference, train
 
     def _descale_pred(self, p, flips, scale, img_size):
-        # de-scale predictions following augmented inference (inverse operation)
+        """Rescales predictions after augmentation by adjusting scales and flips based on image dimensions."""
         if self.inplace:
             p[..., :4] /= scale  # de-scale
             if flips == 2:
@@ -248,7 +261,7 @@ class DetectionModel(BaseModel):
         return p
 
     def _clip_augmented(self, y):
-        # Clip YOLOv3 augmented inference tails
+        """Clips augmented inference tails from YOLOv3 predictions, affecting the first and last detection layers."""
         nl = self.model[-1].nl  # number of detection layers (P3-P5)
         g = sum(4**x for x in range(nl))  # grid points
         e = 1  # exclude layer count
@@ -259,7 +272,7 @@ class DetectionModel(BaseModel):
         return y
 
     def _initialize_biases(self, cf=None):  # initialize biases into Detect(), cf is class frequency
-        # https://arxiv.org/abs/1708.02002 section 3.3
+        """Initializes biases for objectness and classes in Detect() module; optionally uses class frequency `cf`."""
         # cf = torch.bincount(torch.tensor(np.concatenate(dataset.labels, 0)[:, 0]).long(), minlength=nc) + 1.
         m = self.model[-1]  # Detect() module
         for mi, s in zip(m.m, m.stride):  # from
@@ -277,17 +290,19 @@ Model = DetectionModel  # retain YOLOv3 'Model' class for backwards compatibilit
 class SegmentationModel(DetectionModel):
     # YOLOv3 segmentation model
     def __init__(self, cfg="yolov5s-seg.yaml", ch=3, nc=None, anchors=None):
+        """Initializes a SegmentationModel with optional configuration, channel, class count, and anchors parameters."""
         super().__init__(cfg, ch, nc, anchors)
 
 
 class ClassificationModel(BaseModel):
     # YOLOv3 classification model
     def __init__(self, cfg=None, model=None, nc=1000, cutoff=10):  # yaml, model, number of classes, cutoff index
+        """Initializes a ClassificationModel from a detection model or YAML, with configurable classes and cutoff."""
         super().__init__()
         self._from_detection_model(model, nc, cutoff) if model is not None else self._from_yaml(cfg)
 
     def _from_detection_model(self, model, nc=1000, cutoff=10):
-        # Create a YOLOv3 classification model from a YOLOv3 detection model
+        """Initializes a classification model from a YOLOv3 detection model, configuring classes and cutoff."""
         if isinstance(model, DetectMultiBackend):
             model = model.model  # unwrap DetectMultiBackend
         model.model = model.model[:cutoff]  # backbone
@@ -302,12 +317,12 @@ class ClassificationModel(BaseModel):
         self.nc = nc
 
     def _from_yaml(self, cfg):
-        # Create a YOLOv3 classification model from a *.yaml file
+        """Creates a YOLOv3 classification model from a YAML file configuration."""
         self.model = None
 
 
 def parse_model(d, ch):  # model_dict, input_channels(3)
-    # Parse a YOLOv3 model.yaml dictionary
+    """Parses a YOLOv3 model configuration from a dictionary and constructs the model."""
     LOGGER.info(f"\n{'':>3}{'from':>18}{'n':>3}{'params':>10}  {'module':<40}{'arguments':<30}")
     anchors, nc, gd, gw, act = d["anchors"], d["nc"], d["depth_multiple"], d["width_multiple"], d.get("activation")
     if act:
