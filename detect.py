@@ -232,6 +232,7 @@ def run(
 
 
 def parse_opt():
+    """Parses and returns command-line options for model inference configurations."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--weights", nargs="+", type=str, default=ROOT / "yolov3-tiny.pt", help="model path or triton URL"
@@ -269,6 +270,7 @@ def parse_opt():
 
 
 def main(opt):
+    """Entry point for running the model; checks requirements and calls `run` with parsed options."""
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))
 

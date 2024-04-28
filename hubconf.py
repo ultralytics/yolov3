@@ -84,57 +84,71 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
 
 
 def custom(path="path/to/model.pt", autoshape=True, _verbose=True, device=None):
-    # YOLOv3 custom or local model
+    """Loads a custom or local YOLOv3 model from a specified path, with options for autoshaping and device
+    assignment.
+    """
     return _create(path, autoshape=autoshape, verbose=_verbose, device=device)
 
 
 def yolov5n(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-nano model https://github.com/ultralytics/yolov5
+    """Instantiates YOLOv5n model; optional pretrained weights, class/channel count, autoshaping, device selection."""
     return _create("yolov5n", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5s(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-small model https://github.com/ultralytics/yolov5
+    """Loads YOLOv5s model, with options for pretrained weights, channel/class customization, autoshaping, and device
+    choice.
+    """
     return _create("yolov5s", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5m(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-medium model https://github.com/ultralytics/yolov5
+    """Loads YOLOv5m model with optional pretrained weights, channel/class customization, autoshaping, device
+    selection.
+    """
     return _create("yolov5m", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5l(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-large model https://github.com/ultralytics/yolov5
+    """Loads YOLOv5l model with options for pretrained weights, channel/class customization, autoshaping, and device
+    selection.
+    """
     return _create("yolov5l", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5x(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-xlarge model https://github.com/ultralytics/yolov5
+    """Loads YOLOv5x model with customization options for weights, channels, classes, autoshaping, and device
+    selection.
+    """
     return _create("yolov5x", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5n6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-nano-P6 model https://github.com/ultralytics/yolov5
+    """Loads the YOLOv5n6 model with options for weights, channels, classes, shaping, and device."""
     return _create("yolov5n6", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5s6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-small-P6 model https://github.com/ultralytics/yolov5
+    """Loads the YOLOv5s6 model; see options for weights, channels, classes,
+    at https://github.com/ultralytics/yolov5."""
     return _create("yolov5s6", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5m6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-medium-P6 model https://github.com/ultralytics/yolov5
+    """Loads YOLOv5m6 model; options for weights, channels, classes documented at
+    https://github.com/ultralytics/yolov5."""
     return _create("yolov5m6", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5l6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-large-P6 model https://github.com/ultralytics/yolov5
+    """Loads YOLOv5l6 model with customization for pretraining, channels, classes; details at
+    https://github.com/ultralytics/yolov5."""
     return _create("yolov5l6", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5x6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    # YOLOv3-xlarge-P6 model https://github.com/ultralytics/yolov5
+    """Loads the YOLOv5x6 model, allowing customization for channels and classes; more at
+    https://github.com/ultralytics/yolov5."""
     return _create("yolov5x6", pretrained, channels, classes, autoshape, _verbose, device)
 
 

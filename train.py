@@ -101,6 +101,9 @@ GIT_INFO = check_git_info()
 
 
 def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictionary
+    """Trains a model with given hyperparameters, options, device, and callbacks, saving results and weights as
+    specified.
+    """
     save_dir, epochs, batch_size, weights, single_cls, evolve, data, cfg, resume, noval, nosave, workers, freeze = (
         Path(opt.save_dir),
         opt.epochs,
@@ -492,6 +495,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
 
 
 def parse_opt(known=False):
+    """Parses command line arguments for training configurations, with facilities for known arg parsing."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", type=str, default=ROOT / "yolov3-tiny.pt", help="initial weights path")
     parser.add_argument("--cfg", type=str, default="", help="model.yaml path")
@@ -538,7 +542,7 @@ def parse_opt(known=False):
 
 
 def main(opt, callbacks=Callbacks()):
-    # Checks
+    """Main training/evolution script handling model checks, DDP setup, training, and hyperparameter evolution."""
     if RANK in {-1, 0}:
         print_args(vars(opt))
         check_git_status()
@@ -704,7 +708,9 @@ def main(opt, callbacks=Callbacks()):
 
 
 def run(**kwargs):
-    # Usage: import train; train.run(data='coco128.yaml', imgsz=320, weights='yolov5m.pt')
+    """Executes model training with specified configurations; see example: import train; train.run(data='coco128.yaml',
+    imgsz=320, weights='yolov5m.pt').
+    """
     opt = parse_opt(True)
     for k, v in kwargs.items():
         setattr(opt, k, v)
