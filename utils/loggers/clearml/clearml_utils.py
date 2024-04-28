@@ -150,10 +150,9 @@ class ClearmlLogger:
         image (Tensor): A torch tensor containing the actual image data
         """
         if (
-                len(self.current_epoch_logged_images) < self.max_imgs_to_log_per_epoch
-                and self.current_epoch >= 0
-                and (
-                self.current_epoch % self.bbox_interval == 0 and image_path not in self.current_epoch_logged_images)
+            len(self.current_epoch_logged_images) < self.max_imgs_to_log_per_epoch
+            and self.current_epoch >= 0
+            and (self.current_epoch % self.bbox_interval == 0 and image_path not in self.current_epoch_logged_images)
         ):
             im = np.ascontiguousarray(np.moveaxis(image.mul(255).clamp(0, 255).byte().cpu().numpy(), 0, 2))
             annotator = Annotator(im=im, pil=True)
