@@ -27,7 +27,7 @@ def plot_images_and_masks(images, targets, masks, paths=None, fname="images.jpg"
     max_subplots = 16  # max image subplots, i.e. 4x4
     bs, _, h, w = images.shape  # batch size, _, height, width
     bs = min(bs, max_subplots)  # limit plot images
-    ns = np.ceil(bs ** 0.5)  # number of subplots (square)
+    ns = np.ceil(bs**0.5)  # number of subplots (square)
     if np.max(images[0]) <= 1:
         images *= 255  # de-normalise (optional)
 
@@ -38,7 +38,7 @@ def plot_images_and_masks(images, targets, masks, paths=None, fname="images.jpg"
             break
         x, y = int(w * (i // ns)), int(h * (i % ns))  # block origin
         im = im.transpose(1, 2, 0)
-        mosaic[y: y + h, x: x + w, :] = im
+        mosaic[y : y + h, x : x + w, :] = im
 
     # Resize (optional)
     scale = max_size / ns / max(h, w)
@@ -103,8 +103,8 @@ def plot_images_and_masks(images, targets, masks, paths=None, fname="images.jpg"
                         else:
                             mask = image_masks[j].astype(bool)
                         with contextlib.suppress(Exception):
-                            im[y: y + h, x: x + w, :][mask] = (
-                                    im[y: y + h, x: x + w, :][mask] * 0.4 + np.array(color) * 0.6
+                            im[y : y + h, x : x + w, :][mask] = (
+                                im[y : y + h, x : x + w, :][mask] * 0.4 + np.array(color) * 0.6
                             )
                 annotator.fromarray(im)
     annotator.im.save(fname)  # save

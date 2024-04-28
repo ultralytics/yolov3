@@ -218,7 +218,9 @@ class Loggers:
             self.clearml.log_image_with_boxes(path, pred, names, im)
 
     def on_val_batch_end(self, batch_i, im, targets, paths, shapes, out):
-        """Logs a single validation batch for Comet ML analytics (batch_i: int, im: tensor, targets: tensor, paths:
+        """
+        Logs a single validation batch for Comet ML analytics (batch_i: int, im: tensor, targets: tensor, paths:
+
         list, shapes: list, out: tensor).
         """
         if self.comet_logger:

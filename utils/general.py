@@ -491,7 +491,7 @@ def check_file(file, suffix=""):
         return file
     elif file.startswith("clearml://"):  # ClearML Dataset ID
         assert (
-                "clearml" in sys.modules
+            "clearml" in sys.modules
         ), "ClearML is not installed, so cannot use ClearML dataset. Try running 'pip install clearml'."
         return file
     else:  # search
@@ -1204,7 +1204,7 @@ def apply_classifier(x, model, img, im0):
             pred_cls1 = d[:, 5].long()
             ims = []
             for a in d:
-                cutout = im0[i][int(a[1]): int(a[3]), int(a[0]): int(a[2])]
+                cutout = im0[i][int(a[1]) : int(a[3]), int(a[0]) : int(a[2])]
                 im = cv2.resize(cutout, (224, 224))  # BGR
 
                 im = im[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
