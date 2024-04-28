@@ -144,7 +144,9 @@ def masks_iou(mask1, mask2, eps=1e-7):
 
 
 def masks2segments(masks, strategy="largest"):
-    # Convert masks(n,160,160) into segments(n,xy)
+    """Converts binary masks to polygon segments with 'largest' or 'concat' strategies, returning lists of (n,xy)
+    coordinates.
+    """
     segments = []
     for x in masks.int().cpu().numpy().astype("uint8"):
         c = cv2.findContours(x, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]

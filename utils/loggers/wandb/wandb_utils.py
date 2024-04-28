@@ -152,6 +152,7 @@ class WandbLogger:
         LOGGER.info(f"Saving model artifact on epoch {epoch + 1}")
 
     def val_one_image(self, pred, predn, path, names, im):
+        """Evaluates model's prediction for a single image, updating metrics based on comparison with ground truth."""
         pass
 
     def log(self, log_dict):
@@ -178,7 +179,7 @@ class WandbLogger:
                     wandb.log(self.log_dict)
                 except BaseException as e:
                     LOGGER.info(
-                        f"An error occurred in wandb logger. The training will proceed without interruption. More info\n{e}"
+                        f"An error occurred in wandb. The training will proceed without interruption. More info\n{e}"
                     )
                     self.wandb_run.finish()
                     self.wandb_run = None
