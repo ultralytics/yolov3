@@ -129,22 +129,26 @@ def yolov5n6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=T
 
 
 def yolov5s6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    """Loads the YOLOv5s6 model; see options for weights, channels, classes, at https://github.com/ultralytics/yolov5."""
+    """Loads the YOLOv5s6 model; see options for weights, channels, classes,
+    at https://github.com/ultralytics/yolov5."""
     return _create("yolov5s6", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5m6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    """Loads YOLOv5m6 model; options for weights, channels, classes documented at https://github.com/ultralytics/yolov5."""
+    """Loads YOLOv5m6 model; options for weights, channels, classes documented at
+    https://github.com/ultralytics/yolov5."""
     return _create("yolov5m6", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5l6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    """Loads YOLOv5l6 model with customization for pretraining, channels, classes; details at https://github.com/ultralytics/yolov5."""
+    """Loads YOLOv5l6 model with customization for pretraining, channels, classes; details at
+    https://github.com/ultralytics/yolov5."""
     return _create("yolov5l6", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5x6(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    """Loads the YOLOv5x6 model, allowing customization for channels and classes; more at https://github.com/ultralytics/yolov5."""
+    """Loads the YOLOv5x6 model, allowing customization for channels and classes; more at
+    https://github.com/ultralytics/yolov5."""
     return _create("yolov5x6", pretrained, channels, classes, autoshape, _verbose, device)
 
 

@@ -29,14 +29,14 @@ backbone:
 
 # YOLOv3-tiny head
 head: [
-    [-1, 1, Conv, [1024, 3, 1]],
-    [-1, 1, Conv, [256, 1, 1]],
-    [-1, 1, Conv, [512, 3, 1]], # 15 (P5/32-large)
+  [-1, 1, Conv, [1024, 3, 1]],
+  [-1, 1, Conv, [256, 1, 1]],
+  [-1, 1, Conv, [512, 3, 1]], # 15 (P5/32-large)
 
-    [-2, 1, Conv, [128, 1, 1]],
-    [-1, 1, nn.Upsample, [None, 2, "nearest"]],
-    [[-1, 8], 1, Concat, [1]], # cat backbone P4
-    [-1, 1, Conv, [256, 3, 1]], # 19 (P4/16-medium)
+  [-2, 1, Conv, [128, 1, 1]],
+  [-1, 1, nn.Upsample, [None, 2, "nearest"]],
+  [[-1, 8], 1, Concat, [1]], # cat backbone P4
+  [-1, 1, Conv, [256, 3, 1]], # 19 (P4/16-medium)
 
-    [[19, 15], 1, Detect, [nc, anchors]], # Detect(P4, P5)
-  ]
+  [[19, 15], 1, Detect, [nc, anchors]], # Detect(P4, P5)
+]

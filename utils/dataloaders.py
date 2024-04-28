@@ -118,7 +118,7 @@ def exif_transpose(image):
 
 def seed_worker(worker_id):
     """Sets the seed for a DataLoader worker to ensure reproducibility."""
-    worker_seed = torch.initial_seed() % 2**32
+    worker_seed = torch.initial_seed() % 2 ** 32
     np.random.seed(worker_seed)
     random.seed(worker_seed)
 
@@ -655,7 +655,7 @@ class LoadImagesAndLabels(Dataset):
         for _ in range(n):
             im = cv2.imread(random.choice(self.im_files))  # sample image
             ratio = self.img_size / max(im.shape[0], im.shape[1])  # max(h, w)  # ratio
-            b += im.nbytes * ratio**2
+            b += im.nbytes * ratio ** 2
         mem_required = b * self.n / n  # GB required to cache dataset into RAM
         mem = psutil.virtual_memory()
         cache = mem_required * (1 + safety_margin) < mem.available  # to cache or not to cache, that is the question
@@ -930,12 +930,12 @@ class LoadImagesAndLabels(Dataset):
             segments9.extend(segments)
 
             # Image
-            img9[y1:y2, x1:x2] = img[y1 - pady :, x1 - padx :]  # img9[ymin:ymax, xmin:xmax]
+            img9[y1:y2, x1:x2] = img[y1 - pady:, x1 - padx:]  # img9[ymin:ymax, xmin:xmax]
             hp, wp = h, w  # height, width previous
 
         # Offset
         yc, xc = (int(random.uniform(0, s)) for _ in self.mosaic_border)  # mosaic center x, y
-        img9 = img9[yc : yc + 2 * s, xc : xc + 2 * s]
+        img9 = img9[yc: yc + 2 * s, xc: xc + 2 * s]
 
         # Concat/clip labels
         labels9 = np.concatenate(labels9, 0)
@@ -1045,7 +1045,7 @@ def extract_boxes(path=DATASETS_DIR / "coco128"):  # from utils.dataloaders impo
 
                     b[[0, 2]] = np.clip(b[[0, 2]], 0, w)  # clip boxes outside of image
                     b[[1, 3]] = np.clip(b[[1, 3]], 0, h)
-                    assert cv2.imwrite(str(f), im[b[1] : b[3], b[0] : b[2]]), f"box failure in {f}"
+                    assert cv2.imwrite(str(f), im[b[1]: b[3], b[0]: b[2]]), f"box failure in {f}"
 
 
 def autosplit(path=DATASETS_DIR / "coco128/images", weights=(0.9, 0.1, 0.0), annotated_only=False):

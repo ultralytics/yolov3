@@ -179,7 +179,7 @@ class WandbLogger:
                     wandb.log(self.log_dict)
                 except BaseException as e:
                     LOGGER.info(
-                        f"An error occurred in wandb logger. The training will proceed without interruption. More info\n{e}"
+                        f"An error occurred in wandb. The training will proceed without interruption. More info\n{e}"
                     )
                     self.wandb_run.finish()
                     self.wandb_run = None

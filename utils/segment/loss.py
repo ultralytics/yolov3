@@ -2,11 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .general import crop_mask
 from ..general import xywh2xyxy
 from ..loss import FocalLoss, smooth_BCE
 from ..metrics import bbox_iou
 from ..torch_utils import de_parallel
-from .general import crop_mask
 
 
 class ComputeLoss:
@@ -143,18 +143,18 @@ class ComputeLoss:
 
         g = 0.5  # bias
         off = (
-            torch.tensor(
-                [
-                    [0, 0],
-                    [1, 0],
-                    [0, 1],
-                    [-1, 0],
-                    [0, -1],  # j,k,l,m
-                    # [1, 1], [1, -1], [-1, 1], [-1, -1],  # jk,jm,lk,lm
-                ],
-                device=self.device,
-            ).float()
-            * g
+                torch.tensor(
+                    [
+                        [0, 0],
+                        [1, 0],
+                        [0, 1],
+                        [-1, 0],
+                        [0, -1],  # j,k,l,m
+                        # [1, 1], [1, -1], [-1, 1], [-1, -1],  # jk,jm,lk,lm
+                    ],
+                    device=self.device,
+                ).float()
+                * g
         )  # offsets
 
         for i in range(self.nl):

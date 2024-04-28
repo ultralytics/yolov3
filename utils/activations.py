@@ -10,7 +10,8 @@ class SiLU(nn.Module):
     # SiLU activation https://arxiv.org/pdf/1606.08415.pdf
     @staticmethod
     def forward(x):
-        """Applies the SiLU activation function, as detailed in https://arxiv.org/pdf/1606.08415.pdf, on input tensor `x`."""
+        """Applies the SiLU activation function, as detailed in https://arxiv.org/pdf/1606.08415.pdf, on input tensor
+        `x`."""
         return x * torch.sigmoid(x)
 
 
@@ -65,7 +66,8 @@ class MemoryEfficientMish(nn.Module):
 class FReLU(nn.Module):
     # FReLU activation https://arxiv.org/abs/2007.11824
     def __init__(self, c1, k=3):  # ch_in, kernel
-        """Initializes FReLU with specified channel size and kernel, implementing activation from https://arxiv.org/abs/2007.11824."""
+        """Initializes FReLU with specified channel size and kernel, implementing activation from
+        https://arxiv.org/abs/2007.11824."""
         super().__init__()
         self.conv = nn.Conv2d(c1, c1, k, 1, 1, groups=c1, bias=False)
         self.bn = nn.BatchNorm2d(c1)
@@ -82,14 +84,16 @@ class AconC(nn.Module):
     """
 
     def __init__(self, c1):
-        """Initializes ACON activation with learnable parameters p1, p2, and beta as per https://arxiv.org/pdf/2009.04759.pdf."""
+        """Initializes ACON activation with learnable parameters p1, p2, and beta as per
+        https://arxiv.org/pdf/2009.04759.pdf."""
         super().__init__()
         self.p1 = nn.Parameter(torch.randn(1, c1, 1, 1))
         self.p2 = nn.Parameter(torch.randn(1, c1, 1, 1))
         self.beta = nn.Parameter(torch.ones(1, c1, 1, 1))
 
     def forward(self, x):
-        """Applies a parametric activation function to tensor x; see https://arxiv.org/pdf/2009.04759.pdf for details."""
+        """Applies a parametric activation function to tensor x; see https://arxiv.org/pdf/2009.04759.pdf for
+        details."""
         dpx = (self.p1 - self.p2) * x
         return dpx * torch.sigmoid(self.beta * dpx) + self.p2 * x
 

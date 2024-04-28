@@ -491,7 +491,7 @@ def check_file(file, suffix=""):
         return file
     elif file.startswith("clearml://"):  # ClearML Dataset ID
         assert (
-            "clearml" in sys.modules
+                "clearml" in sys.modules
         ), "ClearML is not installed, so cannot use ClearML dataset. Try running 'pip install clearml'."
         return file
     else:  # search
@@ -699,7 +699,8 @@ def clean_str(s):
 
 
 def one_cycle(y1=0.0, y2=1.0, steps=100):
-    """Generates a lambda for a sinusoidal ramp from y1 to y2 over 'steps'; usage: `lambda x: ((1 - math.cos(x * math.pi / steps)) / 2) * (y2 - y1) + y1`."""
+    """Generates a lambda for a sinusoidal ramp from y1 to y2 over 'steps'; usage: `lambda x: ((1 - math.cos(x *
+    math.pi / steps)) / 2) * (y2 - y1) + y1`."""
     return lambda x: ((1 - math.cos(x * math.pi / steps)) / 2) * (y2 - y1) + y1
 
 
@@ -1203,7 +1204,7 @@ def apply_classifier(x, model, img, im0):
             pred_cls1 = d[:, 5].long()
             ims = []
             for a in d:
-                cutout = im0[i][int(a[1]) : int(a[3]), int(a[0]) : int(a[2])]
+                cutout = im0[i][int(a[1]): int(a[3]), int(a[0]): int(a[2])]
                 im = cv2.resize(cutout, (224, 224))  # BGR
 
                 im = im[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
@@ -1247,7 +1248,8 @@ def increment_path(path, exist_ok=False, sep="", mkdir=False):
     return path
 
 
-# OpenCV Multilanguage-friendly functions ------------------------------------------------------------------------------------
+# OpenCV Multilanguage-friendly functions
+# ------------------------------------------------------------------------------------
 imshow_ = cv2.imshow  # copy to avoid recursion errors
 
 

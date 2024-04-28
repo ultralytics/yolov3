@@ -242,7 +242,8 @@ def random_perspective(
 
 
 def copy_paste(im, labels, segments, p=0.5):
-    """Applies Copy-Paste augmentation (https://arxiv.org/abs/2012.07177) on image, labels (nx5 np.array(cls, xyxy)), and segments."""
+    """Applies Copy-Paste augmentation (https://arxiv.org/abs/2012.07177) on image, labels (nx5 np.array(cls, xyxy)),
+    and segments."""
     n = len(segments)
     if p and n:
         h, w, c = im.shape  # height, width, channels
@@ -291,7 +292,8 @@ def cutout(im, labels, p=0.5):
 
 
 def mixup(im, labels, im2, labels2):
-    """Applies MixUp augmentation by blending images and labels; see https://arxiv.org/pdf/1710.09412.pdf for details."""
+    """Applies MixUp augmentation by blending images and labels; see https://arxiv.org/pdf/1710.09412.pdf for
+    details."""
     r = np.random.beta(32.0, 32.0)  # mixup ratio, alpha=beta=32.0
     im = (im * r + im2 * (1 - r)).astype(np.uint8)
     labels = np.concatenate((labels, labels2), 0)
@@ -378,7 +380,7 @@ class LetterBox:
         hs, ws = (math.ceil(x / self.stride) * self.stride for x in (h, w)) if self.auto else self.h, self.w
         top, left = round((hs - h) / 2 - 0.1), round((ws - w) / 2 - 0.1)
         im_out = np.full((self.h, self.w, 3), 114, dtype=im.dtype)
-        im_out[top : top + h, left : left + w] = cv2.resize(im, (w, h), interpolation=cv2.INTER_LINEAR)
+        im_out[top: top + h, left: left + w] = cv2.resize(im, (w, h), interpolation=cv2.INTER_LINEAR)
         return im_out
 
 
@@ -394,7 +396,7 @@ class CenterCrop:
         imh, imw = im.shape[:2]
         m = min(imh, imw)  # min dimension
         top, left = (imh - m) // 2, (imw - m) // 2
-        return cv2.resize(im[top : top + m, left : left + m], (self.w, self.h), interpolation=cv2.INTER_LINEAR)
+        return cv2.resize(im[top: top + m, left: left + m], (self.w, self.h), interpolation=cv2.INTER_LINEAR)
 
 
 class ToTensor:

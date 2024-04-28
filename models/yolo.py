@@ -7,7 +7,6 @@ Usage:
 """
 
 import argparse
-import contextlib
 import os
 import platform
 import sys
@@ -275,9 +274,9 @@ class DetectionModel(BaseModel):
     def _clip_augmented(self, y):
         """Clips augmented inference tails from YOLOv3 predictions, affecting the first and last detection layers."""
         nl = self.model[-1].nl  # number of detection layers (P3-P5)
-        g = sum(4**x for x in range(nl))  # grid points
+        g = sum(4 ** x for x in range(nl))  # grid points
         e = 1  # exclude layer count
-        i = (y[0].shape[1] // g) * sum(4**x for x in range(e))  # indices
+        i = (y[0].shape[1] // g) * sum(4 ** x for x in range(e))  # indices
         y[0] = y[0][:, :-i]  # large
         i = (y[-1].shape[1] // g) * sum(4 ** (nl - 1 - x) for x in range(e))  # indices
         y[-1] = y[-1][:, i:]  # small
@@ -290,7 +289,7 @@ class DetectionModel(BaseModel):
         for mi, s in zip(m.m, m.stride):  # from
             b = mi.bias.view(m.na, -1)  # conv.bias(255) to (3,85)
             b.data[:, 4] += math.log(8 / (640 / s) ** 2)  # obj (8 objects per 640 image)
-            b.data[:, 5 : 5 + m.nc] += (
+            b.data[:, 5: 5 + m.nc] += (
                 math.log(0.6 / (m.nc - 0.99999)) if cf is None else torch.log(cf / cf.sum())
             )  # cls
             mi.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
