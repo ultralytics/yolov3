@@ -59,7 +59,9 @@ except (ImportError, AssertionError):
 class Loggers:
     # YOLOv3 Loggers class
     def __init__(self, save_dir=None, weights=None, opt=None, hyp=None, logger=None, include=LOGGERS):
-        """Initializes YOLOv3 logging with directory, weights, options, hyperparameters, and includes specified loggers."""
+        """Initializes YOLOv3 logging with directory, weights, options, hyperparameters, and includes specified
+        loggers.
+        """
         self.save_dir = save_dir
         self.weights = weights
         self.opt = opt
@@ -157,7 +159,11 @@ class Loggers:
             self.comet_logger.on_pretrain_routine_start()
 
     def on_pretrain_routine_end(self, labels, names):
-        """Logs pretrain routine end, plots labels if enabled, updates WandB/Comet with images. Takes `labels` (List of int), `names` (List of str)."""
+        """
+        Logs pretrain routine end, plots labels if enabled, updates WandB/Comet with images.
+
+        Takes `labels` (List of int), `names` (List of str).
+        """
         if self.plots:
             plot_labels(labels, names, self.save_dir)
             paths = self.save_dir.glob("*labels*.jpg")  # training labels
@@ -203,14 +209,18 @@ class Loggers:
             self.comet_logger.on_val_start()
 
     def on_val_image_end(self, pred, predn, path, names, im):
-        """Callback for logging a single validation image and its predictions to WandB or ClearML at the end of validation."""
+        """Callback for logging a single validation image and its predictions to WandB or ClearML at the end of
+        validation.
+        """
         if self.wandb:
             self.wandb.val_one_image(pred, predn, path, names, im)
         if self.clearml:
             self.clearml.log_image_with_boxes(path, pred, names, im)
 
     def on_val_batch_end(self, batch_i, im, targets, paths, shapes, out):
-        """Logs a single validation batch for Comet ML analytics (batch_i: int, im: tensor, targets: tensor, paths: list, shapes: list, out: tensor)."""
+        """Logs a single validation batch for Comet ML analytics (batch_i: int, im: tensor, targets: tensor, paths:
+        list, shapes: list, out: tensor).
+        """
         if self.comet_logger:
             self.comet_logger.on_val_batch_end(batch_i, im, targets, paths, shapes, out)
 
@@ -260,7 +270,9 @@ class Loggers:
             self.comet_logger.on_fit_epoch_end(x, epoch=epoch)
 
     def on_model_save(self, last, epoch, final_epoch, best_fitness, fi):
-        """Logs model to WandB/ClearML, considering save_period and if not final_epoch, also notes if best model so far."""
+        """Logs model to WandB/ClearML, considering save_period and if not final_epoch, also notes if best model so
+        far.
+        """
         if (epoch + 1) % self.opt.save_period == 0 and not final_epoch and self.opt.save_period != -1:
             if self.wandb:
                 self.wandb.log_model(last.parent, self.opt, epoch, fi, best_model=best_fitness == fi)
@@ -273,7 +285,9 @@ class Loggers:
             self.comet_logger.on_model_save(last, epoch, final_epoch, best_fitness, fi)
 
     def on_train_end(self, last, best, epoch, results):
-        """Callback to execute at training end, saving plots of results and relevant metrics to the specified save directory."""
+        """Callback to execute at training end, saving plots of results and relevant metrics to the specified save
+        directory.
+        """
         if self.plots:
             plot_results(file=self.save_dir / "results.csv")  # save results.png
         files = ["results.png", "confusion_matrix.png", *(f"{x}_curve.png" for x in ("F1", "PR", "P", "R"))]
@@ -404,7 +418,9 @@ def log_tensorboard_graph(tb, model, imgsz=(640, 640)):
 
 
 def web_project_name(project):
-    """Converts local project name to a web-friendly format by adding a suffix based on its type (classify or segment)."""
+    """Converts local project name to a web-friendly format by adding a suffix based on its type (classify or
+    segment).
+    """
     if not project.startswith("runs/train"):
         return project
     suffix = "-Classify" if project.endswith("-cls") else "-Segment" if project.endswith("-seg") else ""

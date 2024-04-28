@@ -42,7 +42,9 @@ class ComputeLoss:
         self.device = device
 
     def __call__(self, preds, targets, masks):  # predictions, targets, model
-        """Computes losses given predictions, targets, and masks; returns tuple of class, box, object, and segmentation losses."""
+        """Computes losses given predictions, targets, and masks; returns tuple of class, box, object, and segmentation
+        losses.
+        """
         p, proto = preds
         bs, nm, mask_h, mask_w = proto.shape  # batch size, number of masks, mask height, mask width
         lcls = torch.zeros(1, device=self.device)
@@ -111,13 +113,19 @@ class ComputeLoss:
         return loss * bs, torch.cat((lbox, lseg, lobj, lcls)).detach()
 
     def single_mask_loss(self, gt_mask, pred, proto, xyxy, area):
-        """Computes single image mask loss using BCE, cropping based on bbox. Args: gt_mask[n,h,w], pred[n,nm], proto[nm,h,w], xyxy[n,4], area[n]."""
+        """
+        Computes single image mask loss using BCE, cropping based on bbox.
+
+        Args: gt_mask[n,h,w], pred[n,nm], proto[nm,h,w], xyxy[n,4], area[n].
+        """
         pred_mask = (pred @ proto.view(self.nm, -1)).view(-1, *proto.shape[1:])  # (n,32) @ (32,80,80) -> (n,80,80)
         loss = F.binary_cross_entropy_with_logits(pred_mask, gt_mask, reduction="none")
         return (crop_mask(loss, xyxy).mean(dim=(1, 2)) / area).mean()
 
     def build_targets(self, p, targets):
-        """Prepares targets for loss computation by appending anchor indices; supports optional target overlap handling."""
+        """Prepares targets for loss computation by appending anchor indices; supports optional target overlap
+        handling.
+        """
         na, nt = self.na, targets.shape[0]  # number of anchors, targets
         tcls, tbox, indices, anch, tidxs, xywhn = [], [], [], [], [], []
         gain = torch.ones(8, device=self.device)  # normalized to gridspace gain

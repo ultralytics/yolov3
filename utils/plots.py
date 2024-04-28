@@ -109,7 +109,11 @@ def hist2d(x, y, n=100):
 
 
 def butter_lowpass_filtfilt(data, cutoff=1500, fs=50000, order=5):
-    """Applies a low-pass Butterworth filter using forward-backward method. See: https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy"""
+    """
+    Applies a low-pass Butterworth filter using forward-backward method.
+
+    See: https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy
+    """
     from scipy.signal import butter, filtfilt
 
     # https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy
@@ -123,7 +127,9 @@ def butter_lowpass_filtfilt(data, cutoff=1500, fs=50000, order=5):
 
 
 def output_to_target(output, max_det=300):
-    """Converts model output to [batch_id, class_id, x, y, w, h, conf] format for plotting, handling up to `max_det` detections."""
+    """Converts model output to [batch_id, class_id, x, y, w, h, conf] format for plotting, handling up to `max_det`
+    detections.
+    """
     targets = []
     for i, o in enumerate(output):
         box, conf, cls = o[:max_det, :6].cpu().split((4, 1, 1), 1)
@@ -425,7 +431,9 @@ def plot_results(file="path/to/results.csv", dir=""):
 
 
 def profile_idetection(start=0, stop=0, labels=(), save_dir=""):
-    """Plots iDetection per-image logs from '*.txt', including metrics like storage and FPS; pass start, stop times, labels, and save_dir."""
+    """Plots iDetection per-image logs from '*.txt', including metrics like storage and FPS; pass start, stop times,
+    labels, and save_dir.
+    """
     ax = plt.subplots(2, 4, figsize=(12, 6), tight_layout=True)[1].ravel()
     s = ["Images", "Free Storage (GB)", "RAM Usage (GB)", "Battery", "dt_raw (ms)", "dt_smooth (ms)", "real-world FPS"]
     files = list(Path(save_dir).glob("frames*.txt"))
@@ -456,7 +464,9 @@ def profile_idetection(start=0, stop=0, labels=(), save_dir=""):
 
 
 def save_one_box(xyxy, im, file=Path("im.jpg"), gain=1.02, pad=10, square=False, BGR=False, save=True):
-    """Saves/enhances a crop from `im` defined by `xyxy` to `file` or returns it; customizable with `gain`, `pad`, `square`, `BGR`."""
+    """Saves/enhances a crop from `im` defined by `xyxy` to `file` or returns it; customizable with `gain`, `pad`,
+    `square`, `BGR`.
+    """
     xyxy = torch.tensor(xyxy).view(-1, 4)
     b = xyxy2xywh(xyxy)  # boxes
     if square:

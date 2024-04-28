@@ -62,7 +62,9 @@ from utils.torch_utils import select_device, smart_inference_mode
 
 
 def save_one_txt(predn, save_conf, shape, file):
-    """Saves detection results in txt format; includes labels and optionally confidence scores if `save_conf` is True."""
+    """Saves detection results in txt format; includes labels and optionally confidence scores if `save_conf` is
+    True.
+    """
     gn = torch.tensor(shape)[[1, 0, 1, 0]]  # normalization gain whwh
     for *xyxy, conf, cls in predn.tolist():
         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh

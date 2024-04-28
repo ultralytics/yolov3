@@ -84,7 +84,9 @@ def get_args(known=False):
 
 
 def run(parameters, opt):
-    """Executes training process with given hyperparameters and options, handling device selection and callback initialization."""
+    """Executes training process with given hyperparameters and options, handling device selection and callback
+    initialization.
+    """
     hyp_dict = {k: v for k, v in parameters.items() if k not in ["epochs", "batch_size"]}
 
     opt.save_dir = str(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok or opt.evolve))

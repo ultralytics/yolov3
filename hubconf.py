@@ -84,7 +84,9 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
 
 
 def custom(path="path/to/model.pt", autoshape=True, _verbose=True, device=None):
-    """Loads a custom or local YOLOv3 model from a specified path, with options for autoshaping and device assignment."""
+    """Loads a custom or local YOLOv3 model from a specified path, with options for autoshaping and device
+    assignment.
+    """
     return _create(path, autoshape=autoshape, verbose=_verbose, device=device)
 
 
@@ -94,22 +96,30 @@ def yolov5n(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=Tr
 
 
 def yolov5s(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    """Loads YOLOv5s model, with options for pretrained weights, channel/class customization, autoshaping, and device choice."""
+    """Loads YOLOv5s model, with options for pretrained weights, channel/class customization, autoshaping, and device
+    choice.
+    """
     return _create("yolov5s", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5m(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    """Loads YOLOv5m model with optional pretrained weights, channel/class customization, autoshaping, device selection."""
+    """Loads YOLOv5m model with optional pretrained weights, channel/class customization, autoshaping, device
+    selection.
+    """
     return _create("yolov5m", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5l(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    """Loads YOLOv5l model with options for pretrained weights, channel/class customization, autoshaping, and device selection."""
+    """Loads YOLOv5l model with options for pretrained weights, channel/class customization, autoshaping, and device
+    selection.
+    """
     return _create("yolov5l", pretrained, channels, classes, autoshape, _verbose, device)
 
 
 def yolov5x(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):
-    """Loads YOLOv5x model with customization options for weights, channels, classes, autoshaping, and device selection."""
+    """Loads YOLOv5x model with customization options for weights, channels, classes, autoshaping, and device
+    selection.
+    """
     return _create("yolov5x", pretrained, channels, classes, autoshape, _verbose, device)
 
 

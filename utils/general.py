@@ -158,7 +158,9 @@ if platform.system() == "Windows":
 
 
 def user_config_dir(dir="Ultralytics", env_var="YOLOV5_CONFIG_DIR"):
-    """Returns user configuration directory path, prefers `env_var` if set, else uses OS-specific path, creates directory if needed."""
+    """Returns user configuration directory path, prefers `env_var` if set, else uses OS-specific path, creates
+    directory if needed.
+    """
     env = os.getenv(env_var)
     if env:
         path = Path(env)  # use environment variable
@@ -176,12 +178,16 @@ CONFIG_DIR = user_config_dir()  # Ultralytics settings dir
 class Profile(contextlib.ContextDecorator):
     # YOLOv3 Profile class. Usage: @Profile() decorator or 'with Profile():' context manager
     def __init__(self, t=0.0):
-        """Initializes a profiling context for YOLOv3 with optional timing threshold `t` and checks CUDA availability."""
+        """Initializes a profiling context for YOLOv3 with optional timing threshold `t` and checks CUDA
+        availability.
+        """
         self.t = t
         self.cuda = torch.cuda.is_available()
 
     def __enter__(self):
-        """Starts the profiling timer, returning the profile instance for use with @Profile() decorator or 'with Profile():' context."""
+        """Starts the profiling timer, returning the profile instance for use with @Profile() decorator or 'with
+        Profile():' context.
+        """
         self.start = self.time()
         return self
 
@@ -200,7 +206,9 @@ class Profile(contextlib.ContextDecorator):
 class Timeout(contextlib.ContextDecorator):
     # YOLOv3 Timeout class. Usage: @Timeout(seconds) decorator or 'with Timeout(seconds):' context manager
     def __init__(self, seconds, *, timeout_msg="", suppress_timeout_errors=True):
-        """Initializes a timeout context/decorator with specified duration, custom message, and error handling option."""
+        """Initializes a timeout context/decorator with specified duration, custom message, and error handling
+        option.
+        """
         self.seconds = int(seconds)
         self.timeout_message = timeout_msg
         self.suppress = bool(suppress_timeout_errors)
@@ -260,7 +268,9 @@ def print_args(args: Optional[dict] = None, show_file=True, show_func=False):
 
 
 def init_seeds(seed=0, deterministic=False):
-    """Initializes RNG seeds for reproducibility; `seed`: RNG seed, `deterministic`: enforces deterministic behavior if True."""
+    """Initializes RNG seeds for reproducibility; `seed`: RNG seed, `deterministic`: enforces deterministic behavior if
+    True.
+    """
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -275,7 +285,9 @@ def init_seeds(seed=0, deterministic=False):
 
 
 def intersect_dicts(da, db, exclude=()):
-    """Intersects two dicts by matching keys and shapes, excluding specified keys, and retains values from the first dict."""
+    """Intersects two dicts by matching keys and shapes, excluding specified keys, and retains values from the first
+    dict.
+    """
     return {k: v for k, v in da.items() if k in db and all(x not in k for x in exclude) and v.shape == db[k].shape}
 
 
@@ -286,7 +298,9 @@ def get_default_args(func):
 
 
 def get_latest_run(search_dir="."):
-    """Returns path to the most recent 'last.pt' file within 'search_dir' for resuming, or an empty string if not found."""
+    """Returns path to the most recent 'last.pt' file within 'search_dir' for resuming, or an empty string if not
+    found.
+    """
     last_list = glob.glob(f"{search_dir}/**/last*.pt", recursive=True)
     return max(last_list, key=os.path.getctime) if last_list else ""
 
@@ -316,7 +330,9 @@ def file_size(path):
 
 
 def check_online():
-    """Checks internet connectivity by attempting to connect to "1.1.1.1" on port 443 twice; returns True if successful."""
+    """Checks internet connectivity by attempting to connect to "1.1.1.1" on port 443 twice; returns True if
+    successful.
+    """
     import socket
 
     def run_once():
@@ -342,7 +358,9 @@ def git_describe(path=ROOT):  # path must be a directory
 @TryExcept()
 @WorkingDirectory(ROOT)
 def check_git_status(repo="ultralytics/yolov5", branch="master"):
-    """Checks YOLOv3 code update status against remote, suggests 'git pull' if outdated; requires internet and git repository."""
+    """Checks YOLOv3 code update status against remote, suggests 'git pull' if outdated; requires internet and git
+    repository.
+    """
     url = f"https://github.com/{repo}"
     msg = f", for updates see {url}"
     s = colorstr("github: ")  # string
@@ -369,7 +387,11 @@ def check_git_status(repo="ultralytics/yolov5", branch="master"):
 
 @WorkingDirectory(ROOT)
 def check_git_info(path="."):
-    """Checks YOLOv3 git info (remote, branch, commit) in path, requires 'gitpython'. Returns dict."""
+    """
+    Checks YOLOv3 git info (remote, branch, commit) in path, requires 'gitpython'.
+
+    Returns dict.
+    """
     check_requirements("gitpython")
     import git
 
@@ -404,7 +426,9 @@ def check_version(current="0.0.0", minimum="0.0.0", name="version ", pinned=Fals
 
 
 def check_img_size(imgsz, s=32, floor=0):
-    """Adjusts image size to be divisible by `s`, ensuring it's above `floor`; returns int for single dim or list for dims."""
+    """Adjusts image size to be divisible by `s`, ensuring it's above `floor`; returns int for single dim or list for
+    dims.
+    """
     if isinstance(imgsz, int):  # integer i.e. img_size=640
         new_size = max(make_divisible(imgsz, int(s)), floor)
     else:  # list i.e. img_size=[640, 480]
@@ -448,7 +472,9 @@ def check_yaml(file, suffix=(".yaml", ".yml")):
 
 
 def check_file(file, suffix=""):
-    """Checks for file's existence locally, downloads if a URL, supports ClearML dataset IDs, and enforces optional suffix."""
+    """Checks for file's existence locally, downloads if a URL, supports ClearML dataset IDs, and enforces optional
+    suffix.
+    """
     check_suffix(file, suffix)  # optional
     file = str(file)  # convert to str()
     if os.path.isfile(file) or not file:  # exists
@@ -594,7 +620,9 @@ def yaml_save(file="data.yaml", data={}):
 
 
 def unzip_file(file, path=None, exclude=(".DS_Store", "__MACOSX")):
-    """Unzips '*.zip' to `path` (default: file's parent), excluding files matching `exclude` (`('.DS_Store', '__MACOSX')`)."""
+    """Unzips '*.zip' to `path` (default: file's parent), excluding files matching `exclude` (`('.DS_Store',
+    '__MACOSX')`).
+    """
     if path is None:
         path = Path(file).parent  # default path
     with ZipFile(file) as zipObj:
@@ -610,7 +638,10 @@ def url2file(url):
 
 
 def download(url, dir=".", unzip=True, delete=True, curl=False, threads=1, retry=3):
-    """Downloads files from URLs into a specified directory, optionally unzips, and supports multithreading and retries."""
+    """Downloads files from URLs into a specified directory, optionally unzips, and supports multithreading and
+    retries.
+    """
+
     def download_one(url, dir):
         # Download 1 file
         success = True
@@ -673,7 +704,11 @@ def one_cycle(y1=0.0, y2=1.0, steps=100):
 
 
 def colorstr(*input):
-    """Colors strings using ANSI escape codes; see usage example `colorstr('blue', 'hello world')`. [https://en.wikipedia.org/wiki/ANSI_escape_code]"""
+    """
+    Colors strings using ANSI escape codes; see usage example `colorstr('blue', 'hello world')`.
+
+    [https://en.wikipedia.org/wiki/ANSI_escape_code]
+    """
     *args, string = input if len(input) > 1 else ("blue", "bold", input[0])  # color arguments, string
     colors = {
         "black": "\033[30m",  # basic colors
@@ -700,7 +735,9 @@ def colorstr(*input):
 
 
 def labels_to_class_weights(labels, nc=80):
-    """Calculates class weights from labels to counteract dataset imbalance; `labels` is a list of numpy arrays with shape `(n, 5)`."""
+    """Calculates class weights from labels to counteract dataset imbalance; `labels` is a list of numpy arrays with
+    shape `(n, 5)`.
+    """
     if labels[0] is None:  # no labels loaded
         return torch.Tensor()
 
@@ -726,7 +763,11 @@ def labels_to_image_weights(labels, nc=80, class_weights=np.ones(80)):
 
 
 def coco80_to_coco91_class():  # converts 80-index (val2014) to 91-index (paper)
-    """Converts COCO 80-class index to COCO 91-class index. Reference: https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/"""
+    """
+    Converts COCO 80-class index to COCO 91-class index.
+
+    Reference: https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
+    """
     # a = np.loadtxt('data/coco.names', dtype='str', delimiter='\n')
     # b = np.loadtxt('data/coco_paper.names', dtype='str', delimiter='\n')
     # x1 = [list(a[i] == b).index(True) + 1 for i in range(80)]  # darknet to coco
@@ -866,7 +907,9 @@ def xyn2xy(x, w=640, h=640, padw=0, padh=0):
 
 
 def segment2box(segment, width=640, height=640):
-    """Converts a single segment to a bounding box using image dimensions, output shape (4,), ensuring coordinates stay within image boundaries."""
+    """Converts a single segment to a bounding box using image dimensions, output shape (4,), ensuring coordinates stay
+    within image boundaries.
+    """
     x, y = segment.T  # segment xy
     inside = (x >= 0) & (y >= 0) & (x <= width) & (y <= height)
     (
@@ -912,7 +955,9 @@ def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
 
 
 def scale_segments(img1_shape, segments, img0_shape, ratio_pad=None, normalize=False):
-    """Rescales segment coordinates from img1_shape to img0_shape, optionally normalizing, with support for padding adjustments."""
+    """Rescales segment coordinates from img1_shape to img0_shape, optionally normalizing, with support for padding
+    adjustments.
+    """
     if ratio_pad is None:  # calculate from img0_shape
         gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
         pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
@@ -1173,7 +1218,11 @@ def apply_classifier(x, model, img, im0):
 
 
 def increment_path(path, exist_ok=False, sep="", mkdir=False):
-    """Increments file or directory path, optionally creating the directory, not thread-safe. Args: path (str/Path), exist_ok (bool), sep (str), mkdir (bool)."""
+    """
+    Increments file or directory path, optionally creating the directory, not thread-safe.
+
+    Args: path (str/Path), exist_ok (bool), sep (str), mkdir (bool).
+    """
     path = Path(path)  # os-agnostic
     if path.exists() and not exist_ok:
         path, suffix = (path.with_suffix(""), path.suffix) if path.is_file() else (path, "")
@@ -1208,7 +1257,11 @@ def imread(filename, flags=cv2.IMREAD_COLOR):
 
 
 def imwrite(filename, img):
-    """Writes an image to a file; returns True on success, False on failure. Args: filename (str), img (ndarray)."""
+    """
+    Writes an image to a file; returns True on success, False on failure.
+
+    Args: filename (str), img (ndarray).
+    """
     try:
         cv2.imencode(Path(filename).suffix, img)[1].tofile(filename)
         return True

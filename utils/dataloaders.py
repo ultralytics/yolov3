@@ -189,7 +189,9 @@ class InfiniteDataLoader(dataloader.DataLoader):
     """
 
     def __init__(self, *args, **kwargs):
-        """Initializes an InfiniteDataLoader that reuses workers with standard DataLoader syntax and a repeating sampler."""
+        """Initializes an InfiniteDataLoader that reuses workers with standard DataLoader syntax and a repeating
+        sampler.
+        """
         super().__init__(*args, **kwargs)
         object.__setattr__(self, "batch_sampler", _RepeatSampler(self.batch_sampler))
         self.iterator = super().__iter__()
@@ -225,7 +227,9 @@ class _RepeatSampler:
 class LoadScreenshots:
     # YOLOv3 screenshot dataloader, i.e. `python detect.py --source "screen 0 100 100 512 256"`
     def __init__(self, source, img_size=640, stride=32, auto=True, transforms=None):
-        """Initializes a screenshot dataloader for YOLOv3; source format: [screen_number left top width height], default img_size=640, stride=32."""
+        """Initializes a screenshot dataloader for YOLOv3; source format: [screen_number left top width height], default
+        img_size=640, stride=32.
+        """
         check_requirements("mss")
         import mss
 
@@ -275,7 +279,9 @@ class LoadScreenshots:
 class LoadImages:
     # YOLOv3 image/video dataloader, i.e. `python detect.py --source image.jpg/vid.mp4`
     def __init__(self, path, img_size=640, stride=32, auto=True, transforms=None, vid_stride=1):
-        """Initializes the data loader for YOLOv3, supporting image, video, directory, and '*.txt' path lists with customizable image sizing."""
+        """Initializes the data loader for YOLOv3, supporting image, video, directory, and '*.txt' path lists with
+        customizable image sizing.
+        """
         if isinstance(path, str) and Path(path).suffix == ".txt":  # *.txt file with img/vid/dir on each line
             path = Path(path).read_text().rsplit()
         files = []
@@ -384,7 +390,9 @@ class LoadImages:
 class LoadStreams:
     # YOLOv3 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
     def __init__(self, sources="file.streams", img_size=640, stride=32, auto=True, transforms=None, vid_stride=1):
-        """Initializes a stream loader for YOLOv3, handling video sources or files with customizable frame sizes and intervals."""
+        """Initializes a stream loader for YOLOv3, handling video sources or files with customizable frame sizes and
+        intervals.
+        """
         torch.backends.cudnn.benchmark = True  # faster for fixed-size inference
         self.mode = "stream"
         self.img_size = img_size
@@ -430,7 +438,9 @@ class LoadStreams:
             LOGGER.warning("WARNING ⚠️ Stream shapes differ. For optimal performance supply similarly-shaped streams.")
 
     def update(self, i, cap, stream):
-        """Reads frames from stream `i` into `self.imgs` at intervals defined by `self.vid_stride`, handling reconnection if needed."""
+        """Reads frames from stream `i` into `self.imgs` at intervals defined by `self.vid_stride`, handling
+        reconnection if needed.
+        """
         n, f = 0, self.frames[i]  # frame number, frame array
         while cap.isOpened() and n < f:
             n += 1
@@ -473,7 +483,9 @@ class LoadStreams:
 
 
 def img2label_paths(img_paths):
-    """Converts image paths to corresponding label paths by replacing `/images/` with `/labels/` and `.jpg` with `.txt`."""
+    """Converts image paths to corresponding label paths by replacing `/images/` with `/labels/` and `.jpg` with
+    `.txt`.
+    """
     sa, sb = f"{os.sep}images{os.sep}", f"{os.sep}labels{os.sep}"  # /images/, /labels/ substrings
     return [sb.join(x.rsplit(sa, 1)).rsplit(".", 1)[0] + ".txt" for x in img_paths]
 
@@ -706,7 +718,9 @@ class LoadImagesAndLabels(Dataset):
     #     return self
 
     def __getitem__(self, index):
-        """Fetches dataset item at `index` after applying indexing via `self.indices`, supporting linear/shuffled/image_weights modes."""
+        """Fetches dataset item at `index` after applying indexing via `self.indices`, supporting
+        linear/shuffled/image_weights modes.
+        """
         index = self.indices[index]  # linear, shuffled, or image_weights
 
         hyp = self.hyp
@@ -810,7 +824,9 @@ class LoadImagesAndLabels(Dataset):
             np.save(f.as_posix(), cv2.imread(self.im_files[i]))
 
     def load_mosaic(self, index):
-        """Loads 4 images into a mosaic for YOLOv3 training, enhancing detection capabilities through data augmentation."""
+        """Loads 4 images into a mosaic for YOLOv3 training, enhancing detection capabilities through data
+        augmentation.
+        """
         labels4, segments4 = [], []
         s = self.img_size
         yc, xc = (int(random.uniform(-x, 2 * s + x)) for x in self.mosaic_border)  # mosaic center x, y
@@ -997,7 +1013,9 @@ def flatten_recursive(path=DATASETS_DIR / "coco128"):
 
 
 def extract_boxes(path=DATASETS_DIR / "coco128"):  # from utils.dataloaders import *; extract_boxes()
-    """Converts detection dataset to classification dataset, creating one directory per class with images cropped to bounding boxes."""
+    """Converts detection dataset to classification dataset, creating one directory per class with images cropped to
+    bounding boxes.
+    """
     path = Path(path)  # images dir
     shutil.rmtree(path / "classification") if (path / "classification").is_dir() else None  # remove existing
     files = list(path.rglob("*.*"))
@@ -1154,7 +1172,9 @@ class HUBDatasetStats:
         return files[0]
 
     def _unzip(self, path):
-        """Unzips a .zip file, verifying its integrity and locating the associated YAML file within the unzipped directory."""
+        """Unzips a .zip file, verifying its integrity and locating the associated YAML file within the unzipped
+        directory.
+        """
         if not str(path).endswith(".zip"):  # path is data.yaml
             return False, None, path
         assert Path(path).is_file(), f"Error unzipping {path}, file not found"
@@ -1164,7 +1184,9 @@ class HUBDatasetStats:
         return True, str(dir), self._find_yaml(dir)  # zipped, data_dir, yaml_path
 
     def _hub_ops(self, f, max_dim=1920):
-        """Resizes and saves an image at reduced quality for web/app viewing; `f`: path to image, `max_dim`=1920 maximum dimension."""
+        """Resizes and saves an image at reduced quality for web/app viewing; `f`: path to image, `max_dim`=1920 maximum
+        dimension.
+        """
         f_new = self.im_dir / Path(f).name  # dataset-hub image filename
         try:  # use PIL
             im = Image.open(f)
@@ -1182,7 +1204,10 @@ class HUBDatasetStats:
             cv2.imwrite(str(f_new), im)
 
     def get_json(self, save=False, verbose=False):
-        """Generates dataset JSON for Ultralytics HUB, with optional saving and verbosity; rounds labels to int class and 6 decimal floats."""
+        """Generates dataset JSON for Ultralytics HUB, with optional saving and verbosity; rounds labels to int class
+        and 6 decimal floats.
+        """
+
         def _round(labels):
             # Update labels to integer class and 6 decimal place floats
             return [[int(c), *(round(x, 4) for x in points)] for c, *points in labels]
@@ -1219,7 +1244,9 @@ class HUBDatasetStats:
         return self.stats
 
     def process_images(self):
-        """Compresses images for Ultralytics HUB, saving them to specified directory; supports 'train', 'val', 'test' splits."""
+        """Compresses images for Ultralytics HUB, saving them to specified directory; supports 'train', 'val', 'test'
+        splits.
+        """
         for split in "train", "val", "test":
             if self.data.get(split) is None:
                 continue
@@ -1243,7 +1270,9 @@ class ClassificationDataset(torchvision.datasets.ImageFolder):
     """
 
     def __init__(self, root, augment, imgsz, cache=False):
-        """Initializes classification dataset with optional augmentation, image resizing, caching, inheriting from ImageFolder."""
+        """Initializes classification dataset with optional augmentation, image resizing, caching, inheriting from
+        ImageFolder.
+        """
         super().__init__(root=root)
         self.torch_transforms = classify_transforms(imgsz)
         self.album_transforms = classify_albumentations(augment, imgsz) if augment else None

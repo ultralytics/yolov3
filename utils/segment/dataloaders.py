@@ -226,7 +226,9 @@ class LoadImagesAndLabelsAndMasks(LoadImagesAndLabels):  # for training/testing
         return (torch.from_numpy(img), labels_out, self.im_files[index], shapes, masks)
 
     def load_mosaic(self, index):
-        """Loads 4-image mosaic for YOLOv3 training, combining 1 target image with 3 random images within specified border constraints."""
+        """Loads 4-image mosaic for YOLOv3 training, combining 1 target image with 3 random images within specified
+        border constraints.
+        """
         labels4, segments4 = [], []
         s = self.img_size
         yc, xc = (int(random.uniform(-x, 2 * s + x)) for x in self.mosaic_border)  # mosaic center x, y

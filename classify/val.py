@@ -167,7 +167,9 @@ def parse_opt():
 
 
 def main(opt):
-    """Executes the main pipeline, checks and installs requirements, then runs inference or training based on provided options."""
+    """Executes the main pipeline, checks and installs requirements, then runs inference or training based on provided
+    options.
+    """
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))
 

@@ -17,7 +17,9 @@ def check_train_batch_size(model, imgsz=640, amp=True):
 
 
 def autobatch(model, imgsz=640, fraction=0.8, batch_size=16):
-    """Estimates optimal YOLOv3 batch size using available CUDA memory; imgsz:int=640, fraction:float=0.8, batch_size:int=16."""
+    """Estimates optimal YOLOv3 batch size using available CUDA memory; imgsz:int=640, fraction:float=0.8,
+    batch_size:int=16.
+    """
     # Usage:
     #     import torch
     #     from utils.autobatch import autobatch

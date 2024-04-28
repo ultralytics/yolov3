@@ -13,7 +13,11 @@ from utils.downloads import attempt_download
 class Sum(nn.Module):
     # Weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
     def __init__(self, n, weight=False):  # n: number of inputs
-        """Initializes a module to compute weighted/unweighted sum of n inputs, with optional learning weights. https://arxiv.org/abs/1911.09070"""
+        """
+        Initializes a module to compute weighted/unweighted sum of n inputs, with optional learning weights.
+
+        https://arxiv.org/abs/1911.09070
+        """
         super().__init__()
         self.weight = weight  # apply weights boolean
         self.iter = range(n - 1)  # iter object
@@ -21,7 +25,11 @@ class Sum(nn.Module):
             self.w = nn.Parameter(-torch.arange(1.0, n) / 2, requires_grad=True)  # layer weights
 
     def forward(self, x):
-        """Performs forward pass, blending `x` elements with optional learnable weights. See https://arxiv.org/abs/1911.09070 for more."""
+        """
+        Performs forward pass, blending `x` elements with optional learnable weights.
+
+        See https://arxiv.org/abs/1911.09070 for more.
+        """
         y = x[0]  # no weight
         if self.weight:
             w = torch.sigmoid(self.w) * 2
@@ -68,7 +76,9 @@ class Ensemble(nn.ModuleList):
         super().__init__()
 
     def forward(self, x, augment=False, profile=False, visualize=False):
-        """Applies ensemble of models on input `x`, with options for augmentation, profiling, and visualization, returning inference outputs."""
+        """Applies ensemble of models on input `x`, with options for augmentation, profiling, and visualization,
+        returning inference outputs.
+        """
         y = [module(x, augment, profile, visualize)[0] for module in self]
         # y = torch.stack(y).max(0)[0]  # max ensemble
         # y = torch.stack(y).mean(0)  # mean ensemble

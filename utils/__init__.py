@@ -14,22 +14,33 @@ def emojis(str=""):
 class TryExcept(contextlib.ContextDecorator):
     # YOLOv3 TryExcept class. Usage: @TryExcept() decorator or 'with TryExcept():' context manager
     def __init__(self, msg=""):
-        """Initializes TryExcept with optional custom message, used as decorator or context manager for exception handling."""
+        """Initializes TryExcept with optional custom message, used as decorator or context manager for exception
+        handling.
+        """
         self.msg = msg
 
     def __enter__(self):
-        """Begin exception-handling block, optionally customizing exception message when used with TryExcept context manager."""
+        """Begin exception-handling block, optionally customizing exception message when used with TryExcept context
+        manager.
+        """
         pass
 
     def __exit__(self, exc_type, value, traceback):
-        """Ends exception-handling block, optionally prints custom message with exception, suppressing exceptions within context."""
+        """Ends exception-handling block, optionally prints custom message with exception, suppressing exceptions within
+        context.
+        """
         if value:
             print(emojis(f"{self.msg}{': ' if self.msg else ''}{value}"))
         return True
 
 
 def threaded(func):
-    """Decorates a function to run in a separate thread, returning the thread object. Usage: @threaded."""
+    """
+    Decorates a function to run in a separate thread, returning the thread object.
+
+    Usage: @threaded.
+    """
+
     def wrapper(*args, **kwargs):
         thread = threading.Thread(target=func, args=args, kwargs=kwargs, daemon=True)
         thread.start()

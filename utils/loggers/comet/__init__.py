@@ -165,7 +165,9 @@ class CometLogger:
             self.experiment.log_other("optimizer_parameters", json.dumps(self.hyp))
 
     def _get_experiment(self, mode, experiment_id=None):
-        """Returns a comet_ml Experiment object, either online or offline, existing or new, based on mode and experiment_id."""
+        """Returns a comet_ml Experiment object, either online or offline, existing or new, based on mode and
+        experiment_id.
+        """
         if mode == "offline":
             return (
                 comet_ml.ExistingOfflineExperiment(
@@ -218,7 +220,9 @@ class CometLogger:
         self.experiment.log_image(img, **kwargs)
 
     def log_model(self, path, opt, epoch, fitness_score, best_model=False):
-        """Logs a model's state at a given epoch, fitness, and optionality as best, requiring path, options, epoch, and fitness score."""
+        """Logs a model's state at a given epoch, fitness, and optionality as best, requiring path, options, epoch, and
+        fitness score.
+        """
         if not self.save_model:
             return
 
@@ -296,7 +300,9 @@ class CometLogger:
         return
 
     def preprocess_prediction(self, image, labels, shape, pred):
-        """Preprocesses predictions by adjusting label and prediction shapes; `image`: input image, `labels`: true labels, `shape`: image shape, `pred`: model predictions."""
+        """Preprocesses predictions by adjusting label and prediction shapes; `image`: input image, `labels`: true
+        labels, `shape`: image shape, `pred`: model predictions.
+        """
         nl, _ = labels.shape[0], pred.shape[0]
 
         # Predictions
@@ -494,7 +500,9 @@ class CometLogger:
         return
 
     def on_val_end(self, nt, tp, fp, p, r, f1, ap, ap50, ap_class, confusion_matrix):
-        """Logs per-class metric stats to Comet.ml at validation end; requires class-wise tp, fp, nt, p, r, f1, ap, ap50, ap_class, confusion_matrix."""
+        """Logs per-class metric stats to Comet.ml at validation end; requires class-wise tp, fp, nt, p, r, f1, ap,
+        ap50, ap_class, confusion_matrix.
+        """
         if self.comet_log_per_class_metrics and self.num_classes > 1:
             for i, c in enumerate(ap_class):
                 class_name = self.class_names[c]

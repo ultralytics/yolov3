@@ -149,7 +149,11 @@ def try_export(inner_func):
 
 @try_export
 def export_torchscript(model, im, file, optimize, prefix=colorstr("TorchScript:")):
-    """Exports a YOLOv3 model to TorchScript format, optionally optimizing for mobile. Args: model, im (input image), file (path), optimize (bool)."""
+    """
+    Exports a YOLOv3 model to TorchScript format, optionally optimizing for mobile.
+
+    Args: model, im (input image), file (path), optimize (bool).
+    """
     LOGGER.info(f"\n{prefix} starting export with torch {torch.__version__}...")
     f = file.with_suffix(".torchscript")
 
@@ -287,7 +291,9 @@ def export_openvino(file, metadata, half, int8, data, prefix=colorstr("OpenVINO:
 
 @try_export
 def export_paddle(model, im, file, metadata, prefix=colorstr("PaddlePaddle:")):
-    """Exports a YOLOv3 model to PaddlePaddle format using X2Paddle, saving to `file` directory with metadata in yaml."""
+    """Exports a YOLOv3 model to PaddlePaddle format using X2Paddle, saving to `file` directory with metadata in
+    yaml.
+    """
     check_requirements(("paddlepaddle", "x2paddle"))
     import x2paddle
     from x2paddle.convert import pytorch2paddle
@@ -327,7 +333,11 @@ def export_coreml(model, im, file, int8, half, nms, prefix=colorstr("CoreML:")):
 
 @try_export
 def export_engine(model, im, file, half, dynamic, simplify, workspace=4, verbose=False, prefix=colorstr("TensorRT:")):
-    """Exports a YOLOv3 model to TensorRT engine format. Nvidia TensorRT: https://developer.nvidia.com/tensorrt"""
+    """
+    Exports a YOLOv3 model to TensorRT engine format.
+
+    Nvidia TensorRT: https://developer.nvidia.com/tensorrt
+    """
     assert im.device.type != "cpu", "export running on CPU but must be on GPU, i.e. `python export.py --device 0`"
     try:
         import tensorrt as trt
@@ -446,7 +456,11 @@ def export_saved_model(
 
 @try_export
 def export_pb(keras_model, file, prefix=colorstr("TensorFlow GraphDef:")):
-    """Exports Keras model as TensorFlow GraphDef *.pb file, compatible with YOLOv3. See https://github.com/leimao/Frozen_Graph_TensorFlow for details."""
+    """
+    Exports Keras model as TensorFlow GraphDef *.pb file, compatible with YOLOv3.
+
+    See https://github.com/leimao/Frozen_Graph_TensorFlow for details.
+    """
     import tensorflow as tf
     from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
@@ -495,7 +509,11 @@ def export_tflite(keras_model, im, file, int8, data, nms, agnostic_nms, prefix=c
 
 @try_export
 def export_edgetpu(file, prefix=colorstr("Edge TPU:")):
-    """Exports YOLOv3 model to Edge TPU compatible format; requires Linux and Edge TPU compiler. https://coral.ai/docs/edgetpu/compiler/"""
+    """
+    Exports YOLOv3 model to Edge TPU compatible format; requires Linux and Edge TPU compiler.
+
+    https://coral.ai/docs/edgetpu/compiler/
+    """
     cmd = "edgetpu_compiler --version"
     help_url = "https://coral.ai/docs/edgetpu/compiler/"
     assert platform.system() == "Linux", f"export only supported on Linux. See {help_url}"
@@ -603,7 +621,9 @@ def add_tflite_metadata(file, metadata, num_outputs):
 
 
 def pipeline_coreml(model, im, file, names, y, prefix=colorstr("CoreML Pipeline:")):
-    """Executes YOLOv3 CoreML pipeline, handling image preprocessing, prediction, and NMS, saving the model with metadata."""
+    """Executes YOLOv3 CoreML pipeline, handling image preprocessing, prediction, and NMS, saving the model with
+    metadata.
+    """
     import coremltools as ct
     from PIL import Image
 
@@ -868,7 +888,9 @@ def run(
 
 
 def parse_opt(known=False):
-    """Parses command line arguments for model export configuration, including data paths, weights, and export options."""
+    """Parses command line arguments for model export configuration, including data paths, weights, and export
+    options.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, default=ROOT / "data/coco128.yaml", help="dataset.yaml path")
     parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "yolov3-tiny.pt", help="model.pt path(s)")

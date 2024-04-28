@@ -128,7 +128,9 @@ class Metric:
         return (self.p[i], self.r[i], self.ap50[i], self.ap[i])
 
     def get_maps(self, nc):
-        """Calculates mean average precisions (mAPs) for each class; `nc`: num of classes; returns array of mAPs per class."""
+        """Calculates mean average precisions (mAPs) for each class; `nc`: num of classes; returns array of mAPs per
+        class.
+        """
         maps = np.zeros(nc) + self.map
         for i, c in enumerate(self.ap_class_index):
             maps[c] = self.ap[i]

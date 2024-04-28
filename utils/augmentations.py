@@ -60,14 +60,22 @@ def normalize(x, mean=IMAGENET_MEAN, std=IMAGENET_STD, inplace=False):
 
 
 def denormalize(x, mean=IMAGENET_MEAN, std=IMAGENET_STD):
-    """Converts normalized images back to original form using ImageNet stats; inputs in BCHW format. Example: `denormalize(tensor)`."""
+    """
+    Converts normalized images back to original form using ImageNet stats; inputs in BCHW format.
+
+    Example: `denormalize(tensor)`.
+    """
     for i in range(3):
         x[:, i] = x[:, i] * std[i] + mean[i]
     return x
 
 
 def augment_hsv(im, hgain=0.5, sgain=0.5, vgain=0.5):
-    """Applies HSV color-space augmentation with optional gains; expects BGR image input. Example: `augment_hsv(image)`."""
+    """
+    Applies HSV color-space augmentation with optional gains; expects BGR image input.
+
+    Example: `augment_hsv(image)`.
+    """
     if hgain or sgain or vgain:
         r = np.random.uniform(-1, 1, 3) * [hgain, sgain, vgain] + 1  # random gains
         hue, sat, val = cv2.split(cv2.cvtColor(im, cv2.COLOR_BGR2HSV))
@@ -352,14 +360,18 @@ def classify_transforms(size=224):
 class LetterBox:
     # YOLOv3 LetterBox class for image preprocessing, i.e. T.Compose([LetterBox(size), ToTensor()])
     def __init__(self, size=(640, 640), auto=False, stride=32):
-        """Initializes LetterBox for YOLOv3 image preprocessing with optional auto-sizing and stride; `size` can be int or tuple."""
+        """Initializes LetterBox for YOLOv3 image preprocessing with optional auto-sizing and stride; `size` can be int
+        or tuple.
+        """
         super().__init__()
         self.h, self.w = (size, size) if isinstance(size, int) else size
         self.auto = auto  # pass max size integer, automatically solve for short side using stride
         self.stride = stride  # used with auto
 
     def __call__(self, im):  # im = np.array HWC
-        """Resizes and pads image `im` (np.array HWC) to specified `size` and `stride`, possibly autosizing for the short side."""
+        """Resizes and pads image `im` (np.array HWC) to specified `size` and `stride`, possibly autosizing for the
+        short side.
+        """
         imh, imw = im.shape[:2]
         r = min(self.h / imh, self.w / imw)  # ratio of new/old
         h, w = round(imh * r), round(imw * r)  # resized image
@@ -388,12 +400,16 @@ class CenterCrop:
 class ToTensor:
     # YOLOv3 ToTensor class for image preprocessing, i.e. T.Compose([LetterBox(size), ToTensor()])
     def __init__(self, half=False):
-        """Initializes ToTensor class for YOLOv3 image preprocessing to convert images to PyTorch tensors, optionally in half precision."""
+        """Initializes ToTensor class for YOLOv3 image preprocessing to convert images to PyTorch tensors, optionally in
+        half precision.
+        """
         super().__init__()
         self.half = half
 
     def __call__(self, im):  # im = np.array HWC in BGR order
-        """Converts a BGR image in numpy format to a PyTorch tensor in RGB format, with options for half precision and normalization."""
+        """Converts a BGR image in numpy format to a PyTorch tensor in RGB format, with options for half precision and
+        normalization.
+        """
         im = np.ascontiguousarray(im.transpose((2, 0, 1))[::-1])  # HWC to CHW -> BGR to RGB -> contiguous
         im = torch.from_numpy(im)  # to torch
         im = im.half() if self.half else im.float()  # uint8 to fp16/32

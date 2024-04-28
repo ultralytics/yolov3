@@ -470,7 +470,9 @@ def parse_opt():
 
 
 def main(opt):
-    """Executes the primary function based on task, including training, validation, testing, speed, and study benchmarks."""
+    """Executes the primary function based on task, including training, validation, testing, speed, and study
+    benchmarks.
+    """
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
 
     if opt.task in ("train", "val", "test"):  # run normally

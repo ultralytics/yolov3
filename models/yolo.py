@@ -62,7 +62,11 @@ class Detect(nn.Module):
         self.inplace = inplace  # use inplace ops (e.g. slice assignment)
 
     def forward(self, x):
-        """Processes input through convolutional layers, reshaping output for detection. Expects x as list of tensors with shape(bs, C, H, W)."""
+        """
+        Processes input through convolutional layers, reshaping output for detection.
+
+        Expects x as list of tensors with shape(bs, C, H, W).
+        """
         z = []  # inference output
         for i in range(self.nl):
             x[i] = self.m[i](x[i])  # conv
@@ -88,7 +92,9 @@ class Detect(nn.Module):
         return x if self.training else (torch.cat(z, 1),) if self.export else (torch.cat(z, 1), x)
 
     def _make_grid(self, nx=20, ny=20, i=0, torch_1_10=check_version(torch.__version__, "1.10.0")):
-        """Generates a grid and corresponding anchor grid with shape `(1, num_anchors, ny, nx, 2)` for indexing anchors."""
+        """Generates a grid and corresponding anchor grid with shape `(1, num_anchors, ny, nx, 2)` for indexing
+        anchors.
+        """
         d = self.anchors[i].device
         t = self.anchors[i].dtype
         shape = 1, self.na, ny, nx, 2  # grid shape
@@ -102,7 +108,9 @@ class Detect(nn.Module):
 class Segment(Detect):
     # YOLOv3 Segment head for segmentation models
     def __init__(self, nc=80, anchors=(), nm=32, npr=256, ch=(), inplace=True):
-        """Initializes the YOLOv3 segment head with customizable class count, anchors, masks, protos, channels, and inplace option."""
+        """Initializes the YOLOv3 segment head with customizable class count, anchors, masks, protos, channels, and
+        inplace option.
+        """
         super().__init__(nc, anchors, ch, inplace)
         self.nm = nm  # number of masks
         self.npr = npr  # number of protos
@@ -112,7 +120,9 @@ class Segment(Detect):
         self.detect = Detect.forward
 
     def forward(self, x):
-        """Executes forward pass, returning predictions and protos, with different outputs based on training and export states."""
+        """Executes forward pass, returning predictions and protos, with different outputs based on training and export
+        states.
+        """
         p = self.proto(x[0])
         x = self.detect(self, x)
         return (x, p) if self.training else (x[0], p) if self.export else (x[0], p, x[1])
@@ -121,7 +131,9 @@ class Segment(Detect):
 class BaseModel(nn.Module):
     # YOLOv3 base model
     def forward(self, x, profile=False, visualize=False):
-        """Performs a single-scale inference or training step on input `x`, with options for profiling and visualization."""
+        """Performs a single-scale inference or training step on input `x`, with options for profiling and
+        visualization.
+        """
         return self._forward_once(x, profile, visualize)  # single-scale inference, train
 
     def _forward_once(self, x, profile=False, visualize=False):

@@ -101,7 +101,9 @@ GIT_INFO = check_git_info()
 
 
 def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictionary
-    """Trains a model with given hyperparameters, options, device, and callbacks, saving results and weights as specified."""
+    """Trains a model with given hyperparameters, options, device, and callbacks, saving results and weights as
+    specified.
+    """
     save_dir, epochs, batch_size, weights, single_cls, evolve, data, cfg, resume, noval, nosave, workers, freeze = (
         Path(opt.save_dir),
         opt.epochs,
@@ -706,7 +708,9 @@ def main(opt, callbacks=Callbacks()):
 
 
 def run(**kwargs):
-    """Executes model training with specified configurations; see example: import train; train.run(data='coco128.yaml', imgsz=320, weights='yolov5m.pt')."""
+    """Executes model training with specified configurations; see example: import train; train.run(data='coco128.yaml',
+    imgsz=320, weights='yolov5m.pt').
+    """
     opt = parse_opt(True)
     for k, v in kwargs.items():
         setattr(opt, k, v)

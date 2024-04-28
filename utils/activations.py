@@ -18,7 +18,9 @@ class Hardswish(nn.Module):
     # Hard-SiLU activation
     @staticmethod
     def forward(x):
-        """Applies Hardswish activation, suitable for TorchScript, CoreML, ONNX, modifying input `x` as per Hard-SiLU definition."""
+        """Applies Hardswish activation, suitable for TorchScript, CoreML, ONNX, modifying input `x` as per Hard-SiLU
+        definition.
+        """
         return x * F.hardtanh(x + 3, 0.0, 6.0) / 6.0  # for TorchScript, CoreML and ONNX
 
 
@@ -26,7 +28,11 @@ class Mish(nn.Module):
     # Mish activation https://github.com/digantamisra98/Mish
     @staticmethod
     def forward(x):
-        """Applies the Mish activation function, enhancing model performance and convergence. Reference: https://github.com/digantamisra98/Mish"""
+        """
+        Applies the Mish activation function, enhancing model performance and convergence.
+
+        Reference: https://github.com/digantamisra98/Mish
+        """
         return x * F.softplus(x).tanh()
 
 
@@ -35,13 +41,17 @@ class MemoryEfficientMish(nn.Module):
     class F(torch.autograd.Function):
         @staticmethod
         def forward(ctx, x):
-            """Applies the Mish activation function in a memory-efficient manner, useful for enhancing model performance."""
+            """Applies the Mish activation function in a memory-efficient manner, useful for enhancing model
+            performance.
+            """
             ctx.save_for_backward(x)
             return x.mul(torch.tanh(F.softplus(x)))  # x * tanh(ln(1 + exp(x)))
 
         @staticmethod
         def backward(ctx, grad_output):
-            """Computes gradient of the Mish activation function for backpropagation, returning the derivative with respect to the input."""
+            """Computes gradient of the Mish activation function for backpropagation, returning the derivative with
+            respect to the input.
+            """
             x = ctx.saved_tensors[0]
             sx = torch.sigmoid(x)
             fx = F.softplus(x).tanh()
@@ -91,7 +101,9 @@ class MetaAconC(nn.Module):
     """
 
     def __init__(self, c1, k=1, s=1, r=16):  # ch_in, kernel, stride, r
-        """Initializes MetaAconC activation with params c1, optional k (kernel=1), s (stride=1), r (16), defining activation dynamics."""
+        """Initializes MetaAconC activation with params c1, optional k (kernel=1), s (stride=1), r (16), defining
+        activation dynamics.
+        """
         super().__init__()
         c2 = max(r, c1 // r)
         self.p1 = nn.Parameter(torch.randn(1, c1, 1, 1))

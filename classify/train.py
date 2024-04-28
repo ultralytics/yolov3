@@ -76,7 +76,9 @@ GIT_INFO = check_git_info()
 
 
 def train(opt, device):
-    """Trains a model on a given dataset using specified options and device, handling data loading, model optimization, and logging."""
+    """Trains a model on a given dataset using specified options and device, handling data loading, model optimization,
+    and logging.
+    """
     init_seeds(opt.seed + 1 + RANK, deterministic=True)
     save_dir, data, bs, epochs, nw, imgsz, pretrained = (
         opt.save_dir,

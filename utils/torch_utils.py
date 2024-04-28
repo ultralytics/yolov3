@@ -35,6 +35,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 def smart_inference_mode(torch_1_9=check_version(torch.__version__, "1.9.0")):
     """Applies torch.inference_mode() if torch>=1.9.0 or torch.no_grad() otherwise as a decorator to functions."""
+
     def decorate(fn):
         return (torch.inference_mode if torch_1_9 else torch.no_grad)()(fn)
 
@@ -42,7 +43,9 @@ def smart_inference_mode(torch_1_9=check_version(torch.__version__, "1.9.0")):
 
 
 def smartCrossEntropyLoss(label_smoothing=0.0):
-    """Returns CrossEntropyLoss with optional label smoothing for torch>=1.10.0; warns if label smoothing used with older versions."""
+    """Returns CrossEntropyLoss with optional label smoothing for torch>=1.10.0; warns if label smoothing used with
+    older versions.
+    """
     if check_version(torch.__version__, "1.10.0"):
         return nn.CrossEntropyLoss(label_smoothing=label_smoothing)
     if label_smoothing > 0:
@@ -51,7 +54,11 @@ def smartCrossEntropyLoss(label_smoothing=0.0):
 
 
 def smart_DDP(model):
-    """Initializes DDP for a model with version checks; fails for torch==1.12.0 due to known issues. See https://github.com/ultralytics/yolov5/issues/8395."""
+    """
+    Initializes DDP for a model with version checks; fails for torch==1.12.0 due to known issues.
+
+    See https://github.com/ultralytics/yolov5/issues/8395.
+    """
     assert not check_version(torch.__version__, "1.12.0", pinned=True), (
         "torch==1.12.0 torchvision==0.13.0 DDP training is not supported due to a known issue. "
         "Please upgrade or downgrade torch to use DDP. See https://github.com/ultralytics/yolov5/issues/8395"
@@ -63,7 +70,9 @@ def smart_DDP(model):
 
 
 def reshape_classifier_output(model, n=1000):
-    """Reshapes the last layer of a model to have 'n' outputs; supports YOLOv3, ResNet, EfficientNet, adjusting Linear and Conv2d layers."""
+    """Reshapes the last layer of a model to have 'n' outputs; supports YOLOv3, ResNet, EfficientNet, adjusting Linear
+    and Conv2d layers.
+    """
     from models.common import Classify
 
     name, m = list((model.model if hasattr(model, "model") else model).named_children())[-1]  # last module
@@ -213,7 +222,9 @@ def de_parallel(model):
 
 
 def initialize_weights(model):
-    """Initializes weights for Conv2D, BatchNorm2d, and activation layers (Hardswish, LeakyReLU, ReLU, ReLU6, SiLU) in a model."""
+    """Initializes weights for Conv2D, BatchNorm2d, and activation layers (Hardswish, LeakyReLU, ReLU, ReLU6, SiLU) in a
+    model.
+    """
     for m in model.modules():
         t = type(m)
         if t is nn.Conv2d:
@@ -231,7 +242,9 @@ def find_modules(model, mclass=nn.Conv2d):
 
 
 def sparsity(model):
-    """Calculates and returns the global sparsity of a model as the ratio of zero-valued parameters to total parameters."""
+    """Calculates and returns the global sparsity of a model as the ratio of zero-valued parameters to total
+    parameters.
+    """
     a, b = 0, 0
     for p in model.parameters():
         a += p.numel()
@@ -281,7 +294,11 @@ def fuse_conv_and_bn(conv, bn):
 
 
 def model_info(model, verbose=False, imgsz=640):
-    """Prints model layers, parameters, gradients, and GFLOPs if verbose; handles various `imgsz`. Usage: model_info(model)."""
+    """
+    Prints model layers, parameters, gradients, and GFLOPs if verbose; handles various `imgsz`.
+
+    Usage: model_info(model).
+    """
     n_p = sum(x.numel() for x in model.parameters())  # number parameters
     n_g = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
     if verbose:
@@ -308,7 +325,9 @@ def model_info(model, verbose=False, imgsz=640):
 
 
 def scale_img(img, ratio=1.0, same_shape=False, gs=32):  # img(16,3,256,416)
-    """Scales and optionally pads an image tensor to a specified ratio, maintaining its aspect ratio constrained by `gs`."""
+    """Scales and optionally pads an image tensor to a specified ratio, maintaining its aspect ratio constrained by
+    `gs`.
+    """
     if ratio == 1.0:
         return img
     h, w = img.shape[2:]
@@ -362,7 +381,11 @@ def smart_optimizer(model, name="Adam", lr=0.001, momentum=0.9, decay=1e-5):
 
 
 def smart_hub_load(repo="ultralytics/yolov5", model="yolov5s", **kwargs):
-    """Loads YOLO model from Ultralytics repo with smart error handling, supports `force_reload` on failure. See https://github.com/ultralytics/yolov5"""
+    """
+    Loads YOLO model from Ultralytics repo with smart error handling, supports `force_reload` on failure.
+
+    See https://github.com/ultralytics/yolov5
+    """
     if check_version(torch.__version__, "1.9.1"):
         kwargs["skip_validation"] = True  # validation causes GitHub API rate limit errors
     if check_version(torch.__version__, "1.12.0"):
@@ -374,7 +397,9 @@ def smart_hub_load(repo="ultralytics/yolov5", model="yolov5s", **kwargs):
 
 
 def smart_resume(ckpt, optimizer, ema=None, weights="yolov5s.pt", epochs=300, resume=True):
-    """Resumes or fine-tunes training from a checkpoint with optimizer and EMA support; updates epochs based on progress."""
+    """Resumes or fine-tunes training from a checkpoint with optimizer and EMA support; updates epochs based on
+    progress.
+    """
     best_fitness = 0.0
     start_epoch = ckpt["epoch"] + 1
     if ckpt["optimizer"] is not None:
@@ -398,7 +423,9 @@ def smart_resume(ckpt, optimizer, ema=None, weights="yolov5s.pt", epochs=300, re
 class EarlyStopping:
     # YOLOv3 simple early stopper
     def __init__(self, patience=30):
-        """Initializes EarlyStopping to monitor training, halting if no improvement in 'patience' epochs, defaulting to 30."""
+        """Initializes EarlyStopping to monitor training, halting if no improvement in 'patience' epochs, defaulting to
+        30.
+        """
         self.best_fitness = 0.0  # i.e. mAP
         self.best_epoch = 0
         self.patience = patience or float("inf")  # epochs to wait after fitness stops improving to stop
@@ -429,7 +456,9 @@ class ModelEMA:
     """
 
     def __init__(self, model, decay=0.9999, tau=2000, updates=0):
-        """Initializes EMA with model, optional decay (default 0.9999), tau (2000), and updates count, setting model to eval mode."""
+        """Initializes EMA with model, optional decay (default 0.9999), tau (2000), and updates count, setting model to
+        eval mode.
+        """
         self.ema = deepcopy(de_parallel(model)).eval()  # FP32 EMA
         self.updates = updates  # number of EMA updates
         self.decay = lambda x: decay * (1 - math.exp(-x / tau))  # decay exponential ramp (to help early epochs)
