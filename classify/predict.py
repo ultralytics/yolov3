@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """
 Run YOLOv3 classification inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
 

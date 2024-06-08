@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """
 Train a YOLOv3 model on a custom dataset. Models and datasets download automatically from the latest YOLOv3 release.
 
