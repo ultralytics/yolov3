@@ -1,6 +1,5 @@
 # Ultralytics YOLOv3 🚀, AGPL-3.0 license
 
-
 # Parameters
 nc: 80 # number of classes
 activation: nn.LeakyReLU(0.1) # <----- Conv() activation used throughout entire YOLOv5 model

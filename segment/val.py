@@ -1,5 +1,4 @@
 # Ultralytics YOLOv3 🚀, AGPL-3.0 license
-
 """
 Validate a trained YOLOv3 segment model on a segment dataset.
 
