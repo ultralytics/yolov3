@@ -1,4 +1,5 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
+
 """Callback utils."""
 
 import threading
