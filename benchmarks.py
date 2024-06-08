@@ -1,5 +1,4 @@
 # Ultralytics YOLOv3 🚀, AGPL-3.0 license
-
 """
 Run YOLOv3 benchmarks on all supported export formats.
 
