@@ -1,3 +1,5 @@
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
+
 """Main Logger class for ClearML experiment tracking."""
 
 import glob
