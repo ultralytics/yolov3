@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 # Builds ultralytics/yolov3:latest images on DockerHub https://hub.docker.com/r/ultralytics/yolov3
 
 name: Publish Docker Images
