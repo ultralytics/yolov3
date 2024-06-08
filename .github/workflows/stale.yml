@@ -1,6 +1,5 @@
 # Ultralytics YOLOv3 🚀, AGPL-3.0 license
 
-
 name: Close stale issues
 on:
   schedule:
