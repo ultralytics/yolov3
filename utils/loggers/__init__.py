@@ -393,8 +393,10 @@ class GenericLogger:
         if self.tb:
             log_tensorboard_graph(self.tb, model, imgsz)
 
-    def log_model(self, model_path, epoch=0, metadata={}):
+    def log_model(self, model_path, epoch=0, metadata=None):
         """Logs model to all loggers with `model_path`, optional `epoch` (default 0), and `metadata` dictionary."""
+        if metadata is None:
+            metadata = {}
         if self.wandb:
             art = wandb.Artifact(name=f"run_{wandb.run.id}_model", type="model", metadata=metadata)
             art.add_file(str(model_path))
