@@ -22,6 +22,7 @@ try:
 except ImportError:
 
     def SummaryWriter(*args):
+        """Imports TensorBoard's SummaryWriter for logging, with a fallback returning None if TensorBoard is not installed."""
         return None  # None = SummaryWriter(str)
 
 
