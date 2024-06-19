@@ -223,6 +223,7 @@ class DetectionModel(BaseModel):
             m.inplace = self.inplace
 
             def forward(x):
+                """Passes the input 'x' through the model and returns the processed output."""
                 return self.forward(x)[0] if isinstance(m, Segment) else self.forward(x)
 
             m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward

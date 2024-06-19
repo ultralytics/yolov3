@@ -1209,7 +1209,7 @@ class HUBDatasetStats:
         """
 
         def _round(labels):
-            # Update labels to integer class and 6 decimal place floats
+            """Update labels to integer class and 6 decimal place floats."""
             return [[int(c), *(round(x, 4) for x in points)] for c, *points in labels]
 
         for split in "train", "val", "test":
