@@ -142,7 +142,7 @@ def create_dataloader(
     shuffle=False,
     seed=0,
 ):
-    """Creates a DataLoader for training, with options for augmentation, caching, and parallellization (https://docs.ultralytics.com/yolov5/tutorials/train_custom_data)."""
+    """Creates a DataLoader for training, with options for augmentation, caching, and parallelization (https://docs.ultralytics.com/yolov5/tutorials/train_custom_data)."""
     if rect and shuffle:
         LOGGER.warning("WARNING ⚠️ --rect is incompatible with DataLoader shuffle, setting shuffle=False")
         shuffle = False
