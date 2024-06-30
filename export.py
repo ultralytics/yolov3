@@ -782,9 +782,7 @@ def run(
     iou_thres=0.45,  # TF.js NMS: IoU threshold
     conf_thres=0.25,  # TF.js NMS: confidence threshold
 ):
-    """
-    Exports a PyTorch model to specified formats like ONNX, CoreML, TensorRT.
-    """
+    """Exports a PyTorch model to specified formats like ONNX, CoreML, TensorRT."""
     t = time.time()
     include = [x.lower() for x in include]  # to lowercase
     fmts = tuple(export_formats()["Argument"][1:])  # --include arguments
