@@ -336,7 +336,7 @@ def check_online():
     import socket
 
     def run_once():
-        # Check once
+        """Attempts a single internet connectivity check to '1.1.1.1' on port 443 and returns True if successful."""
         try:
             socket.create_connection(("1.1.1.1", 443), 5)  # check host accessibility
             return True
@@ -584,7 +584,7 @@ def check_amp(model):
     from models.common import AutoShape, DetectMultiBackend
 
     def amp_allclose(model, im):
-        # All close FP32 vs AMP results
+        """Compares FP32 and AMP inference results for a model and image, ensuring outputs are within 10% tolerance."""
         m = AutoShape(model, verbose=False)  # model
         a = m(im).xywhn[0]  # FP32 inference
         m.amp = True
@@ -645,7 +645,9 @@ def download(url, dir=".", unzip=True, delete=True, curl=False, threads=1, retry
     """
 
     def download_one(url, dir):
-        # Download 1 file
+        """Downloads a file from a URL into the specified directory, supporting retries and using curl or torch
+        methods.
+        """
         success = True
         if os.path.isfile(url):
             f = Path(url)  # filename
