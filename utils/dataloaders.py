@@ -142,7 +142,7 @@ def create_dataloader(
     shuffle=False,
     seed=0,
 ):
-    """Creates a DataLoader for training, with options for augmentation, caching, and parallelization (https://docs.ultralytics.com/yolov5/tutorials/train_custom_data)."""
+    """Creates a DataLoader for training, with options for augmentation, caching, and parallelization."""
     if rect and shuffle:
         LOGGER.warning("WARNING ⚠️ --rect is incompatible with DataLoader shuffle, setting shuffle=False")
         shuffle = False
@@ -512,11 +512,7 @@ class LoadImagesAndLabels(Dataset):
         min_items=0,
         prefix="",
     ):
-        """
-        Initializes a dataset with images and labels for YOLOv3 training and validation.
-
-        See https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
-        """
+        """Initializes a dataset with images and labels for YOLOv3 training and validation."""
         self.img_size = img_size
         self.augment = augment
         self.hyp = hyp
