@@ -157,6 +157,7 @@ def random_perspective(
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(0.1, 0.1), scale=(0.9, 1.1), shear=(-10, 10))
     # targets = [cls, xyxy]
 
+    """Applies a random perspective transformation to an image and its bounding boxes for data augmentation."""
     height = im.shape[0] + border[0] * 2  # shape(h,w,c)
     width = im.shape[1] + border[1] * 2
 
@@ -321,6 +322,7 @@ def classify_albumentations(
     auto_aug=False,
 ):
     # YOLOv3 classification Albumentations (optional, only used if package is installed)
+    """Generates an Albumentations transform pipeline for image classification with optional augmentations."""
     prefix = colorstr("albumentations: ")
     try:
         import albumentations as A

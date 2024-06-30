@@ -145,6 +145,7 @@ def run(
     callbacks=Callbacks(),
     compute_loss=None,
 ):
+    """Validates a trained YOLO model on a dataset and saves detection results in specified formats."""
     # Initialize/load model and set device
     training = model is not None
     if training:  # called by train.py

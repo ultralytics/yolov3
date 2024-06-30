@@ -142,6 +142,7 @@ def create_dataloader(
     shuffle=False,
     seed=0,
 ):
+    """Creates a DataLoader for training, with options for augmentation, caching, and parallelization."""
     if rect and shuffle:
         LOGGER.warning("WARNING ⚠️ --rect is incompatible with DataLoader shuffle, setting shuffle=False")
         shuffle = False
@@ -511,6 +512,7 @@ class LoadImagesAndLabels(Dataset):
         min_items=0,
         prefix="",
     ):
+        """Initializes a dataset with images and labels for YOLOv3 training and validation."""
         self.img_size = img_size
         self.augment = augment
         self.hyp = hyp
@@ -1302,6 +1304,9 @@ def create_classification_dataloader(
     path, imgsz=224, batch_size=16, augment=True, cache=False, rank=-1, workers=8, shuffle=True
 ):
     # Returns Dataloader object to be used with YOLOv3 Classifier
+    """Creates a DataLoader for image classification tasks with options for augmentation, caching, and distributed
+    training.
+    """
     with torch_distributed_zero_first(rank):  # init dataset *.cache only once if DDP
         dataset = ClassificationDataset(root=path, imgsz=imgsz, augment=augment, cache=cache)
     batch_size = min(batch_size, len(dataset))

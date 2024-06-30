@@ -565,6 +565,7 @@ class TFModel:
         iou_thres=0.45,
         conf_thres=0.25,
     ):
+        """Performs inference on input data using a YOLOv3 model, including optional TensorFlow NMS."""
         y = []  # outputs
         x = inputs
         for m in self.model.layers:
@@ -683,6 +684,7 @@ def run(
     dynamic=False,  # dynamic batch size
 ):
     # PyTorch model
+    """Exports and summarizes both PyTorch and TensorFlow models for YOLOv5-based object detection."""
     im = torch.zeros((batch_size, 3, *imgsz))  # BCHW image
     model = attempt_load(weights, device=torch.device("cpu"), inplace=True, fuse=False)
     _ = model(im)  # inference
