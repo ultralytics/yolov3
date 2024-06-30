@@ -68,6 +68,7 @@ def run(
     criterion=None,
     pbar=None,
 ):
+    """Evaluate a YOLOv3 classification model on the specified dataset, providing accuracy metrics."""
     # Initialize/load model and set device
     training = model is not None
     if training:  # called by train.py

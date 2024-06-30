@@ -97,6 +97,7 @@ def run(
     vid_stride=1,  # video frame-rate stride
     retina_masks=False,
 ):
+    """Performs YOLOv3 segmentation inference on various sources such as images, videos, and streams."""
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)

@@ -39,6 +39,7 @@ def create_dataloader(
     overlap_mask=False,
     seed=0,
 ):
+    """Creates a DataLoader for images and labels with optional augmentations and distributed sampling."""
     if rect and shuffle:
         LOGGER.warning("WARNING ⚠️ --rect is incompatible with DataLoader shuffle, setting shuffle=False")
         shuffle = False
@@ -99,6 +100,7 @@ class LoadImagesAndLabelsAndMasks(LoadImagesAndLabels):  # for training/testing
         downsample_ratio=1,
         overlap=False,
     ):
+        """Initializes image, label, and mask loading for training/testing with optional augmentations."""
         super().__init__(
             path,
             img_size,
