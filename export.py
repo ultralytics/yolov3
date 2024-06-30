@@ -784,8 +784,6 @@ def run(
 ):
     """
     Exports a PyTorch model to specified formats like ONNX, CoreML, TensorRT.
-
-    Refer: https://github.com/zldrobi
     """
     t = time.time()
     include = [x.lower() for x in include]  # to lowercase
