@@ -42,6 +42,11 @@ def threaded(func):
     """
 
     def wrapper(*args, **kwargs):
+        """
+        Runs the decorated function in a separate thread and returns the thread object.
+
+        Usage: @threaded.
+        """
         thread = threading.Thread(target=func, args=args, kwargs=kwargs, daemon=True)
         thread.start()
         return thread

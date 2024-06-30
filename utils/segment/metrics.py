@@ -55,6 +55,7 @@ def ap_per_class_box_and_mask(
 
 class Metric:
     def __init__(self) -> None:
+        """Initializes Metric class attributes for precision, recall, F1 score, AP values, and AP class indices."""
         self.p = []  # (nc, )
         self.r = []  # (nc, )
         self.f1 = []  # (nc, )
@@ -153,6 +154,7 @@ class Metrics:
     """Metric for boxes and masks."""
 
     def __init__(self) -> None:
+        """Initializes the Metrics class with separate Metric instances for boxes and masks."""
         self.metric_box = Metric()
         self.metric_mask = Metric()
 

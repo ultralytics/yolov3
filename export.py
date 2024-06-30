@@ -134,6 +134,7 @@ def try_export(inner_func):
     inner_args = get_default_args(inner_func)
 
     def outer_func(*args, **kwargs):
+        """Profiles and logs the export process of YOLOv3 models, capturing success or failure details."""
         prefix = inner_args["prefix"]
         try:
             with Profile() as dt:
@@ -226,7 +227,7 @@ def export_onnx(model, im, file, opset, dynamic, simplify, prefix=colorstr("ONNX
 
 @try_export
 def export_openvino(file, metadata, half, int8, data, prefix=colorstr("OpenVINO:")):
-    # YOLOv3 OpenVINO export
+    """Exports a YOLOv3 model to OpenVINO format, with optional INT8 quantization and inference metadata."""
     check_requirements("openvino-dev>=2023.0")  # requires openvino-dev: https://pypi.org/project/openvino-dev/
     import openvino.runtime as ov  # noqa
     from openvino.tools import mo  # noqa
@@ -247,6 +248,7 @@ def export_openvino(file, metadata, half, int8, data, prefix=colorstr("OpenVINO:
         onnx_model = core.read_model(f_onnx)  # export
 
         def prepare_input_tensor(image: np.ndarray):
+            """Prepares the input tensor by normalizing pixel values and converting the datatype to float32."""
             input_tensor = image.astype(np.float32)  # uint8 to fp16/32
             input_tensor /= 255.0  # 0 - 255 to 0.0 - 1.0
 
@@ -255,6 +257,7 @@ def export_openvino(file, metadata, half, int8, data, prefix=colorstr("OpenVINO:
             return input_tensor
 
         def gen_dataloader(yaml_path, task="train", imgsz=640, workers=4):
+            """Generates a PyTorch dataloader for the specified task using dataset configurations from a YAML file."""
             data_yaml = check_yaml(yaml_path)
             data = check_dataset(data_yaml)
             dataloader = create_dataloader(

@@ -33,6 +33,9 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
     wh = torch.tensor(np.concatenate([l[:, 3:5] * s for s, l in zip(shapes * scale, dataset.labels)])).float()  # wh
 
     def metric(k):  # compute metric
+        """Computes and returns best possible recall (bpr) and anchors above threshold (aat) metrics for given
+        anchors.
+        """
         r = wh[:, None] / k[None]
         x = torch.min(r, 1 / r).min(2)[0]  # ratio metric
         best = x.max(1)[0]  # best_x
@@ -86,16 +89,19 @@ def kmean_anchors(dataset="./data/coco128.yaml", n=9, img_size=640, thr=4.0, gen
     thr = 1 / thr
 
     def metric(k, wh):  # compute metrics
+        """Computes best possible recall (BPR) and anchors above threshold (AAT) metrics for given anchor boxes."""
         r = wh[:, None] / k[None]
         x = torch.min(r, 1 / r).min(2)[0]  # ratio metric
         # x = wh_iou(wh, torch.tensor(k))  # iou metric
         return x, x.max(1)[0]  # x, best_x
 
     def anchor_fitness(k):  # mutation fitness
+        """Evaluates the fitness of anchor boxes by computing mean recall weighted by an activation threshold."""
         _, best = metric(torch.tensor(k, dtype=torch.float32), wh)
         return (best * (best > thr).float()).mean()  # fitness
 
     def print_results(k, verbose=True):
+        """Displays sorted anchors and their metrics including best possible recall and anchors above threshold."""
         k = k[np.argsort(k.prod(1))]  # sort small to large
         x, best = metric(k, wh0)
         bpr, aat = (best > thr).float().mean(), (x > thr).float().mean() * n  # best possible recall, anch > thr
