@@ -19,7 +19,33 @@ COMET_DEFAULT_CHECKPOINT_FILENAME = os.getenv("COMET_DEFAULT_CHECKPOINT_FILENAME
 
 
 def download_model_checkpoint(opt, experiment):
-    """Downloads the model checkpoint from Comet ML; updates `opt.weights` with the downloaded file path."""
+    """
+    Downloads the model checkpoint from a Comet ML experiment and updates the `opt.weights` parameter with the local
+    file path of the downloaded checkpoint.
+
+    Args:
+        opt (Namespace): Options containing experiment configurations, including the `weights` attribute that will be updated with the local file path of the downloaded checkpoint.
+        experiment (Experiment): A Comet ML experiment object from which the model checkpoints are to be downloaded.
+
+    Returns:
+        None
+
+    Notes:
+        If the specified checkpoint filename is not found within the Comet ML experiment, an error message will be logged, and the function will return without updating `opt.weights`. The default checkpoint filename can be customized using the `COMET_DEFAULT_CHECKPOINT_FILENAME` environment variable.
+
+    Examples:
+        ```python
+        from namespace import Namespace
+        from comet_ml import Experiment
+
+        opt = Namespace(project='project_name', weights='initial_weights_path')
+        experiment = Experiment(api_key="YOUR_COMET_API_KEY", project_name="project_name")
+
+        download_model_checkpoint(opt, experiment)
+
+        print(f"Updated weights path: {opt.weights}")
+        ```
+    """
     model_dir = f"{opt.project}/{experiment.name}"
     os.makedirs(model_dir, exist_ok=True)
 
@@ -71,8 +97,29 @@ def set_opt_parameters(opt, experiment):
     Update the opts Namespace with parameters from Comet's ExistingExperiment when resuming a run.
 
     Args:
-        opt (argparse.Namespace): Namespace of command line options
-        experiment (comet_ml.APIExperiment): Comet API Experiment object
+        opt (argparse.Namespace): Namespace of command line options containing various attributes
+                                  that influence the configuration and behavior of the training process.
+        experiment (comet_ml.APIExperiment): Comet API Experiment object that represents the Comet ML
+                                             experiment whose assets are used to update the `opt` parameters.
+
+    Returns:
+        None: The function updates the provided `opt` object in place and does not return a value.
+
+    Example:
+        ```python
+        from argparse import Namespace
+        from comet_ml import APIExperiment
+
+        opt = Namespace(project='my_project', resume='path/to/checkpoint', hyp={})
+        experiment = APIExperiment(api_key='your_api_key', previous_experiment='your_previous_experiment_key')
+
+        set_opt_parameters(opt, experiment)
+        ```
+
+    Note:
+        This function assumes that an 'opt.yaml' file exists among the assets of the specified Comet experiment,
+        and that it contains parameters relevant to the `opt` Namespace. Additionally, it creates a `hyp.yaml` file
+        in the save directory to ensure compatibility with the training script's checks.
     """
     asset_list = experiment.get_asset_list()
     resume_string = opt.resume
@@ -99,15 +146,18 @@ def set_opt_parameters(opt, experiment):
 
 def check_comet_weights(opt):
     """
-    Downloads model weights from Comet and updates the weights path to point to saved weights location.
+    Downloads model weights from Comet ML and updates the weights path in the options to the saved weights location.
 
     Args:
-        opt (argparse.Namespace): Command Line arguments passed
-            to YOLOv3 training script
+        opt (argparse.Namespace): Command line arguments containing the weights path which may include a Comet ML URL.
 
     Returns:
-        None/bool: Return True if weights are successfully downloaded
-            else return None
+        bool | None: Returns True if weights are successfully downloaded and updated; otherwise, returns None.
+
+    Notes:
+        - Requires the `comet_ml` package to be installed.
+        - The Comet URL prefix must be recognized and correctly parsed to fetch the weights.
+        - The function relies on environment variables `COMET_MODEL_NAME` and `COMET_DEFAULT_CHECKPOINT_FILENAME` for model identification.
     """
     if comet_ml is None:
         return
@@ -125,15 +175,17 @@ def check_comet_weights(opt):
 
 def check_comet_resume(opt):
     """
-    Restores run parameters to its original state based on the model checkpoint and logged Experiment parameters.
+    Restores run parameters and model checkpoint from a Comet ML experiment.
 
     Args:
-        opt (argparse.Namespace): Command Line arguments passed
-            to YOLOv3 training script
+        opt (argparse.Namespace): Namespace object containing command-line arguments passed to the YOLOv3 training script.
 
     Returns:
-        None/bool: Return True if the run is restored successfully
-            else return None
+        bool | None: Returns True if the run is restored successfully, otherwise returns None.
+
+    Notes:
+        - Requires `comet_ml` package. If the `comet_ml` package is not installed, the function will not execute.
+        - Comet ML API is used to retrieve experiment details and associated assets for restoring the run state.
     """
     if comet_ml is None:
         return

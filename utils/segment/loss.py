@@ -14,7 +14,22 @@ from .general import crop_mask
 class ComputeLoss:
     # Compute losses
     def __init__(self, model, autobalance=False, overlap=False):
-        """Initializes ComputeLoss with model settings, optional autobalancing, and overlap handling."""
+        """
+        Initializes ComputeLoss with model settings, optional autobalancing, and overlap handling.
+
+        Args:
+            model (torch.nn.Module): The model instance for which the loss will be calculated.
+            autobalance (bool): If True, balances the objectness losses across multiple scales (default: False).
+            overlap (bool): If True, enables overlap handling in loss calculation (default: False).
+
+        Returns:
+            None
+
+        Notes:
+            This constructor initializes the loss components based on the model's hyperparameters, including BCE criteria
+            for classification and objectness, potentially enhanced with focal loss if specified. Label smoothing and
+            autobalance settings are also configured based on provided parameters and model state.
+        """
         self.sort_obj_iou = False
         self.overlap = overlap
         device = next(model.parameters()).device  # get model device
@@ -44,8 +59,40 @@ class ComputeLoss:
         self.device = device
 
     def __call__(self, preds, targets, masks):  # predictions, targets, model
-        """Computes losses given predictions, targets, and masks; returns tuple of class, box, object, and segmentation
-        losses.
+        """
+        Computes the loss values for the given predictions, targets, and masks.
+
+        Args:
+            preds (tuple[torch.Tensor, torch.Tensor]): A tuple containing the predictions and the prototype masks from
+                the model. The predictions tensor has shape (batch_size, anchors, grid_y, grid_x, predictions) and the
+                prototype tensor has shape (batch_size, num_masks, mask_height, mask_width).
+            targets (torch.Tensor): Tensor containing the ground truth boxes and labels with shape (num_targets, 6)
+                where the last dimension includes information about the image index, class, and bounding box coordinates.
+            masks (torch.Tensor): Tensor of shape (batch_size, height, width) representing segmentation masks of the
+                target objects.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing the computed losses:
+                - Class loss (torch.Tensor): Binary Cross Entropy loss for classification.
+                - Box loss (torch.Tensor): IoU loss for bounding box regression.
+                - Objectness loss (torch.Tensor): Binary Cross Entropy loss for objectness score.
+                - Segmentation loss (torch.Tensor): Loss for segmentation mask prediction.
+
+        Example:
+            ```python
+            import torch
+            model = ...  # Your model initialization
+            compute_loss = ComputeLoss(model)
+            preds = model(inputs)  # Getting predictions from the model
+            targets = ...  # Your ground truth boxes and labels
+            masks = ...  # Your ground truth masks
+            loss_values = compute_loss(preds, targets, masks)
+            ```
+
+        Note:
+            This method is designed to work with YOLO-based models, particularly with the Ultralytics YOLOv3 implementation.
+            Ensure that the model predictions, targets, and masks are in the correct format and shape expected by this
+            function.
         """
         p, proto = preds
         bs, nm, mask_h, mask_w = proto.shape  # batch size, number of masks, mask height, mask width
@@ -116,17 +163,42 @@ class ComputeLoss:
 
     def single_mask_loss(self, gt_mask, pred, proto, xyxy, area):
         """
-        Computes single image mask loss using BCE, cropping based on bbox.
+        Computes the mask loss for a single image by applying Binary Cross-Entropy (BCE) with logits and cropping based
+        on bounding box coordinates.
 
-        Args: gt_mask[n,h,w], pred[n,nm], proto[nm,h,w], xyxy[n,4], area[n].
+        Args:
+            gt_mask (torch.Tensor): Ground truth mask, shaped (n, h, w), where `n` is the number of target instances,
+                `h` is the height, and `w` is the width of the mask.
+            pred (torch.Tensor): Predicted mask coefficients, shaped (n, nm), where `nm` is the number of mask coefficients.
+            proto (torch.Tensor): Prototypes tensor, shaped (nm, h, w), representing the `nm` mask bases.
+            xyxy (torch.Tensor): Bounding box coordinates for each target instance, shaped (n, 4), in (x1, y1, x2, y2) format.
+            area (torch.Tensor): Normalized area of the masks for each target instance, shaped (n).
+
+        Returns:
+            torch.Tensor: Computed mask loss for the given image (float).
         """
         pred_mask = (pred @ proto.view(self.nm, -1)).view(-1, *proto.shape[1:])  # (n,32) @ (32,80,80) -> (n,80,80)
         loss = F.binary_cross_entropy_with_logits(pred_mask, gt_mask, reduction="none")
         return (crop_mask(loss, xyxy).mean(dim=(1, 2)) / area).mean()
 
     def build_targets(self, p, targets):
-        """Prepares targets for loss computation by appending anchor indices; supports optional target overlap
-        handling.
+        """
+        Prepares targets for loss computation by appending anchor indices; supports optional target overlap handling.
+
+        Args:
+         p (list[torch.Tensor]): List of predicted feature maps from the model. Each tensor is of shape
+             (batch_size, num_anchors, grid_height, grid_width, num_predictions).
+         targets (torch.Tensor): Tensor containing ground truth data. Each row corresponds to a detection and contains
+             (image_index, class, center_x, center_y, width, height).
+
+        Returns:
+         Tuple[list[torch.Tensor], list[torch.Tensor], list[tuple]], list[torch.Tensor], list[torch.Tensor], list[torch.Tensor]]:
+             - tcls: List of class indices for each target.
+             - tbox: List of bounding box coordinates for each target, adjusted to match the grid.
+             - indices: List of indices required to map detections to the feature map.
+             - anch: List of anchor boxes.
+             - tidxs: List of target indices.
+             - xywhn: List of normalized bounding box coordinates for each target.
         """
         na, nt = self.na, targets.shape[0]  # number of anchors, targets
         tcls, tbox, indices, anch, tidxs, xywhn = [], [], [], [], [], []

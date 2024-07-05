@@ -11,14 +11,68 @@ from utils.torch_utils import profile
 
 
 def check_train_batch_size(model, imgsz=640, amp=True):
-    """Checks and computes the optimal training batch size for YOLOv3, given model and image size."""
+    """
+    Checks and computes the optimal training batch size for YOLOv3, given the model and image size.
+
+    Args:
+        model (torch.nn.Module): The YOLOv3 model for which the batch size is being checked.
+        imgsz (int): The input image size (default is 640).
+        amp (bool): Automatic mixed precision flag. If True, uses torch.cuda.amp for half-precision training (default is True).
+
+    Returns:
+        int: The optimal batch size for training the provided YOLOv3 model with the given image size.
+
+    Examples:
+        ```python
+        import torch
+        from yolov3 import YOLOv3  # hypothetical import
+        from utils.auto_batch import check_train_batch_size
+
+        # Initialize model
+        model = YOLOv3()
+
+        # Determine optimal batch size
+        optimal_batch_size = check_train_batch_size(model, imgsz=640, amp=True)
+        print(f'Optimal Batch Size: {optimal_batch_size}')
+        ```
+    """
     with torch.cuda.amp.autocast(amp):
         return autobatch(deepcopy(model).train(), imgsz)  # compute optimal batch size
 
 
 def autobatch(model, imgsz=640, fraction=0.8, batch_size=16):
-    """Estimates optimal YOLOv3 batch size using available CUDA memory; imgsz:int=640, fraction:float=0.8,
-    batch_size:int=16.
+    """
+    Estimates the optimal batch size for training a YOLOv3 model based on available CUDA memory.
+
+    Args:
+        model (torch.nn.Module): The YOLOv3 model to be evaluated.
+        imgsz (int): Image size used for inference, defaults to 640.
+        fraction (float): Fraction of available CUDA memory to use, defaults to 0.8.
+        batch_size (int): Initial batch size to start estimation, defaults to 16.
+
+    Returns:
+        int: The estimated optimal batch size for the given model and image size.
+
+    Notes:
+        - If CUDA is not detected, the default CPU batch size is returned.
+        - Ensure `torch.backends.cudnn.benchmark` is set to False for accurate estimation.
+        - The function profiles the model by evaluating it with various batch sizes and fits a polynomial to estimate the
+        optimal batch size.
+        - In case of CUDA anomalies or if the computed batch size is outside the safe range, the initial batch size is used
+        with warnings logged.
+
+    Example:
+        ```python
+        import torch
+        from ultralytics import autobatch
+
+        model = torch.hub.load('ultralytics/yolov5', 'yolov5s', autoshape=False)
+        optimal_batch_size = autobatch(model)
+        print(f"Optimal batch size: {optimal_batch_size}")
+        ```
+
+    References:
+        https://github.com/ultralytics/ultralytics
     """
     # Usage:
     #     import torch

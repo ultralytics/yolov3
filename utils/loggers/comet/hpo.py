@@ -27,7 +27,29 @@ COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.p
 
 
 def get_args(known=False):
-    """Parses command line arguments for configuring training options, supporting Comet and W&B integrations."""
+    """
+    Parses command line arguments for configuring YOLOv3 training, supporting integrations with Comet and Weights &
+    Biases.
+
+    Args:
+        known (bool, optional): If True, only parses known arguments. Default is False.
+
+    Returns:
+        argparse.Namespace: Parsed command line arguments encapsulated in an argparse.Namespace object.
+
+    Examples:
+        To parse command line arguments for training:
+
+        ```python
+        args = get_args()
+        ```
+
+    Notes:
+        This function sets up various command line arguments required for configuring the YOLOv3 training process, including
+        initial weights, model configuration, dataset, hyperparameters, and device settings. It also includes specific
+        arguments for integrating with Comet and Weights & Biases (W&B) for experiment tracking and optimization.
+        Ensure that the `ROOT` directory is correctly set and included in the system path to load dependencies properly.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", type=str, default=ROOT / "yolov3-tiny.pt", help="initial weights path")
     parser.add_argument("--cfg", type=str, default="", help="model.yaml path")
@@ -86,8 +108,50 @@ def get_args(known=False):
 
 
 def run(parameters, opt):
-    """Executes training process with given hyperparameters and options, handling device selection and callback
+    """
+    Executes the training process with the given hyperparameters and options, handling device selection and callback
     initialization.
+
+    Args:
+      parameters (dict): Dictionary of hyperparameters for training, excluding 'epochs' and 'batch_size'.
+      opt (argparse.Namespace): Command-line arguments namespace that includes training configuration options.
+
+    Returns:
+      None
+
+    Notes:
+      This function sets up the directory paths, batch size, and number of epochs based on the provided parameters
+      and options. It selects the appropriate device for training, whether it's a CPU or GPU, and initializes necessary
+      callbacks for tracking training progress.
+
+    Examples:
+      ```python
+      import argparse
+
+      # Sample setup of parameters and command-line arguments
+      parameters = {
+          'learning_rate': 0.01,
+          'momentum': 0.9,
+          'batch_size': 32,
+          'epochs': 50,
+          'optimizer': 'Adam'
+      }
+
+      # Parse command-line args (usually passed in through sys.argv)
+      opt = argparse.Namespace(
+          weights='yolov3-tiny.pt',
+          project='runs/train',
+          name='exp1',
+          device='0',
+          exist_ok=False,
+          evolve=False,
+          batch_size=32,
+          epochs=50
+      )
+
+      # Run the training
+      run(parameters, opt)
+      ```
     """
     hyp_dict = {k: v for k, v in parameters.items() if k not in ["epochs", "batch_size"]}
 

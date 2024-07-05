@@ -17,7 +17,45 @@ from ..plots import Annotator, colors
 
 @threaded
 def plot_images_and_masks(images, targets, masks, paths=None, fname="images.jpg", names=None):
-    """Plots a grid of images with annotations and masks, optionally resizing and saving the result."""
+    """
+    Plots a grid of images with corresponding annotations and masks, optionally resizing and saving the result.
+
+    Args:
+        images (np.ndarray | torch.Tensor): Batch of images with shape (B, C, H, W). Can be a Numpy array or PyTorch tensor.
+        targets (np.ndarray | torch.Tensor): Target annotations containing bounding box coordinates and class labels in
+            the format (image_index, class, x_center, y_center, width, height [, confidence]). Can be a Numpy array or
+            PyTorch tensor.
+        masks (np.ndarray | torch.Tensor): Segmentation masks for the images with shape (B, H, W). Can be a Numpy array or
+            PyTorch tensor.
+        paths (list[str] | None): List of file paths corresponding to the images for display purposes. Default is None.
+        fname (str): Filename to save the plotted image grid. Default is "images.jpg".
+        names (list[str] | None): List of class names for annotations. Default is None.
+
+    Returns:
+        None: Saves the resulting image grid with annotations and masks to the specified filename.
+
+    Notes:
+        - Images can be either normalized (values between 0 and 1) or unnormalized (values between 0 and 255).
+        - If `images` are normalized, they will be automatically scaled up to the range [0, 255].
+        - Bounding boxes and masks are optionally resized to fit within a maximum image size condition.
+        - Class labels and confidence scores are displayed if provided.
+        - The function supports a maximum of 16 images in a 4x4 grid.
+
+    Example:
+    ```python
+    import torch
+    from ultralytics import plot_images_and_masks
+
+    # Example usage with dummy data
+    images = torch.randn(8, 3, 640, 640)
+    targets = torch.tensor([
+        [0, 0, 0.5, 0.5, 0.2, 0.2],
+        [1, 1, 0.5, 0.5, 0.3, 0.3]
+    ])
+    masks = torch.randint(0, 2, (8, 640, 640))
+    plot_images_and_masks(images, targets, masks, fname='example.jpg')
+    ```
+    """
     if isinstance(images, torch.Tensor):
         images = images.cpu().float().numpy()
     if isinstance(targets, torch.Tensor):
@@ -113,8 +151,34 @@ def plot_images_and_masks(images, targets, masks, paths=None, fname="images.jpg"
 
 
 def plot_results_with_masks(file="path/to/results.csv", dir="", best=True):
-    """Plots training results from CSV, highlighting best/last metrics; supports custom file paths and directory
-    saving.
+    """
+    Plots training results from a CSV file, highlighting either the best or last metrics, with the option to save the
+    plots in a specified directory.
+
+    Args:
+        file (str): Path to the CSV file containing the training results. Default is "path/to/results.csv".
+        dir (str): The directory where the plot image will be saved. Default is an empty string.
+        best (bool): Flag to indicate whether to highlight the best metrics (True) or the last metrics (False). Default is True.
+
+    Returns:
+        None
+
+    Raises:
+        AssertionError: If no results.csv files are found in the specified directory or parent directory of the provided file path.
+
+    Notes:
+        - The function plots 16 subplots from the CSV file values, each representing different metrics.
+        - If the `best` parameter is True, the best metric values are highlighted on the plots. Otherwise, the last values are highlighted.
+        - The generated plot is saved as 'results.png' in the specified directory.
+
+    Examples:
+        ```python
+        # Plot results highlighting the best metrics and save in the same directory as the results.csv
+        plot_results_with_masks(file="runs/exp1/results.csv")
+
+        # Plot results, highlighting the last metrics, and save the plot in a custom directory
+        plot_results_with_masks(file="runs/exp1/results.csv", dir="plots/", best=False)
+        ```
     """
     save_dir = Path(file).parent if file else Path(dir)
     fig, ax = plt.subplots(2, 8, figsize=(18, 6), tight_layout=True)

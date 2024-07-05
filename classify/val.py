@@ -68,7 +68,44 @@ def run(
     criterion=None,
     pbar=None,
 ):
-    """Evaluate a YOLOv3 classification model on the specified dataset, providing accuracy metrics."""
+    """
+    Evaluate a YOLOv3 classification model on the specified dataset, providing accuracy metrics.
+
+    Args:
+        data (Path | str): Directory containing the dataset, defaults to '../datasets/mnist'.
+        weights (Path | str): Path to the model weights file, defaults to 'yolov5s-cls.pt'.
+        batch_size (int): Number of samples per batch, defaults to 128.
+        imgsz (int): Inference image size (in pixels), defaults to 224.
+        device (str): CUDA device (e.g., '0' or '0,1,2,3') or 'cpu', defaults to an empty string.
+        workers (int): Number of worker threads for data loading, defaults to 8.
+        verbose (bool): Flag for verbose output, defaults to False.
+        project (Path | str): Directory to save results, defaults to 'runs/val-cls'.
+        name (str): Name for the experiment, defaults to 'exp'.
+        exist_ok (bool): Flag to allow existing project/name without incrementing, defaults to False.
+        half (bool): Flag to use FP16 half-precision inference, defaults to False.
+        dnn (bool): Flag to use OpenCV DNN for ONNX inference, defaults to False.
+        model (torch.nn.Module, optional): Preloaded model, defaults to None.
+        dataloader (torch.utils.data.DataLoader, optional): Preloaded dataloader, defaults to None.
+        criterion (callable, optional): Loss function, defaults to None.
+        pbar (tqdm.tqdm, optional): Progress bar instance, defaults to None.
+
+    Returns:
+        None
+
+    Examples:
+        ```python
+        from pathlib import Path
+        results = run(
+            data=Path('data/imagenet'),
+            weights=Path('weights/yolov5s-cls.pt'),
+            batch_size=64,
+            imgsz=224,
+            device='0',
+            workers=4,
+            verbose=True
+        )
+        ```
+    """
     # Initialize/load model and set device
     training = model is not None
     if training:  # called by train.py
@@ -148,7 +185,35 @@ def run(
 
 
 def parse_opt():
-    """Parses command-line options for model configuration and returns an argparse.Namespace of options."""
+    """
+    Parses command-line options for the YOLOv3 classification model validation process.
+
+    Args:
+        --data (str): Path to the dataset directory. Default is ROOT / "../datasets/mnist".
+        --weights (str | list of str): Path(s) to the model weight files. Default is ROOT / "yolov5s-cls.pt".
+        --batch-size (int): Batch size for inference. Default is 128.
+        --imgsz | --img | --img-size (int): Inference image size in pixels. Default is 224.
+        --device (str): CUDA device selection (e.g., '0' or '0,1,2,3' or 'cpu'). Default is an empty string.
+        --workers (int): Number of maximum dataloader workers per rank in DDP mode. Default is 8.
+        --verbose (bool): Enable verbose output. Flag, set to True by default if not passed.
+        --project (str): The project directory where results will be saved. Default is ROOT / "runs/val-cls".
+        --name (str): Name of the experiment. Default is 'exp'.
+        --exist-ok (bool): Allow existing project/name without incrementing. Flag, default is False.
+        --half (bool): Use FP16 half-precision for inference. Flag, default is False.
+        --dnn (bool): Use OpenCV DNN for ONNX inference. Flag, default is False.
+
+    Returns:
+        argparse.Namespace: Parsed command-line options.
+
+    Notes:
+        Ensure that the script is run in an environment where all necessary dependencies are installed.
+
+    Examples:
+    ```python
+    # Example usage from the command line
+    $ python classify/val.py --weights yolov5m-cls.pt --data ../datasets/imagenet --img 224 --batch-size 32
+    ```
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, default=ROOT / "../datasets/mnist", help="dataset path")
     parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "yolov5s-cls.pt", help="model.pt path(s)")
@@ -168,8 +233,28 @@ def parse_opt():
 
 
 def main(opt):
-    """Executes the main pipeline, checks and installs requirements, then runs inference or training based on provided
+    """
+    Executes the main pipeline, checks and installs requirements, then runs inference or training based on provided
     options.
+
+    Args:
+        opt (argparse.Namespace): Parsed command-line options.
+
+    Returns:
+        None
+
+    Example:
+        ```python
+        if __name__ == "__main__":
+            opt = parse_opt()
+            main(opt)
+        ```
+
+    Notes:
+        - Ensure that you have the proper dependencies listed in `requirements.txt` installed.
+        - Use various model formats such as PyTorch, TorchScript, ONNX, OpenVINO, TensorRT, CoreML, TensorFlow, TensorFlow Lite,
+          TensorFlow Edge TPU, and PaddlePaddle for validation.
+        - Refer to https://github.com/ultralytics/ultralytics for more details on supported model formats and configurations.
     """
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))

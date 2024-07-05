@@ -17,8 +17,26 @@ class TritonRemoteModel:
 
     def __init__(self, url: str):
         """
-        Keyword arguments:
-        url: Fully qualified address of the Triton server - for e.g. grpc://localhost:8000
+        Initializes the `TritonRemoteModel` object that wraps a model served by the Triton Inference Server.
+
+        Args:
+            url (str): Fully qualified address of the Triton server,
+                e.g., "grpc://localhost:8000" or "http://localhost:8000".
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the provided URL scheme is neither GRPC nor HTTP.
+
+        Notes:
+            - The class communicates with the Triton server over either GRPC or HTTP based on the provided URL scheme.
+            - Model metadata, including names and input shapes, are parsed and stored for future inference operations.
+
+        Example:
+            ```python
+            triton_model = TritonRemoteModel("grpc://localhost:8000")
+            ```
         """
 
         parsed_url = urlparse(url)
@@ -52,15 +70,45 @@ class TritonRemoteModel:
 
     @property
     def runtime(self):
-        """Returns the model runtime."""
+        """
+        Returns the model runtime.
+
+        Args:
+            None
+
+        Returns:
+            str: The runtime environment of the model, such as 'GRPC' or 'HTTP', depending on the communication protocol
+            configured during initialization.
+
+        Notes:
+            - This property fetches and returns the runtime protocol used by the Triton Inference Server, which is set
+              based on the URL scheme provided during initialization.
+            - The function extracts the communication protocol from the URL provided and returns it as a string.
+
+        Example:
+            ```python
+            model = TritonRemoteModel('grpc://localhost:8000')
+            print(model.runtime)  # Output: 'GRPC'
+            ```
+        """
         return self.metadata.get("backend", self.metadata.get("platform"))
 
     def __call__(self, *args, **kwargs) -> typing.Union[torch.Tensor, typing.Tuple[torch.Tensor, ...]]:
         """
-        Invokes the model.
+        Invokes the model hosted on Triton Inference Server and processes the input and output tensors.
 
-        Parameters can be provided via args or kwargs. args, if provided, are assumed to match the order of inputs of
-        the model. kwargs are matched with the model input names.
+        Args:
+            *args: Positional arguments that match the order of model inputs.
+            **kwargs: Keyword arguments that match the model input names.
+
+        Returns:
+            torch.Tensor | tuple[torch.Tensor, ...]: The output tensors from the model.
+
+        Example:
+            ```python
+            model = TritonRemoteModel('grpc://localhost:8000')
+            output = model(torch.tensor([1.0, 2.0, 3.0]))
+            ```
         """
         inputs = self._create_inputs(*args, **kwargs)
         response = self.client.infer(model_name=self.model_name, inputs=inputs)
@@ -71,8 +119,20 @@ class TritonRemoteModel:
         return result[0] if len(result) == 1 else result
 
     def _create_inputs(self, *args, **kwargs):
-        """Generates model inputs from args or kwargs, not allowing both; raises error if neither or both are
-        provided.
+        """
+        Generates model inputs from args or kwargs by creating the necessary placeholders and populating them with data.
+
+        Args:
+            *args: Variable length argument list representing the ordered inputs to the model. Each entry is a `torch.Tensor`.
+            **kwargs: Keyword arguments representing the named inputs to the model. The keys should match the model's input
+                names and the values should be `torch.Tensor`.
+
+        Returns:
+            typing.List[InferInput]: List of InferInput objects populated with the data from the provided tensors.
+
+        Raises:
+            RuntimeError: If neither args nor kwargs are provided, or if both are provided.
+            RuntimeError: If the number of args does not match the expected number of model inputs.
         """
         args_len, kwargs_len = len(args), len(kwargs)
         if not args_len and not kwargs_len:

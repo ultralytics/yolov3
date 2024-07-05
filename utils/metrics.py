@@ -13,13 +13,52 @@ from utils import TryExcept, threaded
 
 
 def fitness(x):
-    """Calculates model fitness as a weighted sum of metrics [P, R, mAP@0.5, mAP@0.5:0.95] with respective weights."""
+    """
+    Calculates model fitness as a weighted sum of key performance metrics: Precision (P), Recall (R), mean Average Precision
+    (mAP@0.5), and mean Average Precision over different IoU thresholds (mAP@0.5:0.95).
+
+    Args:
+      x (np.ndarray | list[float]): Array or list of metric values [P, R, mAP@0.5, mAP@0.5:0.95].
+
+    Returns:
+      float: The computed fitness score.
+
+    Examples:
+      ```python
+      metrics = [0.8, 0.7, 0.8, 0.6]
+      fitness_score = fitness(metrics)
+      print(f"Fitness Score: {fitness_score}")
+      ```
+    """
     w = [0.0, 0.0, 0.1, 0.9]  # weights for [P, R, mAP@0.5, mAP@0.5:0.95]
     return (x[:, :4] * w).sum(1)
 
 
 def smooth(y, f=0.05):
-    """Smooths array `y` using a box filter with fractional size `f`, returning the smoothed array."""
+    """
+    Smooths a given array using a box filter with a specified fractional size, returning the smoothed array.
+
+    Args:
+        y (np.ndarray): The array to be smoothed.
+        f (float): Fractional size of the box filter; must be between 0 and 1. Higher values yield smoother results.
+
+    Returns:
+        np.ndarray: The smoothed array, which has the same length as the input array y.
+
+    Notes:
+        The number of elements in the box filter is determined by `nf = round(len(y) * f * 2) // 2 + 1`, ensuring it is
+        always odd for symmetry.
+
+    Examples:
+        ```python
+        import numpy as np
+        from ultralytics.utils import smooth
+
+        y = np.array([1, 2, 3, 4, 5])
+        smoothed_y = smooth(y, f=0.1)
+        print(smoothed_y)
+        ```
+    """
     nf = round(len(y) * f * 2) // 2 + 1  # number of filter elements (must be odd)
     p = np.ones(nf // 2)  # ones padding
     yp = np.concatenate((p * y[0], y, p * y[-1]), 0)  # y padded
@@ -28,18 +67,42 @@ def smooth(y, f=0.05):
 
 def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir=".", names=(), eps=1e-16, prefix=""):
     """
-    Compute the average precision, given the recall and precision curves.
+    Compute the average precision (AP) for each class given true positives, predicted confidence scores, predicted
+    classes, and true classes. Additionally, it can plot the precision-recall curve and save it to the specified
+    directory.
 
-    Source: https://github.com/rafaelpadilla/Object-Detection-Metrics.
-    # Arguments
-        tp:  True positives (nparray, nx1 or nx10).
-        conf:  Objectness value from 0-1 (nparray).
-        pred_cls:  Predicted object classes (nparray).
-        target_cls:  True object classes (nparray).
-        plot:  Plot precision-recall curve at mAP@0.5
-        save_dir:  Plot save directory
-    # Returns
-        The average precision as computed in py-faster-rcnn.
+    Args:
+        tp (np.ndarray): Array of true positives (shape: nx1 or nx10).
+        conf (np.ndarray): Array of objectness scores ranging from 0 to 1.
+        pred_cls (np.ndarray): Array of predicted class labels.
+        target_cls (np.ndarray): Array of true class labels.
+        plot (bool, optional): Flag to plot the precision-recall curve at mAP@0.5. Default is False.
+        save_dir (str, optional): Directory to save the plot if `plot` is True. Default is the current directory '.'.
+        names (tuple, optional): Tuple of class names. Default is an empty tuple.
+        eps (float, optional): Small constant to avoid division by zero. Default is 1e-16.
+        prefix (str, optional): Prefix for the plot filenames. Default is an empty string.
+
+    Returns:
+        (np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict): Tuple containing:
+            - AP (average precision) array for each class and box (shape: nc x 10),
+            - Precision array (shape: nc x 1000),
+            - Recall array (shape: nc x 1000),
+            - F1 score array (shape: nc x 1000),
+            - True positives array (shape: nc),
+            - False positives array (shape: nc),
+            - Dictionary mapping class labels to class names.
+
+    Source:
+        https://github.com/rafaelpadilla/Object-Detection-Metrics
+
+    Example:
+        ```python
+        tp = np.array([1, 0, 1, 1])
+        conf = np.array([0.9, 0.95, 0.4, 0.7])
+        pred_cls = np.array([0, 0, 1, 1])
+        target_cls = np.array([0, 1, 1, 1])
+        ap, p, r, f1, tp, fp, names = ap_per_class(tp, conf, pred_cls, target_cls, plot=True, save_dir="/tmp", names=("class1", "class2"))
+        ```
     """
 
     # Sort by objectness
@@ -96,12 +159,31 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir=".", names
 
 
 def compute_ap(recall, precision):
-    """Compute the average precision, given the recall and precision curves
-    # Arguments
-        recall:    The recall curve (list)
-        precision: The precision curve (list)
-    # Returns
-        Average precision, precision curve, recall curve
+    """
+    Compute the average precision (AP) from recall and precision curves.
+
+    Args:
+        recall (list[float]): The recall curve.
+        precision (list[float]): The precision curve.
+
+    Returns:
+        float: The average precision, computed as the area under the precision-recall curve.
+        numpy.ndarray: The precision curve with sentinel values appended.
+        numpy.ndarray: The recall curve with sentinel values appended.
+
+    Notes:
+        This function uses linear interpolation by default to compute the area under the precision-recall curve.
+        The precision envelope is constructed using the maximum precision value for each recall level, ensuring a
+        non-increasing precision as recall increases.
+
+    Example:
+        ```python
+        recall = [0.0, 0.5, 1.0]
+        precision = [1.0, 0.5, 0.0]
+        ap, mpre, mrec = compute_ap(recall, precision)
+        print(f"AP: {ap}, Precision: {mpre}, Recall: {mrec}")
+        ```
+        This will produce AP as the area under the precision-recall curve.
     """
 
     # Append sentinel values to beginning and end
@@ -126,7 +208,22 @@ def compute_ap(recall, precision):
 class ConfusionMatrix:
     # Updated version of https://github.com/kaanakan/object_detection_confusion_matrix
     def __init__(self, nc, conf=0.25, iou_thres=0.45):
-        """Initializes confusion matrix for object detection with adjustable confidence and IoU thresholds."""
+        """
+        Initializes the confusion matrix for object detection with adjustable confidence and IoU thresholds.
+
+        Args:
+            nc (int): Number of classes in the dataset.
+            conf (float): Confidence threshold for considering detections (default is 0.25).
+            iou_thres (float): Intersection over Union (IoU) threshold for considering a detection as True Positive
+                (default is 0.45).
+
+        Returns:
+            None: This constructor does not return any value.
+
+        Notes:
+            The confusion matrix is a square matrix with dimensions `(nc + 1) x (nc + 1)`, where `nc` is the number of
+            classes. The last row and column are used to account for False Negatives and False Positives, respectively.
+        """
         self.matrix = np.zeros((nc + 1, nc + 1))
         self.nc = nc  # number of classes
         self.conf = conf
@@ -134,14 +231,30 @@ class ConfusionMatrix:
 
     def process_batch(self, detections, labels):
         """
-        Return intersection-over-union (Jaccard index) of boxes.
+        Processes a batch of detections and labels, updating the confusion matrix for object detection tasks.
 
-        Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
-        Arguments:
-            detections (Array[N, 6]), x1, y1, x2, y2, conf, class
-            labels (Array[M, 5]), class, x1, y1, x2, y2
+        Args:
+            detections (torch.Tensor): Detected objects with shape (N, 6), where each row consists of
+                [x1, y1, x2, y2, confidence, class].
+            labels (torch.Tensor): Ground truth labels with shape (M, 5), where each row consists of
+                [class, x1, y1, x2, y2].
+
         Returns:
-            None, updates confusion matrix accordingly
+            None: The method updates the internal confusion matrix of the class based on IoU between
+            detections and labels.
+
+        Notes:
+            - Detections with a confidence score below the threshold set during initialization are ignored.
+            - The highest IoU match between detection and label is used for updating the matrix.
+            - If no detections are provided, all labels are considered as false negatives.
+
+        Examples:
+            ```python
+            cm = ConfusionMatrix(nc=80, conf=0.25, iou_thres=0.45)
+            detections = torch.tensor([[50, 50, 100, 100, 0.9, 1]])
+            labels = torch.tensor([[1, 55, 55, 105, 105]])
+            cm.process_batch(detections, labels)
+            ```
         """
         if detections is None:
             gt_classes = labels.int()
@@ -180,7 +293,29 @@ class ConfusionMatrix:
                     self.matrix[dc, self.nc] += 1  # predicted background
 
     def tp_fp(self):
-        """Computes true positives and false positives, excluding the background class, from a confusion matrix."""
+        """
+        Computes true positives and false positives, excluding the background class, from a confusion matrix.
+
+        Args:
+            None
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: A tuple containing two numpy arrays:
+                - True positives for each class (excluding the background class).
+                - False positives for each class (excluding the background class).
+
+        Note:
+            The function assumes that the confusion matrix has been populated, and the last row and column of the matrix
+            correspond to the background class.
+
+        Example:
+            ```python
+            # Assuming cm is an instance of ConfusionMatrix with nc classes
+            tp, fp = cm.tp_fp()
+            print("True Positives:", tp)
+            print("False Positives:", fp)
+            ```
+        """
         tp = self.matrix.diagonal()  # true positives
         fp = self.matrix.sum(1) - tp  # false positives
         # fn = self.matrix.sum(0) - tp  # false negatives (missed detections)
@@ -188,7 +323,31 @@ class ConfusionMatrix:
 
     @TryExcept("WARNING ⚠️ ConfusionMatrix plot failure")
     def plot(self, normalize=True, save_dir="", names=()):
-        """Plots confusion matrix as a heatmap; args: normalize(bool), save_dir(str), names(iterable of str)."""
+        """
+        Plots the confusion matrix as a heatmap.
+
+        Args:
+            normalize (bool): Whether to normalize the confusion matrix values by the sum of each column.
+                Default is True.
+            save_dir (str): Directory where the generated plot will be saved. Default is an empty string.
+            names (Iterable[str]): Iterable containing names of the classes. If provided and its length matches
+                the number of classes, the names will be used as axis labels.
+
+        Returns:
+            None
+
+        Notes:
+            Uses seaborn for plotting the confusion matrix heatmap. If the number of classes is less than 30,
+            the matrix values will be annotated on the heatmap. If normalization is applied, zero values will
+            be displayed as NaN to prevent cluttering the heatmap.
+
+        Example:
+            ```python
+            cm = ConfusionMatrix(nc=10)
+            cm.process_batch(detections, labels)
+            cm.plot(normalize=True, save_dir="results", names=["class1", "class2", ..., "class10"])
+            ```
+        """
         import seaborn as sn
 
         array = self.matrix / ((self.matrix.sum(0).reshape(1, -1) + 1e-9) if normalize else 1)  # normalize columns
@@ -220,13 +379,63 @@ class ConfusionMatrix:
         plt.close(fig)
 
     def print(self):
-        """Prints each row of the confusion matrix, where matrix elements are separated by spaces."""
+        """
+        Prints each row of the confusion matrix, where matrix elements are separated by spaces.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Examples:
+            ```python
+            # Assume cm is an initialized instance of ConfusionMatrix
+            cm.print()
+            ```
+            This will print the confusion matrix to the standard output, with each row's elements separated by spaces.
+        """
         for i in range(self.nc + 1):
             print(" ".join(map(str, self.matrix[i])))
 
 
 def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7):
-    """Calculates IoU, GIoU, DIoU, CIoU between two bounding boxes, supporting `xywh` and `xyxy` formats."""
+    """
+    Calculates the Intersection over Union (IoU) or its variants (GIoU, DIoU, CIoU) between two bounding boxes.
+
+    Args:
+        box1 (torch.Tensor): A tensor representing the first bounding box, either in `xywh` or `xyxy` format.
+        box2 (torch.Tensor): A tensor representing the second bounding box, either in `xywh` or `xyxy` format.
+        xywh (bool, optional): If True, indicates that the bounding boxes are in `xywh` format. Default is True.
+        GIoU (bool, optional): If True, computes the Generalized IoU (GIoU). Default is False.
+        DIoU (bool, optional): If True, computes the Distance IoU (DIoU). Default is False.
+        CIoU (bool, optional): If True, computes the Complete IoU (CIoU). Default is False.
+        eps (float, optional): A small epsilon value to avoid division by zero. Default is 1e-7.
+
+    Returns:
+        torch.Tensor: A tensor containing the IoU or its specified variant.
+
+    Notes:
+        - IoU, GIoU, DIoU, and CIoU are metrics used to evaluate the overlap between two bounding boxes.
+        - This function supports both `xywh` (center x, center y, width, height) and `xyxy` (min x, min y, max x, max y) formats.
+        - The variants of IoU (GIoU, DIoU, CIoU) improve upon standard IoU by considering additional factors such as the
+          distance between box centers and the size of the smallest enclosing box.
+
+    Examples:
+        ```python
+        import torch
+        from utils.metrics import bbox_iou
+
+        box1 = torch.tensor([50, 50, 100, 100])  # xywh format
+        box2 = torch.tensor([60, 60, 100, 100])  # xywh format
+
+        iou = bbox_iou(box1, box2, xywh=True)
+        print(f"IoU: {iou}")
+
+        ciou = bbox_iou(box1, box2, xywh=True, CIoU=True)
+        print(f"CIoU: {ciou}")
+        ```
+    """
 
     # Get the coordinates of bounding boxes
     if xywh:  # transform from xywh to xyxy
@@ -274,11 +483,18 @@ def box_iou(box1, box2, eps=1e-7):
 
     Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
     Arguments:
-        box1 (Tensor[N, 4])
-        box2 (Tensor[M, 4])
+        box1 (Tensor[N, 4]): First set of bounding boxes.
+        box2 (Tensor[M, 4]): Second set of bounding boxes.
+        eps (float, optional): Small epsilon value to prevent division by zero. Defaults to 1e-7.
+
     Returns:
-        iou (Tensor[N, M]): the NxM matrix containing the pairwise
-            IoU values for every element in boxes1 and boxes2
+        Tensor[N, M]: An NxM matrix containing the pairwise IoU values for every element in boxes1 and boxes2.
+
+    Example:
+        >>> box1 = torch.tensor([[0, 0, 50, 50], [10, 10, 60, 60]])
+        >>> box2 = torch.tensor([[0, 0, 50, 50], [15, 15, 55, 55]])
+        >>> iou = box_iou(box1, box2)
+        >>> print(iou)
     """
 
     # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
@@ -291,12 +507,25 @@ def box_iou(box1, box2, eps=1e-7):
 
 def bbox_ioa(box1, box2, eps=1e-7):
     """
-    Returns the intersection over box2 area given box1, box2.
+    Returns the intersection over the area of `box2` given `box1` and `box2`.
 
-    Boxes are x1y1x2y2
-    box1:       np.array of shape(4)
-    box2:       np.array of shape(nx4)
-    returns:    np.array of shape(n)
+    Args:
+        box1 (np.ndarray): Bounding box in the format [x1, y1, x2, y2].
+        box2 (np.ndarray): Multiple bounding boxes in the format [[x1, y1, x2, y2], ...].
+        eps (float, optional): Small value to avoid division by zero. Default is 1e-7.
+
+    Returns:
+        np.ndarray: Intersection over area values for each box2 relative to box1.
+
+    Notes:
+        This function is used to calculate how much of `box1` intersects with each `box2` relative to the area of `box2`.
+
+    Examples:
+        ```python
+        box1 = np.array([0, 0, 10, 10])
+        box2 = np.array([[0, 0, 5, 5], [5, 5, 15, 15]])
+        print(bbox_ioa(box1, box2))  # Output: array([0.25, 0.0])
+        ```
     """
 
     # Get the coordinates of bounding boxes
@@ -316,7 +545,21 @@ def bbox_ioa(box1, box2, eps=1e-7):
 
 
 def wh_iou(wh1, wh2, eps=1e-7):
-    """Calculates the IoU of width-height pairs, wh1[n,2] and wh2[m,2], returning an nxm IoU matrix."""
+    """
+    Calculates the Intersection over Union (IoU) for pairs of width-height dimensions.
+
+    Args:
+        wh1 (torch.Tensor): Tensor of shape [n, 2] representing n width-height pairs.
+        wh2 (torch.Tensor): Tensor of shape [m, 2] representing m width-height pairs.
+        eps (float): Small epsilon value to avoid division by zero (default is 1e-7).
+
+    Returns:
+        torch.Tensor: A tensor of shape [n, m] representing the pairwise IoU values for each combination of width-height pairs.
+
+    Notes:
+        The IoU is a measure of the overlap between two width-height pairs, which is useful for object detection tasks to
+        determine how closely predicted bounding boxes match the ground truth bounding boxes.
+    """
     wh1 = wh1[:, None]  # [N,1,2]
     wh2 = wh2[None]  # [1,M,2]
     inter = torch.min(wh1, wh2).prod(2)  # [N,M]
@@ -328,8 +571,30 @@ def wh_iou(wh1, wh2, eps=1e-7):
 
 @threaded
 def plot_pr_curve(px, py, ap, save_dir=Path("pr_curve.png"), names=()):
-    """Plots precision-recall curve, supports per-class curves if < 21 classes; args: px (recall), py (precision list),
-    ap (APs), save_dir, names.
+    """
+    Plots a precision-recall curve. Supports per-class curves visualization if there are fewer than 21 classes.
+
+    Args:
+        px (np.ndarray): Array of recall values (shape: [n_points]).
+        py (list[np.ndarray]): List of precision arrays, each corresponding to a class (each shape: [n_points]).
+        ap (np.ndarray): Array of average precision (AP) values for each class (shape: [n_classes, n_thresholds]).
+        save_dir (Path | str, optional): File path to save the plot. Defaults to Path('pr_curve.png').
+        names (tuple, optional): Class names.
+
+    Returns:
+        None
+    ```python
+    # Example usage
+    recall = np.linspace(0, 1, 1000)
+    precision = [np.random.rand(1000) for _ in range(5)]
+    ap = np.random.rand(5, 1)
+    plot_pr_curve(recall, precision, ap, save_dir=Path('plots/pr_curve.png'), names=('class1', 'class2', 'class3', 'class4', 'class5'))
+    ```
+
+    Notes:
+    - The function utilizes the `threaded` decorator from the utils module to enable asynchronous plotting.
+    - Supports up to 20 distinct class curve visualizations; more than 20 classes result in an aggregated plot.
+    - Saves the plot as a PNG file in the specified directory with a DPI of 250.
     """
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     py = np.stack(py, axis=1)
@@ -353,8 +618,24 @@ def plot_pr_curve(px, py, ap, save_dir=Path("pr_curve.png"), names=()):
 
 @threaded
 def plot_mc_curve(px, py, save_dir=Path("mc_curve.png"), names=(), xlabel="Confidence", ylabel="Metric"):
-    """Plots metric-confidence curve for given classes; px, py shapes (N,), (C, N); save_dir: str or Path; names: tuple
-    of class names.
+    """
+    Plots metric-confidence curve for given classes.
+
+    Args:
+        px (np.ndarray): Array of x-axis values, typically confidence scores.
+        py (np.ndarray): 2D array of metric values, shape (number of classes, number of x-axis values).
+        save_dir (str | Path): Directory to save the plot image.
+        names (tuple): Names of the classes, used for the plot legend.
+        xlabel (str): Label for the x-axis. Defaults to 'Confidence'.
+        ylabel (str): Label for the y-axis, representing the performance metric. Defaults to 'Metric'.
+
+    Returns:
+        None
+
+    Examples:
+        ```python
+        plot_mc_curve(px, py, save_dir="metrics/curve.png", names=("class1", "class2"), xlabel="Confidence", ylabel="Precision")
+        ```
     """
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
 

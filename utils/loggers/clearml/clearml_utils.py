@@ -19,7 +19,31 @@ except (ImportError, AssertionError):
 
 
 def construct_dataset(clearml_info_string):
-    """Load in a clearml dataset and fill the internal data_dict with its contents."""
+    """
+    Load and parse a ClearML dataset definition from a YAML file.
+
+    Args:
+        clearml_info_string (str): A string containing the ClearML dataset identifier, prefixed by "clearml://".
+
+    Returns:
+        dict: A dictionary containing dataset paths and metadata with the following keys:
+            - 'train' (str | None): Path to the training dataset.
+            - 'test' (str | None): Path to the test dataset.
+            - 'val' (str | None): Path to the validation dataset.
+            - 'nc' (int): Number of classes in the dataset.
+            - 'names' (list): List of class names.
+
+    Raises:
+        ValueError: If more than one YAML file is found in the ClearML dataset root directory.
+        ValueError: If no YAML file is found in the ClearML dataset root directory.
+        AssertionError: If the YAML file does not contain all required keys: 'train', 'test', 'val', 'nc', 'names'.
+
+    Example:
+        ```python
+        clearml_info_string = "clearml://dataset_id"
+        data_dict = construct_dataset(clearml_info_string)
+        ```
+    """
     dataset_id = clearml_info_string.replace("clearml://", "")
     dataset = Dataset.get(dataset_id=dataset_id)
     dataset_root_path = Path(dataset.get_local_copy())
@@ -75,13 +99,22 @@ class ClearmlLogger:
 
     def __init__(self, opt, hyp):
         """
-        - Initialize ClearML Task, this object will capture the experiment
-        - Upload dataset version to ClearML Data if opt.upload_dataset is True
+        Initialize the ClearMLLogger class.
 
-        arguments:
-        opt (namespace) -- Commandline arguments for this run
-        hyp (dict) -- Hyperparameters for this run
+        Args:
+            opt (namespace): Command line arguments for this run, including ClearML-specific options.
+            hyp (dict): Hyperparameters for this run, typically specified in a configuration file.
 
+        Returns:
+            None
+
+        Notes:
+            - Initializes a ClearML Task to capture the experiment.
+            - Optionally uploads the dataset version to ClearML Data if `opt.upload_dataset` is True.
+            - Sets up the logger to track and limit the number of images logged per epoch to a configurable maximum.
+            - Configures ClearML auto-connection settings and Docker image for ease of remote execution.
+            - Connects provided hyperparameters and arguments to the ClearML Task.
+            - If ClearML dataset logging is enabled, loads and prepares the dataset for logging.
         """
         self.current_epoch = 0
         # Keep tracked of amount of logged images to enforce a limit
@@ -129,9 +162,17 @@ class ClearmlLogger:
         """
         Log files (images) as debug samples in the ClearML task.
 
-        arguments:
-        files (List(PosixPath)) a list of file paths in PosixPath format
-        title (str) A title that groups together images with the same values
+        Args:
+            files (List[Path]): A list of file paths in PosixPath format.
+            title (str): A title grouping images with similar context. Default is "Debug Samples".
+
+        Returns:
+            None
+
+        Notes:
+            This function assumes that each file name follows a convention including '_batch' followed by digits,
+            which determine the iteration number for ClearML logging. If '_batch' is not found in the file name, the
+            iteration is logged as 0 by default.
         """
         for f in files:
             if f.exists():
@@ -143,13 +184,21 @@ class ClearmlLogger:
 
     def log_image_with_boxes(self, image_path, boxes, class_names, image, conf_threshold=0.25):
         """
-        Draw the bounding boxes on a single image and report the result as a ClearML debug sample.
+        Log a single image with drawn bounding boxes to ClearML as a debug sample.
 
-        arguments:
-        image_path (PosixPath) the path the original image file
-        boxes (list): list of scaled predictions in the format - [xmin, ymin, xmax, ymax, confidence, class]
-        class_names (dict): dict containing mapping of class int to class name
-        image (Tensor): A torch tensor containing the actual image data
+        Args:
+            image_path (Path): Path to the original image file.
+            boxes (list): List of scaled predictions in the format [xmin, ymin, xmax, ymax, confidence, class].
+            class_names (dict): Mapping of class integer to class name.
+            image (torch.Tensor): Tensor containing the actual image data.
+            conf_threshold (float, optional): Confidence threshold for displaying bounding boxes. Defaults to 0.25.
+
+        Returns:
+            None
+
+        Notes:
+            The function logs up to a maximum number of images per epoch, enforcing this limit with `self.max_imgs_to_log_per_epoch`.
+            Bounding boxes are only logged for epochs that meet the interval criterion set by `self.bbox_interval`.
         """
         if (
             len(self.current_epoch_logged_images) < self.max_imgs_to_log_per_epoch

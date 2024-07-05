@@ -97,7 +97,52 @@ def run(
     vid_stride=1,  # video frame-rate stride
     retina_masks=False,
 ):
-    """Performs YOLOv3 segmentation inference on various sources such as images, videos, and streams."""
+    """
+    Performs YOLOv3 segmentation inference on various sources such as images, videos, directories, streams, etc.
+
+    Args:
+        weights (str | Path): Path to the model weights file.
+        source (str | int | Path): Source for inference (file/dir/URL/glob/screen/0(webcam)).
+        data (str | Path): Path to the dataset YAML file.
+        imgsz (tuple[int, int]): Inference image size (height, width).
+        conf_thres (float): Confidence threshold for predictions.
+        iou_thres (float): Intersection over Union (IoU) threshold for Non-Maximum Suppression (NMS).
+        max_det (int): Maximum number of detections per image.
+        device (str): CUDA device (e.g. '0' or '0,1,2,3' or 'cpu').
+        view_img (bool): If True, display the results.
+        save_txt (bool): If True, save the results to a *.txt file.
+        save_conf (bool): If True, save confidences in TXT labels.
+        save_crop (bool): If True, save cropped prediction boxes.
+        nosave (bool): If True, do not save images/videos.
+        classes (list[int]): List of classes to filter by (e.g. [0, 1, 2]).
+        agnostic_nms (bool): If True, apply class-agnostic NMS.
+        augment (bool): If True, use augmented inference.
+        visualize (bool): If True, visualize features.
+        update (bool): If True, update all models.
+        project (str | Path): Directory to save results to (e.g. 'runs/predict-seg').
+        name (str): Results directory name.
+        exist_ok (bool): If True, existing project/name directory is acceptable.
+        line_thickness (int): Thickness of bounding box lines (pixels).
+        hide_labels (bool): If True, hide labels in the output.
+        hide_conf (bool): If True, hide confidence scores in the output.
+        half (bool): If True, use FP16 half-precision inference.
+        dnn (bool): If True, use OpenCV DNN for ONNX inference.
+        vid_stride (int): Stride for video frame-rate.
+        retina_masks (bool): If True, use high-resolution masks.
+
+    Returns:
+        None: This function saves or displays the inference results, and prints log messages to the console.
+
+    Notes:
+        For more details on the usage, see the Ultralytics YOLOv3 repository:
+        https://github.com/ultralytics/ultralytics
+
+    Example:
+        ```python
+        # Run inference on an image
+        run(weights='yolov5s-seg.pt', source='img.jpg')
+        ```
+    """
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -258,7 +303,46 @@ def run(
 
 
 def parse_opt():
-    """Parses command-line options for YOLOv5 including model paths, source, inference size, and saving options."""
+    """
+    Parses command-line options for configuring YOLOv5.
+
+    Args:
+        --weights (str | list[str]): Model path(s). Defaults to "yolov5s-seg.pt".
+        --source (str): Input source (file/dir/URL/glob/screen/0 for webcam). Defaults to "data/images".
+        --data (str): (Optional) Dataset YAML path. Defaults to "data/coco128.yaml".
+        --imgsz (list[int]): Inference size (height, width) in pixels. Defaults to [640].
+        --conf-thres (float): Confidence threshold for predictions. Defaults to 0.25.
+        --iou-thres (float): Non-Maximum Suppression (NMS) IoU threshold. Defaults to 0.45.
+        --max-det (int): Maximum number of detections per image. Defaults to 1000.
+        --device (str): CUDA device (e.g., 0 or 0,1,2,3) or 'cpu'. Defaults to "".
+        --view-img (bool): If set, shows results. Defaults to False.
+        --save-txt (bool): If set, saves results to *.txt files. Defaults to False.
+        --save-conf (bool): If set, saves confidences in --save-txt labels. Defaults to False.
+        --save-crop (bool): If set, saves cropped prediction boxes. Defaults to False.
+        --nosave (bool): If set, does not save images or videos. Defaults to False.
+        --classes (list[int]): Filter predictions by class. Defaults to None.
+        --agnostic-nms (bool): If set, uses class-agnostic NMS. Defaults to False.
+        --augment (bool): If set, performs augmented inference. Defaults to False.
+        --visualize (bool): If set, visualizes network features. Defaults to False.
+        --update (bool): If set, updates all models. Defaults to False.
+        --project (str): Directory to save results. Defaults to "runs/predict-seg".
+        --name (str): Experiment name for saving results. Defaults to "exp".
+        --exist-ok (bool): If set, existing project/name is okay and will not be incremented. Defaults to False.
+        --line-thickness (int): Thickness of bounding boxes in pixels. Defaults to 3.
+        --hide-labels (bool): If set, hides labels of predictions. Defaults to False.
+        --hide-conf (bool): If set, hides confidences of predictions. Defaults to False.
+        --half (bool): If set, uses FP16 half-precision inference. Defaults to False.
+        --dnn (bool): If set, uses OpenCV DNN for ONNX inference. Defaults to False.
+        --vid-stride (int): Video frame-rate stride. Defaults to 1.
+        --retina-masks (bool): If set, plots masks in native resolution. Defaults to False.
+
+    Returns:
+        argparse.Namespace: Parsed command-line options.
+
+    Notes:
+        The function expands `imgsz` to two dimensions if only one dimension is provided.
+        Parsed options are printed for verification.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "yolov5s-seg.pt", help="model path(s)")
     parser.add_argument("--source", type=str, default=ROOT / "data/images", help="file/dir/URL/glob/screen/0(webcam)")
@@ -295,7 +379,56 @@ def parse_opt():
 
 
 def main(opt):
-    """Executes model inference based on parsed options, checking requirements and excluding specified packages."""
+    """
+    Performs YOLOv3 segmentation inference based on command-line options, checking requirements and excluding specified
+    packages.
+
+    Args:
+      opt (argparse.Namespace): Parsed command-line options including:
+          - weights (list[str]): List of paths to model weight files.
+          - source (str): Source of input data (file, directory, URL, webcam).
+          - data (str): Path to dataset configuration file.
+          - imgsz (list[int]): Inference image size (height, width).
+          - conf_thres (float): Confidence threshold for detection.
+          - iou_thres (float): Intersection over Union (IoU) threshold for non-maximum suppression (NMS).
+          - max_det (int): Maximum number of detections per image.
+          - device (str): CUDA device (e.g., 0, 0,1,2,3 or cpu).
+          - view_img (bool): Whether to display the results.
+          - save_txt (bool): Whether to save results in text format.
+          - save_conf (bool): Whether to save confidence scores in the text labels.
+          - save_crop (bool): Whether to save cropped prediction boxes.
+          - nosave (bool): Whether to skip saving images/videos.
+          - classes (list[int]): List of class indices to filter by.
+          - agnostic_nms (bool): Whether to use class-agnostic NMS.
+          - augment (bool): Whether to use augmented inference.
+          - visualize (bool): Whether to visualize features.
+          - update (bool): Whether to update all models.
+          - project (str): Directory to save results.
+          - name (str): Name of the result directory.
+          - exist_ok (bool): If True, existing project/name combinations will not be incremented.
+          - line_thickness (int): Thickness of bounding box lines (pixels).
+          - hide_labels (bool): Whether to hide labels.
+          - hide_conf (bool): Whether to hide confidence scores.
+          - half (bool): Whether to use FP16 half-precision inference.
+          - dnn (bool): Whether to use OpenCV DNN for ONNX inference.
+          - vid_stride (int): Video frame-rate stride.
+          - retina_masks (bool): Whether to plot masks in native resolution.
+
+    Returns:
+      None
+
+    Example:
+      To run inference on a webcam feed with specified model weights:
+
+      ```python
+      opt = parse_opt()
+      main(opt)
+      ```
+
+    Note:
+      Make sure to fulfill the necessary dependencies by checking the requirements.txt file.
+      Visit https://github.com/ultralytics/ultralytics for more information.
+    """
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))
 

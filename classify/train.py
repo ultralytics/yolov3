@@ -76,8 +76,33 @@ GIT_INFO = check_git_info()
 
 
 def train(opt, device):
-    """Trains a model on a given dataset using specified options and device, handling data loading, model optimization,
-    and logging.
+    """
+    Trains a YOLOv3 classifier model on a given dataset, handling data loading, model optimization, and logging.
+
+    Args:
+        opt (argparse.Namespace): A namespace of training options containing keys such as `model`, `data`, `epochs`, `imgsz`,
+            `batch_size`, `workers`, `cache`, `optimizer`, `lr0`, `decay`, `save_dir`, `pretrained`, `cutoff`, `dropout`,
+            `label_smoothing`, `verbose`, and `nosave`.
+        device (torch.device): The device to use for training (e.g., `torch.device('cuda')` or `torch.device('cpu')`).
+
+    Returns:
+        None
+
+    Notes:
+        Usage examples:
+        - Single-GPU training:
+          ```shell
+          $ python classify/train.py --model yolov5s-cls.pt --data imagenette160 --epochs 5 --img 224
+          ```
+        - Multi-GPU DDP training:
+          ```shell
+          $ python -m torch.distributed.run --nproc_per_node 4 --master_port 2022 classify/train.py --model yolov5s-cls.pt --data imagenet --epochs 5 --img 224 --device 0,1,2,3
+          ```
+        Datasets available: `mnist`, `fashion-mnist`, `cifar10`, `cifar100`, `imagenette`, `imagewoof`, `imagenet`, or
+        'path/to/data'.
+        YOLOv3-cls models available: `yolov5n-cls.pt`, `yolov5s-cls.pt`, `yolov5m-cls.pt`, `yolov5l-cls.pt`, `yolov5x-cls.pt`.
+        Torchvision models available: `resnet50`, `efficientnet_b0`, etc. See
+        [Torchvision models](https://pytorch.org/vision/stable/models.html) for more details.
     """
     init_seeds(opt.seed + 1 + RANK, deterministic=True)
     save_dir, data, bs, epochs, nw, imgsz, pretrained = (
@@ -313,7 +338,23 @@ def train(opt, device):
 
 
 def parse_opt(known=False):
-    """Parses command line arguments for model configuration and training options."""
+    """
+    Parses command line arguments for model configuration and training options.
+
+    Args:
+      known (bool): If True, only parse known arguments. Default is False.
+
+    Returns:
+      argparse.Namespace: Parsed arguments with values as attributes.
+
+    Examples:
+      ```python
+      from your_script import parse_opt
+
+      options = parse_opt()
+      print(options.model)  # Outputs the initial weights path
+      ```
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="yolov5s-cls.pt", help="initial weights path")
     parser.add_argument("--data", type=str, default="imagenette160", help="cifar10, cifar100, mnist, imagenet, ...")
@@ -341,7 +382,44 @@ def parse_opt(known=False):
 
 
 def main(opt):
-    """Initializes training environment, checks, DDP mode setup, and starts training with given options."""
+    """
+    Initializes the training environment and starts the training process with the given options.
+
+    Args:
+        opt (argparse.Namespace): Command line arguments for model configuration and training options.
+
+    Returns:
+        None
+
+    Notes:
+        Ensure to run the function with appropriate command line arguments for intended behavior.
+
+    Examples:
+        Single-GPU training:
+        ```python
+        $ python classify/train.py --model yolov5s-cls.pt --data imagenette160 --epochs 5 --img 224
+        ```
+
+        Multi-GPU DDP training:
+        ```python
+        $ python -m torch.distributed.run --nproc_per_node 4 --master_port 2022 classify/train.py --model yolov5s-cls.pt --data imagenet --epochs 5 --img 224 --device 0,1,2,3
+        ```
+
+    Model and dataset paths:
+        Pretrained YOLOv3 models: 'yolov5n-cls.pt', 'yolov5s-cls.pt', 'yolov5m-cls.pt', 'yolov5l-cls.pt', 'yolov5x-cls.pt'
+        Torchvision models: Refer to https://pytorch.org/vision/stable/models.html
+
+    Dataset options:
+        --data mnist, fashion-mnist, cifar10, cifar100, imagenette, imagewoof, imagenet, or 'path/to/data'
+
+    Model usage examples in PyTorch Hub:
+        ```python
+        model = torch.hub.load('ultralytics/yolov5', 'custom', 'path/to/best.pt')
+        ```
+
+    Visualize models using Netron:
+        https://netron.a
+    """
     if RANK in {-1, 0}:
         print_args(vars(opt))
         check_git_status()
@@ -365,7 +443,33 @@ def main(opt):
 
 
 def run(**kwargs):
-    """Executes YOLOv5 model training with dynamic options, e.g., `run(data='mnist', imgsz=320, model='yolov5m')`."""
+    """
+    Run Executes YOLOv5 model training with dynamic options.
+
+    Args:
+        **kwargs: Keyword arguments that configure various aspects of the training process. Supported options include:
+            - data (str): Dataset name or path, e.g., 'mnist', 'imagenet', or 'path/to/data'.
+            - model (str): Model architecture to use, e.g., 'yolov5s-cls.pt', 'resnet50'.
+            - epochs (int): Number of training epochs.
+            - batch_size (int): Size of training batches.
+            - imgsz (int): Image size for training and validation.
+            - device (str): Device to train on, e.g., '0' for single GPU, 'cpu' for CPU.
+            - workers (int): Number of worker processes for data loading.
+            - project (str): Name of the project directory to save training results.
+            - name (str): Name of the experiment.
+            - exist_ok (bool): Allow existing project/name, do not increment.
+
+    Returns:
+        None
+
+    Examples:
+        ```python
+        run(data='mnist', imgsz=320, model='yolov5m', epochs=10)
+        ```
+
+    Note:
+        For more details on training options and workflow, refer to the [Ultralytics repository](https://github.com/ultralytics/yolov5).
+    """
     opt = parse_opt(True)
     for k, v in kwargs.items():
         setattr(opt, k, v)

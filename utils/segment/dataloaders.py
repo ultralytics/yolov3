@@ -39,7 +39,48 @@ def create_dataloader(
     overlap_mask=False,
     seed=0,
 ):
-    """Creates a DataLoader for images and labels with optional augmentations and distributed sampling."""
+    """
+    Creates a DataLoader for images and labels with optional augmentations and distributed sampling.
+
+    Args:
+        path (str): Path to the dataset.
+        imgsz (int | list[int]): Size(s) to resize images.
+        batch_size (int): Number of samples per batch.
+        stride (int): Model stride for downsizing.
+        single_cls (bool, optional): Treat dataset as a single class. Defaults to False.
+        hyp (dict, optional): Dictionary of hyperparameters. Defaults to None.
+        augment (bool, optional): Apply augmentations to the dataset. Defaults to False.
+        cache (bool, optional): Cache images for faster loading. Defaults to False.
+        pad (float, optional): Padding value for dataset resizing. Defaults to 0.0.
+        rect (bool, optional): Flag to use rectangular training batches. Defaults to False.
+        rank (int, optional): Rank of the process for distributed training. Defaults to -1.
+        workers (int, optional): Number of worker threads for data loading. Defaults to 8.
+        image_weights (bool, optional): Use weighted image sampling. Defaults to False.
+        quad (bool, optional): Quad batch processing flag. Defaults to False.
+        prefix (str, optional): Prefix logging. Defaults to "".
+        shuffle (bool, optional): Shuffle data. Defaults to False.
+        mask_downsample_ratio (int, optional): Downsample ratio for mask processing. Defaults to 1.
+        overlap_mask (bool, optional): Overlap mask flag. Defaults to False.
+        seed (int, optional): Seed for random number generator. Defaults to 0.
+
+    Returns:
+        DataLoader (torch.utils.data.DataLoader | InfiniteDataLoader): A DataLoader instance for the dataset.
+
+    Notes:
+        - If `rect` is True, `shuffle` will be set to False.
+        - Uses `LoadImagesAndLabelsAndMasks` for dataset loading and various functions for optional data augmentations.
+
+    Example:
+        ```python
+        dataloader = create_dataloader(
+            path='data/coco128.yaml',
+            imgsz=640,
+            batch_size=16,
+            stride=32,
+            augment=True
+        )
+        ```
+    """
     if rect and shuffle:
         LOGGER.warning("WARNING ⚠️ --rect is incompatible with DataLoader shuffle, setting shuffle=False")
         shuffle = False
@@ -100,7 +141,33 @@ class LoadImagesAndLabelsAndMasks(LoadImagesAndLabels):  # for training/testing
         downsample_ratio=1,
         overlap=False,
     ):
-        """Initializes image, label, and mask loading for training/testing with optional augmentations."""
+        """
+        Initializes image, label, and mask loading for training/testing with optional augmentations.
+
+        Args:
+            path (str): Path to the dataset directory or file.
+            img_size (int): Size to which images are to be resized. Defaults to 640.
+            batch_size (int): Number of samples per batch. Defaults to 16.
+            augment (bool): If true, data augmentation is applied. Defaults to False.
+            hyp (dict | None): Hyperparameters dictionary. Defaults to None.
+            rect (bool): If true, rectangular images are used; otherwise, square images are used. Defaults to False.
+            image_weights (bool): If true, loads images with weights for a weighted sampling. Defaults to False.
+            cache_images (bool): If true, caches images in memory for faster training. Defaults to False.
+            single_cls (bool): If true, treats the dataset as a single class. Defaults to False.
+            stride (int): Stride value to be used in the model. Defaults to 32.
+            pad (float): Padding added to the images. Defaults to 0.
+            min_items (int): Minimum number of items (images/labels) required in a batch. Defaults to 0.
+            prefix (str): Prefix for logging output. Defaults to an empty string.
+            downsample_ratio (int): Ratio for mask downsampling. Defaults to 1.
+            overlap (bool): If true, enables mask overlap handling. Defaults to False.
+
+        Returns:
+            None.
+
+        Notes:
+            This class extends `LoadImagesAndLabels` to include mask handling capabilities for segmentation tasks.
+            It supports various augmentations and configurations to facilitate efficient model training and testing.
+        """
         super().__init__(
             path,
             img_size,
@@ -120,7 +187,34 @@ class LoadImagesAndLabelsAndMasks(LoadImagesAndLabels):  # for training/testing
         self.overlap = overlap
 
     def __getitem__(self, index):
-        """Fetches the dataset item at a given index, handling linear, shuffled, or image-weighted indexing."""
+        """
+        Fetches the dataset item at a given index, handling linear, shuffled, or image-weighted indexing.
+
+        Args:
+            index (int): The index of the dataset item to fetch.
+
+        Returns:
+            tuple: A tuple containing:
+                - img (torch.Tensor): The processed image tensor in RGB format.
+                - labels_out (torch.Tensor): The labels tensor corresponding to the image.
+                - shapes (tuple | None): A tuple containing image shape transformations details, or None.
+
+        Notes:
+            - This method handles both mosaic and regular image loading, along with numerous augmentation techniques
+              such as MixUp, HSV color-space adjustment, random perspective, and flipping.
+            - It converts the image from HWC to CHW format and ensures it is contiguous in memory.
+            - Labels are transformed appropriately to ensure they match the image modifications.
+            - In case of overlap defined, masks are managed with sorted indices for proper label–mask alignment.
+
+        Examples:
+            ```python
+            dataset = LoadImagesAndLabelsAndMasks(path='/data/images', img_size=640)
+            img, labels, shapes = dataset[0]
+            import matplotlib.pyplot as plt
+            plt.imshow(img.permute(1, 2, 0).numpy())
+            plt.show()
+            ```
+        """
         index = self.indices[index]  # linear, shuffled, or image_weights
 
         hyp = self.hyp
@@ -228,8 +322,31 @@ class LoadImagesAndLabelsAndMasks(LoadImagesAndLabels):  # for training/testing
         return (torch.from_numpy(img), labels_out, self.im_files[index], shapes, masks)
 
     def load_mosaic(self, index):
-        """Loads 4-image mosaic for YOLOv3 training, combining 1 target image with 3 random images within specified
+        """
+        Loads a 4-image mosaic for YOLOv3 training, combining one target image with three random images within specified
         border constraints.
+
+        Args:
+            index (int): The index of the target image to be used in the mosaic.
+
+        Returns:
+            tuple: A tuple containing:
+                - img4 (np.ndarray): The combined 4-mosaic image of shape (2 * img_size, 2 * img_size, channels).
+                - labels4 (np.ndarray): The combined label array of shape (N, 5) where N is the total number
+                  of labels across all 4 images. Each label is in the format [class, x1, y1, x2, y2].
+                - segments4 (list[np.ndarray]): A list of segment arrays, where each segment array contains
+                  the coordinates of a polygon segmentation mask.
+
+        Notes:
+            The mosaic augmentation is a key component in YOLOv3 training, as it helps the model learn to recognize
+            objects at varying scales and positional contexts. This method also handles optional augmentations such as MixUp
+            and random perspective transformation to further diversify the training dataset.
+
+        Example:
+            ```python
+            index = 5
+            img4, labels4, segments4 = dataloader.load_mosaic(index)
+            ```
         """
         labels4, segments4 = [], []
         s = self.img_size
@@ -291,7 +408,29 @@ class LoadImagesAndLabelsAndMasks(LoadImagesAndLabels):  # for training/testing
 
     @staticmethod
     def collate_fn(batch):
-        """Batches images, labels, paths, shapes, and masks; modifies label indices for target image association."""
+        """
+        Batches images, labels, paths, shapes, and masks; modifies label indices for target image association.
+
+        Args:
+          batch (list[tuple[torch.Tensor, torch.Tensor, str, Any, torch.Tensor]]):
+              A list where each element is a tuple containing an image Tensor,
+              label Tensor, a file path, shape information, and a mask Tensor.
+
+        Returns:
+          tuple[torch.Tensor, torch.Tensor, list[str], tuple, torch.Tensor]:
+              A tuple containing batched images, labels, paths, shapes, and masks.
+              - images (torch.Tensor): Batched images.
+              - labels (torch.Tensor): Batched labels with index modified for target association.
+              - paths (list[str]): List of image file paths.
+              - shapes (tuple): Shape information for each image in the batch.
+              - masks (torch.Tensor): Batched image masks.
+
+        Notes:
+          - The function assumes that the input `batch` is a list of tuples
+            with each tuple representing one data point from the dataset.
+          - The masks are concatenated along the first dimension to
+            form a batched tensor.
+        """
         img, label, path, shapes, masks = zip(*batch)  # transposed
         batched_masks = torch.cat(masks, 0)
         for i, l in enumerate(label):
@@ -301,10 +440,18 @@ class LoadImagesAndLabelsAndMasks(LoadImagesAndLabels):  # for training/testing
 
 def polygon2mask(img_size, polygons, color=1, downsample_ratio=1):
     """
+    Converts a list of polygons into a binary mask.
+
     Args:
-        img_size (tuple): The image size.
-        polygons (np.ndarray): [N, M], N is the number of polygons,
-            M is the number of points(Be divided by 2).
+        img_size (tuple[int, int]): Size of the image in the format (height, width).
+        polygons (np.ndarray): Array of shape (N, M), where N is the number of polygons, and M is the number of points
+            (should be an even number representing (x, y) coordinates).
+        color (int, optional): Color value for filling the polygon. Default is 1.
+        downsample_ratio (int, optional): Factor to downsample the binary mask by. Default is 1 (no downsampling).
+
+    Returns:
+        np.ndarray: A binary mask of the provided image size, with the polygons filled. The mask will be downsampled if
+        `downsample_ratio` is specified.
     """
     mask = np.zeros(img_size, dtype=np.uint8)
     polygons = np.asarray(polygons)
@@ -321,11 +468,27 @@ def polygon2mask(img_size, polygons, color=1, downsample_ratio=1):
 
 def polygons2masks(img_size, polygons, color, downsample_ratio=1):
     """
+    Converts a list of polygons into corresponding binary masks.
+
     Args:
-        img_size (tuple): The image size.
-        polygons (list[np.ndarray]): each polygon is [N, M],
-            N is the number of polygons,
-            M is the number of points(Be divided by 2).
+        img_size (tuple(int, int)): The size of the image, specified as (height, width).
+        polygons (list[np.ndarray]): A list of polygons where each polygon is an array of shape (N, M), with N being the number of polygons and M being the number of points, which should be divisible by 2.
+        color (int): The color to use for the mask. Typically, this would be 1 for a binary mask.
+        downsample_ratio (int, optional): Factor by which to downsample the mask size relative to the original image size. Default is 1 (no downsampling).
+
+    Returns:
+        np.ndarray: A binary mask with the same height and width as specified by `img_size`, with optional downsampling. Shape is (N, H, W), where N is the number of polygons, H is the image height divided by `downsample_ratio`, and W is the image width divided by `downsample_ratio`.
+
+    Example:
+        ```python
+        img_size = (640, 640)
+        polygons = [np.array([10, 10, 20, 10, 20, 20, 10, 20])]
+        masks = polygons2masks(img_size, polygons, color=1, downsample_ratio=2)
+        ```
+
+    Notes:
+        - The function makes use of `cv2.fillPoly` to fill polygons in an image of zeros, thereby creating a binary mask.
+        - The `downsample_ratio` helps in adjusting the mask resolution to a smaller scale.
     """
     masks = []
     for si in range(len(polygons)):
@@ -335,7 +498,47 @@ def polygons2masks(img_size, polygons, color, downsample_ratio=1):
 
 
 def polygons2masks_overlap(img_size, segments, downsample_ratio=1):
-    """Return a (640, 640) overlap mask."""
+    """lygons2masks_overlap(img_size, segments, downsample_ratio=1):"""Converts polygon segments to an overlap mask.
+    
+        This function generates a mask where each pixel corresponds to the overlap between multiple polygons. The output 
+        mask matrix assigns an integer value to each pixel based on the polygon it belongs to.
+    
+        Args:
+            img_size (tuple): Size of the image as a tuple (height, width).
+            segments (list[np.ndarray]): A list of polygon segments, where each segment is an array of shape (N, 2) 
+                representing N points of the polygon.
+            downsample_ratio (int, optional): Factor to downsample the generated mask. Defaults to 1.
+    
+        Returns:
+            np.ndarray: An overlap mask of shape (height // downsample_ratio, width // downsample_ratio). 
+                Integer values indicate unique polygons, with 0 representing background.
+            np.ndarray: An array of indices that indicates the sorting order of the polygons by their computed area.
+        """
+        masks = np.zeros(
+            (img_size[0] // downsample_ratio, img_size[1] // downsample_ratio),
+            dtype=np.int32 if len(segments) > 255 else np.uint8,
+        )
+        areas = []
+        ms = []
+        for si in range(len(segments)):
+            mask = polygon2mask(
+                img_size,
+                [segments[si].reshape(-1)],
+                downsample_ratio=downsample_ratio,
+                color=1,
+            )
+            ms.append(mask)
+            areas.append(mask.sum())
+        areas = np.asarray(areas)
+        index = np.argsort(-areas)
+        ms = np.array(ms)[index]
+        for i in range(len(segments)):
+            mask = ms[i] * (i + 1)
+            masks = masks + mask
+            masks = np.clip(masks, a_min=0, a_max=i + 1)
+        
+        return masks, index
+    """
     masks = np.zeros(
         (img_size[0] // downsample_ratio, img_size[1] // downsample_ratio),
         dtype=np.int32 if len(segments) > 255 else np.uint8,

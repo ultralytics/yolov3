@@ -84,7 +84,49 @@ def run(
     dnn=False,  # use OpenCV DNN for ONNX inference
     vid_stride=1,  # video frame-rate stride
 ):
-    """Performs YOLOv3 classification inference on various input sources and saves or displays results."""
+    """
+    Performs YOLOv3 classification inference on various input sources and saves or displays results.
+
+    Args:
+        weights (Path | str): Path to the model weights file (e.g., 'yolov5s-cls.pt').
+        source (Path | str): Source for inference, which can be a file, directory, URL, glob, screen, or webcam index.
+        data (Path | str): Path to the dataset YAML file.
+        imgsz (tuple): Inference size (height, width). Default is (224, 224).
+        device (str): Device to run inference on, e.g., '0', '0,1,2,3', or 'cpu'. Default is an empty string (auto-select).
+        view_img (bool): Whether to display the results. Default is False.
+        save_txt (bool): Whether to save the results to *.txt files. Default is False.
+        nosave (bool): If True, do not save images/videos. Default is False.
+        augment (bool): Whether to use augmented inference. Default is False.
+        visualize (bool): Whether to visualize features. Default is False.
+        update (bool): If True, update all models. Default is False.
+        project (Path | str): Project name to save results to. Default is 'runs/predict-cls'.
+        name (str): Sub-directory name to save results to. Default is 'exp'.
+        exist_ok (bool): If True, existing project/name is okay and will not be incremented. Default is False.
+        half (bool): Use FP16 half-precision inference. Default is False.
+        dnn (bool): Use OpenCV DNN for ONNX inference. Default is False.
+        vid_stride (int): Video frame-rate stride. Default is 1.
+
+    Returns:
+        None: This function saves and/or displays the inference results directly.
+
+    Examples:
+        Run inference on an image:
+        ```python
+        run(weights='yolov5s-cls.pt', source='image.jpg')
+        ```
+
+        Run inference on a video:
+        ```python
+        run(weights='yolov5s-cls.pt', source='video.mp4', view_img=True, nosave=False)
+        ```
+
+    Note:
+        Example sources include webcam (0), image files ('img.jpg'), video files ('vid.mp4'), directories ('path/'),
+        lists of images ('list.txt'), globs ('path/*.jpg'), YouTube URLs, and RTSP/RTMP/HTTP streams.
+
+    Reference:
+        https://github.com/ultralytics/ultralytics
+    """
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -205,7 +247,37 @@ def run(
 
 
 def parse_opt():
-    """Parses command line arguments for model inference settings, returns a Namespace of options."""
+    """
+    Parses command line arguments for model inference settings, returns a Namespace of options.
+
+    Args:
+        weights (str): Model path(s). Default is 'yolov5s-cls.pt'.
+        source (str): File/directory/URL/glob/screen/0(webcam). Default is 'data/images'.
+        data (str): Optional dataset.yaml path. Default is 'data/coco128.yaml'.
+        imgsz (list of int): Inference size (height, width). Default is [224].
+        device (str): CUDA device, i.e. '0' or '0,1,2,3' or 'cpu'. Default is ''.
+        view_img (bool): Flag to show results. Default is False.
+        save_txt (bool): Flag to save results to a text file. Default is False.
+        nosave (bool): Flag to not save images/videos. Default is False.
+        augment (bool): Flag for augmented inference. Default is False.
+        visualize (bool): Flag to visualize features. Default is False.
+        update (bool): Flag to update all models. Default is False.
+        project (str): Save results to project/name. Default is 'runs/predict-cls'.
+        name (str): Save results to project/name. Default is 'exp'.
+        exist_ok (bool): Flag to not increment if project/name exists already. Default is False.
+        half (bool): Flag to use FP16 half-precision inference. Default is False.
+        dnn (bool): Flag to use OpenCV DNN for ONNX inference. Default is False.
+        vid_stride (int): Video frame-rate stride. Default is 1.
+
+    Returns:
+        argparse.Namespace: Namespace object containing parsed arguments.
+
+    Examples:
+        ```python
+        opt = parse_opt()
+        print(opt.weights)
+        ```
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "yolov5s-cls.pt", help="model path(s)")
     parser.add_argument("--source", type=str, default=ROOT / "data/images", help="file/dir/URL/glob/screen/0(webcam)")
@@ -231,7 +303,29 @@ def parse_opt():
 
 
 def main(opt):
-    """Entry point for running the model; checks requirements and calls `run` with options parsed from CLI."""
+    """
+    Entry point for running YOLOv3 classification inference; checks requirements and calls the `run` function.
+
+    Args:
+        opt (argparse.Namespace): Command-line arguments parsed from `parse_opt()`. Includes options like weights path,
+        source for images or videos, device, image size, and other settings.
+
+    Returns:
+        None
+
+    Note:
+        This function ensures that the required dependencies are installed by verifying them against `requirements.txt`,
+        excluding `tensorboard` and `thop`.
+
+    Example:
+        To run inference on an image using a specific weights file:
+
+        ```bash
+        $ python classify/predict.py --weights yolov5s-cls.pt --source img.jpg
+        ```
+
+        This will start the YOLOv3 classification inference on `img.jpg` using the specified weights.
+    """
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))
 

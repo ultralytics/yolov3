@@ -46,7 +46,33 @@ from utils.torch_utils import copy_attr, smart_inference_mode
 
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
-    """Automatically calculates same shape padding for convolutional layers, optionally adjusts for dilation."""
+    """
+    Automatically calculates the required padding for convolutional layers to maintain the same spatial dimensions,
+    and optionally adjusts for dilation.
+    
+    Args:
+      k (int | list[int]): The size of the convolutional kernel. Can be a single integer or a list of integers.
+      p (int | list[int] | None, optional): The padding value(s). Can be a single integer, a list of integers, or 
+          None to calculate the padding automatically. Defaults to None.
+      d (int, optional): The dilation rate. Defaults to 1.
+    
+    Returns:
+      int | list[int]: The calculated padding value(s). Returns a single integer if `k` is an integer, or a list 
+          of integers if `k` is a list.
+    
+    Notes:
+      - Padding is calculated to ensure the output dimensions are the same as the input dimensions.
+      - Adjusts the kernel size internally when dilation is greater than 1 to compute the effective kernel size.
+    
+    Example:
+      ```python
+      k = 3
+      p = autopad(k)  # Returns 1
+      p = autopad(k, d=2)  # Returns 2 to account for dilation
+      k = [3, 5]
+      p = autopad(k)  # Returns [1, 2]
+      ```
+    """
     if d > 1:
         k = d * (k - 1) + 1 if isinstance(k, int) else [d * (x - 1) + 1 for x in k]  # actual kernel-size
     if p is None:
@@ -59,8 +85,33 @@ class Conv(nn.Module):
     default_act = nn.SiLU()  # default activation
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
-        """Initializes a standard Conv2D layer with batch normalization and optional activation; args are channel_in,
-        channel_out, kernel_size, stride, padding, groups, dilation, and activation.
+        """
+        Initializes a standard Conv2D layer with batch normalization and optional activation.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            k (int | tuple[int, int], optional): Kernel size. Default is 1.
+            s (int | tuple[int, int], optional): Stride size. Default is 1.
+            p (int | tuple[int, int] | None, optional): Padding. Default is None, which auto-calculates padding.
+            g (int, optional): Number of blocked connections from input channels to output channels. Default is 1.
+            d (int | tuple[int, int], optional): Dilation rate. Default is 1.
+            act (bool | nn.Module, optional): If True, uses the default activation function (SiLU). If a nn.Module is
+                provided, uses that as the activation function. Default is True.
+        
+        Returns:
+            None: This is an initializer, so it does not return anything.
+        
+        Notes:
+            This class constructs a conv-bn-act block, which is a common building block for convolutional neural networks.
+            The autopad function is used to automatically calculate the required padding to maintain the output dimensions
+            given the kernel size and dilation factor.
+        
+        Example:
+            ```python
+            # Example of constructing a Conv2D layer with specific parameters:
+            conv_layer = Conv(c1=32, c2=64, k=3, s=2, p=1, g=1, d=1, act=True)
+            ```
         """
         super().__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
@@ -68,14 +119,65 @@ class Conv(nn.Module):
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
     def forward(self, x):
-        """Applies convolution, batch normalization, and activation to input `x`; `x` shape: [N, C_in, H, W] -> [N,
-        C_out, H_out, W_out].
+        """
+        Applies convolution, batch normalization, and activation to the input tensor.
+        
+        Args:
+            x (torch.Tensor): Input tensor with shape [N, C_in, H, W], where:
+                              N - batch size
+                              C_in - number of input channels
+                              H - height of the input feature map
+                              W - width of the input feature map
+        
+        Returns:
+            torch.Tensor: Output tensor with shape [N, C_out, H_out, W_out], where:
+                          N - batch size
+                          C_out - number of output channels
+                          H_out - height of the output feature map
+                          W_out - width of the output feature map
+        
+        Example:
+            ```python
+            import torch
+            from ultralytics import Conv
+            
+            # Define a Conv layer
+            conv_layer = Conv(c1=3, c2=16, k=3, s=1)
+            
+            # Create a random tensor with shape [8, 3, 64, 64]
+            x = torch.randn(8, 3, 64, 64)
+            
+            # Apply the Conv layer
+            output = conv_layer(x)
+            print(output.shape)  # Expected output shape: torch.Size([8, 16, 64, 64])
+            ```
         """
         return self.act(self.bn(self.conv(x)))
 
     def forward_fuse(self, x):
-        """Applies fused convolution and activation to input `x`; input shape: [N, C_in, H, W] -> [N, C_out, H_out,
-        W_out].
+        """
+        Performs convolution followed by activation on the input tensor `x` using a fused approach.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape [N, C_in, H, W].
+        
+        Returns:
+            torch.Tensor: Output tensor after applying convolution and activation, of shape [N, C_out, H_out, W_out].
+        
+        Note:
+            Fusing the batch normalization layer into the convolution layer can improve inference speed by reducing the 
+            number of operations.
+        
+        Example:
+            ```python
+            import torch
+            from ultralytics import Conv
+        
+            model = Conv(3, 16, k=3, s=1)
+            input_tensor = torch.randn(1, 3, 64, 64)  # [N, C_in, H, W]
+            output_tensor = model.forward_fuse(input_tensor)
+            print(output_tensor.shape)  # Should be [N, C_out, H_out, W_out]
+            ```
         """
         return self.act(self.conv(x))
 
@@ -83,8 +185,32 @@ class Conv(nn.Module):
 class DWConv(Conv):
     # Depth-wise convolution
     def __init__(self, c1, c2, k=1, s=1, d=1, act=True):  # ch_in, ch_out, kernel, stride, dilation, activation
-        """Initializes depth-wise convolution with optional activation; parameters are channel in/out, kernel, stride,
-        dilation.
+        """
+        Initializes a Depth-wise Convolution layer with batch normalization and optional activation.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            k (int | tuple[int, int], optional): Kernel size for the convolution. Defaults to 1.
+            s (int | tuple[int, int], optional): Stride of the convolution. Defaults to 1.
+            d (int, optional): Dilation rate for dilated convolution. Defaults to 1.
+            act (bool | nn.Module, optional): Activation function. Defaults to True. If True, uses SiLU activation; if 
+                False, no activation is applied; if an nn.Module, applies the given activation function.
+        
+        Returns:
+            None
+        
+        Example:
+            ```python
+            # Example usage of DWConv
+            import torch
+            from ultralytics import DWConv
+        
+            x = torch.randn(1, 32, 64, 64)  # input tensor with shape (batch_size, channels, height, width)
+            dwconv = DWConv(c1=32, c2=64, k=3, s=1, d=1, act=True)
+            y = dwconv(x)  # output tensor
+            print(y.shape)  # Output tensor shape will be (1, 64, 62, 62) depending on padding settings
+            ```
         """
         super().__init__(c1, c2, k, s, g=math.gcd(c1, c2), d=d, act=act)
 
@@ -92,8 +218,26 @@ class DWConv(Conv):
 class DWConvTranspose2d(nn.ConvTranspose2d):
     # Depth-wise transpose convolution
     def __init__(self, c1, c2, k=1, s=1, p1=0, p2=0):  # ch_in, ch_out, kernel, stride, padding, padding_out
-        """Initializes a depth-wise or transpose convolution layer with specified in/out channels, kernel size, stride,
-        and padding.
+        """
+        Initializes a depth-wise or transpose convolution layer with specified in/out channels, kernel size,
+        stride, and padding.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            k (int): Kernel size. Default is 1.
+            s (int): Stride value. Default is 1.
+            p1 (int): Padding added to all four sides of the input. Default is 0.
+            p2 (int): Additional padding applied to the output. Default is 0.
+        
+        Returns:
+            None
+        
+        Examples:
+            ```python
+            from ultralytics.modules.common import DWConvTranspose2d
+            dwconv_transpose = DWConvTranspose2d(c1=32, c2=64, k=3, s=2, p1=1, p2=1)
+            ```
         """
         super().__init__(c1, c2, k, s, p1, p2, groups=math.gcd(c1, c2))
 
@@ -101,8 +245,17 @@ class DWConvTranspose2d(nn.ConvTranspose2d):
 class TransformerLayer(nn.Module):
     # Transformer layer https://arxiv.org/abs/2010.11929 (LayerNorm layers removed for better performance)
     def __init__(self, c, num_heads):
-        """Initializes a Transformer layer as per https://arxiv.org/abs/2010.11929, sans LayerNorm, with specified
-        embedding dimension and number of heads."""
+        """
+        Initializes a Transformer layer as per https://arxiv.org/abs/2010.11929, sans LayerNorm, with specified embedding 
+        dimension and number of heads.
+        
+        Args:
+            c (int): Embedding dimension of the transformer, representing the number of expected features in the input.
+            num_heads (int): Number of attention heads in the multihead attention mechanism.
+        
+        Returns:
+            None
+        """
         super().__init__()
         self.q = nn.Linear(c, c, bias=False)
         self.k = nn.Linear(c, c, bias=False)
@@ -112,8 +265,16 @@ class TransformerLayer(nn.Module):
         self.fc2 = nn.Linear(c, c, bias=False)
 
     def forward(self, x):
-        """Performs forward pass with multi-head attention and residual connections on input tensor 'x' [batch, seq_len,
-        features].
+        """
+        Performs a forward pass through the Transformer layer with multi-head attention and residual connections.
+        
+        Args:
+        x (torch.Tensor): Input tensor of shape [batch, seq_len, features], where 'batch' is the number of samples, 
+        'seq_len' is the sequence length, and 'features' is the number of features per sequence element.
+        
+        Returns:
+        torch.Tensor: Output tensor of shape [batch, seq_len, features] after applying attention and feed-forward 
+        transformations.
         """
         x = self.ma(self.q(x), self.k(x), self.v(x))[0] + x
         x = self.fc2(self.fc1(x)) + x
@@ -123,7 +284,23 @@ class TransformerLayer(nn.Module):
 class TransformerBlock(nn.Module):
     # Vision Transformer https://arxiv.org/abs/2010.11929
     def __init__(self, c1, c2, num_heads, num_layers):
-        """Initializes a Transformer block with optional convolution, linear, and transformer layers."""
+        """
+        Initializes a Transformer block consisting of optional convolution, linear, and multiple transformer layers.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            num_heads (int): Number of attention heads in each Transformer layer.
+            num_layers (int): Number of Transformer layers to stack within the block.
+        
+        Returns:
+            None
+        
+        Examples:
+            ```python
+            transformer_block = TransformerBlock(c1=256, c2=512, num_heads=8, num_layers=6)
+            ```
+        """
         super().__init__()
         self.conv = None
         if c1 != c2:
@@ -133,7 +310,29 @@ class TransformerBlock(nn.Module):
         self.c2 = c2
 
     def forward(self, x):
-        """Applies an optional convolution, transforms features, and reshapes output matching input dimensions."""
+        """
+        Forward pass for the Transformer Block, applying optional convolution and sequential transformer layers to 
+        input tensor `x`.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, c1, height, width), where c1 is the number of 
+                              channels.
+        
+        Returns:
+            torch.Tensor: Transformed tensor of shape (batch_size, c2, height, width), where c2 is the number 
+                          of output channels.
+        
+        Notes:
+            For more information, refer to the paper: https://arxiv.org/abs/2010.11929. 
+        
+        Example:
+            ```python
+            transformer_block = TransformerBlock(c1=64, c2=128, num_heads=4, num_layers=2)
+            input_tensor = torch.rand(8, 64, 32, 32)  # batch_size=8, channels=64, height=32, width=32
+            output_tensor = transformer_block(input_tensor)
+            print(output_tensor.shape)  # torch.Size([8, 128, 32, 32])
+            ```
+        """
         if self.conv is not None:
             x = self.conv(x)
         b, _, w, h = x.shape
@@ -144,8 +343,22 @@ class TransformerBlock(nn.Module):
 class Bottleneck(nn.Module):
     # Standard bottleneck
     def __init__(self, c1, c2, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
-        """Initializes a standard bottleneck layer with optional shortcut; args: input channels (c1), output channels
-        (c2), shortcut (bool), groups (g), expansion factor (e).
+        """
+        Initializes a standard bottleneck layer with optional shortcut connection. 
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            shortcut (bool): Whether to use shortcut connection. Default is True.
+            g (int): Number of groups for group convolution. Default is 1.
+            e (float): Expansion factor to determine hidden channels. Default is 0.5.
+        
+        Returns:
+            None
+        
+        Note:
+            This module is designed to streamline the creation of bottleneck layers for convolutional neural networks, typically
+            used in deep learning models for feature extraction.
         """
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
@@ -154,8 +367,21 @@ class Bottleneck(nn.Module):
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
-        """Executes forward pass, performing convolutional ops and optional shortcut addition; expects input tensor
-        x.
+        """
+        Executes a forward pass of the bottleneck layer, performing convolution, batch normalization, and optional
+        shortcut addition.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape [N, C_in, H, W], where N is the batch size, C_in is the number of input
+                channels, H and W are the height and width of the input feature map respectively.
+        
+        Returns:
+            torch.Tensor: Output tensor of shape [N, C_out, H, W], where C_out is the number of output channels, after
+            applying bottleneck transformation and optional shortcut connection.
+        
+        Notes:
+            - If `shortcut` is enabled and input channels are equal to output channels (c1 == c2), the input tensor `x` is
+              added to the output of the convolutional layers to form the final output.
         """
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
 
@@ -163,8 +389,38 @@ class Bottleneck(nn.Module):
 class BottleneckCSP(nn.Module):
     # CSP Bottleneck https://github.com/WongKinYiu/CrossStagePartialNetworks
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
-        """Initializes CSP Bottleneck with channel in/out, optional shortcut, groups, expansion; see
-        https://github.com/WongKinYiu/CrossStagePartialNetworks."""
+        """
+        Initializes a Cross Stage Partial (CSP) Bottleneck layer for enhanced feature extraction, with configurable input/output
+        channels, number of bottleneck layers, group convolution, and expansion factor.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            n (int): Number of bottleneck layers to include. Default is 1.
+            shortcut (bool): Whether to add a shortcut connection. Default is True.
+            g (int): Number of groups to use for convolutions. Default is 1.
+            e (float): Expansion ratio for hidden channels. Default is 0.5.
+        
+        Returns:
+            None
+        
+        Notes:
+            This module implements the CSPNet architecture which helps to enrich the gradient combination with feature fusion,
+            facilitating the feature propagation across the network while reducing the computation cost. More details at
+            https://github.com/WongKinYiu/CrossStagePartialNetworks.
+        
+        Examples:
+            ```python
+            from ultralytics.models.common import BottleneckCSP
+        
+            # Example of creating a CSP bottleneck with 64 input channels, 128 output channels:
+            bottleneck = BottleneckCSP(c1=64, c2=128, n=3, shortcut=False, g=2, e=0.75)
+        
+            # Forward pass using the created bottleneck
+            input_tensor = torch.randn(1, 64, 128, 128)
+            output_tensor = bottleneck(input_tensor)
+            ```
+        """
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
@@ -176,8 +432,20 @@ class BottleneckCSP(nn.Module):
         self.m = nn.Sequential(*(Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
 
     def forward(self, x):
-        """Processes input through layers, combining outputs with activation and normalization for feature
-        extraction.
+        """
+        Processes input tensor through the CSP Bottleneck, combining outputs through convolution, activation, and 
+        normalization layers.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape [N, C_in, H, W].
+        
+        Returns:
+            torch.Tensor: Output tensor of shape [N, C_out, H, W] after processing through the BottleneckCSP layers.
+        
+        Notes:
+            The CSP Bottleneck is designed to enhance feature gradients, reduce model size, and improve computation time by
+            leveraging Cross-Stage Partial Networks. For more details, refer to 
+            https://github.com/WongKinYiu/CrossStagePartialNetworks.
         """
         y1 = self.cv3(self.m(self.cv1(x)))
         y2 = self.cv2(x)
@@ -187,8 +455,31 @@ class BottleneckCSP(nn.Module):
 class CrossConv(nn.Module):
     # Cross Convolution Downsample
     def __init__(self, c1, c2, k=3, s=1, g=1, e=1.0, shortcut=False):
-        """Initializes CrossConv with downsample options, combining 1D and 2D convolutions, optional shortcut if
-        input/output channels match.
+        """
+        Initializes a Cross Convolution Downsample module by combining 1D and 2D convolutions, with optional shortcuts.
+        
+        Args:
+            c1 (int): The number of input channels.
+            c2 (int): The number of output channels.
+            k (int): The size of the convolution kernel. Defaults to 3.
+            s (int): The convolution stride. Defaults to 1.
+            g (int): Number of blocked connections from input channels to output channels. Defaults to 1.
+            e (float): Expansion ratio for the hidden channels. Defaults to 1.0.
+            shortcut (bool): Whether to include a shortcut connection if the input and output channels match. Defaults to False.
+        
+        Returns:
+            None
+        
+        Example:
+            ```python
+            import torch
+            from ultralytics import CrossConv
+        
+            x = torch.randn(1, 32, 64, 64)  # input tensor with shape (batch_size, channels, height, width)
+            model = CrossConv(32, 64, k=3, s=1, g=1, e=1.0, shortcut=True)
+            output = model(x)
+            print(output.shape)  # should be (1, 64, 64, 64)
+            ```
         """
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
@@ -197,15 +488,38 @@ class CrossConv(nn.Module):
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
-        """Performs forward pass using sequential 1D and 2D convolutions with optional shortcut addition."""
+        """
+        Performs forward pass using sequential 1D and 2D convolutions with optional shortcut addition.
+        
+        Args:
+            x (torch.Tensor): Input tensor with shape [N, C_in, H, W].
+        
+        Returns:
+            torch.Tensor: Output tensor after applying cross convolutions, with shape [N, C_out, H_out, W_out].
+        """
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
 
 
 class C3(nn.Module):
     # CSP Bottleneck with 3 convolutions
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
-        """Initializes CSP Bottleneck with 3 convolutions, optional shortcuts, group convolutions, and expansion
-        factor.
+        """
+        Initializes a CSP bottleneck structure with 3 convolutional layers, providing options for shortcuts, group
+        convolutions, and an expansion factor.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            n (int): Number of Bottleneck layers. Defaults to 1.
+            shortcut (bool): Whether to add a shortcut connection from input to output. Defaults to True.
+            g (int): Number of groups for the group convolution. Defaults to 1.
+            e (float): Expansion factor for the hidden channels. Defaults to 0.5.
+        
+        Returns:
+            None
+        
+        Notes:
+            This module is part of the YOLOv3 architecture and can be used to create complex feature extraction layers.
         """
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
@@ -215,14 +529,41 @@ class C3(nn.Module):
         self.m = nn.Sequential(*(Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
 
     def forward(self, x):
-        """Processes input tensor `x` through convolutions and bottlenecks, returning the concatenated output tensor."""
+        """
+        Processes the input tensor `x` through sequential convolutions and bottlenecks, combining intermediate results 
+        for feature extraction.
+        
+        Args:
+            x (torch.Tensor): Input tensor with shape [N, C, H, W], where N is the batch size, C is the number of channels, 
+                H is the height, and W is the width.
+        
+        Returns:
+            torch.Tensor: Output tensor with processed features, maintaining the input shape [N, C_out, H, W].
+        """
         return self.cv3(torch.cat((self.m(self.cv1(x)), self.cv2(x)), 1))
 
 
 class C3x(C3):
     # C3 module with cross-convolutions
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
-        """Initializes a C3x module with cross-convolutions, extending the C3 module with customizable parameters."""
+        """
+        Initializes a C3x module with cross-convolutions, extending the C3 module with customizable parameters.
+        
+        Args:
+          c1 (int): Input number of channels.
+          c2 (int): Output number of channels.
+          n (int, optional): Number of Bottleneck layers. Defaults to 1.
+          shortcut (bool, optional): Whether to add shortcut connections. Defaults to True.
+          g (int, optional): Number of convolution groups. Defaults to 1.
+          e (float, optional): Expansion factor for hidden channels. Defaults to 0.5.
+        
+        Returns:
+          None
+        
+        Notes:
+          - This class builds upon the CSP Bottleneck architecture with an added cross-convolution mechanism for enhanced
+            feature extraction.
+        """
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)
         self.m = nn.Sequential(*(CrossConv(c_, c_, 3, 1, g, 1.0, shortcut) for _ in range(n)))
@@ -231,7 +572,26 @@ class C3x(C3):
 class C3TR(C3):
     # C3 module with TransformerBlock()
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
-        """Initializes a C3 module with TransformerBlock, extending C3 for attention mechanisms."""
+        """
+        Initializes a CSP Bottleneck module with an added TransformerBlock for enhanced feature extraction and attention.
+        
+        Args:
+            c1 (int): Input channel dimension.
+            c2 (int): Output channel dimension.
+            n (int): Number of Bottleneck layers (default is 1).
+            shortcut (bool): Whether to use shortcut connections (default is True).
+            g (int): Number of groups for group convolution (default is 1).
+            e (float): Expansion factor for hidden channels (default is 0.5).
+        
+        Returns:
+            None
+        
+        Notes:
+            This module extends the typical CSP Bottleneck by incorporating a transformer block, allowing for adaptive 
+            feature representation leveraging both convolutional and transformer-based approaches. It acts as an advanced 
+            network building block for scenarios requiring both efficient local feature extraction and long-range 
+            dependencies in vision tasks.
+        """
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)
         self.m = TransformerBlock(c_, c_, 4, n)
@@ -240,7 +600,25 @@ class C3TR(C3):
 class C3SPP(C3):
     # C3 module with SPP()
     def __init__(self, c1, c2, k=(5, 9, 13), n=1, shortcut=True, g=1, e=0.5):
-        """Initializes C3SPP module, extending C3 with Spatial Pyramid Pooling for enhanced feature extraction."""
+        """
+        Initializes C3SPP module, extending C3 with Spatial Pyramid Pooling for enhanced feature extraction.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            k (tuple[int], optional): Tuple of kernel sizes for max pooling in the Spatial Pyramid Pooling layer. Defaults to (5, 9, 13).
+            n (int, optional): Number of Bottleneck layers to use. Defaults to 1.
+            shortcut (bool, optional): Whether to add shortcut connections. Defaults to True.
+            g (int, optional): Number of groups for grouped convolution. Defaults to 1.
+            e (float, optional): Expansion factor for hidden channels. Defaults to 0.5.
+        
+        Returns:
+            None
+        
+        Notes:
+            This module incorporates Spatial Pyramid Pooling to capture multi-scale context by applying max pooling operations
+            with different kernel sizes.
+        """
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)
         self.m = SPP(c_, c_, k)
@@ -249,7 +627,27 @@ class C3SPP(C3):
 class C3Ghost(C3):
     # C3 module with GhostBottleneck()
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
-        """Initializes C3Ghost module with Ghost Bottlenecks for efficient feature extraction."""
+        """
+        Initializes C3Ghost module with Ghost Bottlenecks for efficient feature extraction.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            n (int, optional): Number of bottlenecks to include. Default is 1.
+            shortcut (bool, optional): Whether to include a shortcut to input connections. Default is True.
+            g (int, optional): Number of groups for group convolutions. Default is 1.
+            e (float, optional): Expansion factor for hidden channels. Default is 0.5.
+        
+        Returns:
+            None
+        
+        Example:
+            ```python
+            model = C3Ghost(c1=64, c2=128, n=2, shortcut=True, g=1, e=0.5)
+            x = torch.randn(1, 64, 256, 256)
+            output = model(x)
+            ```
+        """
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)  # hidden channels
         self.m = nn.Sequential(*(GhostBottleneck(c_, c_) for _ in range(n)))
@@ -259,9 +657,23 @@ class SPP(nn.Module):
     # Spatial Pyramid Pooling (SPP) layer https://arxiv.org/abs/1406.4729
     def __init__(self, c1, c2, k=(5, 9, 13)):
         """
-        Initializes SPP layer with specified channels and kernels.
-
-        More at https://arxiv.org/abs/1406.4729
+        Initializes SPP layer with specified input/output channels and kernel sizes for spatial pyramid pooling.
+        
+        Args:
+          c1 (int): Number of input channels.
+          c2 (int): Number of output channels.
+          k (tuple[int]): Tuple of kernel sizes for pooling layers. Default is (5, 9, 13).
+        
+        Returns:
+          None
+        
+        Notes:
+          Implements the Spatial Pyramid Pooling (SPP) technique as described in the paper: https://arxiv.org/abs/1406.4729
+        
+        Example:
+          ```python
+          spp_layer = SPP(c1=64, c2=128, k=(5, 9, 13))
+          ```
         """
         super().__init__()
         c_ = c1 // 2  # hidden channels
@@ -271,9 +683,22 @@ class SPP(nn.Module):
 
     def forward(self, x):
         """
-        Applies convolution and max pooling layers to the input tensor `x`, concatenates results for feature extraction.
-
-        `x` is a tensor of shape [N, C, H, W]. See https://arxiv.org/abs/1406.4729 for more details.
+        Forward pass through the Spatial Pyramid Pooling (SPP) layer, applying multiple max pooling operations.
+        
+        Args:
+          x (torch.Tensor): Input tensor of shape (N, C, H, W), where N is the batch size, C is the number of channels,
+            H is the height, and W is the width.
+        
+        Returns:
+          torch.Tensor: Output tensor after applying convolution and spatial pyramid pooling, with concatenated features
+            from multiple pooling layers. The shape will be (N, C_out, H_out, W_out).
+        
+        Example:
+          ```python
+          spp_layer = SPP(c1=512, c2=1024, k=(5, 9, 13))
+          input_tensor = torch.randn(1, 512, 32, 32)
+          output_tensor = spp_layer(input_tensor)
+          ```
         """
         x = self.cv1(x)
         with warnings.catch_warnings():
@@ -284,7 +709,17 @@ class SPP(nn.Module):
 class SPPF(nn.Module):
     # Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv3 by Glenn Jocher
     def __init__(self, c1, c2, k=5):  # equivalent to SPP(k=(5, 9, 13))
-        """Initializes the SPPF layer with specified input/output channels and kernel size for YOLOv3."""
+        """
+        Initializes the Spatial Pyramid Pooling - Fast (SPPF) layer with specified input and output channels and kernel size.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            k (int, optional): Kernel size for max pooling. Defaults to 5.
+          
+        Returns:
+            None
+        """
         super().__init__()
         c_ = c1 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
@@ -292,8 +727,26 @@ class SPPF(nn.Module):
         self.m = nn.MaxPool2d(kernel_size=k, stride=1, padding=k // 2)
 
     def forward(self, x):
-        """Performs forward pass combining convolutions and max pooling on input `x` of shape [N, C, H, W] to produce
-        feature map.
+        """
+        Performs a forward pass through the SPPF layer, combining convolutions and max pooling operations.
+        
+        Args:
+          x (torch.Tensor): Input tensor of shape [N, C, H, W], where N is the batch size, C is the number
+                            of channels, H is the height, and W is the width.
+        
+        Returns:
+          torch.Tensor: Output tensor of shape [N, C_out, H_out, W_out], where C_out and H/W_out depend on
+                        the configurations of the convolutions and max pooling layers.
+        
+        Example usage:
+          ```python
+          sppf = SPPF(256, 512, k=5)
+          output = sppf(input_tensor)
+          ```
+        
+        Notes:
+          - The SPPF layer is designed for fast spatial pyramid pooling, commonly used in YOLOv3 models.
+          - For more details, refer to the implementation of the SPP layer as described in https://arxiv.org/abs/1406.4729.
         """
         x = self.cv1(x)
         with warnings.catch_warnings():
@@ -306,15 +759,56 @@ class SPPF(nn.Module):
 class Focus(nn.Module):
     # Focus wh information into c-space
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
-        """Initializes Focus module to focus width and height information into channel space with configurable
-        convolution parameters.
+        """
+        Focus.__init__()
+        
+        Initializes Focus module to focus width and height information into channel space with configurable convolution parameters.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            k (int | tuple, optional): Kernel size for the convolutional layer. Defaults to 1.
+            s (int | tuple, optional): Stride for the convolutional layer. Defaults to 1.
+            p (int | tuple, optional): Padding for the convolutional layer. Defaults to None, which enables autopadding.
+            g (int, optional): Number of groups for the convolution. Defaults to 1.
+            act (bool | nn.Module, optional): Activation function to apply. If True, uses the default activation 
+                (nn.SiLU). If a module is provided, uses that module as the activation function.
+                If False, uses nn.Identity(). Defaults to True.
+        
+        Returns:
+            Focus instance.
+            
+        Notes:
+            This module is used to reduce the spatial dimensions (width and height) while increasing the depth (number 
+            of channels) for subsequent layers. Suitable for feature extraction where spatial locality is important.
+            
+        Examples:
+            ```python
+            focus_layer = Focus(c1=3, c2=32, k=3, s=1)
+            outputs = focus_layer(inputs)
+            ```
         """
         super().__init__()
         self.conv = Conv(c1 * 4, c2, k, s, p, g, act=act)
         # self.contract = Contract(gain=2)
 
     def forward(self, x):  # x(b,c,w,h) -> y(b,4c,w/2,h/2)
-        """Applies focused downsampling to input tensor, returning a convolved output with increased channel depth."""
+        """
+        Focuses spatial information from input tensor into channel space and applies a convolution.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape [N, C, H, W].
+        
+        Returns:
+            torch.Tensor: Output tensor with focused spatial information and applied convolution, having shape [N, C_out, H_out, W_out].
+        
+        Examples:
+            ```python
+            focus_layer = Focus(c1=3, c2=64)
+            input_tensor = torch.rand(1, 3, 640, 640)
+            output_tensor = focus_layer(input_tensor)
+            ```
+        """
         return self.conv(torch.cat((x[..., ::2, ::2], x[..., 1::2, ::2], x[..., ::2, 1::2], x[..., 1::2, 1::2]), 1))
         # return self.conv(self.contract(x))
 
@@ -322,15 +816,55 @@ class Focus(nn.Module):
 class GhostConv(nn.Module):
     # Ghost Convolution https://github.com/huawei-noah/ghostnet
     def __init__(self, c1, c2, k=1, s=1, g=1, act=True):  # ch_in, ch_out, kernel, stride, groups
-        """Initializes GhostConv with in/out channels, kernel size, stride, groups; see
-        https://github.com/huawei-noah/ghostnet."""
+        """
+        Initialize a GhostConv layer with input/output channels, kernel size, stride, groups, and optional activation.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            k (int, optional): Kernel size for the convolution. Defaults to 1.
+            s (int, optional): Stride for the convolution. Defaults to 1.
+            g (int, optional): Number of groups for the convolution. Defaults to 1.
+            act (bool | nn.Module, optional): Activation function to use after convolution. Defaults to True, which 
+                applies the default activation (SiLU). If set to False, no activation will be used. Custom nn.Module can 
+                also be provided.
+            
+        Returns:
+            None
+        
+        Notes:
+            This module implements the Ghost Convolution as described in https://github.com/huawei-noah/ghostnet.
+        """
         super().__init__()
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
         self.cv2 = Conv(c_, c_, 5, 1, None, c_, act=act)
 
     def forward(self, x):
-        """Executes forward pass, applying convolutions and concatenating results; input `x` is a tensor."""
+        """
+        Executes forward pass, applying convolutions and concatenating results from GhostConv module.
+        
+        Args:
+            x (torch.Tensor): Input tensor with shape [N, C_in, H, W].
+        
+        Returns:
+            torch.Tensor: Output tensor of shape [N, C_out, H_out, W_out], resulting from the application of sequential convolutions.
+        
+        Notes:
+            - Implements Ghost Convolution as described in https://github.com/huawei-noah/ghostnet.
+            - Efficiently decomposes standard convolutions into smaller, computationally cheaper operations with minimal loss in representation power.
+        
+        Example:
+            ```python
+            import torch
+            from ultralytics.nn.modules import GhostConv
+        
+            input_tensor = torch.randn(1, 64, 128, 128)  # Batch size of 1, 64 input channels, 128x128 spatial dimensions
+            ghost_conv = GhostConv(64, 128)  # Initialize GhostConv module
+            output_tensor = ghost_conv(input_tensor)  # Execute forward pass
+            print(output_tensor.shape)  # Expected shape [1, 128, 128, 128]
+            ```
+        """
         y = self.cv1(x)
         return torch.cat((y, self.cv2(y)), 1)
 
@@ -338,8 +872,31 @@ class GhostConv(nn.Module):
 class GhostBottleneck(nn.Module):
     # Ghost Bottleneck https://github.com/huawei-noah/ghostnet
     def __init__(self, c1, c2, k=3, s=1):  # ch_in, ch_out, kernel, stride
-        """Initializes GhostBottleneck module with in/out channels, kernel size, and stride; see
-        https://github.com/huawei-noah/ghostnet."""
+        """
+        Initializes the GhostBottleneck module with specified input/output channels, kernel size, and stride.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            k (int): Kernel size for depth-wise convolution. Default is 3.
+            s (int): Stride for depth-wise convolution. Default is 1.
+        
+        Returns:
+            None
+        
+        Note:
+            For more information, please refer to https://github.com/huawei-noah/ghostnet
+        
+        Example:
+            ```python
+            from ultralytics.modules import GhostBottleneck
+        
+            # Initialize GhostBottleneck with input channels=32, output channels=64, kernel size=3, and stride=1
+            ghost_bottleneck = GhostBottleneck(c1=32, c2=64, k=3, s=1)
+            input_tensor = torch.randn(1, 32, 128, 128)
+            output_tensor = ghost_bottleneck(input_tensor)
+            ```
+        """
         super().__init__()
         c_ = c2 // 2
         self.conv = nn.Sequential(
@@ -352,22 +909,87 @@ class GhostBottleneck(nn.Module):
         )
 
     def forward(self, x):
-        """Performs a forward pass through the network, returning the sum of convolution and shortcut outputs."""
+        """
+        ```python
+        Performs a forward pass through the GhostBottleneck network, combining convolution and shortcut paths.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape [N, C_in, H, W], where `N` is the batch size, `C_in` is the number
+                of input channels, `H` and `W` are the height and width of the input feature map respectively.
+        
+        Returns:
+            torch.Tensor: Output tensor of shape [N, C_out, H_out, W_out], where `C_out` is the number of output channels,
+                `H_out` and `W_out` are the height and width of the output feature map respectively, 
+                resulted from the combination of convolution and shortcut paths.
+        ```
+        """
         return self.conv(x) + self.shortcut(x)
 
 
 class Contract(nn.Module):
     # Contract width-height into channels, i.e. x(1,64,80,80) to x(1,256,40,40)
     def __init__(self, gain=2):
-        """Initializes Contract module to refine input dimensions, e.g., from (1,64,80,80) to (1,256,40,40) with a
-        default gain of 2.
+        """
+        Initializes the Contract module.
+        
+        The Contract module refines the input dimensions by reducing width and height while increasing the channel depth,
+        which is particularly useful for downsampling. By default, the module uses a gain factor of 2 to effectively reduce
+        the spatial dimensions and increase the number of channels, enabling more compact and efficient representation
+        of the input data.
+        
+        Args:
+            gain (int): The factor by which to contract the width and height dimensions. Default is 2.
+        
+        Returns:
+            None: This is an initializer method and does not return a value.
+        
+        Notes:
+            This module is useful in scenarios where spatial downsampling is necessary while retaining critical
+            information in the channel dimension, making it beneficial for use in convolutional neural networks.
+            
+        Example:
+            ```python
+            import torch
+            from ultralytics.models.common import Contract
+        
+            # Initialize the Contract module with a gain of 2
+            contract_layer = Contract(gain=2)
+        
+            # Create a dummy input tensor of shape [1, 64, 80, 80]
+            x = torch.randn(1, 64, 80, 80)
+        
+            # Apply the Contract layer
+            output = contract_layer(x)
+        
+            # The output will have shape [1, 256, 40, 40]
+            print(output.shape)
+            ```
         """
         super().__init__()
         self.gain = gain
 
     def forward(self, x):
-        """Processes input tensor (b,c,h,w) to contracted shape (b,c*s^2,h/s,w/s) with default gain s=2, e.g.,
-        (1,64,80,80) to (1,256,40,40).
+        """
+        Contract.forward
+            """Contracts the spatial dimensions (height and width) of the input tensor, expanding the channels dimension.
+        
+            The function reshapes the input tensor by contracting its spatial dimensions (height and width), effectively 
+            increasing the number of channels. The contraction factor is defined by the `gain` attribute specified during 
+            initialization.
+        
+            Args:
+                x (torch.Tensor): Input tensor with shape (batch_size, channels, height, width).
+        
+            Returns:
+                torch.Tensor: Output tensor with contracted spatial dimensions and expanded channels dimension. The shape 
+                              will be (batch_size, channels * gain^2, height / gain, width / gain).
+        
+            Example:
+                ```python
+                contract = Contract(gain=2)
+                output = contract.forward(input_tensor)
+                # If input_tensor shape is (1, 64, 80, 80), the output shape will be (1, 256, 40, 40).
+                ```
         """
         b, c, h, w = x.size()  # assert (h / s == 0) and (W / s == 0), 'Indivisible gain'
         s = self.gain
@@ -379,15 +1001,53 @@ class Contract(nn.Module):
 class Expand(nn.Module):
     # Expand channels into width-height, i.e. x(1,64,80,80) to x(1,16,160,160)
     def __init__(self, gain=2):
-        """Initializes Expand module to increase spatial dimensions by factor `gain` while reducing channels
-        correspondingly.
+        """
+        Increases spatial dimensions by a factor of `gain`, reducing the number of channels accordingly, e.g., from 
+        (1,64,80,80) to (1,16,160,160).
+        
+        Args:
+            gain (int, optional): Factor by which to expand spatial dimensions, with a corresponding reduction in channels.
+                Default is 2.
+        
+        Returns:
+            None (NoneType)
+        
+        Note:
+            The `gain` factor should be compatible with the input dimensions to avoid indivisible operations.
+        
+        Example:
+            ```python
+            from ultralytics import Expand
+            import torch
+        
+            x = torch.randn(1, 64, 80, 80)
+            expand = Expand(gain=2)
+            output = expand(x)
+            print(output.shape)  # Should output: torch.Size([1, 16, 160, 160])
+            ```
         """
         super().__init__()
         self.gain = gain
 
     def forward(self, x):
-        """Expands spatial dimensions of input tensor `x` by factor `gain` while reducing channels, transforming shape
-        `(B,C,H,W)` to `(B,C/gain^2,H*gain,W*gain)`.
+        """
+        Expands the spatial dimensions of the input tensor by a given factor while reducing the number of channels.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape `(B, C, H, W)` where `B` is the batch size, `C` is the number of 
+                              channels, `H` is the height, and `W` is the width.
+                        
+        Returns:
+            torch.Tensor: Output tensor with expanded spatial dimensions and reduced number of channels, reshaped to 
+                          `(B, C / gain^2, H * gain, W * gain)`.
+        
+        Example:
+            ```python
+            expand = Expand(gain=2)
+            input_tensor = torch.randn(1, 64, 80, 80)
+            output_tensor = expand(input_tensor)
+            print(output_tensor.shape)  # torch.Size([1, 16, 160, 160])
+            ```
         """
         b, c, h, w = x.size()  # assert C / s ** 2 == 0, 'Indivisible gain'
         s = self.gain
@@ -399,13 +1059,32 @@ class Expand(nn.Module):
 class Concat(nn.Module):
     # Concatenate a list of tensors along dimension
     def __init__(self, dimension=1):
-        """Initializes a module to concatenate tensors along a specified dimension."""
+        """
+        Initializes a module to concatenate tensors along a specified dimension.
+        
+        Args:
+            dimension (int): The dimension along which to concatenate the tensors. Default is 1.
+        
+        Returns:
+            None (returns the instance of the class itself)
+        
+        Examples:
+            ```python
+            concat = Concat(dimension=1)
+            ```
+        """
         super().__init__()
         self.d = dimension
 
     def forward(self, x):
-        """Concatenates a list of tensors along a specified dimension; x is a list of tensors to concatenate, dimension
-        defaults to 1.
+        """
+        Concatenates a list of tensors along a specified dimension.
+        
+        Args:
+            x (list of torch.Tensor): A list of tensors to concatenate along the given dimension.
+        
+        Returns:
+            torch.Tensor: A single tensor obtained by concatenating the tensors in `x` along the specified dimension.
         """
         return torch.cat(x, self.d)
 
@@ -413,8 +1092,40 @@ class Concat(nn.Module):
 class DetectMultiBackend(nn.Module):
     # YOLOv3 MultiBackend class for python inference on various backends
     def __init__(self, weights="yolov5s.pt", device=torch.device("cpu"), dnn=False, data=None, fp16=False, fuse=True):
-        """Initializes multi-backend detection with options for various frameworks and devices, also handles model
-        download.
+        """
+        Initializes a multi-backend detection model, supporting various deep learning frameworks and devices.
+        
+        Args:
+            weights (str | list): Path to the model weights file(s). Default is "yolov5s.pt".
+            device (torch.device): Device to run the model on, such as `torch.device('cpu')` or `torch.device('cuda:0')`.
+                Default is torch.device('cpu').
+            dnn (bool): Flag to use OpenCV DNN for ONNX models. Default is False.
+            data (str | None): Path to the dataset configuration. Default is None.
+            fp16 (bool): Flag to use Floating Point 16 precision. Default is False.
+            fuse (bool): Flag to fuse model layers for optimization. Default is True.
+        
+        Returns:
+            None
+        
+        Notes:
+            Supported weight formats include:
+              - PyTorch: *.pt
+              - TorchScript: *.torchscript
+              - ONNX Runtime: *.onnx
+              - ONNX OpenCV DNN: *.onnx with --dnn flag
+              - OpenVINO: *_openvino_model
+              - CoreML: *.mlmodel
+              - TensorRT: *.engine
+              - TensorFlow SavedModel: *_saved_model
+              - TensorFlow GraphDef: *.pb
+              - TensorFlow Lite: *.tflite
+              - TensorFlow Edge TPU: *_edgetpu.tflite
+              - PaddlePaddle: *_paddle_model
+        
+        Example:
+            ```python
+            model = DetectMultiBackend(weights="yolov5s.pt", device=torch.device('cuda:0'))
+            ```
         """
         #   PyTorch:              weights = *.pt
         #   TorchScript:                    *.torchscript
@@ -620,7 +1331,19 @@ class DetectMultiBackend(nn.Module):
         self.__dict__.update(locals())  # assign all variables to self
 
     def forward(self, im, augment=False, visualize=False):
-        """Performs YOLOv3 inference on an input image tensor, optionally with augmentation and visualization."""
+        """
+        Performs YOLOv3 inference on an input image tensor, optionally with augmentation and visualization.
+        
+        Args:
+            im (torch.Tensor): Input image tensor with shape [batch_size, channels, height, width].
+            augment (bool, optional): If True, applies image augmentations during inference. Defaults to False.
+            visualize (bool, optional): If True, enables visualization of intermediate layers during inference. 
+                                        Defaults to False.
+        
+        Returns:
+            torch.Tensor | list[torch.Tensor]: Inference results from the model. If the results are from multiple 
+                                               outputs, returns a list of tensors.
+        """
         b, ch, h, w = im.shape  # batch, channel, height, width
         if self.fp16 and im.dtype != torch.float16:
             im = im.half()  # to FP16
@@ -702,13 +1425,41 @@ class DetectMultiBackend(nn.Module):
             return self.from_numpy(y)
 
     def from_numpy(self, x):
-        """Converts a Numpy array to a PyTorch tensor on the specified device, else returns the input if not a Numpy
-        array.
+        """
+        Converts a Numpy array to a PyTorch tensor on the specified device, or returns input if not a Numpy array.
+        
+        Args:
+            x (numpy.ndarray): Input array to be converted.
+        
+        Returns:
+            torch.Tensor | Any: PyTorch tensor if input was a Numpy array, otherwise returns the input unchanged.
+        
+        Examples:
+            ```python
+            import numpy as np
+            array = np.array([1, 2, 3])
+            tensor = model.from_numpy(array)
+            ```
         """
         return torch.from_numpy(x).to(self.device) if isinstance(x, np.ndarray) else x
 
     def warmup(self, imgsz=(1, 3, 640, 640)):
-        """Warms up the model by running inference once with a dummy input of shape imgsz."""
+        """
+        Warms up the model by running inference once with a dummy input of specified shape.
+        
+        Args:
+            imgsz (tuple[int]): Shape of the dummy input tensor to warm up the model, default is (1, 3, 640, 640).
+        
+        Returns:
+            None
+        
+        Notes:
+            The warmup process runs one or two inferences with random data depending on the model type. This is particularly
+            useful for optimizing GPU memory allocations and other computational overheads, leading to a more stable
+            and predictable runtime behavior during actual inference. The function executes if the model is supported by
+            PyTorch, TorchScript, ONNX, TensorRT, TensorFlow (SavedModel and GraphDef), or Triton, and is not targeting a CPU
+            device, unless using Triton.
+        """
         warmup_types = self.pt, self.jit, self.onnx, self.engine, self.saved_model, self.pb, self.triton
         if any(warmup_types) and (self.device.type != "cpu" or self.triton):
             im = torch.empty(*imgsz, dtype=torch.half if self.fp16 else torch.float, device=self.device)  # input
@@ -718,9 +1469,45 @@ class DetectMultiBackend(nn.Module):
     @staticmethod
     def _model_type(p="path/to/model.pt"):
         """
-        Determines model type from filepath or URL, supports various formats including ONNX, PT, JIT.
-
-        See `export_formats` for all.
+        Determines model type from a file path or URL.
+        
+        Args:
+            p (str): The path to the model file, either local or a URL.
+        
+        Returns:
+            tuple[bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool]:
+            A tuple of boolean values indicating the model type:
+            - PyTorch (.pt)
+            - TorchScript (.torchscript)
+            - ONNX (.onnx)
+            - OpenVINO (.xml)
+            - TensorRT (.engine)
+            - CoreML (.mlmodel)
+            - TensorFlow SavedModel (_saved_model)
+            - TensorFlow GraphDef (.pb)
+            - TensorFlow Lite (.tflite)
+            - TensorFlow Edge TPU (.edgetpu.tflite)
+            - TF.js
+            - PaddlePaddle (_paddle_model)
+            - Triton Inference Server
+        
+        Note:
+            The function checks the suffix of the file name against the supported export formats and determines the
+            model type based on the suffix. For URLs, it checks if the URL might be associated with a Triton inference
+            server.
+            
+        Examples:
+            ```python
+            model_path = "path/to/model.onnx"
+            model_types = _model_type(model_path)
+            print(model_types)  # (False, False, True, False, False, False, False, False, False, False, False, False, False)
+            ```
+        
+            ```python
+            model_url = "http://localhost:8000/v2/models/yolov5/versions/1"
+            is_triton = _model_type(model_url)
+            print(is_triton)  # (False, False, False, False, False, False, False, False, False, False, False, False, True)
+            ```
         """
         # types = [pt, jit, onnx, xml, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle]
         from export import export_formats
@@ -737,7 +1524,27 @@ class DetectMultiBackend(nn.Module):
 
     @staticmethod
     def _load_metadata(f=Path("path/to/meta.yaml")):
-        """Loads metadata from a YAML file, returning 'stride' and 'names' if the file exists, else 'None'."""
+        """
+        Loads metadata from a YAML file and returns specific keys.
+        
+        Args:
+            f (Path): The path to the YAML file from which metadata is to be loaded.
+        
+        Returns:
+            (int, list[str]): A tuple containing:
+                - stride (int): The stride value from the metadata.
+                - names (list[str]): List of class names from the metadata.
+            
+        Example:
+            ```python
+            stride, names = self._load_metadata(Path("./data/meta.yaml"))
+            # stride: 32, names: ['person', 'bicycle', 'car', ...]
+            ```
+        
+        Notes:
+            This method expects the YAML file to have 'stride' and 'names' keys. If the file does not exist,
+            it will return `None`.
+        """
         if f.exists():
             d = yaml_load(f)
             return d["stride"], d["names"]  # assign stride, names
@@ -755,8 +1562,27 @@ class AutoShape(nn.Module):
     amp = False  # Automatic Mixed Precision (AMP) inference
 
     def __init__(self, model, verbose=True):
-        """Initializes the model for inference, setting attributes, and preparing for multithreaded execution with
-        optional verbose logging.
+        """
+        Initializes the AutoShape module, setting up the model for robust inference from various input data formats 
+        including cv2, numpy, PIL, and torch, while enabling preprocessing, inference, and non-max suppression.
+        
+        Args:
+            model (torch.nn.Module): The model to be wrapped for robust input handling and enhanced inference.
+            verbose (bool): If True, logs additional information during initialization. Default is True.
+        
+        Returns:
+            None: This is an initializer method and does not return a value.
+        
+        Notes:
+            This class is designed to facilitate seamless inference across different data representations and ensure that
+            preprocessing, inference, and post-processing (like non-max suppression) are all handled efficiently within one
+            module.
+        
+        Example:
+        ```python
+        # Assuming `model` is a loaded YOLOv3 model
+        autoshape_model = AutoShape(model)
+        ```
         """
         super().__init__()
         if verbose:
@@ -771,8 +1597,18 @@ class AutoShape(nn.Module):
             m.export = True  # do not output loss values
 
     def _apply(self, fn):
-        """Applies given function `fn` to model tensors excluding parameters or registered buffers, adjusting strides
-        and grids.
+        """
+        Applies a function to model tensors, adjusting strides and grids.
+        
+        Args:
+          fn (Callable): The function to apply to each tensor in the model.
+        
+        Returns:
+          AutoShape: The current instance with the function applied to its tensors.
+        
+        Notes:
+          The function fn is typically used for operations like casting the tensors to a different device or type.
+        ```
         """
         self = super()._apply(fn)
         if self.pt:
@@ -785,8 +1621,56 @@ class AutoShape(nn.Module):
 
     @smart_inference_mode()
     def forward(self, ims, size=640, augment=False, profile=False):
-        """Performs inference on various input sources with optional augmentation and profiling; see
-        `https://ultralytics.com`."""
+        """
+        Performs inference on various input sources with optional augmentation and profiling.
+        
+        Args:
+         ims (str | Path | np.ndarray | torch.Tensor | list): Input images, can be a file path, URI, numpy array, torch 
+          tensor, or a list of such inputs.
+         size (int | tuple[int, int], optional): Inference size, either an integer (for square resizing) or a tuple 
+          (height, width). Defaults to 640.
+         augment (bool, optional): If True, applies augmentations during inference. Defaults to False.
+         profile (bool, optional): If True, profiles the inference time for different phases. Defaults to False.
+        
+        Returns:
+         list: List of inference results represented as a list of dictionaries, each containing:
+          - boxes (np.ndarray): Detected bounding boxes.
+          - confidences (np.ndarray): Confidence scores for each bounding box.
+          - class_ids (np.ndarray): Class IDs for each bounding box.
+        
+        Examples:
+        ```python
+        from PIL import Image
+        import torch
+        
+        # Initialize the model (assuming `model` is a pre-loaded DetectMultiBackend instance)
+        autoshape = AutoShape(model)
+        
+        # Example using a file path
+        results = autoshape.forward('data/images/zidane.jpg')
+        print(results)
+        
+        # Example using a numpy array (OpenCV)
+        img = cv2.imread('data/images/zidane.jpg')
+        results = autoshape.forward(img)
+        print(results)
+        
+        # Example using a PIL Image
+        img = Image.open('data/images/zidane.jpg')
+        results = autoshape.forward(img)
+        print(results)
+        
+        # Example using a torch tensor
+        img = torch.randn(1, 3, 640, 640)
+        results = autoshape.forward(img)
+        print(results)
+        
+        # Example using multiple images list (PIL)
+        imgs = [Image.open('data/images/zidane.jpg'), Image.open('data/images/bus.jpg')]
+        results = autoshape.forward(imgs)
+        print(results)
+         ```
+        """
         #   file:        ims = 'data/images/zidane.jpg'  # str or PosixPath
         #   URI:             = 'https://ultralytics.com/images/zidane.jpg'
         #   OpenCV:          = cv2.imread('image.jpg')[:,:,::-1]  # HWC BGR to RGB x(640,1280,3)
@@ -854,8 +1738,41 @@ class AutoShape(nn.Module):
 class Detections:
     # YOLOv3 detections class for inference results
     def __init__(self, ims, pred, files, times=(0, 0, 0), names=None, shape=None):
-        """Initializes YOLOv3 detections with image data, predictions, filenames, profiling times, class names, and
-        shapes.
+        """
+        Initializes a Detections object representing detection results from YOLOv3 inference.
+        
+        Args:
+            ims (list of np.ndarray): List of input images as numpy arrays.
+            pred (list of torch.Tensor): List of prediction tensors, each containing bounding boxes, confidence scores, 
+                and class labels.
+            files (list of str | Path): List of filenames associated with the input images.
+            times (tuple of float, optional): Tuple representing profiling times (in milliseconds) for different stages of 
+                inference. Default is (0, 0, 0).
+            names (list of str | None, optional): List of class names. Default is `None`.
+            shape (tuple, optional): Shape of the output predictions. Default is `None`.
+        
+        Returns:
+            None
+        
+        Notes:
+            The `Detections` object contains several attributes, including:
+            - `ims`: List of input images.
+            - `pred`: List of prediction tensors with bounding boxes, scores, and class labels.
+            - `xyxy`: Prediction tensors in `xyxy` format.
+            - `xywh`: Prediction tensors in `xywh` format.
+            - `xyxyn`: Normalized `xyxy` predictions.
+            - `xywhn`: Normalized `xywh` predictions.
+            - `files`: Filenames corresponding to input images.
+            - `names`: Class names for the predictions.
+            - `times`: Profiling times for inference stages.
+            - `n`: Number of input images.
+            - `t`: Timestamps in milliseconds, computed per image.
+        
+        Example:
+            ```python
+            detections = Detections(ims, pred, files)
+            print(detections.xyxy)  # Access xyxy formatted predictions
+            ```
         """
         super().__init__()
         d = pred[0].device  # device
@@ -874,7 +1791,32 @@ class Detections:
         self.s = tuple(shape)  # inference BCHW shape
 
     def _run(self, pprint=False, show=False, save=False, crop=False, render=False, labels=True, save_dir=Path("")):
-        """Executes inference on images, annotates detections, and can optionally show, save, or crop output images."""
+        """
+        Runs inference on input images and performs various post-processing steps such as displaying, saving, cropping, and 
+        rendering annotated results.
+        
+        Args:
+            pprint (bool): If True, pretty prints the detection results and profiling info. Default is False.
+            show (bool): If True, displays the images with annotations. Default is False.
+            save (bool): If True, saves the annotated images to disk. Default is False.
+            crop (bool): If True, saves cropped regions of detected objects. Default is False.
+            render (bool): If True, updates the `ims` attribute with rendered images for further processing. Default is False.
+            labels (bool): If True, includes class labels in the annotations. Default is True.
+            save_dir (Path): Directory path where outputs should be saved if `save` or `crop` is True. Default is Path("").
+        
+        Returns:
+            str | None: Pretty printed output string if `pprint` is True, otherwise None.
+        
+        Notes:
+            - The function assumes that attribute `self.pred` contains detected objects in the form [xyxy, confidence, class].
+            - The function utilizes utility methods such as `Annotator` and `save_one_box` for drawing and saving operations.
+        
+        Example:
+            ```python
+            detections = Detections(ims, pred, files, times, names, shape)
+            result_str = detections._run(pprint=True, show=True, save=True, crop=True, save_dir=Path("./outputs"))
+            ```
+        """
         s, crops = "", []
         for i, (im, pred) in enumerate(zip(self.ims, self.pred)):
             s += f"\nimage {i + 1}/{len(self.pred)}: {im.shape[0]}x{im.shape[1]} "  # string
@@ -930,41 +1872,103 @@ class Detections:
     @TryExcept("Showing images is not supported in this environment")
     def show(self, labels=True):
         """
-        Displays image results with optional labels.
-
-        Usage: `show(labels=True)`
+        Displays detected objects on images with optional class labels.
+        
+        Args:
+            labels (bool, optional): Whether to display labels for detected objects. Defaults to True.
+        
+        Returns:
+            None
+        
+        Notes:
+            This method attempts to show images using the default image viewer. In Jupyter environments, `IPython.display.display`
+            is used for inline visualization. If not supported, an exception is raised. For additional functionality, refer to the
+            Detections class documentation at https://github.com/ultralytics/ultralytics
         """
         self._run(show=True, labels=labels)  # show results
 
     def save(self, labels=True, save_dir="runs/detect/exp", exist_ok=False):
         """
-        Saves image results with optional labels to a specified directory.
-
-        Usage: `save(labels=True, save_dir='runs/detect/exp', exist_ok=False)`
+        Saves the detection results to a specified directory, optionally with labels.
+        
+        Args:
+            labels (bool): If True, labels are displayed on the saved images. Defaults to True.
+            save_dir (str | Path): Directory where the results will be saved. Defaults to 'runs/detect/exp'.
+            exist_ok (bool): If True, allows overwriting files if they already exist. Defaults to False.
+        
+        Returns:
+            None
+        
+        Example:
+            ```python
+            detections = model(images)
+            detections.save(labels=True, save_dir='runs/detect/experiment1', exist_ok=True)
+            ```
         """
         save_dir = increment_path(save_dir, exist_ok, mkdir=True)  # increment save_dir
         self._run(save=True, labels=labels, save_dir=save_dir)  # save results
 
     def crop(self, save=True, save_dir="runs/detect/exp", exist_ok=False):
         """
-        Crops detection results; can save to `save_dir`.
-
-        Usage: `crop(save=True, save_dir='runs/detect/exp')`.
+        Crops detected objects from all images, optionally saving them to a specified directory.
+        
+        Args:
+            save (bool, optional): If True, the cropped images will be saved. Defaults to True.
+            save_dir (str, optional): Directory to save cropped images. Defaults to "runs/detect/exp".
+            exist_ok (bool, optional): If True, existing directories will be used without conflict. Defaults to False.
+        
+        Returns:
+            list[dict]: List of dictionaries containing cropped image data, labels, and confidence scores.
+        
+        Examples:
+            ```python
+            detections.crop(save=True, save_dir='runs/detect/exp')
+            ```
         """
         save_dir = increment_path(save_dir, exist_ok, mkdir=True) if save else None
         return self._run(crop=True, save=save, save_dir=save_dir)  # crop results
 
     def render(self, labels=True):
         """
-        Renders detection results, optionally displaying labels.
-
-        Usage: `render(labels=True)`.
+        Renders the labeled detections on the images.
+        
+        Args:
+            labels (bool): If True, include labels in the rendered image. Default is True.
+        
+        Returns:
+            None
+        
+        Examples:
+            ```python
+            detections.render(labels=True)
+            ```
+        Notes:
+            This method annotates the detections onto the images stored in `self.ims` and has no return value.
+            It manipulates the internal state of the Detections object.
         """
         self._run(render=True, labels=labels)  # render results
         return self.ims
 
     def pandas(self):
-        """Returns a copy of the detection results as pandas DataFrames for various bounding box formats."""
+        """
+        Returns a copy of detection results as pandas DataFrames for different bounding box formats.
+        
+        Returns:
+            Detections: A `Detections` object containing pandas DataFrames of detection results with columns specifying bounding
+            box coordinates (xmin, ymin, xmax, ymax for xyxy format; xcenter, ycenter, width, height for xywh format), confidence
+            score, class id, and class name. The DataFrames are stored in attributes: 'xyxy', 'xyxyn', 'xywh', 'xywhn'.
+        
+        Example:
+            ```python
+            detections = model(imgs)  # Perform inference
+            results = detections.pandas()
+            print(results.xyxy[0])  # Print the DataFrame for the first image in xyxy format
+            ```
+            
+        Note:
+            The returned DataFrames have the same information as the detection tensors, but are formatted for easier analysis
+            and manipulation using pandas.
+        """
         new = copy(self)  # return copy
         ca = "xmin", "ymin", "xmax", "ymax", "confidence", "class", "name"  # xyxy columns
         cb = "xcenter", "ycenter", "width", "height", "confidence", "class", "name"  # xywh columns
@@ -974,7 +1978,19 @@ class Detections:
         return new
 
     def tolist(self):
-        """Converts Detections object to a list of individual Detection objects for iteration."""
+        """
+        Converts the Detections instance into a list of individual Detection objects.
+        
+        Returns:
+            list[Detections]: A list of Detections objects, each corresponding to a single image and its detections.
+        
+        Example:
+        ```python
+        # Assuming 'detections' is an instance of Detections
+        detection_list = detections.tolist()
+        single_detection = detection_list[0]  # Access detections for the first image
+        ```
+        """
         r = range(self.n)  # iterable
         return [
             Detections(
@@ -989,26 +2005,88 @@ class Detections:
         ]
 
     def print(self):
-        """Logs the string representation of the current object state to the LOGGER."""
+        """
+        Prints a descriptive summary of the current detection results to the LOGGER.
+        
+        Returns:
+            None
+        
+        Examples:
+            The following example demonstrates how to use this method:
+        
+            ```python
+            detections.print()
+            ```
+        
+        Notes:
+            Ensure that the `LOGGER` is properly configured to capture the printed output.
+        """
         LOGGER.info(self.__str__())
 
     def __len__(self):  # override len(results)
-        """Returns the number of results stored in the instance."""
+        """
+        Returns the number of detections in the current instance.
+        
+        Returns:
+            int: The number of detections.
+        
+        Examples:
+            ```python
+            detections = Detections(...)
+            num_detections = len(detections)
+            ```
+        """
         return self.n
 
     def __str__(self):  # override print(results)
-        """Returns a string representation of the current object state, printing the results."""
+        """
+        Returns a string representation of the Detections object, summarizing detection results.
+        
+        Returns:
+            str: Formatted string that includes the number of detections per image, class names, confidence scores, and
+            profiling times.
+        """
         return self._run(pprint=True)  # print results
 
     def __repr__(self):
-        """Returns a string representation for debugging, including class info and current object state."""
+        """
+        Returns a string representation for debugging, including class info and current object state.
+        
+        Returns:
+            str: String representation of the Detections instance suitable for debugging.
+        ```
+        
+        Notes:
+        Attributes provide details about internal states such as predictions, images, class names, etc.
+        Suitable for quick inspection of the current detection results in debugging scenarios.
+        ```
+        """
         return f"YOLOv3 {self.__class__} instance\n" + self.__str__()
 
 
 class Proto(nn.Module):
     # YOLOv3 mask Proto module for segmentation models
     def __init__(self, c1, c_=256, c2=32):  # ch_in, number of protos, number of masks
-        """Initializes the Proto module for YOLOv3 segmentation, setting up convolutional layers and upsampling."""
+        """
+        Initializes the Proto module for YOLOv3 segmentation, setting up convolutional layers and upsampling.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c_ (int): Number of prototype channels. Default is 256.
+            c2 (int): Number of output channels for masks. Default is 32.
+        
+        Returns:
+            None
+        
+        Notes:
+            This module is a part of the YOLOv3 architecture, specifically designed for segmentation tasks. It consists
+            of convolutional layers followed by upsampling to generate high-resolution mask predictions.
+        
+        Examples:
+            ```python
+            model = Proto(c1=64, c_=128, c2=16)
+            ```
+        """
         super().__init__()
         self.cv1 = Conv(c1, c_, k=3)
         self.upsample = nn.Upsample(scale_factor=2, mode="nearest")
@@ -1016,7 +2094,21 @@ class Proto(nn.Module):
         self.cv3 = Conv(c_, c2)
 
     def forward(self, x):
-        """Performs forward pass, upsampling and applying convolutions for YOLOv3 segmentation."""
+        """
+        Performs forward pass, upsampling, and applying convolutions for YOLOv3 segmentation.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape `[batch_size, channels_in, height, width]`.
+        
+        Returns:
+            torch.Tensor: Output tensor with segmentation masks, shape `[batch_size, num_masks, height_out, width_out]`.
+        
+        Example:
+            ```python
+            proto = Proto(512)
+            output = proto(input_tensor)
+            ```
+        """
         return self.cv3(self.cv2(self.upsample(self.cv1(x))))
 
 
@@ -1025,8 +2117,32 @@ class Classify(nn.Module):
     def __init__(
         self, c1, c2, k=1, s=1, p=None, g=1, dropout_p=0.0
     ):  # ch_in, ch_out, kernel, stride, padding, groups, dropout probability
-        """Initializes YOLOv3 classification head with convolution, pooling and dropout layers for feature extraction
-        and classification.
+        """
+        Initializes a YOLOv3 classification head with convolution, pooling, and dropout layers for feature extraction and 
+        classification.
+        
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels (classes).
+            k (int): Kernel size of the convolution (default: 1).
+            s (int): Stride of the convolution (default: 1).
+            p (int | None): Padding for the convolution. If None, padding is auto-calculated (default: None).
+            g (int): Number of groups for the convolution (default: 1).
+            dropout_p (float): Probability of an element to be zeroed in the dropout layer (default: 0.0).
+        
+        Returns:
+            nn.Module: A PyTorch module representing the YOLOv3 classification head.
+        
+        Examples:
+            ```python
+            from ultralytics.models.common import Classify
+        
+            model = Classify(c1=3, c2=1000, k=1, s=1, dropout_p=0.5)
+            output = model(torch.randn(1, 3, 224, 224))  # forward pass with dummy input
+            ```
+        Notes:
+            For more details on YOLOv3 classification, refer to the YOLOv3 architecture documentation at 
+            https://github.com/ultralytics/yolov3.
         """
         super().__init__()
         c_ = 1280  # efficientnet_b0 size
@@ -1036,8 +2152,28 @@ class Classify(nn.Module):
         self.linear = nn.Linear(c_, c2)  # to x(b,c2)
 
     def forward(self, x):
-        """Processes input tensor `x` through convolutions and pooling, optionally concatenating lists of tensors, and
-        returns linear output.
+        """
+        Performs a forward pass through the YOLOv3 classification head.
+        
+        Args:
+            x (torch.Tensor | list[torch.Tensor]): Input tensor(s) of shape [N, C, H, W] or a list of such tensors.
+        
+        Returns:
+            torch.Tensor: Output tensor of shape [N, num_classes], where `num_classes` is the number of output classes.
+            
+        Note:
+            If the input `x` is a list of tensors, they are concatenated along the channel dimension before processing.
+            
+        Example:
+            ```python
+            # Assuming input batch of images represented as a torch tensor with shape [N, C, H, W]
+            inputs = torch.randn(8, 3, 224, 224)  # batch of 8 RGB images of size 224x224
+            classify_layer = Classify(3, 1000)  # for example, classifying into 1000 classes
+            outputs = classify_layer(inputs)
+            
+            print(outputs.shape)  # Output will be [8, 1000]
+            ```
+        ```
         """
         if isinstance(x, list):
             x = torch.cat(x, 1)

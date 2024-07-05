@@ -11,7 +11,25 @@ import torch
 
 
 def is_url(url, check=True):
-    """Determines if a string is a valid URL and optionally checks its existence online."""
+    """
+    Determines if a string is a valid URL and optionally checks its existence online.
+
+    Args:
+        url (str | pathlib.Path): The string or Path object to be evaluated as a URL.
+        check (bool): If True, the function will check whether the URL exists online. Defaults to True.
+
+    Returns:
+        bool: True if the input is a valid URL (and exists online if `check` is True), otherwise False.
+
+    Raises:
+        None: This function is designed to catch its own exceptions internally.
+
+    Examples:
+        ```python
+        url = "https://ultralytics.com"
+        is_valid = is_url(url)  # Returns True if the URL is valid and reachable
+        ```
+    """
     try:
         url = str(url)
         result = urllib.parse.urlparse(url)
@@ -22,19 +40,77 @@ def is_url(url, check=True):
 
 
 def gsutil_getsize(url=""):
-    """Returns the size of a file at a 'gs://' URL using gsutil du command; 0 if file not found or command fails."""
+    """
+    Retrieves the size of a file located at a Google Cloud Storage URL using the `gsutil du` command.
+
+    Args:
+        url (str): The Google Cloud Storage URL (e.g., 'gs://bucket_name/object_name').
+
+    Returns:
+        int: Size of the file in bytes. Returns 0 if the file is not found or if the `gsutil du` command fails.
+
+    Notes:
+        This function assumes that the `gsutil` command-line tool is installed and properly configured on the local machine.
+
+    Examples:
+        ```python
+        file_size = gsutil_getsize('gs://my_bucket/my_file.txt')
+        print(file_size)  # Outputs the size of the file in bytes or 0 if not found
+        ```
+    """
     output = subprocess.check_output(["gsutil", "du", url], shell=True, encoding="utf-8")
     return int(output.split()[0]) if output else 0
 
 
 def url_getsize(url="https://ultralytics.com/images/bus.jpg"):
-    """Fetches file size in bytes from a URL using an HTTP HEAD request; defaults to -1 if not found."""
+    """
+    Fetches the file size in bytes from a given URL using an HTTP HEAD request.
+
+    Args:
+        url (str): The URL of the file for which to get the size. Defaults to 'https://ultralytics.com/images/bus.jpg'.
+
+    Returns:
+        int: The size of the file in bytes if the request is successful; otherwise, -1.
+
+    Examples:
+        ```python
+        size = url_getsize('https://ultralytics.com/images/bus.jpg')
+        print(size)  # Example output: 23456
+        ```
+
+    Notes:
+        This function sends an HTTP HEAD request to the specified URL to determine the size of the file. If the request
+        fails or the file size cannot be determined, the function returns -1. The `requests` library is used for handling
+        the HTTP request.
+    """
     response = requests.head(url, allow_redirects=True)
     return int(response.headers.get("content-length", -1))
 
 
 def curl_download(url, filename, *, silent: bool = False) -> bool:
-    """Download a file from a url to a filename using curl."""
+    """
+    Download a file from a specified URL to a given filename using the curl command line tool.
+
+    Args:
+        url (str): The URL from which to download the file.
+        filename (str | Path): The local path where the file will be saved.
+        silent (bool, optional): If True, suppress curl's progress meter and error messages. Defaults to False.
+
+    Returns:
+        bool: True if the download succeeded (exit code 0), otherwise False.
+
+    Examples:
+        ```python
+        url = "https://ultralytics.com/images/bus.jpg"
+        filename = "bus.jpg"
+        success = curl_download(url, filename, silent=True)
+        print("Download successful:", success)
+        ```
+
+    Notes:
+        - curl command line tool must be installed and accessible in the system PATH.
+        - The function uses curl's built-in resume functionality and retry logic to handle intermittent network issues.
+    """
     silent_option = "sS" if silent else ""  # silent
     proc = subprocess.run(
         [
@@ -54,7 +130,27 @@ def curl_download(url, filename, *, silent: bool = False) -> bool:
 
 
 def safe_download(file, url, url2=None, min_bytes=1e0, error_msg=""):
-    """Downloads a file from 'url' or 'url2' to 'file', ensuring size > 'min_bytes'; removes incomplete downloads."""
+    """
+    Downloads a file from a given URL or secondary URL to a specified file path, ensuring the file size exceeds a
+    minimum threshold; removes incomplete downloads if conditions are not met.
+
+    Args:
+        file (str | Path): The file destination where the downloaded content will be saved.
+        url (str): The primary URL to download the file from.
+        url2 (str | None): The secondary URL to download the file from if the primary URL fails. Defaults to None.
+        min_bytes (int | float): The minimum file size in bytes. Ensures the downloaded file meets this size
+            requirement. Defaults to 1.
+        error_msg (str): An additional error message to log if the download fails. Defaults to an empty string.
+
+    Returns:
+        None
+
+    Notes:
+        - Utilizes `torch.hub.download_url_to_file` for downloading and provides re-attempt logic using an alternative URL
+          if available.
+        - Checks if the downloaded file exists and its size is greater than `min_bytes`. If checks fail, deletes the incomplete
+          download and logs an error message.
+    """
     from utils.general import LOGGER
 
     file = Path(file)
@@ -78,8 +174,33 @@ def safe_download(file, url, url2=None, min_bytes=1e0, error_msg=""):
 
 
 def attempt_download(file, repo="ultralytics/yolov5", release="v7.0"):
-    """Attempts to download a file from a specified URL or GitHub release, ensuring file integrity with a minimum size
+    """
+    Attempts to download a file from a specified URL or GitHub release, ensuring file integrity with a minimum size
     check.
+
+    Args:
+        file (str | Path): The target file path to download to.
+        repo (str): The GitHub repository to download from. Defaults to 'ultralytics/yolov5'.
+        release (str): The release version to download. Defaults to 'v7.0'.
+
+    Returns:
+        Path: The path to the downloaded file.
+
+    Notes:
+        - Ensures that the downloaded file is complete by checking its size.
+        - Can handle downloads from direct URLs or GitHub assets.
+        - Utilizes helper functions for safe downloading and size checking.
+
+    Examples:
+        ```python
+        from ultralytics import attempt_download
+
+        # Attempt to download a file directly from a URL
+        downloaded_file = attempt_download('https://example.com/path/to/file.zip')
+
+        # Attempt to download a GitHub release asset
+        downloaded_file = attempt_download('yolov5s.pt')
+        ```
     """
     from utils.general import LOGGER
 

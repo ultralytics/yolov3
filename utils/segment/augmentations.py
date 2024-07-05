@@ -12,8 +12,28 @@ from ..general import resample_segments, segment2box
 
 
 def mixup(im, labels, segments, im2, labels2, segments2):
-    """Applies MixUp augmentation by blending pairs of images, labels, and segments; see
-    https://arxiv.org/pdf/1710.09412.pdf."""
+    """
+    Applies MixUp augmentation by blending pairs of images, labels, and segments.
+
+    Args:
+        im (np.ndarray): The first input image as a NumPy array.
+        labels (np.ndarray): Bounding box labels associated with the first image.
+        segments (list[np.ndarray]): Segmentation masks associated with the bounding boxes of the first image.
+        im2 (np.ndarray): The second input image as a NumPy array.
+        labels2 (np.ndarray): Bounding box labels associated with the second image.
+        segments2 (list[np.ndarray]): Segmentation masks associated with the bounding boxes of the second image.
+
+    Returns:
+        tuple(np.ndarray, np.ndarray, list[np.ndarray]): A tuple containing:
+            - Blended image as a NumPy array.
+            - Combined labels as a NumPy array.
+            - Merged segmentation masks as a list of NumPy arrays.
+
+    Notes:
+        This function uses a beta distribution with alpha=beta=32.0 to determine the mixup ratio, as suggested in the
+        MixUp paper (https://arxiv.org/pdf/1710.09412.pdf). The resulting image, labels, and segments are a weighted
+        combination of the provided pairs.
+    """
     r = np.random.beta(32.0, 32.0)  # mixup ratio, alpha=beta=32.0
     im = (im * r + im2 * (1 - r)).astype(np.uint8)
     labels = np.concatenate((labels, labels2), 0)
@@ -27,7 +47,37 @@ def random_perspective(
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
     # targets = [cls, xyxy]
 
-    """Applies random perspective augmentation including rotation, translation, scale, and shear transformations."""
+    """
+    Applies random perspective augmentation including rotation, translation, scale, and shear transformations.
+
+    Args:
+        im (np.ndarray): Input image array.
+        targets (np.ndarray, optional): Target annotations in the format of (n, 5) array where each row represents [class, x1, y1, x2, y2]. Defaults to ().
+        segments (np.ndarray, optional): Segment annotations. Defaults to ().
+        degrees (float, optional): Maximum rotation angle in degrees. Defaults to 10.
+        translate (float, optional): Maximum translation fraction of image dimensions. Defaults to 0.1.
+        scale (float, optional): Maximum scale change. Defaults to 0.1.
+        shear (float, optional): Maximum shear angle in degrees. Defaults to 10.
+        perspective (float, optional): Perspective transformation factor. Defaults to 0.0.
+        border (tuple[int, int], optional): Additional border to add to the image (height, width). Defaults to (0, 0).
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: Augmented image and transformed target annotations.
+
+    Notes:
+        - This function combines random perspective, affine transformations (translation, rotation, scaling, shearing).
+        - Target annotations are transformed accordingly to match the augmented image.
+
+    Example:
+        ```python
+        augmented_image, transformed_targets = random_perspective(
+            im=image, targets=labels, degrees=5, translate=0.1, scale=0.1, shear=5, perspective=0.01, border=(10, 10)
+        )
+        ```
+
+    See Also:
+        - More details on MixUp can be found at https://arxiv.org/abs/1710.09412.
+    """
     height = im.shape[0] + border[0] * 2  # shape(h,w,c)
     width = im.shape[1] + border[1] * 2
 

@@ -45,15 +45,28 @@ class WandbLogger:
 
     def __init__(self, opt, run_id=None, job_type="Training"):
         """
-        - Initialize WandbLogger instance
-        - Upload dataset if opt.upload_dataset is True
-        - Setup training processes if job_type is 'Training'
+        Initialize the WandbLogger instance.
 
-        arguments:
-        opt (namespace) -- Commandline arguments for this run
-        run_id (str) -- Run ID of W&B run to be resumed
-        job_type (str) -- To set the job_type for this run
+        Args:
+            opt (namespace): Commandline arguments for this run.
+            run_id (str | None): Optional. Run ID of W&B run to be resumed. Defaults to None.
+            job_type (str): To set the job type for this run. Should be one of 'Training', 'Evaluation', etc. Defaults to 'Training'.
 
+        Returns:
+            None
+
+        Notes:
+            - The WandbLogger instance is responsible for logging training runs, datasets, models, and predictions to Weights & Biases (W&B).
+            - If W&B is successfully imported, a warning about its deprecation is logged. W&B support will be removed in a future release.
+            - For more details on supported integrations, see https://github.com/ultralytics/yolov5#integrations.
+
+        Example:
+            ```python
+            from your_library import WandbLogger
+
+            # Assuming `args` is a parsed Namespace containing relevant attributes
+            wandb_logger = WandbLogger(opt=args)
+            ```
         """
         # Pre-training routine --
         self.job_type = job_type
@@ -85,14 +98,19 @@ class WandbLogger:
 
     def setup_training(self, opt):
         """
-        Setup the necessary processes for training YOLO models:
-          - Attempt to download model checkpoint and dataset artifacts if opt.resume stats with WANDB_ARTIFACT_PREFIX
-          - Update data_dict, to contain info of previous run if resumed and the paths of dataset artifact if downloaded
-          - Setup log_dict, initialize bbox_interval
+        Sets up the training process for YOLO models, including model and dataset downloading, and logging
+        configurations.
 
-        arguments:
-        opt (namespace) -- commandline arguments for this run
+        Args:
+            opt (namespace): Command line arguments for this run, including options for resuming and logging intervals.
 
+        Returns:
+            None
+
+        Notes:
+            - Downloading artifacts is attempted if `opt.resume` starts with `WANDB_ARTIFACT_PREFIX`.
+            - Updates `data_dict` with information of previous runs if resumed, and paths of downloaded dataset artifacts.
+            - Initializes logging dictionary and bounding box interval configuration.
         """
         self.log_dict, self.current_epoch = {}, 0
         self.bbox_interval = opt.bbox_interval
@@ -118,14 +136,21 @@ class WandbLogger:
 
     def log_model(self, path, opt, epoch, fitness_score, best_model=False):
         """
-        Log the model checkpoint as W&B artifact.
+        Log the model checkpoint as a W&B artifact.
 
-        arguments:
-        path (Path)   -- Path of directory containing the checkpoints
-        opt (namespace) -- Command line arguments for this run
-        epoch (int)  -- Current epoch number
-        fitness_score (float) -- fitness score for current epoch
-        best_model (boolean) -- Boolean representing if the current checkpoint is the best yet.
+        Args:
+            path (Path): Path of the directory containing the checkpoints.
+            opt (namespace): Command-line arguments for the current run.
+            epoch (int): Current epoch number.
+            fitness_score (float): Fitness score for the current epoch.
+            best_model (bool): Flag indicating if the current checkpoint is the best yet.
+
+        Returns:
+            None
+
+        Notes:
+            W&B integration is deprecated and will be removed in a future release. Refer to the supported integrations
+            at https://github.com/ultralytics/yolov5#integrations.
         """
         model_artifact = wandb.Artifact(
             f"run_{wandb.run.id}_model",
@@ -152,15 +177,50 @@ class WandbLogger:
         LOGGER.info(f"Saving model artifact on epoch {epoch + 1}")
 
     def val_one_image(self, pred, predn, path, names, im):
-        """Evaluates model's prediction for a single image, updating metrics based on comparison with ground truth."""
+        """
+        Evaluates the model's prediction for a single image, updating metrics based on the comparison with ground truth.
+
+        Args:
+          pred (torch.Tensor): The model's prediction tensor for the image.
+          predn (torch.Tensor): The normalized prediction tensor.
+          path (str): Path to the image file.
+          names (List[str]): List of class names.
+          im (numpy.ndarray): The image array.
+
+        Returns:
+          None
+
+        Notes:
+          - wandb is deprecated and will be removed in a future release. See supported integrations at:
+            https://github.com/ultralytics/yolov5#integrations.
+        """
         pass
 
     def log(self, log_dict):
         """
-        Save the metrics to the logging dictionary.
+        Log training metrics and media to Weights & Biases (W&B).
 
-        arguments:
-        log_dict (Dict) -- metrics/media to be logged in current step
+        Args:
+            log_dict (Dict): Dictionary containing metrics and media to log for the current step.
+
+        Returns:
+            None
+
+        Notes:
+            This method logs various metrics such as loss, accuracy, and custom-defined metrics from the `log_dict` to W&B
+            for comprehensive tracking and visualization. Ensure that `wandb` is properly initialized and `wandb_run` is active
+            before calling this method. For more information on supported integrations, refer to
+            https://github.com/ultralytics/yolov5#integrations.
+
+        Example:
+            ```python
+            log_data = {
+                "epoch": 1,
+                "train/loss": 0.123,
+                "val/accuracy": 0.987,
+            }
+            logger.log(log_data)
+            ```
         """
         if self.wandb_run:
             for key, value in log_dict.items():
@@ -168,10 +228,26 @@ class WandbLogger:
 
     def end_epoch(self):
         """
-        Commit the log_dict, model artifacts and Tables to W&B and flush the log_dict.
+        Commit the accumulated logs, model artifacts, and tables to Weights & Biases (W&B) and reset the logging
+        dictionary.
 
-        arguments:
-        best_result (boolean): Boolean representing if the result of this evaluation is best or not
+        Args:
+            None
+
+        Returns:
+            None
+
+        Notes:
+            - This function should be called at the end of each training epoch to ensure that all metrics and log data
+              collected during the epoch are sent to the W&B server.
+            - Ensure that the W&B logging instance is properly initialized before invoking this method.
+
+        Example:
+            ```python
+            logger = WandbLogger(opt)
+            # ... training loop ...
+            logger.end_epoch()
+            ```
         """
         if self.wandb_run:
             with all_logging_disabled():
@@ -186,7 +262,12 @@ class WandbLogger:
                 self.log_dict = {}
 
     def finish_run(self):
-        """Log metrics if any and finish the current W&B run."""
+        """
+        Log metrics if any and finish the current W&B run.
+
+        Returns:
+            None: This function does not return any value.
+        """
         if self.wandb_run:
             if self.log_dict:
                 with all_logging_disabled():
@@ -197,10 +278,26 @@ class WandbLogger:
 
 @contextmanager
 def all_logging_disabled(highest_level=logging.CRITICAL):
-    """source - https://gist.github.com/simon-weber/7853144
-    A context manager that will prevent any logging messages triggered during the body from being processed.
-    :param highest_level: the maximum logging level in use.
-      This would only need to be changed if a custom level greater than CRITICAL is defined.
+    """
+    A context manager to temporarily disable all logging.
+
+    Args:
+        highest_level (int): The maximum logging level to disable. Default is `logging.CRITICAL`. Modify only if a custom level
+                             higher than CRITICAL is defined.
+
+    Returns:
+        None
+
+    Examples:
+        Temporarily disable logging within a code block:
+
+        ```python
+        with all_logging_disabled():
+            # your code here
+        ```
+
+    Source:
+        For more information, see the [Gist source](https://gist.github.com/simon-weber/7853144).
     """
     previous_level = logging.root.manager.disable
     logging.disable(highest_level)

@@ -15,7 +15,26 @@ PREFIX = colorstr("AutoAnchor: ")
 
 
 def check_anchor_order(m):
-    """Checks and corrects anchor order in YOLOv3's Detect() module if mismatched with stride order."""
+    """
+    Checks and corrects anchor order in YOLOv3's `Detect` module if mismatched with stride order.
+
+    This function ensures that the anchor dimensions are in the correct order relative to the stride values. If a mismatch is detected,
+    the anchor order is reversed to conform with the stride order, ensuring the correct functionality of the model detection layers.
+
+    Args:
+      m (object): The `Detect` module in YOLOv3 containing anchors and stride attributes that need to be checked and synchronized.
+
+    Returns:
+      None
+
+    Examples:
+      ```python
+      from models.yolo import Model
+
+      model = Model(cfg)  # Assuming cfg is the YOLOv3 configuration file
+      check_anchor_order(model.model[-1])  # Passing the Detect module to the function
+      ```
+    """
     a = m.anchors.prod(-1).mean(-1).view(-1)  # mean anchor area per output layer
     da = a[-1] - a[0]  # delta a
     ds = m.stride[-1] - m.stride[0]  # delta s
@@ -26,7 +45,37 @@ def check_anchor_order(m):
 
 @TryExcept(f"{PREFIX}ERROR")
 def check_anchors(dataset, model, thr=4.0, imgsz=640):
-    """Evaluates anchor fit to dataset and recomputes if below a threshold, enhancing model performance."""
+    """
+    Evaluates anchor fit to dataset and recomputes if below a threshold, enhancing model performance.
+
+    Args:
+        dataset (Dataset): Dataset object containing the training/validation data.
+        model (torch.nn.Module): YOLO model to be evaluated for anchor fit.
+        thr (float, optional): Threshold for determining anchor suitability. Defaults to 4.0.
+        imgsz (int, optional): Image size used for scaling during anchor checking. Defaults to 640.
+
+    Returns:
+        None
+
+    Note:
+        This function uses a metric to calculate the best possible recall (BPR) and anchors-above-threshold (AAT) metrics.
+        If the BPR is above 0.98, the current anchors are deemed a good fit. Otherwise, the function attempts to improve
+        the anchors using k-means clustering. If new anchors result in a better BPR, they are adopted; otherwise, the
+        original anchors are retained.
+
+    Example:
+        ```python
+        from ultralytics import YOLO
+        from ultralytics.yolo.data import YOLODataset
+
+        # Initialize model and dataset
+        model = YOLO('yolov3.cfg', 'yolov3.weights')
+        dataset = YOLODataset('coco128.yaml')
+
+        # Check anchors
+        check_anchors(dataset, model, thr=4.0, imgsz=640)
+        ```
+    """
     m = model.module.model[-1] if hasattr(model, "module") else model.model[-1]  # Detect()
     shapes = imgsz * dataset.shapes / dataset.shapes.max(1, keepdims=True)
     scale = np.random.uniform(0.9, 1.1, size=(shapes.shape[0], 1))  # augment scale
@@ -67,21 +116,24 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
 
 def kmean_anchors(dataset="./data/coco128.yaml", n=9, img_size=640, thr=4.0, gen=1000, verbose=True):
     """
-    Creates kmeans-evolved anchors from training dataset.
+    Creates KMeans-evolved anchors from a training dataset, optimizing anchor boxes for object detection.
 
-    Arguments:
-        dataset: path to data.yaml, or a loaded dataset
-        n: number of anchors
-        img_size: image size used for training
-        thr: anchor-label wh ratio threshold hyperparameter hyp['anchor_t'] used for training, default=4.0
-        gen: generations to evolve anchors using genetic algorithm
-        verbose: print all results
+    Args:
+        dataset (str | dict): Path to the dataset YAML file or a loaded dataset. Default is './data/coco128.yaml'.
+        n (int): Number of anchors to generate. Default is 9.
+        img_size (int): Image size to use for the anchors. Default is 640.
+        thr (float): Anchor-label width-height ratio threshold. Default is 4.0.
+        gen (int): Number of generations for evolving anchors using a genetic algorithm. Default is 1000.
+        verbose (bool): Flag to print detailed results. Default is True.
 
-    Return:
-        k: kmeans evolved anchors
+    Returns:
+        np.ndarray: KMeans evolved anchors in the format [[width, height], ...].
 
-    Usage:
-        from utils.autoanchor import *; _ = kmean_anchors()
+    Example:
+        ```python
+        from utils.autoanchor import kmean_anchors
+        anchors = kmean_anchors(dataset='path/to/data.yaml', n=9, img_size=640, thr=4.0, gen=1000, verbose=True)
+        ```
     """
     from scipy.cluster.vq import kmeans
 
