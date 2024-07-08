@@ -95,7 +95,60 @@ def run(
     dnn=False,  # use OpenCV DNN for ONNX inference
     vid_stride=1,  # video frame-rate stride
 ):
-    """Performs YOLOv3 detection on various input sources including images, videos, streams, and YouTube URLs."""
+    """
+    Performs YOLOv3 detection on various input sources including images, videos, streams, and YouTube URLs.
+
+    Args:
+        weights (str | Path): Path to the model weights file or a Triton URL (default: 'yolov5s.pt').
+        source (str | Path): Source of input data such as a file, directory, URL, glob pattern, or device identifier
+            (default: 'data/images').
+        data (str | Path): Path to the dataset YAML file (default: 'data/coco128.yaml').
+        imgsz (tuple[int, int]): Inference size as a tuple (height, width) (default: (640, 640)).
+        conf_thres (float): Confidence threshold for detection (default: 0.25).
+        iou_thres (float): Intersection Over Union (IOU) threshold for Non-Max Suppression (NMS) (default: 0.45).
+        max_det (int): Maximum number of detections per image (default: 1000).
+        device (str): CUDA device identifier, e.g., '0', '0,1,2,3', or 'cpu' (default: '').
+        view_img (bool): Whether to display results during inference (default: False).
+        save_txt (bool): Whether to save detection results to text files (default: False).
+        save_conf (bool): Whether to save detection confidences in the text labels (default: False).
+        save_crop (bool): Whether to save cropped detection boxes (default: False).
+        nosave (bool): Whether to prevent saving images or videos with detections (default: False).
+        classes (list[int] | None): List of class indices to filter, e.g., [0, 2, 3] (default: None).
+        agnostic_nms (bool): Whether to perform class-agnostic NMS (default: False).
+        augment (bool): Whether to apply augmented inference (default: False).
+        visualize (bool): Whether to visualize feature maps (default: False).
+        update (bool): Whether to update all models (default: False).
+        project (str | Path): Path to the project directory where results will be saved (default: 'runs/detect').
+        name (str): Name for the specific run within the project directory (default: 'exp').
+        exist_ok (bool): Whether to allow existing project/name directory without incrementing run index (default: False).
+        line_thickness (int): Thickness of bounding box lines in pixels (default: 3).
+        hide_labels (bool): Whether to hide labels in the results (default: False).
+        hide_conf (bool): Whether to hide confidences in the results (default: False).
+        half (bool): Whether to use half-precision (FP16) for inference (default: False).
+        dnn (bool): Whether to use OpenCV DNN for ONNX inference (default: False).
+        vid_stride (int): Stride for video frame rate (default: 1).
+
+    Returns:
+        None
+
+    Notes:
+        This function supports a variety of input sources such as image files, video files, directories, URL patterns,
+        webcam streams, and YouTube links. It also supports multiple model formats including PyTorch, ONNX, OpenVINO,
+        TensorRT, CoreML, TensorFlow, PaddlePaddle, and others. The results can be visualized in real-time or saved to
+        specified directories. Use command-line arguments to modify the behavior of the function.
+
+    Examples:
+        ```python
+        # Run YOLOv3 inference on an image
+        run(weights='yolov5s.pt', source='data/images/bus.jpg')
+
+        # Run YOLOv3 inference on a video
+        run(weights='yolov5s.pt', source='data/videos/video.mp4', view_img=True)
+
+        # Run YOLOv3 inference on a webcam
+        run(weights='yolov5s.pt', source='0', view_img=True)
+        ```
+    """
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -233,7 +286,41 @@ def run(
 
 
 def parse_opt():
-    """Parses and returns command-line options for model inference configurations."""
+    """
+    Parses and returns command-line options for model inference configurations.
+
+    Args:
+        --weights (list[str]): Model path or triton URL. Default: `ROOT / "yolov3-tiny.pt"`.
+        --source (str): File/directory/URL/glob/screen/0(webcam) for input data. Default: `ROOT / "data/images"`.
+        --data (str): (Optional) Path to dataset.yaml. Default: `ROOT / "data/coco128.yaml"`.
+        --imgsz (list[int]): Inference size as height, width. Accepts multiple values. Default: `[640]`.
+        --conf-thres (float): Confidence threshold for predictions. Default: `0.25`.
+        --iou-thres (float): IoU threshold for Non-Maximum Suppression (NMS). Default: `0.45`.
+        --max-det (int): Maximum number of detections per image. Default: `1000`.
+        --device (str): CUDA device to run the model on, e.g., `0` or `0,1,2,3` or `cpu`. Default: `""`.
+        --view-img (bool): Display results on the screen. Default: `False`.
+        --save-txt (bool): Save results to text files. Default: `False`.
+        --save-conf (bool): Save confidence scores in text labels. Default: `False`.
+        --save-crop (bool): Save cropped prediction boxes. Default: `False`.
+        --nosave (bool): Do not save images/videos. Default: `False`.
+        --classes (list[int]): Filter results by class, e.g., `--classes 0` or `--classes 0 2 3`. Default: `None`.
+        --agnostic-nms (bool): Perform class-agnostic NMS. Default: `False`.
+        --augment (bool): Perform augmented inference. Default: `False`.
+        --visualize (bool): Visualize features. Default: `False`.
+        --update (bool): Update all models. Default: `False`.
+        --project (str): Directory to save results, saved as "project/name". Default: `ROOT / "runs/detect"`.
+        --name (str): Directory name for saving results, e.g., "exp" in "project/name". Default: `"exp"`.
+        --exist-ok (bool): Allow results to be saved in an existing directory without incrementing. Default: `False`.
+        --line-thickness (int): Thickness of bounding box lines (in pixels). Default: `3`.
+        --hide-labels (bool): Hide labels on detected objects. Default: `False`.
+        --hide-conf (bool): Hide confidence scores on labels. Default: `False`.
+        --half (bool): Use FP16 half-precision inference. Default: `False`.
+        --dnn (bool): Use OpenCV DNN backend for ONNX inference. Default: `False`.
+        --vid-stride (int): Frame-rate stride for video input. Default: `1`.
+
+    Returns:
+        argparse.Namespace: Parsed command-line arguments for inference configurations.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--weights", nargs="+", type=str, default=ROOT / "yolov3-tiny.pt", help="model path or triton URL"
@@ -271,7 +358,53 @@ def parse_opt():
 
 
 def main(opt):
-    """Entry point for running the model; checks requirements and calls `run` with parsed options."""
+    """
+    Entry point for running the model; checks requirements and calls `run` with parsed options.
+
+    Args:
+        opt (argparse.Namespace): Parsed command-line options, which include:
+            - weights (str | list of str): Path to the model weights or Triton server URL.
+            - source (str): Input source, can be a file, directory, URL, glob, screen, or webcam index.
+            - data (str): Path to the dataset configuration file (.yaml).
+            - imgsz (tuple of int): Inference image size as (height, width).
+            - conf_thres (float): Confidence threshold for detections.
+            - iou_thres (float): Intersection over Union (IoU) threshold for Non-Maximum Suppression (NMS).
+            - max_det (int): Maximum number of detections per image.
+            - device (str): Device to run inference on; options are CUDA device id(s) or 'cpu'
+            - view_img (bool): Flag to display inference results.
+            - save_txt (bool): Save detection results in .txt format.
+            - save_conf (bool): Save detection confidences in .txt labels.
+            - save_crop (bool): Save cropped bounding box predictions.
+            - nosave (bool): Do not save images/videos with detections.
+            - classes (list of int): Filter results by class, e.g., --class 0 2 3.
+            - agnostic_nms (bool): Use class-agnostic NMS.
+            - augment (bool): Enable augmented inference.
+            - visualize (bool): Visualize feature maps.
+            - update (bool): Update the model during inference.
+            - project (str): Directory to save results.
+            - name (str): Name for the results directory.
+            - exist_ok (bool): Allow existing project/name directories without incrementing.
+            - line_thickness (int): Thickness of bounding box lines.
+            - hide_labels (bool): Hide class labels on bounding boxes.
+            - hide_conf (bool): Hide confidence scores on bounding boxes.
+            - half (bool): Use FP16 half-precision inference.
+            - dnn (bool): Use OpenCV DNN backend for ONNX inference.
+            - vid_stride (int): Video frame-rate stride.
+
+    Returns:
+        None
+
+    Example:
+        ```python
+        if __name__ == "__main__":
+            opt = parse_opt()
+            main(opt)
+        ```
+    Notes:
+        Run this function as the entry point for using YOLOv3 for object detection on a variety of input sources such
+        as images, videos, directories, webcams, streams, etc. This function ensures all requirements are checked and
+        subsequently initiates the detection process by calling the `run` function with appropriate options.
+    """
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))
 
