@@ -1022,10 +1022,6 @@ def add_tflite_metadata(file, metadata, num_outputs):
         }
         add_tflite_metadata("/path/to/model.tflite", metadata, num_outputs=1)
         ```
-
-    For more information, see:
-    https://github.com/tensorflow/tflite-support
-    ```
     """
     with contextlib.suppress(ImportError):
         # check_requirements('tflite_support')
@@ -1290,8 +1286,6 @@ def run(
             opset=12
         )
         ```
-
-    Export a PyTorch YOLOv3 model to various formats and save the output files in the desired locations. Ensures that the specified formats are valid and supported, prepares the PyTorch model on the selected device, and performs any required transformations and optimizations before exporting the model to formats such as TorchScript, ONNX, CoreML, TensorRT, TensorFlow SavedModel, and others. Logs the export status and the paths of the saved model files.
     """
     t = time.time()
     include = [x.lower() for x in include]  # to lowercase
@@ -1451,47 +1445,42 @@ def parse_opt(known=False):
 
 
 def main(opt):
-    """Main]) if __name__ == "__main__":"""
-        Main function for exporting a YOLOv3 PyTorch model to various formats.
-    
-        This function parses command line arguments to configure export options and then proceeds to export
-        the YOLOv3 model to specified formats such as TorchScript, ONNX, CoreML, TensorRT, and more.
-    
-        Args:
-            opt (argparse.Namespace): Parsed command line arguments containing export configurations such as:
-                data (str): Path to dataset YAML file.
-                weights (int | str): Path(s) to model weights file(s).
-                imgsz (tuple[int, int]): Image dimensions (height, width).
-                batch_size (int): Batch size for export.
-                device (str): Device to use for export, e.g., 'cpu' or '0' for GPU.
-                include (list[int | str]): List of formats to export, e.g., ['torchscript', 'onnx'].
-                half (bool): If True, export model in FP16 half-precision.
-                inplace (bool): If True, set YOLOv3 Detect() inplace=True.
-                keras (bool): If True, use Keras for TensorFlow SavedModel export.
-                optimize (bool): If True, optimize TorchScript model for mobile.
-                int8 (bool): If True, enable INT8 quantization for CoreML and TensorFlow.
-                dynamic (bool): If True, enable dynamic axes for ONNX, TensorRT, and TensorFlow.
-                simplify (bool): If True, simplify ONNX model using onnx-simplifier.
-                opset (int): ONNX opset version to use.
-                verbose (bool): If True, enable verbose logging for TensorRT export.
-                workspace (int): Workspace size in GB for TensorRT export.
-                nms (bool): If True, add Non-Max Suppression (NMS) to TensorFlow model.
-                agnostic_nms (bool): If True, add class-agnostic NMS to TensorFlow model.
-                topk_per_class (int): Top-k per class to keep for TensorFlow.js NMS.
-                topk_all (int): Top-k for all classes to keep for TensorFlow.js NMS.
-                iou_thres (float): IoU threshold for TensorFlow.js NMS.
-                conf_thres (float): Confidence threshold for TensorFlow.js NMS.
-    
-        Returns:
-            list[str]: List of paths to the exported model(s).
-    
-        Example:
-            $ python export.py --weights yolov5s.pt --include torchscript onnx openvino engine coreml tflite ...
-        """
-        opt = parse_opt()
-        export_files = run(**vars(opt))
-        if export_files:
-            LOGGER.info(f"Exported models: {export_files}")
+    """
+    Main function for exporting a YOLOv3 PyTorch model to various formats.
+
+    This function parses command line arguments to configure export options and then proceeds to export
+    the YOLOv3 model to specified formats such as TorchScript, ONNX, CoreML, TensorRT, and more.
+
+    Args:
+        opt (argparse.Namespace): Parsed command line arguments containing export configurations such as:
+            data (str): Path to dataset YAML file.
+            weights (int | str): Path(s) to model weights file(s).
+            imgsz (tuple[int, int]): Image dimensions (height, width).
+            batch_size (int): Batch size for export.
+            device (str): Device to use for export, e.g., 'cpu' or '0' for GPU.
+            include (list[int | str]): List of formats to export, e.g., ['torchscript', 'onnx'].
+            half (bool): If True, export model in FP16 half-precision.
+            inplace (bool): If True, set YOLOv3 Detect() inplace=True.
+            keras (bool): If True, use Keras for TensorFlow SavedModel export.
+            optimize (bool): If True, optimize TorchScript model for mobile.
+            int8 (bool): If True, enable INT8 quantization for CoreML and TensorFlow.
+            dynamic (bool): If True, enable dynamic axes for ONNX, TensorRT, and TensorFlow.
+            simplify (bool): If True, simplify ONNX model using onnx-simplifier.
+            opset (int): ONNX opset version to use.
+            verbose (bool): If True, enable verbose logging for TensorRT export.
+            workspace (int): Workspace size in GB for TensorRT export.
+            nms (bool): If True, add Non-Max Suppression (NMS) to TensorFlow model.
+            agnostic_nms (bool): If True, add class-agnostic NMS to TensorFlow model.
+            topk_per_class (int): Top-k per class to keep for TensorFlow.js NMS.
+            topk_all (int): Top-k for all classes to keep for TensorFlow.js NMS.
+            iou_thres (float): IoU threshold for TensorFlow.js NMS.
+            conf_thres (float): Confidence threshold for TensorFlow.js NMS.
+
+    Returns:
+        list[str]: List of paths to the exported model(s).
+
+    Example:
+        $ python export.py --weights yolov5s.pt --include torchscript onnx openvino engine coreml tflite ...
     """
     for opt.weights in opt.weights if isinstance(opt.weights, list) else [opt.weights]:
         run(**vars(opt))
