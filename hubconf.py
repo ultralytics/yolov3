@@ -143,13 +143,13 @@ def yolov5n(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=Tr
         torch.nn.Module: The instantiated YOLOv5n model.
 
     Example:
-    ```python
-    import torch
-    model = torch.hub.load('ultralytics/yolov5', 'yolov5n')  # using official model
-    model = torch.hub.load('ultralytics/yolov5:master', 'yolov5n')  # from specific branch
-    model = torch.hub.load('ultralytics/yolov5', 'custom', 'yolov5n.pt')  # using custom/local model
-    model = torch.hub.load('.', 'custom', 'yolov5n.pt', source='local')  # from local repository
-    ```
+        ```python
+        import torch
+        model = torch.hub.load('ultralytics/yolov5', 'yolov5n')  # using official model
+        model = torch.hub.load('ultralytics/yolov5:master', 'yolov5n')  # from specific branch
+        model = torch.hub.load('ultralytics/yolov5', 'custom', 'yolov5n.pt')  # using custom/local model
+        model = torch.hub.load('.', 'custom', 'yolov5n.pt', source='local')  # from local repository
+        ```
     """
     return _create("yolov5n", pretrained, channels, classes, autoshape, _verbose, device)
 
