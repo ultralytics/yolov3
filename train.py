@@ -103,34 +103,35 @@ GIT_INFO = check_git_info()
 def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictionary
     """
     Train a YOLOv3 model on a custom dataset and manage the training process.
-
+    
     Args:
         hyp (str | dict): Path to hyperparameters yaml file or hyperparameters dictionary.
         opt (argparse.Namespace): Parsed command line arguments containing training options.
         device (torch.device): Device to load and train the model on.
         callbacks (Callbacks): Callbacks to handle various stages of the training lifecycle.
-
+    
     Returns:
         None
-
+    
     Usage - Single-GPU training:
         $ python train.py --data coco128.yaml --weights yolov5s.pt --img 640  # from pretrained (recommended)
         $ python train.py --data coco128.yaml --weights '' --cfg yolov5s.yaml --img 640  # from scratch
-
+    
     Usage - Multi-GPU DDP training:
-        $ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 train.py --data coco128.yaml --weights yolov5s.pt --img 640 --device 0,1,2,3
-
+        $ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 train.py --data coco128.yaml --weights 
+            yolov5s.pt --img 640 --device 0,1,2,3
+    
     Models: https://github.com/ultralytics/yolov5/tree/master/models
     Datasets: https://github.com/ultralytics/yolov5/tree/master/data
     Tutorial: https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
-
+    
     Examples:
         ```python
         from ultralytics import train
         import argparse
         import torch
         from utils.callbacks import Callbacks
-
+    
         # Example usage
         args = argparse.Namespace(
             data='coco128.yaml',
@@ -141,10 +142,10 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
             batch_size=16,
             device='0'
         )
-
+    
         device = torch.device(f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu')
         callbacks = Callbacks()
-
+    
         train(hyp='hyp.scratch.yaml', opt=args, device=device, callbacks=callbacks)
         ```
     """
@@ -544,24 +545,24 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
 
 def parse_opt(known=False):
     """
-    Parses command line arguments for configuring the training of a YOLO model.
-
+    Parse command line arguments for configuring the training of a YOLO model.
+    
     Args:
         known (bool): Flag to parse known arguments only, defaults to False.
-
+    
     Returns:
-        argparse.Namespace: Parsed command line arguments.
-
+        (argparse.Namespace): Parsed command line arguments.
+    
     Examples:
         ```python
         options = parse_opt()
         print(options.weights)
         ```
-
+    
     Notes:
         * The default weights path is 'yolov3-tiny.pt'.
         * Set `known` to True for parsing only the known arguments, useful for partial arguments.
-
+    
     References:
         * Models: https://github.com/ultralytics/yolov5/tree/master/models
         * Datasets: https://github.com/ultralytics/yolov5/tree/master/data
@@ -615,33 +616,33 @@ def parse_opt(known=False):
 def main(opt, callbacks=Callbacks()):
     """
     Main training/evolution script handling model checks, DDP setup, training, and hyperparameter evolution.
-
+    
     Args:
         opt (argparse.Namespace): Parsed command-line options.
         callbacks (Callbacks, optional): Callback object for handling training events. Defaults to Callbacks().
-
+    
     Returns:
         None
-
+    
     Raises:
         AssertionError: If certain constraints are violated (e.g., when specific options are incompatible with DDP training).
-
+    
     Notes:
-       - For tutorial on using Multi-GPU with DDP: https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training
-
+       - For a tutorial on using Multi-GPU with DDP: https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training
+    
     Example:
         Single-GPU training:
         ```python
         $ python train.py --data coco128.yaml --weights yolov5s.pt --img 640  # from pretrained (recommended)
         $ python train.py --data coco128.yaml --weights '' --cfg yolov5s.yaml --img 640  # from scratch
         ```
-
+    
         Multi-GPU DDP training:
         ```python
         $ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 train.py --data coco128.yaml \
         --weights yolov5s.pt --img 640 --device 0,1,2,3
         ```
-
+    
         Models: https://github.com/ultralytics/yolov5/tree/master/models
         Datasets: https://github.com/ultralytics/yolov5/tree/master/data
         Tutorial: https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
@@ -812,38 +813,57 @@ def main(opt, callbacks=Callbacks()):
 
 def run(**kwargs):
     """
-    Executes model training with specified configurations.
-
+    Run the training process for a YOLOv3 model with the specified configurations.
+    
     Args:
-        kwargs (dict): Configuration parameters for the training process. Supported parameters include but are not limited to:
-            - data (str): Path to the dataset YAML file.
-            - weights (str): Path to initial weights file.
-            - imgsz (int): Image size for training and validation.
-            - epochs (int): Number of training epochs.
-            - batch_size (int): Total batch size for all GPUs.
-
+        data (str): Path to the dataset YAML file.
+        weights (str): Path to the pre-trained weights file or '' to train from scratch.
+        cfg (str): Path to the model configuration file.
+        hyp (str): Path to the hyperparameters YAML file.
+        epochs (int): Total number of training epochs.
+        batch_size (int): Total batch size across all GPUs.
+        imgsz (int): Image size for training and validation (in pixels).
+        rect (bool): Use rectangular training for better aspect ratio preservation.
+        resume (bool | str): Resume most recent training if True, or resume training from a specific checkpoint if a string.
+        nosave (bool): Only save the final checkpoint and not the intermediate ones.
+        noval (bool): Only validate model performance in the final epoch.
+        noautoanchor (bool): Disable automatic anchor generation.
+        noplots (bool): Do not save any plots.
+        evolve (int): Number of generations for hyperparameters evolution.
+        bucket (str): Google Cloud Storage bucket name for saving run artifacts.
+        cache (str | None): Cache images for faster training ('ram' or 'disk').
+        image_weights (bool): Use weighted image selection for training.
+        device (str): Device to use for training, e.g., '0' for first GPU or 'cpu' for CPU.
+        multi_scale (bool): Use multi-scale training.
+        single_cls (bool): Train a multi-class dataset as a single-class.
+        optimizer (str): Optimizer to use ('SGD', 'Adam', or 'AdamW').
+        sync_bn (bool): Use synchronized batch normalization (only in DDP mode).
+        workers (int): Maximum number of dataloader workers (per rank in DDP mode).
+        project (str): Location of the output directory.
+        name (str): Unique name for the run.
+        exist_ok (bool): Allow existing output directory.
+        quad (bool): Use quad dataloader.
+        cos_lr (bool): Use cosine learning rate scheduler.
+        label_smoothing (float): Label smoothing epsilon.
+        patience (int): EarlyStopping patience (epochs without improvement).
+        freeze (list[int]): List of layers to freeze, e.g., [0] to freeze only the first layer.
+        save_period (int): Save checkpoint every 'save_period' epochs (disabled if less than 1).
+        seed (int): Global training seed for reproducibility.
+        local_rank (int): For automatic DDP Multi-GPU argument parsing, do not modify.
+    
     Returns:
         None
-
-    Notes:
-        - Ensure that the provided dataset YAML file and the initial weights path are accessible.
-        - For multi-GPU training, use appropriate distributed training settings.
-        - Example usage:
-        ```python
-        run(data='coco128.yaml', imgsz=320, weights='yolov5m.pt')
-        ```
-
+    
     Example:
-        To execute model training with custom configurations:
         ```python
-        from train import run
-        run(data='coco128.yaml', imgsz=320, weights='yolov5m.pt')
+        from ultralytics import run
+        run(data='coco128.yaml', weights='yolov5m.pt', imgsz=320, epochs=100, batch_size=16)
         ```
-
-    References:
-        - Models: https://github.com/ultralytics/yolov5/tree/master/models
-        - Datasets: https://github.com/ultralytics/yolov5/tree/master/data
-        - Tutorial: https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
+    
+    Notes:
+        - Ensure the dataset YAML file and initial weights are accessible.
+        - Refer to the [Ultralytics YOLOv5 repository](https://github.com/ultralytics/yolov5) for model and data configurations.
+        - Use the [Training Tutorial](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data) for custom dataset training.
     """
     opt = parse_opt(True)
     for k, v in kwargs.items():

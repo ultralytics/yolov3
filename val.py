@@ -64,21 +64,21 @@ from utils.torch_utils import select_device, smart_inference_mode
 def save_one_txt(predn, save_conf, shape, file):
     """
     Saves detection results in a text format, including labels and optionally confidence scores.
-
+    
     Args:
         predn (torch.Tensor): A tensor containing normalized prediction results in the format (x1, y1, x2, y2, conf, cls).
         save_conf (bool): A flag indicating whether to save confidence scores.
         shape (tuple[int, int]): Original image shape in the format (height, width).
         file (str | Path): Path to the file where the results will be saved.
-
+    
     Returns:
         None
-
+    
     Example:
         ```python
         from pathlib import Path
         import torch
-
+    
         predn = torch.tensor([
             [10, 20, 100, 200, 0.9, 1],
             [30, 40, 150, 250, 0.8, 0],
@@ -86,10 +86,10 @@ def save_one_txt(predn, save_conf, shape, file):
         save_conf = True
         shape = (416, 416)
         file = Path("results.txt")
-
+    
         save_one_txt(predn, save_conf, shape, file)
         ```
-
+    
     Notes:
         - The function normalizes bounding box coordinates before saving.
         - Each line in the output file will contain class, x-center, y-center, width, height and optionally confidence score.
@@ -105,18 +105,18 @@ def save_one_txt(predn, save_conf, shape, file):
 
 def save_one_json(predn, jdict, path, class_map):
     """
-    Saves detection results in JSON format containing image_id, category_id, bbox, and score per detection.
-
+    Save detection results in JSON format containing image_id, category_id, bbox, and score per detection.
+    
     Args:
         predn (torch.Tensor): Normalized prediction tensor of shape (N, 6) where N is the number of detections.
             Each detection should contain (x1, y1, x2, y2, confidence, class).
         jdict (list): List to store the JSON serializable detections.
         path (Path): Path object representing the image file path.
         class_map (dict[int, int]): Dictionary mapping class indices to their respective category IDs.
-
+    
     Returns:
         None
-
+    
     Example:
         ```python
         predn = torch.tensor([[50, 30, 200, 150, 0.9, 0], [30, 20, 180, 150, 0.8, 1]])
@@ -125,6 +125,11 @@ def save_one_json(predn, jdict, path, class_map):
         class_map = {0: 1, 1: 2}
         save_one_json(predn, jdict, path, class_map)
         ```
+    
+    Notes:
+        - The image_id is extracted from the image file path.
+        - Bounding boxes are converted from xyxy format to xywh format.
+        - The JSON output format is compatible with COCO dataset evaluation.
     """
     image_id = int(path.stem) if path.stem.isnumeric() else path.stem
     box = xyxy2xywh(predn[:, :4])  # xywh
@@ -143,20 +148,20 @@ def save_one_json(predn, jdict, path, class_map):
 def process_batch(detections, labels, iouv):
     """
     Computes correct prediction matrix for detections against ground truth labels at various IoU thresholds.
-
+    
     Args:
         detections (np.ndarray): Array of detections with shape (N, 6), where each detection contains [x1, y1, x2, y2,
             confidence, class].
         labels (np.ndarray): Array of ground truth labels with shape (M, 5), where each label contains [class, x1, y1, x2, y2].
         iouv (np.ndarray): Array of IoU thresholds to use for evaluation.
-
+    
     Returns:
         np.ndarray: Boolean array of shape (N, len(iouv)), indicating correct predictions at each IoU threshold.
-
+    
     Notes:
         - This function compares detections and ground truth labels to establish matches based on IoU and class.
         - It supports multiple IoU thresholds to evaluate prediction accuracy flexibly.
-
+    
     Example:
         ```python
         detections = np.array([[50, 50, 150, 150, 0.8, 0],
@@ -164,7 +169,7 @@ def process_batch(detections, labels, iouv):
         labels = np.array([[0, 50, 50, 150, 150],
                            [1, 30, 30, 120, 120]])
         iouv = np.array([0.5, 0.6, 0.7])
-
+    
         correct = process_batch(detections, labels, iouv)
         ```
     """
@@ -217,8 +222,8 @@ def run(
 ):
     """
     Validates a trained YOLO model on a dataset and saves detection results in specified formats.
-
-    Parameters:
+    
+    Args:
         data (str | dict): Path to the dataset configuration file (.yaml) or a dictionary containing the dataset paths.
         weights (str | list, optional): Path to the trained model weights file(s). Default is None.
         batch_size (int, optional): Batch size for inference. Default is 32.
@@ -241,18 +246,33 @@ def run(
         exist_ok (bool, optional): Whether to overwrite existing project/name directory. Default is False.
         half (bool, optional): Whether to use half-precision (FP16) for inference. Default is True.
         dnn (bool, optional): Whether to use OpenCV DNN for ONNX inference. Default is False.
-        model (nn.Module, optional): Existing model instance. Default is None.
-        dataloader (DataLoader, optional): Existing dataloader instance. Default is None.
+        model (torch.nn.Module, optional): Existing model instance. Default is None.
+        dataloader (torch.utils.data.DataLoader, optional): Existing dataloader instance. Default is None.
         save_dir (Path, optional): Path to directory to save results. Default is Path("").
         plots (bool, optional): Whether to generate plots for visual results. Default is True.
         callbacks (Callbacks, optional): Callbacks instance for event handling. Default is Callbacks().
         compute_loss (Callable, optional): Loss function for computing training loss. Default is None.
-
+    
     Returns:
-        Tuple[torch.Tensor, dict, dict, torch.Tensor]:
-        - metrics: Dictionary containing metrics such as precision, recall, mAP, F1 score, etc.
-        - time: Dictionary containing times for different parts of the pipeline (e.g., preprocessing, inference, NMS)
-        - samples: Torch tensor containing validation samples.
+        (tuple): A tuple containing:
+            - metrics (torch.Tensor): Dictionary containing metrics such as precision, recall, mAP, F1 score, etc.
+            - times (dict): Dictionary containing times for different parts of the pipeline (e.g., preprocessing, inference, NMS).
+            - samples (torch.Tensor): Torch tensor containing validation samples.
+    
+    Example:
+        ```python
+        metrics, times, samples = run(
+            data='data/coco.yaml',
+            weights='yolov5s.pt',
+            batch_size=32,
+            imgsz=640,
+            conf_thres=0.001,
+            iou_thres=0.6,
+            max_det=300,
+            task='val',
+            device='cpu'
+        )
+        ```
     """
     # Initialize/load model and set device
     training = model is not None
@@ -470,7 +490,7 @@ def run(
 def parse_opt():
     """
     Parses and returns command-line options for dataset paths, model parameters, and inference settings.
-
+    
     Args:
         --data (str): Path to the dataset YAML file. Default is 'data/coco128.yaml'.
         --weights (list[str]): Paths to one or more model files. Default is 'yolov3-tiny.pt'.
@@ -494,15 +514,15 @@ def parse_opt():
         --exist-ok (bool): Whether to overwrite existing project/name without incrementing. Default is False.
         --half (bool): Use FP16 half-precision during inference. Default is False.
         --dnn (bool): Use OpenCV DNN backend for ONNX inference. Default is False.
-
+    
     Returns:
         opt (argparse.Namespace): Parsed command-line options.
-
+    
     Notes:
         - The function uses `argparse` to handle command-line options.
-        - It also modifies some options based on specific conditions, such as appending additional flags for saving in
-          JSON format and checking for the `coco.yaml` dataset.
-
+        - It also modifies some options based on specific conditions, such as appending additional flags for saving 
+        in JSON format and checking for the `coco.yaml` dataset.
+    
     Example:
         Use the following command to run validation with custom settings:
         ```python
@@ -543,31 +563,31 @@ def parse_opt():
 def main(opt):
     """
     Executes model tasks including training, validation, and speed or study benchmarks based on specified options.
-
+    
     Args:
         opt (argparse.Namespace): Parsed command-line options for dataset paths, model parameters, and inference settings.
-
+    
     Returns:
         None
-
+    
     Note:
-        This function orchestrates different tasks based on the user input provided through command-line arguments. It
-        supports tasks like `train`, `val`, `test`, `speed`, and `study`. Depending on the task, it validates the model on a
-        dataset, performs speed benchmarks, or runs mAP benchmarks.
-
+        This function orchestrates different tasks based on the user input provided through command-line arguments. It supports tasks
+        like `train`, `val`, `test`, `speed`, and `study`. Depending on the task, it validates the model on a dataset, performs speed
+        benchmarks, or runs mAP benchmarks.
+    
     Examples:
         To validate a trained YOLOv3 model:
-
+    
         ```bash
         $ python val.py --weights yolov3.pt --data coco.yaml --img 640 --task val
         ```
-
+    
         For running speed benchmarks:
-
+    
         ```bash
         $ python val.py --task speed --data coco.yaml --weights yolov3.pt --batch-size 1
         ```
-
+    
     Links:
         For more information, visit the official repository: https://github.com/ultralytics/ultralytics
     """
