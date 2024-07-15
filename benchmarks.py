@@ -78,9 +78,9 @@ def run(
         None
 
     Notes:
-        This function iterates over multiple export formats, performs the export, and then validates the model's
-        performance using appropriate validation functions for detection and segmentation models. The results are logged,
-        and optionally, benchmarks can be configured to raise errors on failures using the `hard_fail` argument.
+        This function iterates over multiple export formats, performs the export, and then validates the model's performance
+        using appropriate validation functions for detection and segmentation models. The results are logged, and optionally,
+        benchmarks can be configured to raise errors on failures using the `hard_fail` argument.
 
     Examples:
         ```python
@@ -173,7 +173,7 @@ def test(
         hard_fail (bool): Raise an error on benchmark failure. Defaults to False.
 
     Returns:
-        pd.DataFrame: A DataFrame containing the export formats and their success status. (pd.DataFrame)
+        pd.DataFrame: A DataFrame containing the export formats and their success status.
 
     Examples:
         ```python
@@ -223,7 +223,7 @@ def test(
 
 def parse_opt():
     """
-    Parses command line arguments for YOLOv3 inference and export configuration.
+    Parses command line arguments for YOLOv3 inference and export configurations.
 
     Args:
         --weights (str): Path to the weights file. Default is 'ROOT / "yolov3-tiny.pt"'.
@@ -233,10 +233,10 @@ def parse_opt():
         --device (str): CUDA device identifier, e.g., '0' for single GPU, '0,1,2,3' for multiple GPUs, or 'cpu' for CPU
             inference. Default is "".
         --half (bool): If set, use FP16 half-precision inference. Default is False.
-        --test (bool): If set, only test exports without running inference. Default is False.
+        --test (bool): If set, test only exports without running inference. Default is False.
         --pt-only (bool): If set, test only the PyTorch model without exporting to other formats. Default is False.
-        --hard-fail (str | bool): If set, raise an exception on benchmark failure. Can also be a string representing
-            the minimum metric floor for success. Default is False.
+        --hard-fail (str | bool): If set, raise an exception on benchmark failure. Can also be a string representing the
+            minimum metric floor for success. Default is False.
 
     Returns:
         argparse.Namespace: The parsed arguments as a namespace object.
