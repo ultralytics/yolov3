@@ -97,7 +97,7 @@ def run(
 ):
     """
     Run YOLOv3 detection inference on various input sources such as images, videos, streams, and YouTube URLs.
-    
+
     Args:
         weights (str | Path): Path to the model weights file or a Triton URL (default: 'yolov5s.pt').
         source (str | Path): Source of input data such as a file, directory, URL, glob pattern, or device identifier
@@ -127,24 +127,24 @@ def run(
         half (bool): Whether to use half-precision (FP16) for inference (default: False).
         dnn (bool): Whether to use OpenCV DNN for ONNX inference (default: False).
         vid_stride (int): Stride for video frame rate (default: 1).
-    
+
     Returns:
         None
-    
+
     Notes:
         This function supports a variety of input sources such as image files, video files, directories, URL patterns,
         webcam streams, and YouTube links. It also supports multiple model formats including PyTorch, ONNX, OpenVINO,
         TensorRT, CoreML, TensorFlow, PaddlePaddle, and others. The results can be visualized in real-time or saved to
         specified directories. Use command-line arguments to modify the behavior of the function.
-    
+
     Examples:
         ```python
         # Run YOLOv3 inference on an image
         run(weights='yolov5s.pt', source='data/images/bus.jpg')
-    
+
         # Run YOLOv3 inference on a video
         run(weights='yolov5s.pt', source='data/videos/video.mp4', view_img=True)
-    
+
         # Run YOLOv3 inference on a webcam
         run(weights='yolov5s.pt', source='0', view_img=True)
         ```
@@ -288,7 +288,7 @@ def run(
 def parse_opt():
     """
     Parses and returns command-line options for running YOLOv3 model detection.
-    
+
     Args:
         --weights (list[str]): Model path or Triton URL. Default: ROOT / "yolov3-tiny.pt".
         --source (str): Input data source like file/dir/URL/glob/screen/0(webcam). Default: ROOT / "data/images".
@@ -317,10 +317,10 @@ def parse_opt():
         --half (bool): Use FP16 half-precision inference. Default: False.
         --dnn (bool): Use OpenCV DNN backend for ONNX inference. Default: False.
         --vid-stride (int): Frame-rate stride for video input. Default: 1.
-    
+
     Returns:
         argparse.Namespace: Parsed command-line arguments for YOLOv3 inference configurations.
-    
+
     Example:
         ```python
         options = parse_opt()
@@ -366,7 +366,7 @@ def parse_opt():
 def main(opt):
     """
     Entry point for running the YOLO model; checks requirements and calls `run` with parsed options.
-    
+
     Args:
         opt (argparse.Namespace): Parsed command-line options, which include:
             - weights (str | list of str): Path to the model weights or Triton server URL.
@@ -396,20 +396,20 @@ def main(opt):
             - half (bool): Use FP16 half-precision inference.
             - dnn (bool): Use OpenCV DNN backend for ONNX inference.
             - vid_stride (int): Video frame-rate stride.
-    
+
     Returns:
         None
-    
+
     Example:
         ```python
         if __name__ == "__main__":
             opt = parse_opt()
             main(opt)
         ```
-    
+
     Notes:
-        Run this function as the entry point for using YOLO for object detection on a variety of input sources such as 
-        images, videos, directories, webcams, streams, etc. This function ensures all requirements are checked and 
+        Run this function as the entry point for using YOLO for object detection on a variety of input sources such as
+        images, videos, directories, webcams, streams, etc. This function ensures all requirements are checked and
         subsequently initiates the detection process by calling the `run` function with appropriate options.
     """
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
