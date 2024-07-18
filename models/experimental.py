@@ -11,8 +11,8 @@ from utils.downloads import attempt_download
 
 
 class Sum(nn.Module):
-    # Weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
-    # Weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
+    # 1- Weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
+    # 2- Weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
     def __init__(self, n, weight=False):  # n: number of inputs
         """
         Initializes a module to compute weighted/unweighted sum of n inputs, with optional learning weights.
@@ -45,7 +45,7 @@ class Sum(nn.Module):
 class MixConv2d(nn.Module):
     # Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
     def __init__(self, c1, c2, k=(1, 3), s=1, equal_ch=True):  # ch_in, ch_out, kernel, stride, ch_strategy
-        # Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
+        # 1 Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
         # 2 Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
         # 3 Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
         super().__init__()
