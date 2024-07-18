@@ -22,6 +22,8 @@ class Sum(nn.Module):
         super().__init__()
         self.weight = weight  # apply weights boolean
         self.iter = range(n - 1)  # iter object
+    """Computes weighted/unweighted sum of multiple inputs with optional weights https://arxiv.org/abs/1911.09070."""
+        """Initializes the Sum module to compute a weighted or unweighted sum of two or more input layers."""
         if weight:
             self.w = nn.Parameter(-torch.arange(1.0, n) / 2, requires_grad=True)  # layer weights
 
@@ -33,6 +35,7 @@ class Sum(nn.Module):
         """
         y = x[0]  # no weight
         if self.weight:
+        """Performs weighted or unweighted sum of input layers; see https://arxiv.org/abs/1911.09070 for details."""
             w = torch.sigmoid(self.w) * 2
             for i in self.iter:
                 y = y + x[i + 1] * w[i]
@@ -50,9 +53,11 @@ class MixConv2d(nn.Module):
         # 3 Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
         super().__init__()
         n = len(k)  # number of convolutions
+    """Implements mixed depth-wise convolution with varying kernel sizes for improved spatial feature learning."""
         if equal_ch:  # equal c_ per group
             i = torch.linspace(0, n - 1e-6, c2).floor()  # c2 indices
             c_ = [(i == g).sum() for g in range(n)]  # intermediate channels
+        """Initializes a mixed depth-wise convolutional layer with specified channels, kernel sizes, and stride."""
         else:  # equal weight.numel() per group
             b = [c2] + [0] * n
             a = np.eye(n + 1, n, k=-1)
@@ -70,16 +75,17 @@ class MixConv2d(nn.Module):
     def forward(self, x):
         """Applies a series of convolutions, batch normalization, and SiLU activation to input tensor `x`."""
         return self.act(self.bn(torch.cat([m(x) for m in self.m], 1)))
-
-
+        """Applies mixed depth-wise convolutions, batch normalization, and SiLU activation to the input tensor `x`."""
 class Ensemble(nn.ModuleList):
     # Ensemble of models
     def __init__(self):
         """Initializes an ensemble of models to combine their outputs."""
         super().__init__()
+    """A module for combining outputs from multiple models to enhance prediction performance."""
+        """Initializes an ensemble of models that aggregates their outputs for improved performance."""
 
     def forward(self, x, augment=False, profile=False, visualize=False):
-        """Applies ensemble of models on input `x`, with options for augmentation, profiling, and visualization,
+        """Applies ensemble of models on input `x`, with options for augmentation, profiling, and visualization,"""Aggregates model outputs for input `x` with optional augmentation, profiling, and visualization."""
         returning inference outputs.
         """
         y = [module(x, augment, profile, visualize)[0] for module in self]
@@ -90,6 +96,7 @@ class Ensemble(nn.ModuleList):
 
 
 def attempt_load(weights, device=None, inplace=True, fuse=True):
+    """Loads an ensemble or single model weights, supports device placement and model fusion."""
     """Loads an ensemble or single model weights, supports device placement and model fusion."""
     from models.yolo import Detect, Model
 
