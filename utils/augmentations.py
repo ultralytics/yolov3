@@ -156,7 +156,6 @@ def random_perspective(
 ):
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(0.1, 0.1), scale=(0.9, 1.1), shear=(-10, 10))
     # targets = [cls, xyxy]
-
     """Applies a random perspective transformation to an image and its bounding boxes for data augmentation."""
     height = im.shape[0] + border[0] * 2  # shape(h,w,c)
     width = im.shape[1] + border[1] * 2
@@ -244,7 +243,8 @@ def random_perspective(
 
 def copy_paste(im, labels, segments, p=0.5):
     """Applies Copy-Paste augmentation (https://arxiv.org/abs/2012.07177) on image, labels (nx5 np.array(cls, xyxy)),
-    and segments."""
+    and segments.
+    """
     n = len(segments)
     if p and n:
         h, w, c = im.shape  # height, width, channels
@@ -294,7 +294,8 @@ def cutout(im, labels, p=0.5):
 
 def mixup(im, labels, im2, labels2):
     """Applies MixUp augmentation by blending images and labels; see https://arxiv.org/pdf/1710.09412.pdf for
-    details."""
+    details.
+    """
     r = np.random.beta(32.0, 32.0)  # mixup ratio, alpha=beta=32.0
     im = (im * r + im2 * (1 - r)).astype(np.uint8)
     labels = np.concatenate((labels, labels2), 0)

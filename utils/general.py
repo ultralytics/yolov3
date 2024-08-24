@@ -515,7 +515,6 @@ def check_font(font=FONT, progress=False):
 
 def check_dataset(data, autodownload=True):
     """Verifies and prepares dataset by downloading if absent, checking, and unzipping; supports auto-downloading."""
-
     # Download (optional)
     extract_dir = ""
     if isinstance(data, (str, Path)) and (is_zipfile(data) or is_tarfile(data)):
@@ -704,7 +703,8 @@ def clean_str(s):
 
 def one_cycle(y1=0.0, y2=1.0, steps=100):
     """Generates a lambda for a sinusoidal ramp from y1 to y2 over 'steps'; usage: `lambda x: ((1 - math.cos(x *
-    math.pi / steps)) / 2) * (y2 - y1) + y1`."""
+    math.pi / steps)) / 2) * (y2 - y1) + y1`.
+    """
     return lambda x: ((1 - math.cos(x * math.pi / steps)) / 2) * (y2 - y1) + y1
 
 
@@ -1019,7 +1019,6 @@ def non_max_suppression(
     Returns:
          list of detections, on (n,6) tensor per image [xyxy, conf, cls]
     """
-
     # Checks
     assert 0 <= conf_thres <= 1, f"Invalid Confidence threshold {conf_thres}, valid values are between 0.0 and 1.0"
     assert 0 <= iou_thres <= 1, f"Invalid IoU {iou_thres}, valid values are between 0.0 and 1.0"

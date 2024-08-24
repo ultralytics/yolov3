@@ -102,7 +102,8 @@ class TransformerLayer(nn.Module):
     # Transformer layer https://arxiv.org/abs/2010.11929 (LayerNorm layers removed for better performance)
     def __init__(self, c, num_heads):
         """Initializes a Transformer layer as per https://arxiv.org/abs/2010.11929, sans LayerNorm, with specified
-        embedding dimension and number of heads."""
+        embedding dimension and number of heads.
+        """
         super().__init__()
         self.q = nn.Linear(c, c, bias=False)
         self.k = nn.Linear(c, c, bias=False)
@@ -164,7 +165,8 @@ class BottleneckCSP(nn.Module):
     # CSP Bottleneck https://github.com/WongKinYiu/CrossStagePartialNetworks
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
         """Initializes CSP Bottleneck with channel in/out, optional shortcut, groups, expansion; see
-        https://github.com/WongKinYiu/CrossStagePartialNetworks."""
+        https://github.com/WongKinYiu/CrossStagePartialNetworks.
+        """
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
@@ -323,7 +325,8 @@ class GhostConv(nn.Module):
     # Ghost Convolution https://github.com/huawei-noah/ghostnet
     def __init__(self, c1, c2, k=1, s=1, g=1, act=True):  # ch_in, ch_out, kernel, stride, groups
         """Initializes GhostConv with in/out channels, kernel size, stride, groups; see
-        https://github.com/huawei-noah/ghostnet."""
+        https://github.com/huawei-noah/ghostnet.
+        """
         super().__init__()
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
@@ -339,7 +342,8 @@ class GhostBottleneck(nn.Module):
     # Ghost Bottleneck https://github.com/huawei-noah/ghostnet
     def __init__(self, c1, c2, k=3, s=1):  # ch_in, ch_out, kernel, stride
         """Initializes GhostBottleneck module with in/out channels, kernel size, and stride; see
-        https://github.com/huawei-noah/ghostnet."""
+        https://github.com/huawei-noah/ghostnet.
+        """
         super().__init__()
         c_ = c2 // 2
         self.conv = nn.Sequential(
@@ -786,7 +790,8 @@ class AutoShape(nn.Module):
     @smart_inference_mode()
     def forward(self, ims, size=640, augment=False, profile=False):
         """Performs inference on various input sources with optional augmentation and profiling; see
-        `https://ultralytics.com`."""
+        `https://ultralytics.com`.
+        """
         #   file:        ims = 'data/images/zidane.jpg'  # str or PosixPath
         #   URI:             = 'https://ultralytics.com/images/zidane.jpg'
         #   OpenCV:          = cv2.imread('image.jpg')[:,:,::-1]  # HWC BGR to RGB x(640,1280,3)
