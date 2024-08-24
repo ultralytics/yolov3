@@ -340,7 +340,8 @@ class GenericLogger:
     """
     YOLOv3 General purpose logger for non-task specific logging
     Usage: from utils.loggers import GenericLogger; logger = GenericLogger(...)
-    Arguments
+
+    Arguments:
         opt:             Run arguments
         console_logger:  Console logger
         include:         loggers to include

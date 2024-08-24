@@ -78,7 +78,7 @@ class ClearmlLogger:
         - Initialize ClearML Task, this object will capture the experiment
         - Upload dataset version to ClearML Data if opt.upload_dataset is True
 
-        arguments:
+        Arguments:
         opt (namespace) -- Commandline arguments for this run
         hyp (dict) -- Hyperparameters for this run
 
@@ -129,7 +129,7 @@ class ClearmlLogger:
         """
         Log files (images) as debug samples in the ClearML task.
 
-        arguments:
+        Arguments:
         files (List(PosixPath)) a list of file paths in PosixPath format
         title (str) A title that groups together images with the same values
         """
@@ -145,7 +145,7 @@ class ClearmlLogger:
         """
         Draw the bounding boxes on a single image and report the result as a ClearML debug sample.
 
-        arguments:
+        Arguments:
         image_path (PosixPath) the path the original image file
         boxes (list): list of scaled predictions in the format - [xmin, ymin, xmax, ymax, confidence, class]
         class_names (dict): dict containing mapping of class int to class name

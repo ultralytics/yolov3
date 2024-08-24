@@ -45,7 +45,8 @@ class MixConv2d(nn.Module):
     # Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
     def __init__(self, c1, c2, k=(1, 3), s=1, equal_ch=True):  # ch_in, ch_out, kernel, stride, ch_strategy
         """Initializes MixConv2d with mixed depth-wise convolution layers; details at
-        https://arxiv.org/abs/1907.09595."""
+        https://arxiv.org/abs/1907.09595.
+        """
         super().__init__()
         n = len(k)  # number of convolutions
         if equal_ch:  # equal c_ per group
