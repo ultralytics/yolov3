@@ -39,10 +39,7 @@ jobs:
           default_branch_name = repo.default_branch
           default_branch = repo.get_branch(default_branch_name)
           
-          print(f"ℹ️ Default branch for this repository is: {default_branch_name}")
-
-          open_pulls = repo.get_pulls(state='open', sort='created')
-          for pr in open_pulls:
+          for pr in repo.get_pulls(state='open', sort='created'):
               try:
                   # Get full names for repositories and branches
                   base_repo_name = repo.full_name
