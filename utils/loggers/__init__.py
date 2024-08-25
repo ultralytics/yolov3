@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """Logging utils."""
 
 import os
@@ -20,7 +20,13 @@ RANK = int(os.getenv("RANK", -1))
 try:
     from torch.utils.tensorboard import SummaryWriter
 except ImportError:
-    SummaryWriter = lambda *args: None  # None = SummaryWriter(str)
+
+    def SummaryWriter(*args):
+        """Imports TensorBoard's SummaryWriter for logging, with a fallback returning None if TensorBoard is not
+        installed.
+        """
+        return None  # None = SummaryWriter(str)
+
 
 try:
     import wandb
@@ -59,6 +65,9 @@ except (ImportError, AssertionError):
 class Loggers:
     # YOLOv3 Loggers class
     def __init__(self, save_dir=None, weights=None, opt=None, hyp=None, logger=None, include=LOGGERS):
+        """Initializes YOLOv3 logging with directory, weights, options, hyperparameters, and includes specified
+        loggers.
+        """
         self.save_dir = save_dir
         self.weights = weights
         self.opt = opt
@@ -134,7 +143,7 @@ class Loggers:
 
     @property
     def remote_dataset(self):
-        # Get data_dict if custom dataset artifact link is provided
+        """Fetches dataset dictionary from ClearML, W&B, or Comet ML based on the logger instantiated."""
         data_dict = None
         if self.clearml:
             data_dict = self.clearml.data_dict
@@ -146,15 +155,21 @@ class Loggers:
         return data_dict
 
     def on_train_start(self):
+        """Calls `on_train_start` method on comet_logger if it's available."""
         if self.comet_logger:
             self.comet_logger.on_train_start()
 
     def on_pretrain_routine_start(self):
+        """Initiates pretraining routine on comet_logger if available."""
         if self.comet_logger:
             self.comet_logger.on_pretrain_routine_start()
 
     def on_pretrain_routine_end(self, labels, names):
-        # Callback runs on pre-train routine end
+        """
+        Logs pretrain routine end, plots labels if enabled, updates WandB/Comet with images.
+
+        Takes `labels` (List of int), `names` (List of str).
+        """
         if self.plots:
             plot_labels(labels, names, self.save_dir)
             paths = self.save_dir.glob("*labels*.jpg")  # training labels
@@ -166,6 +181,7 @@ class Loggers:
                 self.comet_logger.on_pretrain_routine_end(paths)
 
     def on_train_batch_end(self, model, ni, imgs, targets, paths, vals):
+        """Logs training batch details, plots initial batches, logs Tensorboard and WandB/ClearML if enabled."""
         log_dict = dict(zip(self.keys[:3], vals))
         # Callback runs on train batch end
         # ni: number integrated batches (since train start)
@@ -186,7 +202,7 @@ class Loggers:
             self.comet_logger.on_train_batch_end(log_dict, step=ni)
 
     def on_train_epoch_end(self, epoch):
-        # Callback runs on train epoch end
+        """Callback that updates the current epoch in wandb at the end of each training epoch."""
         if self.wandb:
             self.wandb.current_epoch = epoch + 1
 
@@ -194,22 +210,30 @@ class Loggers:
             self.comet_logger.on_train_epoch_end(epoch)
 
     def on_val_start(self):
+        """Callback that notifies the comet logger at the start of each validation phase."""
         if self.comet_logger:
             self.comet_logger.on_val_start()
 
     def on_val_image_end(self, pred, predn, path, names, im):
-        # Callback runs on val image end
+        """Callback for logging a single validation image and its predictions to WandB or ClearML at the end of
+        validation.
+        """
         if self.wandb:
             self.wandb.val_one_image(pred, predn, path, names, im)
         if self.clearml:
             self.clearml.log_image_with_boxes(path, pred, names, im)
 
     def on_val_batch_end(self, batch_i, im, targets, paths, shapes, out):
+        """
+        Logs a single validation batch for Comet ML analytics (batch_i: int, im: tensor, targets: tensor, paths:
+
+        list, shapes: list, out: tensor).
+        """
         if self.comet_logger:
             self.comet_logger.on_val_batch_end(batch_i, im, targets, paths, shapes, out)
 
     def on_val_end(self, nt, tp, fp, p, r, f1, ap, ap50, ap_class, confusion_matrix):
-        # Callback runs on val end
+        """Logs validation results and images on validation end for visual analytics."""
         if self.wandb or self.clearml:
             files = sorted(self.save_dir.glob("val*.jpg"))
         if self.wandb:
@@ -221,7 +245,7 @@ class Loggers:
             self.comet_logger.on_val_end(nt, tp, fp, p, r, f1, ap, ap50, ap_class, confusion_matrix)
 
     def on_fit_epoch_end(self, vals, epoch, best_fitness, fi):
-        # Callback runs at the end of each fit (train+val) epoch
+        """Logs epoch results to CSV if enabled, updating with vals, best_fitness, and fi."""
         x = dict(zip(self.keys, vals))
         if self.csv:
             file = self.save_dir / "results.csv"
@@ -254,7 +278,9 @@ class Loggers:
             self.comet_logger.on_fit_epoch_end(x, epoch=epoch)
 
     def on_model_save(self, last, epoch, final_epoch, best_fitness, fi):
-        # Callback runs on model save event
+        """Logs model to WandB/ClearML, considering save_period and if not final_epoch, also notes if best model so
+        far.
+        """
         if (epoch + 1) % self.opt.save_period == 0 and not final_epoch and self.opt.save_period != -1:
             if self.wandb:
                 self.wandb.log_model(last.parent, self.opt, epoch, fi, best_model=best_fitness == fi)
@@ -267,7 +293,9 @@ class Loggers:
             self.comet_logger.on_model_save(last, epoch, final_epoch, best_fitness, fi)
 
     def on_train_end(self, last, best, epoch, results):
-        # Callback runs on training end, i.e. saving best model
+        """Callback to execute at training end, saving plots of results and relevant metrics to the specified save
+        directory.
+        """
         if self.plots:
             plot_results(file=self.save_dir / "results.csv")  # save results.png
         files = ["results.png", "confusion_matrix.png", *(f"{x}_curve.png" for x in ("F1", "PR", "P", "R"))]
@@ -301,7 +329,7 @@ class Loggers:
             self.comet_logger.on_train_end(files, self.save_dir, last, best, epoch, final_results)
 
     def on_params_update(self, params: dict):
-        # Update hyperparams or configs of the experiment
+        """Updates experiment hyperparameters or configs in WandB and Comet logger with provided params dictionary."""
         if self.wandb:
             self.wandb.wandb_run.config.update(params, allow_val_change=True)
         if self.comet_logger:
@@ -312,14 +340,15 @@ class GenericLogger:
     """
     YOLOv3 General purpose logger for non-task specific logging
     Usage: from utils.loggers import GenericLogger; logger = GenericLogger(...)
-    Arguments
+
+    Arguments:
         opt:             Run arguments
         console_logger:  Console logger
         include:         loggers to include
     """
 
     def __init__(self, opt, console_logger, include=("tb", "wandb")):
-        # init default loggers
+        """Initializes a generic logger for YOLOv3, including options for TensorBoard and wandb logging."""
         self.save_dir = Path(opt.save_dir)
         self.include = include
         self.console_logger = console_logger
@@ -339,7 +368,7 @@ class GenericLogger:
             self.wandb = None
 
     def log_metrics(self, metrics, epoch):
-        # Log metrics dictionary to all loggers
+        """Logs metric dictionary to all loggers, including CSV with keys, values, and epoch."""
         if self.csv:
             keys, vals = list(metrics.keys()), list(metrics.values())
             n = len(metrics) + 1  # number of cols
@@ -355,7 +384,7 @@ class GenericLogger:
             self.wandb.log(metrics, step=epoch)
 
     def log_images(self, files, name="Images", epoch=0):
-        # Log images to all loggers
+        """Logs images to TensorBoard and Weights & Biases, ensuring file existence and supporting various formats."""
         files = [Path(f) for f in (files if isinstance(files, (tuple, list)) else [files])]  # to Path
         files = [f for f in files if f.exists()]  # filter by exists
 
@@ -367,25 +396,27 @@ class GenericLogger:
             self.wandb.log({name: [wandb.Image(str(f), caption=f.name) for f in files]}, step=epoch)
 
     def log_graph(self, model, imgsz=(640, 640)):
-        # Log model graph to all loggers
+        """Logs model graph to all loggers, accepts `model` and `imgsz` (default (640, 640)) as inputs."""
         if self.tb:
             log_tensorboard_graph(self.tb, model, imgsz)
 
-    def log_model(self, model_path, epoch=0, metadata={}):
-        # Log model to all loggers
+    def log_model(self, model_path, epoch=0, metadata=None):
+        """Logs model to all loggers with `model_path`, optional `epoch` (default 0), and `metadata` dictionary."""
+        if metadata is None:
+            metadata = {}
         if self.wandb:
             art = wandb.Artifact(name=f"run_{wandb.run.id}_model", type="model", metadata=metadata)
             art.add_file(str(model_path))
             wandb.log_artifact(art)
 
     def update_params(self, params):
-        # Update the parameters logged
+        """Updates logged parameters in wandb; `params`: dictionary to update, requires `wandb` to be initialized."""
         if self.wandb:
             wandb.run.config.update(params, allow_val_change=True)
 
 
 def log_tensorboard_graph(tb, model, imgsz=(640, 640)):
-    # Log model graph to TensorBoard
+    """Logs a model graph to TensorBoard using an all-zero input image of shape `(1, 3, imgsz, imgsz)`."""
     try:
         p = next(model.parameters())  # for device, type
         imgsz = (imgsz, imgsz) if isinstance(imgsz, int) else imgsz  # expand
@@ -398,7 +429,9 @@ def log_tensorboard_graph(tb, model, imgsz=(640, 640)):
 
 
 def web_project_name(project):
-    # Convert local project name to web project name
+    """Converts local project name to a web-friendly format by adding a suffix based on its type (classify or
+    segment).
+    """
     if not project.startswith("runs/train"):
         return project
     suffix = "-Classify" if project.endswith("-cls") else "-Segment" if project.endswith("-seg") else ""

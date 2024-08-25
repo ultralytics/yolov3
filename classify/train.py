@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """
 Train a YOLOv3 classifier model on a classification dataset.
 
@@ -76,6 +76,9 @@ GIT_INFO = check_git_info()
 
 
 def train(opt, device):
+    """Trains a model on a given dataset using specified options and device, handling data loading, model optimization,
+    and logging.
+    """
     init_seeds(opt.seed + 1 + RANK, deterministic=True)
     save_dir, data, bs, epochs, nw, imgsz, pretrained = (
         opt.save_dir,
@@ -108,7 +111,7 @@ def train(opt, device):
             if str(data) == "imagenet":
                 subprocess.run(["bash", str(ROOT / "data/scripts/get_imagenet.sh")], shell=True, check=True)
             else:
-                url = f"https://github.com/ultralytics/yolov5/releases/download/v1.0/{data}.zip"
+                url = f"https://github.com/ultralytics/assets/releases/download/v0.0.0/{data}.zip"
                 download(url, dir=data_dir.parent)
             s = f"Dataset download success ✅ ({time.time() - t:.1f}s), saved to {colorstr('bold', data_dir)}\n"
             LOGGER.info(s)
@@ -176,8 +179,12 @@ def train(opt, device):
 
     # Scheduler
     lrf = 0.01  # final lr (fraction of lr0)
+
     # lf = lambda x: ((1 + math.cos(x * math.pi / epochs)) / 2) * (1 - lrf) + lrf  # cosine
-    lf = lambda x: (1 - x / epochs) * (1 - lrf) + lrf  # linear
+    def lf(x):
+        """Linear learning rate scheduler function, scaling learning rate from initial value to `lrf` over `epochs`."""
+        return (1 - x / epochs) * (1 - lrf) + lrf  # linear
+
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
     # scheduler = lr_scheduler.OneCycleLR(optimizer, max_lr=lr0, total_steps=epochs, pct_start=0.1,
     #                                    final_div_factor=1 / 25 / lrf)
@@ -306,6 +313,7 @@ def train(opt, device):
 
 
 def parse_opt(known=False):
+    """Parses command line arguments for model configuration and training options."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="yolov5s-cls.pt", help="initial weights path")
     parser.add_argument("--data", type=str, default="imagenette160", help="cifar10, cifar100, mnist, imagenet, ...")
@@ -333,7 +341,7 @@ def parse_opt(known=False):
 
 
 def main(opt):
-    # Checks
+    """Initializes training environment, checks, DDP mode setup, and starts training with given options."""
     if RANK in {-1, 0}:
         print_args(vars(opt))
         check_git_status()
@@ -357,7 +365,7 @@ def main(opt):
 
 
 def run(**kwargs):
-    # Usage: from yolov5 import classify; classify.train.run(data=mnist, imgsz=320, model='yolov5m')
+    """Executes YOLOv5 model training with dynamic options, e.g., `run(data='mnist', imgsz=320, model='yolov5m')`."""
     opt = parse_opt(True)
     for k, v in kwargs.items():
         setattr(opt, k, v)

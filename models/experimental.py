@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """Experimental modules."""
 
 import math
@@ -13,6 +13,11 @@ from utils.downloads import attempt_download
 class Sum(nn.Module):
     # Weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
     def __init__(self, n, weight=False):  # n: number of inputs
+        """
+        Initializes a module to compute weighted/unweighted sum of n inputs, with optional learning weights.
+
+        https://arxiv.org/abs/1911.09070
+        """
         super().__init__()
         self.weight = weight  # apply weights boolean
         self.iter = range(n - 1)  # iter object
@@ -20,6 +25,11 @@ class Sum(nn.Module):
             self.w = nn.Parameter(-torch.arange(1.0, n) / 2, requires_grad=True)  # layer weights
 
     def forward(self, x):
+        """
+        Performs forward pass, blending `x` elements with optional learnable weights.
+
+        See https://arxiv.org/abs/1911.09070 for more.
+        """
         y = x[0]  # no weight
         if self.weight:
             w = torch.sigmoid(self.w) * 2
@@ -34,6 +44,9 @@ class Sum(nn.Module):
 class MixConv2d(nn.Module):
     # Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
     def __init__(self, c1, c2, k=(1, 3), s=1, equal_ch=True):  # ch_in, ch_out, kernel, stride, ch_strategy
+        """Initializes MixConv2d with mixed depth-wise convolution layers; details at
+        https://arxiv.org/abs/1907.09595.
+        """
         super().__init__()
         n = len(k)  # number of convolutions
         if equal_ch:  # equal c_ per group
@@ -54,15 +67,20 @@ class MixConv2d(nn.Module):
         self.act = nn.SiLU()
 
     def forward(self, x):
+        """Applies a series of convolutions, batch normalization, and SiLU activation to input tensor `x`."""
         return self.act(self.bn(torch.cat([m(x) for m in self.m], 1)))
 
 
 class Ensemble(nn.ModuleList):
     # Ensemble of models
     def __init__(self):
+        """Initializes an ensemble of models to combine their outputs."""
         super().__init__()
 
     def forward(self, x, augment=False, profile=False, visualize=False):
+        """Applies ensemble of models on input `x`, with options for augmentation, profiling, and visualization,
+        returning inference outputs.
+        """
         y = [module(x, augment, profile, visualize)[0] for module in self]
         # y = torch.stack(y).max(0)[0]  # max ensemble
         # y = torch.stack(y).mean(0)  # mean ensemble
@@ -71,7 +89,7 @@ class Ensemble(nn.ModuleList):
 
 
 def attempt_load(weights, device=None, inplace=True, fuse=True):
-    # Loads an ensemble of models weights=[a,b,c] or a single model weights=[a] or weights=a
+    """Loads an ensemble or single model weights, supports device placement and model fusion."""
     from models.yolo import Detect, Model
 
     model = Ensemble()

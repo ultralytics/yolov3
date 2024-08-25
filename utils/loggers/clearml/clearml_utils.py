@@ -1,3 +1,4 @@
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """Main Logger class for ClearML experiment tracking."""
 
 import glob
@@ -44,10 +45,11 @@ def construct_dataset(clearml_info_string):
         {"train", "test", "val", "nc", "names"}
     ), "The right keys were not found in the yaml file, make sure it at least has the following keys: ('train', 'test', 'val', 'nc', 'names')"
 
-    data_dict = {}
-    data_dict["train"] = (
-        str((dataset_root_path / dataset_definition["train"]).resolve()) if dataset_definition["train"] else None
-    )
+    data_dict = {
+        "train": (
+            str((dataset_root_path / dataset_definition["train"]).resolve()) if dataset_definition["train"] else None
+        )
+    }
     data_dict["test"] = (
         str((dataset_root_path / dataset_definition["test"]).resolve()) if dataset_definition["test"] else None
     )
@@ -76,7 +78,7 @@ class ClearmlLogger:
         - Initialize ClearML Task, this object will capture the experiment
         - Upload dataset version to ClearML Data if opt.upload_dataset is True
 
-        arguments:
+        Arguments:
         opt (namespace) -- Commandline arguments for this run
         hyp (dict) -- Hyperparameters for this run
 
@@ -127,7 +129,7 @@ class ClearmlLogger:
         """
         Log files (images) as debug samples in the ClearML task.
 
-        arguments:
+        Arguments:
         files (List(PosixPath)) a list of file paths in PosixPath format
         title (str) A title that groups together images with the same values
         """
@@ -143,7 +145,7 @@ class ClearmlLogger:
         """
         Draw the bounding boxes on a single image and report the result as a ClearML debug sample.
 
-        arguments:
+        Arguments:
         image_path (PosixPath) the path the original image file
         boxes (list): list of scaled predictions in the format - [xmin, ymin, xmax, ymax, confidence, class]
         class_names (dict): dict containing mapping of class int to class name

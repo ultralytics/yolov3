@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """utils/initialization."""
 
 import contextlib
@@ -7,27 +7,46 @@ import threading
 
 
 def emojis(str=""):
-    # Return platform-dependent emoji-safe version of string
+    """Returns platform-dependent emoji-safe version of str; ignores emojis on Windows, else returns original str."""
     return str.encode().decode("ascii", "ignore") if platform.system() == "Windows" else str
 
 
 class TryExcept(contextlib.ContextDecorator):
     # YOLOv3 TryExcept class. Usage: @TryExcept() decorator or 'with TryExcept():' context manager
     def __init__(self, msg=""):
+        """Initializes TryExcept with optional custom message, used as decorator or context manager for exception
+        handling.
+        """
         self.msg = msg
 
     def __enter__(self):
+        """Begin exception-handling block, optionally customizing exception message when used with TryExcept context
+        manager.
+        """
         pass
 
     def __exit__(self, exc_type, value, traceback):
+        """Ends exception-handling block, optionally prints custom message with exception, suppressing exceptions within
+        context.
+        """
         if value:
             print(emojis(f"{self.msg}{': ' if self.msg else ''}{value}"))
         return True
 
 
 def threaded(func):
-    # Multi-threads a target function and returns thread. Usage: @threaded decorator
+    """
+    Decorates a function to run in a separate thread, returning the thread object.
+
+    Usage: @threaded.
+    """
+
     def wrapper(*args, **kwargs):
+        """
+        Runs the decorated function in a separate thread and returns the thread object.
+
+        Usage: @threaded.
+        """
         thread = threading.Thread(target=func, args=args, kwargs=kwargs, daemon=True)
         thread.start()
         return thread
@@ -36,7 +55,7 @@ def threaded(func):
 
 
 def join_threads(verbose=False):
-    # Join all daemon threads, i.e. atexit.register(lambda: join_threads())
+    """Joins all daemon threads, excluding the main thread, with an optional verbose flag for logging."""
     main_thread = threading.current_thread()
     for t in threading.enumerate():
         if t is not main_thread:
@@ -46,7 +65,7 @@ def join_threads(verbose=False):
 
 
 def notebook_init(verbose=True):
-    # Check system software and hardware
+    """Initializes notebook environment by checking hardware, software requirements, and cleaning up if in Colab."""
     print("Checking setup...")
 
     import os

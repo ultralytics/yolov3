@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """
 Run YOLOv3 classification inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
 
@@ -84,6 +84,7 @@ def run(
     dnn=False,  # use OpenCV DNN for ONNX inference
     vid_stride=1,  # video frame-rate stride
 ):
+    """Performs YOLOv3 classification inference on various input sources and saves or displays results."""
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -204,6 +205,7 @@ def run(
 
 
 def parse_opt():
+    """Parses command line arguments for model inference settings, returns a Namespace of options."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "yolov5s-cls.pt", help="model path(s)")
     parser.add_argument("--source", type=str, default=ROOT / "data/images", help="file/dir/URL/glob/screen/0(webcam)")
@@ -229,6 +231,7 @@ def parse_opt():
 
 
 def main(opt):
+    """Entry point for running the model; checks requirements and calls `run` with options parsed from CLI."""
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))
 

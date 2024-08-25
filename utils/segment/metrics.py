@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """Model validation metrics."""
 
 import numpy as np
@@ -7,7 +7,7 @@ from ..metrics import ap_per_class
 
 
 def fitness(x):
-    # Model fitness as a weighted combination of metrics
+    """Calculates model fitness as a weighted sum of 8 metrics, where `x` is an array of shape [N, 8]."""
     w = [0.0, 0.0, 0.1, 0.9, 0.0, 0.0, 0.1, 0.9]
     return (x[:, :8] * w).sum(1)
 
@@ -55,6 +55,7 @@ def ap_per_class_box_and_mask(
 
 class Metric:
     def __init__(self) -> None:
+        """Initializes Metric class attributes for precision, recall, F1 score, AP values, and AP class indices."""
         self.p = []  # (nc, )
         self.r = []  # (nc, )
         self.f1 = []  # (nc, )
@@ -128,6 +129,9 @@ class Metric:
         return (self.p[i], self.r[i], self.ap50[i], self.ap[i])
 
     def get_maps(self, nc):
+        """Calculates mean average precisions (mAPs) for each class; `nc`: num of classes; returns array of mAPs per
+        class.
+        """
         maps = np.zeros(nc) + self.map
         for i, c in enumerate(self.ap_class_index):
             maps[c] = self.ap[i]
@@ -150,6 +154,7 @@ class Metrics:
     """Metric for boxes and masks."""
 
     def __init__(self) -> None:
+        """Initializes the Metrics class with separate Metric instances for boxes and masks."""
         self.metric_box = Metric()
         self.metric_mask = Metric()
 
@@ -162,17 +167,20 @@ class Metrics:
         self.metric_mask.update(list(results["masks"].values()))
 
     def mean_results(self):
+        """Calculates and returns the sum of mean results from 'metric_box' and 'metric_mask'."""
         return self.metric_box.mean_results() + self.metric_mask.mean_results()
 
     def class_result(self, i):
+        """Combines and returns class-specific results from 'metric_box' and 'metric_mask' for class index 'i'."""
         return self.metric_box.class_result(i) + self.metric_mask.class_result(i)
 
     def get_maps(self, nc):
+        """Returns combined mean Average Precision (mAP) scores for bounding boxes and masks for `nc` classes."""
         return self.metric_box.get_maps(nc) + self.metric_mask.get_maps(nc)
 
     @property
     def ap_class_index(self):
-        # boxes and masks have the same ap_class_index
+        """Returns the AP class index, identical for both boxes and masks."""
         return self.metric_box.ap_class_index
 
 

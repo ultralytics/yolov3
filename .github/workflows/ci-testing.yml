@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 # YOLOv3 Continuous Integration (CI) GitHub Actions tests
 
 name: YOLOv3 CI
@@ -10,6 +10,7 @@ on:
     branches: [master]
   schedule:
     - cron: "0 0 * * *" # runs at 00:00 UTC every day
+  workflow_dispatch:
 
 jobs:
   Tests:
@@ -41,11 +42,11 @@ jobs:
       - name: Install requirements
         run: |
           python -m pip install --upgrade pip wheel
+          torch=""
           if [ "${{ matrix.torch }}" == "1.8.0" ]; then
-              pip install -r requirements.txt torch==1.8.0 torchvision==0.9.0 --extra-index-url https://download.pytorch.org/whl/cpu
-          else
-              pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+            torch="torch==1.8.0 torchvision==0.9.0"
           fi
+          pip install -r requirements.txt $torch --extra-index-url https://download.pytorch.org/whl/cpu
         shell: bash # for Windows compatibility
       - name: Check environment
         run: |
@@ -114,7 +115,7 @@ jobs:
     steps:
       - name: Check for failure and notify
         if: (needs.Tests.result == 'failure' || needs.Tests.result == 'cancelled') && github.repository == 'ultralytics/yolov3' && (github.event_name == 'schedule' || github.event_name == 'push')
-        uses: slackapi/slack-github-action@v1.25.0
+        uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {"text": "<!channel> GitHub Actions error for ${{ github.workflow }} ❌\n\n\n*Repository:* https://github.com/${{ github.repository }}\n*Action:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n*Author:* ${{ github.actor }}\n*Event:* ${{ github.event_name }}\n"}

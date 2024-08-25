@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """Callback utils."""
 
 import threading
@@ -8,7 +8,7 @@ class Callbacks:
     """" Handles all registered callbacks for YOLOv3 Hooks."""
 
     def __init__(self):
-        # Define the available callbacks
+        """Initializes a Callbacks object to manage YOLOv3 training hooks with various event triggers."""
         self._callbacks = {
             "on_pretrain_routine_start": [],
             "on_pretrain_routine_end": [],
@@ -64,7 +64,6 @@ class Callbacks:
             thread: (boolean) Run callbacks in daemon thread
             kwargs: Keyword Arguments to receive from YOLOv3
         """
-
         assert hook in self._callbacks, f"hook '{hook}' not found in callbacks {self._callbacks}"
         for logger in self._callbacks[hook]:
             if thread:

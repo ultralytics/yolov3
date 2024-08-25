@@ -1,3 +1,5 @@
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
+
 import argparse
 import json
 import logging
@@ -25,6 +27,7 @@ COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.p
 
 
 def get_args(known=False):
+    """Parses command line arguments for configuring training options, supporting Comet and W&B integrations."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", type=str, default=ROOT / "yolov3-tiny.pt", help="initial weights path")
     parser.add_argument("--cfg", type=str, default="", help="model.yaml path")
@@ -83,6 +86,9 @@ def get_args(known=False):
 
 
 def run(parameters, opt):
+    """Executes training process with given hyperparameters and options, handling device selection and callback
+    initialization.
+    """
     hyp_dict = {k: v for k, v in parameters.items() if k not in ["epochs", "batch_size"]}
 
     opt.save_dir = str(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok or opt.evolve))

@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """
 Run YOLOv3 benchmarks on all supported export formats.
 
@@ -60,6 +60,40 @@ def run(
     pt_only=False,  # test PyTorch only
     hard_fail=False,  # throw error on benchmark failure
 ):
+    """
+    Run YOLOv3 benchmarks on multiple export formats and validate performance metrics.
+
+    Args:
+        weights (str | Path): Path to the weights file. Defaults to 'yolov5s.pt'.
+        imgsz (int): Inference image size in pixels. Defaults to 640.
+        batch_size (int): Batch size for inference. Defaults to 1.
+        data (str | Path): Path to the dataset configuration file (dataset.yaml). Defaults to 'data/coco128.yaml'.
+        device (str): Device to be used for inference, e.g., '0' or '0,1,2,3' for GPU or 'cpu' for CPU. Defaults to ''.
+        half (bool): Use FP16 half-precision for inference. Defaults to False.
+        test (bool): Test exports only without running benchmarks. Defaults to False.
+        pt_only (bool): Run benchmarks only for PyTorch format. Defaults to False.
+        hard_fail (bool): Raise an error if any benchmark test fails. Defaults to False.
+
+    Returns:
+        None
+
+    Notes:
+        This function iterates over multiple export formats, performs the export, and then validates the model's performance
+        using appropriate validation functions for detection and segmentation models. The results are logged, and optionally,
+        benchmarks can be configured to raise errors on failures using the `hard_fail` argument.
+
+    Examples:
+        ```python
+        # Run benchmarks on the default 'yolov5s.pt' model with an image size of 640 pixels
+        run()
+
+        # Run benchmarks on a specific model with GPU and half-precision enabled
+        run(weights='custom_model.pt', device='0', half=True)
+
+        # Test only PyTorch export
+        run(pt_only=True)
+        ```
+    """
     y, t = [], time.time()
     device = select_device(device)
     model_type = type(attempt_load(weights, fuse=False))  # DetectionModel, SegmentationModel, etc.
@@ -124,6 +158,45 @@ def test(
     pt_only=False,  # test PyTorch only
     hard_fail=False,  # throw error on benchmark failure
 ):
+    """
+    Run YOLOv3 export tests for various formats and log the results, including export success status.
+
+    Args:
+        weights (str | Path): Path to the weights file. Defaults to ROOT / "yolov5s.pt".
+        imgsz (int): Inference size in pixels. Defaults to 640.
+        batch_size (int): Number of images per batch. Defaults to 1.
+        data (str | Path): Path to the dataset yaml file. Defaults to ROOT / "data/coco128.yaml".
+        device (str): Device for inference. Accepts cuda device (e.g., "0" or "0,1,2,3") or "cpu". Defaults to "".
+        half (bool): Use FP16 half-precision inference. Defaults to False.
+        test (bool): Run export tests only, no inference. Defaults to False.
+        pt_only (bool): Run tests on PyTorch format only. Defaults to False.
+        hard_fail (bool): Raise an error on benchmark failure. Defaults to False.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the export formats and their success status.
+
+    Examples:
+        ```python
+        from ultralytics import test
+
+        results = test(
+            weights="path/to/yolov5s.pt",
+            imgsz=640,
+            batch_size=1,
+            data="path/to/coco128.yaml",
+            device="0",
+            half=False,
+            test=True,
+            pt_only=False,
+            hard_fail=True,
+        )
+        print(results)
+        ```
+
+    Notes:
+        Ensure all required packages are installed as specified in the Ultralytics YOLOv3 documentation:
+        https://github.com/ultralytics/ultralytics
+    """
     y, t = [], time.time()
     device = select_device(device)
     for i, (name, f, suffix, gpu) in export.export_formats().iterrows():  # index, (name, file, suffix, gpu-capable)
@@ -149,6 +222,39 @@ def test(
 
 
 def parse_opt():
+    """
+    Parses command line arguments for YOLOv3 inference and export configurations.
+
+    Args:
+        --weights (str): Path to the weights file. Default is 'ROOT / "yolov3-tiny.pt"'.
+        --imgsz | --img | --img-size (int): Inference image size in pixels. Default is 640.
+        --batch-size (int): Batch size for inference. Default is 1.
+        --data (str): Path to the dataset configuration file (dataset.yaml). Default is 'ROOT / "data/coco128.yaml"'.
+        --device (str): CUDA device identifier, e.g., '0' for single GPU, '0,1,2,3' for multiple GPUs, or 'cpu' for CPU
+            inference. Default is "".
+        --half (bool): If set, use FP16 half-precision inference. Default is False.
+        --test (bool): If set, test only exports without running inference. Default is False.
+        --pt-only (bool): If set, test only the PyTorch model without exporting to other formats. Default is False.
+        --hard-fail (str | bool): If set, raise an exception on benchmark failure. Can also be a string representing the
+            minimum metric floor for success. Default is False.
+
+    Returns:
+        argparse.Namespace: The parsed arguments as a namespace object.
+
+    Example:
+        To run inference on the YOLOv3-tiny model with a different image size:
+
+        ```python
+        $ python benchmarks.py --weights yolov3-tiny.pt --imgsz 512 --device 0
+        ```
+
+    Notes:
+        The `--hard-fail` argument can be a boolean or a string. If a string is provided, it should be an expression that
+        represents the minimum acceptable metric value, such as '0.29' for mAP (mean Average Precision).
+
+    Links:
+        https://github.com/ultralytics/ultralytics
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", type=str, default=ROOT / "yolov3-tiny.pt", help="weights path")
     parser.add_argument("--imgsz", "--img", "--img-size", type=int, default=640, help="inference size (pixels)")
@@ -166,6 +272,34 @@ def parse_opt():
 
 
 def main(opt):
+    """
+    Executes the export and benchmarking pipeline for YOLOv3 models, testing multiple export formats and validating
+    performance metrics.
+
+    Args:
+        opt (argparse.Namespace): Parsed command line arguments, including options for weights, image size, batch size,
+            dataset path, device, half-precision inference, test mode, PyTorch-only testing, and hard fail conditions.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing benchmarking results with columns:
+            - Format: Name of the export format
+            - Size (MB): File size of the exported model
+            - mAP50-95: Mean Average Precision for the model
+            - Inference time (ms): Time taken for inference
+
+    Notes:
+        The function runs the main pipeline by exporting the YOLOv3 model to various formats and running benchmarks to
+        evaluate performance. If `opt.test` is set to True, it only tests the export process and logs the results.
+
+    Example:
+        Running the function from command line with required arguments:
+
+        ```python
+        $ python benchmarks.py --weights yolov5s.pt --img 640
+        ```
+
+    For more details, visit the Ultralytics YOLOv3 repository on [GitHub](https://github.com/ultralytics/ultralytics).
+    """
     test(**vars(opt)) if opt.test else run(**vars(opt))
 
 

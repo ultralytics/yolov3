@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """Download utils."""
 
 import logging
@@ -11,7 +11,7 @@ import torch
 
 
 def is_url(url, check=True):
-    # Check if string is URL and check if URL exists
+    """Determines if a string is a valid URL and optionally checks its existence online."""
     try:
         url = str(url)
         result = urllib.parse.urlparse(url)
@@ -22,13 +22,13 @@ def is_url(url, check=True):
 
 
 def gsutil_getsize(url=""):
-    # gs://bucket/file size https://cloud.google.com/storage/docs/gsutil/commands/du
+    """Returns the size of a file at a 'gs://' URL using gsutil du command; 0 if file not found or command fails."""
     output = subprocess.check_output(["gsutil", "du", url], shell=True, encoding="utf-8")
     return int(output.split()[0]) if output else 0
 
 
 def url_getsize(url="https://ultralytics.com/images/bus.jpg"):
-    # Return downloadable file size in bytes
+    """Fetches file size in bytes from a URL using an HTTP HEAD request; defaults to -1 if not found."""
     response = requests.head(url, allow_redirects=True)
     return int(response.headers.get("content-length", -1))
 
@@ -54,7 +54,7 @@ def curl_download(url, filename, *, silent: bool = False) -> bool:
 
 
 def safe_download(file, url, url2=None, min_bytes=1e0, error_msg=""):
-    # Attempts to download file from url or url2, checks and removes incomplete downloads < min_bytes
+    """Downloads a file from 'url' or 'url2' to 'file', ensuring size > 'min_bytes'; removes incomplete downloads."""
     from utils.general import LOGGER
 
     file = Path(file)
@@ -78,11 +78,13 @@ def safe_download(file, url, url2=None, min_bytes=1e0, error_msg=""):
 
 
 def attempt_download(file, repo="ultralytics/yolov5", release="v7.0"):
-    # Attempt file download from GitHub release assets if not found locally. release = 'latest', 'v7.0', etc.
+    """Attempts to download a file from a specified URL or GitHub release, ensuring file integrity with a minimum size
+    check.
+    """
     from utils.general import LOGGER
 
     def github_assets(repository, version="latest"):
-        # Return GitHub repo tag (i.e. 'v7.0') and assets (i.e. ['yolov5s.pt', 'yolov5m.pt', ...])
+        """Returns GitHub tag and assets for a given repository and version from the GitHub API."""
         if version != "latest":
             version = f"tags/{version}"  # i.e. tags/v7.0
         response = requests.get(f"https://api.github.com/repos/{repository}/releases/{version}").json()  # github api

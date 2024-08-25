@@ -1,4 +1,4 @@
-# YOLOv3 🚀 by Ultralytics, AGPL-3.0 license
+# Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """Model validation metrics."""
 
 import math
@@ -13,13 +13,13 @@ from utils import TryExcept, threaded
 
 
 def fitness(x):
-    # Model fitness as a weighted combination of metrics
+    """Calculates model fitness as a weighted sum of metrics [P, R, mAP@0.5, mAP@0.5:0.95] with respective weights."""
     w = [0.0, 0.0, 0.1, 0.9]  # weights for [P, R, mAP@0.5, mAP@0.5:0.95]
     return (x[:, :4] * w).sum(1)
 
 
 def smooth(y, f=0.05):
-    # Box filter of fraction f
+    """Smooths array `y` using a box filter with fractional size `f`, returning the smoothed array."""
     nf = round(len(y) * f * 2) // 2 + 1  # number of filter elements (must be odd)
     p = np.ones(nf // 2)  # ones padding
     yp = np.concatenate((p * y[0], y, p * y[-1]), 0)  # y padded
@@ -41,7 +41,6 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir=".", names
     # Returns
         The average precision as computed in py-faster-rcnn.
     """
-
     # Sort by objectness
     i = np.argsort(-conf)
     tp, conf, pred_cls = tp[i], conf[i], pred_cls[i]
@@ -103,7 +102,6 @@ def compute_ap(recall, precision):
     # Returns
         Average precision, precision curve, recall curve
     """
-
     # Append sentinel values to beginning and end
     mrec = np.concatenate(([0.0], recall, [1.0]))
     mpre = np.concatenate(([1.0], precision, [0.0]))
@@ -126,6 +124,7 @@ def compute_ap(recall, precision):
 class ConfusionMatrix:
     # Updated version of https://github.com/kaanakan/object_detection_confusion_matrix
     def __init__(self, nc, conf=0.25, iou_thres=0.45):
+        """Initializes confusion matrix for object detection with adjustable confidence and IoU thresholds."""
         self.matrix = np.zeros((nc + 1, nc + 1))
         self.nc = nc  # number of classes
         self.conf = conf
@@ -136,6 +135,7 @@ class ConfusionMatrix:
         Return intersection-over-union (Jaccard index) of boxes.
 
         Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
+
         Arguments:
             detections (Array[N, 6]), x1, y1, x2, y2, conf, class
             labels (Array[M, 5]), class, x1, y1, x2, y2
@@ -179,6 +179,7 @@ class ConfusionMatrix:
                     self.matrix[dc, self.nc] += 1  # predicted background
 
     def tp_fp(self):
+        """Computes true positives and false positives, excluding the background class, from a confusion matrix."""
         tp = self.matrix.diagonal()  # true positives
         fp = self.matrix.sum(1) - tp  # false positives
         # fn = self.matrix.sum(0) - tp  # false negatives (missed detections)
@@ -186,6 +187,7 @@ class ConfusionMatrix:
 
     @TryExcept("WARNING ⚠️ ConfusionMatrix plot failure")
     def plot(self, normalize=True, save_dir="", names=()):
+        """Plots confusion matrix as a heatmap; args: normalize(bool), save_dir(str), names(iterable of str)."""
         import seaborn as sn
 
         array = self.matrix / ((self.matrix.sum(0).reshape(1, -1) + 1e-9) if normalize else 1)  # normalize columns
@@ -217,13 +219,13 @@ class ConfusionMatrix:
         plt.close(fig)
 
     def print(self):
+        """Prints each row of the confusion matrix, where matrix elements are separated by spaces."""
         for i in range(self.nc + 1):
             print(" ".join(map(str, self.matrix[i])))
 
 
 def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7):
-    # Returns Intersection over Union (IoU) of box1(1,4) to box2(n,4)
-
+    """Calculates IoU, GIoU, DIoU, CIoU between two bounding boxes, supporting `xywh` and `xyxy` formats."""
     # Get the coordinates of bounding boxes
     if xywh:  # transform from xywh to xyxy
         (x1, y1, w1, h1), (x2, y2, w2, h2) = box1.chunk(4, -1), box2.chunk(4, -1)
@@ -269,14 +271,15 @@ def box_iou(box1, box2, eps=1e-7):
     Return intersection-over-union (Jaccard index) of boxes.
 
     Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
+
     Arguments:
         box1 (Tensor[N, 4])
         box2 (Tensor[M, 4])
+
     Returns:
         iou (Tensor[N, M]): the NxM matrix containing the pairwise
             IoU values for every element in boxes1 and boxes2
     """
-
     # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
     (a1, a2), (b1, b2) = box1.unsqueeze(1).chunk(2, 2), box2.unsqueeze(0).chunk(2, 2)
     inter = (torch.min(a2, b2) - torch.max(a1, b1)).clamp(0).prod(2)
@@ -294,7 +297,6 @@ def bbox_ioa(box1, box2, eps=1e-7):
     box2:       np.array of shape(nx4)
     returns:    np.array of shape(n)
     """
-
     # Get the coordinates of bounding boxes
     b1_x1, b1_y1, b1_x2, b1_y2 = box1
     b2_x1, b2_y1, b2_x2, b2_y2 = box2.T
@@ -312,7 +314,7 @@ def bbox_ioa(box1, box2, eps=1e-7):
 
 
 def wh_iou(wh1, wh2, eps=1e-7):
-    # Returns the nxm IoU matrix. wh1 is nx2, wh2 is mx2
+    """Calculates the IoU of width-height pairs, wh1[n,2] and wh2[m,2], returning an nxm IoU matrix."""
     wh1 = wh1[:, None]  # [N,1,2]
     wh2 = wh2[None]  # [1,M,2]
     inter = torch.min(wh1, wh2).prod(2)  # [N,M]
@@ -324,7 +326,9 @@ def wh_iou(wh1, wh2, eps=1e-7):
 
 @threaded
 def plot_pr_curve(px, py, ap, save_dir=Path("pr_curve.png"), names=()):
-    # Precision-recall curve
+    """Plots precision-recall curve, supports per-class curves if < 21 classes; args: px (recall), py (precision list),
+    ap (APs), save_dir, names.
+    """
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     py = np.stack(py, axis=1)
 
@@ -347,7 +351,9 @@ def plot_pr_curve(px, py, ap, save_dir=Path("pr_curve.png"), names=()):
 
 @threaded
 def plot_mc_curve(px, py, save_dir=Path("mc_curve.png"), names=(), xlabel="Confidence", ylabel="Metric"):
-    # Metric-confidence curve
+    """Plots metric-confidence curve for given classes; px, py shapes (N,), (C, N); save_dir: str or Path; names: tuple
+    of class names.
+    """
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
 
     if 0 < len(names) < 21:  # display per-class legend if < 21 classes
