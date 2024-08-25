@@ -2,7 +2,7 @@
 # Automatically merges repository 'main' branch into all open PRs to keep them up-to-date
 # Action runs on updates to main branch so when one PR merges to main all others update
 
-name: Merge default branch into PRs
+name: Merge main into PRs
 
 on:
   workflow_dispatch:
