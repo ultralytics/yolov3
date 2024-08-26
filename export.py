@@ -91,6 +91,8 @@ MACOS = platform.system() == "Darwin"  # macOS environment
 
 
 class iOSModel(torch.nn.Module):
+    """Exports a PyTorch model to an iOS-compatible format with normalized input dimensions and class configurations."""
+
     def __init__(self, model, im):
         """
         Initializes an iOSModel with normalized input dimensions and number of classes from a PyTorch model.

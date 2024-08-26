@@ -82,6 +82,8 @@ def create_dataloader(
 
 
 class LoadImagesAndLabelsAndMasks(LoadImagesAndLabels):  # for training/testing
+    """Loads images, labels, and masks for training/testing with optional augmentations including mosaic and mixup."""
+
     def __init__(
         self,
         path,

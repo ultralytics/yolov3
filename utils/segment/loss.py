@@ -12,7 +12,8 @@ from .general import crop_mask
 
 
 class ComputeLoss:
-    # Compute losses
+    """Computes classification, box regression, objectness, and segmentation losses for YOLOv3 model predictions."""
+
     def __init__(self, model, autobalance=False, overlap=False):
         """Initializes ComputeLoss with model settings, optional autobalancing, and overlap handling."""
         self.sort_obj_iou = False

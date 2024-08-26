@@ -63,7 +63,8 @@ except (ImportError, AssertionError):
 
 
 class Loggers:
-    # YOLOv3 Loggers class
+    """Manages logging for training and validation using TensorBoard, Weights & Biases, ClearML, and Comet ML."""
+
     def __init__(self, save_dir=None, weights=None, opt=None, hyp=None, logger=None, include=LOGGERS):
         """Initializes YOLOv3 logging with directory, weights, options, hyperparameters, and includes specified
         loggers.

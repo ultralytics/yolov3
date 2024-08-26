@@ -7,7 +7,8 @@ import torch.nn.functional as F
 
 
 class SiLU(nn.Module):
-    # SiLU activation https://arxiv.org/pdf/1606.08415.pdf
+    """Applies the SiLU activation function to the input tensor as described in https://arxiv.org/pdf/1606.08415.pdf."""
+
     @staticmethod
     def forward(x):
         """Applies the SiLU activation function, as detailed in https://arxiv.org/pdf/1606.08415.pdf, on input tensor
@@ -17,7 +18,8 @@ class SiLU(nn.Module):
 
 
 class Hardswish(nn.Module):
-    # Hard-SiLU activation
+    """Applies the Hardswish activation function to the input tensor `x`."""
+
     @staticmethod
     def forward(x):
         """Applies Hardswish activation, suitable for TorchScript, CoreML, ONNX, modifying input `x` as per Hard-SiLU
@@ -27,7 +29,8 @@ class Hardswish(nn.Module):
 
 
 class Mish(nn.Module):
-    # Mish activation https://github.com/digantamisra98/Mish
+    """Applies the Mish activation function to improve model performance; see https://github.com/digantamisra98/Mish."""
+
     @staticmethod
     def forward(x):
         """
@@ -39,8 +42,11 @@ class Mish(nn.Module):
 
 
 class MemoryEfficientMish(nn.Module):
-    # Mish activation memory-efficient
+    """Applies the memory-efficient Mish activation function for improved model performance and reduced memory usage."""
+
     class F(torch.autograd.Function):
+        """Memory-efficient implementation of the Mish activation function for enhanced model performance."""
+
         @staticmethod
         def forward(ctx, x):
             """Applies the Mish activation function in a memory-efficient manner, useful for enhancing model
@@ -65,7 +71,8 @@ class MemoryEfficientMish(nn.Module):
 
 
 class FReLU(nn.Module):
-    # FReLU activation https://arxiv.org/abs/2007.11824
+    """Implements the FReLU activation, combining ReLU and convolution from https://arxiv.org/abs/2007.11824."""
+
     def __init__(self, c1, k=3):  # ch_in, kernel
         """Initializes FReLU with specified channel size and kernel, implementing activation from
         https://arxiv.org/abs/2007.11824.

@@ -55,7 +55,8 @@ def autopad(k, p=None, d=1):  # kernel, padding, dilation
 
 
 class Conv(nn.Module):
-    # Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)
+    """A standard Conv2D layer with batch normalization and optional activation for neural networks."""
+
     default_act = nn.SiLU()  # default activation
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
@@ -81,7 +82,8 @@ class Conv(nn.Module):
 
 
 class DWConv(Conv):
-    # Depth-wise convolution
+    """Implements depth-wise convolution for efficient spatial feature extraction in neural networks."""
+
     def __init__(self, c1, c2, k=1, s=1, d=1, act=True):  # ch_in, ch_out, kernel, stride, dilation, activation
         """Initializes depth-wise convolution with optional activation; parameters are channel in/out, kernel, stride,
         dilation.
@@ -90,7 +92,8 @@ class DWConv(Conv):
 
 
 class DWConvTranspose2d(nn.ConvTranspose2d):
-    # Depth-wise transpose convolution
+    """Implements a depth-wise transpose convolution layer with specified channels, kernel size, stride, and padding."""
+
     def __init__(self, c1, c2, k=1, s=1, p1=0, p2=0):  # ch_in, ch_out, kernel, stride, padding, padding_out
         """Initializes a depth-wise or transpose convolution layer with specified in/out channels, kernel size, stride,
         and padding.
@@ -99,7 +102,8 @@ class DWConvTranspose2d(nn.ConvTranspose2d):
 
 
 class TransformerLayer(nn.Module):
-    # Transformer layer https://arxiv.org/abs/2010.11929 (LayerNorm layers removed for better performance)
+    """Transformer layer with multi-head attention and feed-forward network, optimized by removing LayerNorm."""
+
     def __init__(self, c, num_heads):
         """Initializes a Transformer layer as per https://arxiv.org/abs/2010.11929, sans LayerNorm, with specified
         embedding dimension and number of heads.
@@ -122,7 +126,8 @@ class TransformerLayer(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    # Vision Transformer https://arxiv.org/abs/2010.11929
+    """Implements a Vision Transformer block with transformer layers; https://arxiv.org/abs/2010.11929."""
+
     def __init__(self, c1, c2, num_heads, num_layers):
         """Initializes a Transformer block with optional convolution, linear, and transformer layers."""
         super().__init__()
@@ -143,7 +148,8 @@ class TransformerBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
-    # Standard bottleneck
+    """Implements a bottleneck layer with optional shortcut for efficient feature extraction in neural networks."""
+
     def __init__(self, c1, c2, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
         """Initializes a standard bottleneck layer with optional shortcut; args: input channels (c1), output channels
         (c2), shortcut (bool), groups (g), expansion factor (e).
@@ -162,7 +168,8 @@ class Bottleneck(nn.Module):
 
 
 class BottleneckCSP(nn.Module):
-    # CSP Bottleneck https://github.com/WongKinYiu/CrossStagePartialNetworks
+    """Implements a CSP Bottleneck layer for feature extraction."""
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
         """Initializes CSP Bottleneck with channel in/out, optional shortcut, groups, expansion; see
         https://github.com/WongKinYiu/CrossStagePartialNetworks.
@@ -187,7 +194,8 @@ class BottleneckCSP(nn.Module):
 
 
 class CrossConv(nn.Module):
-    # Cross Convolution Downsample
+    """Implements Cross Convolution Downsample with 1D and 2D convolutions and optional shortcut."""
+
     def __init__(self, c1, c2, k=3, s=1, g=1, e=1.0, shortcut=False):
         """Initializes CrossConv with downsample options, combining 1D and 2D convolutions, optional shortcut if
         input/output channels match.
@@ -204,7 +212,8 @@ class CrossConv(nn.Module):
 
 
 class C3(nn.Module):
-    # CSP Bottleneck with 3 convolutions
+    """Implements a CSP Bottleneck with 3 convolutions, optional shortcuts, group convolutions, and expansion factor."""
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
         """Initializes CSP Bottleneck with 3 convolutions, optional shortcuts, group convolutions, and expansion
         factor.
@@ -222,7 +231,8 @@ class C3(nn.Module):
 
 
 class C3x(C3):
-    # C3 module with cross-convolutions
+    """Extends the C3 module with cross-convolutions for enhanced feature extraction and flexibility."""
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
         """Initializes a C3x module with cross-convolutions, extending the C3 module with customizable parameters."""
         super().__init__(c1, c2, n, shortcut, g, e)
@@ -231,7 +241,8 @@ class C3x(C3):
 
 
 class C3TR(C3):
-    # C3 module with TransformerBlock()
+    """C3 module with TransformerBlock for integrating attention mechanisms in CNNs."""
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
         """Initializes a C3 module with TransformerBlock, extending C3 for attention mechanisms."""
         super().__init__(c1, c2, n, shortcut, g, e)
@@ -240,7 +251,8 @@ class C3TR(C3):
 
 
 class C3SPP(C3):
-    # C3 module with SPP()
+    """Extends C3 with Spatial Pyramid Pooling (SPP) for enhanced feature extraction in CNNs."""
+
     def __init__(self, c1, c2, k=(5, 9, 13), n=1, shortcut=True, g=1, e=0.5):
         """Initializes C3SPP module, extending C3 with Spatial Pyramid Pooling for enhanced feature extraction."""
         super().__init__(c1, c2, n, shortcut, g, e)
@@ -249,7 +261,8 @@ class C3SPP(C3):
 
 
 class C3Ghost(C3):
-    # C3 module with GhostBottleneck()
+    """Implements a C3 module with Ghost Bottlenecks for efficient feature extraction in neural networks."""
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
         """Initializes C3Ghost module with Ghost Bottlenecks for efficient feature extraction."""
         super().__init__(c1, c2, n, shortcut, g, e)
@@ -258,7 +271,8 @@ class C3Ghost(C3):
 
 
 class SPP(nn.Module):
-    # Spatial Pyramid Pooling (SPP) layer https://arxiv.org/abs/1406.4729
+    """Implements Spatial Pyramid Pooling (SPP) for enhanced feature extraction; see https://arxiv.org/abs/1406.4729."""
+
     def __init__(self, c1, c2, k=(5, 9, 13)):
         """
         Initializes SPP layer with specified channels and kernels.
@@ -284,7 +298,8 @@ class SPP(nn.Module):
 
 
 class SPPF(nn.Module):
-    # Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv3 by Glenn Jocher
+    """Implements a fast Spatial Pyramid Pooling (SPPF) layer for efficient feature extraction in YOLOv3 models."""
+
     def __init__(self, c1, c2, k=5):  # equivalent to SPP(k=(5, 9, 13))
         """Initializes the SPPF layer with specified input/output channels and kernel size for YOLOv3."""
         super().__init__()
@@ -306,7 +321,8 @@ class SPPF(nn.Module):
 
 
 class Focus(nn.Module):
-    # Focus wh information into c-space
+    """Focuses spatial information into channel space using configurable convolution."""
+
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
         """Initializes Focus module to focus width and height information into channel space with configurable
         convolution parameters.
@@ -322,7 +338,8 @@ class Focus(nn.Module):
 
 
 class GhostConv(nn.Module):
-    # Ghost Convolution https://github.com/huawei-noah/ghostnet
+    """Implements Ghost Convolution for efficient feature extraction; see github.com/huawei-noah/ghostnet."""
+
     def __init__(self, c1, c2, k=1, s=1, g=1, act=True):  # ch_in, ch_out, kernel, stride, groups
         """Initializes GhostConv with in/out channels, kernel size, stride, groups; see
         https://github.com/huawei-noah/ghostnet.
@@ -339,7 +356,8 @@ class GhostConv(nn.Module):
 
 
 class GhostBottleneck(nn.Module):
-    # Ghost Bottleneck https://github.com/huawei-noah/ghostnet
+    """Implements a Ghost Bottleneck layer for efficient feature extraction from GhostNet."""
+
     def __init__(self, c1, c2, k=3, s=1):  # ch_in, ch_out, kernel, stride
         """Initializes GhostBottleneck module with in/out channels, kernel size, and stride; see
         https://github.com/huawei-noah/ghostnet.
@@ -361,7 +379,8 @@ class GhostBottleneck(nn.Module):
 
 
 class Contract(nn.Module):
-    # Contract width-height into channels, i.e. x(1,64,80,80) to x(1,256,40,40)
+    """Contracts spatial dimensions into channels, e.g., (1,64,80,80) to (1,256,40,40) with a specified gain."""
+
     def __init__(self, gain=2):
         """Initializes Contract module to refine input dimensions, e.g., from (1,64,80,80) to (1,256,40,40) with a
         default gain of 2.
@@ -381,7 +400,8 @@ class Contract(nn.Module):
 
 
 class Expand(nn.Module):
-    # Expand channels into width-height, i.e. x(1,64,80,80) to x(1,16,160,160)
+    """Expands spatial dimensions of input tensor by a factor while reducing channels correspondingly."""
+
     def __init__(self, gain=2):
         """Initializes Expand module to increase spatial dimensions by factor `gain` while reducing channels
         correspondingly.
@@ -401,7 +421,8 @@ class Expand(nn.Module):
 
 
 class Concat(nn.Module):
-    # Concatenate a list of tensors along dimension
+    """Concatenates a list of tensors along a specified dimension for efficient feature aggregation."""
+
     def __init__(self, dimension=1):
         """Initializes a module to concatenate tensors along a specified dimension."""
         super().__init__()
@@ -415,7 +436,8 @@ class Concat(nn.Module):
 
 
 class DetectMultiBackend(nn.Module):
-    # YOLOv3 MultiBackend class for python inference on various backends
+    """YOLOv3 multi-backend class for inference on frameworks like PyTorch, ONNX, TensorRT, and more."""
+
     def __init__(self, weights="yolov5s.pt", device=torch.device("cpu"), dnn=False, data=None, fp16=False, fuse=True):
         """Initializes multi-backend detection with options for various frameworks and devices, also handles model
         download.
@@ -749,7 +771,8 @@ class DetectMultiBackend(nn.Module):
 
 
 class AutoShape(nn.Module):
-    # YOLOv3 input-robust model wrapper for passing cv2/np/PIL/torch inputs. Includes preprocessing, inference and NMS
+    """A wrapper for YOLOv3 models to handle diverse input types with preprocessing, inference, and NMS."""
+
     conf = 0.25  # NMS confidence threshold
     iou = 0.45  # NMS IoU threshold
     agnostic = False  # NMS class-agnostic
@@ -857,7 +880,8 @@ class AutoShape(nn.Module):
 
 
 class Detections:
-    # YOLOv3 detections class for inference results
+    """Handles YOLOv3 detection results with methods for visualization, saving, cropping, and format conversion."""
+
     def __init__(self, ims, pred, files, times=(0, 0, 0), names=None, shape=None):
         """Initializes YOLOv3 detections with image data, predictions, filenames, profiling times, class names, and
         shapes.
@@ -1011,7 +1035,8 @@ class Detections:
 
 
 class Proto(nn.Module):
-    # YOLOv3 mask Proto module for segmentation models
+    """Implements the YOLOv3 mask Proto module for segmentation, including convolutional layers and upsampling."""
+
     def __init__(self, c1, c_=256, c2=32):  # ch_in, number of protos, number of masks
         """Initializes the Proto module for YOLOv3 segmentation, setting up convolutional layers and upsampling."""
         super().__init__()
@@ -1026,7 +1051,8 @@ class Proto(nn.Module):
 
 
 class Classify(nn.Module):
-    # YOLOv3 classification head, i.e. x(b,c1,20,20) to x(b,c2)
+    """Performs image classification using YOLOv3-based architecture with convolutional, pooling, and dropout layers."""
+
     def __init__(
         self, c1, c2, k=1, s=1, p=None, g=1, dropout_p=0.0
     ):  # ch_in, ch_out, kernel, stride, padding, groups, dropout probability

@@ -422,7 +422,8 @@ def smart_resume(ckpt, optimizer, ema=None, weights="yolov5s.pt", epochs=300, re
 
 
 class EarlyStopping:
-    # YOLOv3 simple early stopper
+    """Monitors training to halt if no improvement in fitness metric is observed for a specified number of epochs."""
+
     def __init__(self, patience=30):
         """Initializes EarlyStopping to monitor training, halting if no improvement in 'patience' epochs, defaulting to
         30.

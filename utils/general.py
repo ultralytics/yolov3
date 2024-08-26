@@ -176,7 +176,8 @@ CONFIG_DIR = user_config_dir()  # Ultralytics settings dir
 
 
 class Profile(contextlib.ContextDecorator):
-    # YOLOv3 Profile class. Usage: @Profile() decorator or 'with Profile():' context manager
+    """Profiles code execution time, usable as a context manager or decorator for performance monitoring."""
+
     def __init__(self, t=0.0):
         """Initializes a profiling context for YOLOv3 with optional timing threshold `t` and checks CUDA
         availability.
@@ -204,7 +205,8 @@ class Profile(contextlib.ContextDecorator):
 
 
 class Timeout(contextlib.ContextDecorator):
-    # YOLOv3 Timeout class. Usage: @Timeout(seconds) decorator or 'with Timeout(seconds):' context manager
+    """Enforces a timeout on code execution, raising TimeoutError on expiry."""
+
     def __init__(self, seconds, *, timeout_msg="", suppress_timeout_errors=True):
         """Initializes a timeout context/decorator with specified duration, custom message, and error handling
         option.
@@ -232,7 +234,8 @@ class Timeout(contextlib.ContextDecorator):
 
 
 class WorkingDirectory(contextlib.ContextDecorator):
-    # Usage: @WorkingDirectory(dir) decorator or 'with WorkingDirectory(dir):' context manager
+    """Context manager to temporarily change the working directory, reverting to the original on exit."""
+
     def __init__(self, new_dir):
         """Initializes context manager to temporarily change working directory, reverting on exit."""
         self.dir = new_dir  # new dir

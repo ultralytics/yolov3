@@ -42,7 +42,8 @@ except ImportError:
 
 
 class Detect(nn.Module):
-    # YOLOv3 Detect head for detection models
+    """YOLOv3 Detect head for processing detection model outputs, including grid and anchor grid generation."""
+
     stride = None  # strides computed during build
     dynamic = False  # force grid reconstruction
     export = False  # export mode
@@ -105,7 +106,8 @@ class Detect(nn.Module):
 
 
 class Segment(Detect):
-    # YOLOv3 Segment head for segmentation models
+    """YOLOv3 Segment head for segmentation models, adding mask prediction and prototyping to detection."""
+
     def __init__(self, nc=80, anchors=(), nm=32, npr=256, ch=(), inplace=True):
         """Initializes the YOLOv3 segment head with customizable class count, anchors, masks, protos, channels, and
         inplace option.
@@ -128,7 +130,8 @@ class Segment(Detect):
 
 
 class BaseModel(nn.Module):
-    # YOLOv3 base model
+    """Implements the base YOLOv3 model architecture for object detection tasks."""
+
     def forward(self, x, profile=False, visualize=False):
         """Performs a single-scale inference or training step on input `x`, with options for profiling and
         visualization.
@@ -191,7 +194,8 @@ class BaseModel(nn.Module):
 
 
 class DetectionModel(BaseModel):
-    # YOLOv3 detection model
+    """YOLOv3 detection model class for initializing and processing detection models with configurable parameters."""
+
     def __init__(self, cfg="yolov5s.yaml", ch=3, nc=None, anchors=None):  # model, input channels, number of classes
         """Initializes YOLOv3 detection model with configurable YAML, input channels, classes, and anchors."""
         super().__init__()
@@ -303,14 +307,16 @@ Model = DetectionModel  # retain YOLOv3 'Model' class for backwards compatibilit
 
 
 class SegmentationModel(DetectionModel):
-    # YOLOv3 segmentation model
+    """Implements a YOLOv3-based segmentation model with customizable configuration, channels, classes, and anchors."""
+
     def __init__(self, cfg="yolov5s-seg.yaml", ch=3, nc=None, anchors=None):
         """Initializes a SegmentationModel with optional configuration, channel, class count, and anchors parameters."""
         super().__init__(cfg, ch, nc, anchors)
 
 
 class ClassificationModel(BaseModel):
-    # YOLOv3 classification model
+    """Implements a YOLOv3-based image classification model with configurable architecture and class count."""
+
     def __init__(self, cfg=None, model=None, nc=1000, cutoff=10):  # yaml, model, number of classes, cutoff index
         """Initializes a ClassificationModel from a detection model or YAML, with configurable classes and cutoff."""
         super().__init__()

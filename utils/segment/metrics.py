@@ -54,6 +54,8 @@ def ap_per_class_box_and_mask(
 
 
 class Metric:
+    """Represents model evaluation metrics including precision, recall, F1 score, and average precision (AP) values."""
+
     def __init__(self) -> None:
         """Initializes Metric class attributes for precision, recall, F1 score, AP values, and AP class indices."""
         self.p = []  # (nc, )

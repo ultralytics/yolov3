@@ -14,7 +14,8 @@ def smooth_BCE(eps=0.1):  # https://github.com/ultralytics/yolov3/issues/238#iss
 
 
 class BCEBlurWithLogitsLoss(nn.Module):
-    # BCEwithLogitLoss() with reduced missing label effects.
+    """Implements BCEWithLogitsLoss with adjustments to mitigate missing label effects using an alpha parameter."""
+
     def __init__(self, alpha=0.05):
         """Initializes BCEBlurWithLogitsLoss with alpha to reduce missing label effects; default alpha is 0.05."""
         super().__init__()
@@ -35,7 +36,8 @@ class BCEBlurWithLogitsLoss(nn.Module):
 
 
 class FocalLoss(nn.Module):
-    # Wraps focal loss around existing loss_fcn(), i.e. criteria = FocalLoss(nn.BCEWithLogitsLoss(), gamma=1.5)
+    """Implements Focal Loss to address class imbalance by modulating the loss based on prediction confidence."""
+
     def __init__(self, loss_fcn, gamma=1.5, alpha=0.25):
         """Initializes FocalLoss with specified loss function, gamma, and alpha for enhanced training on imbalanced
         datasets.
@@ -71,7 +73,8 @@ class FocalLoss(nn.Module):
 
 
 class QFocalLoss(nn.Module):
-    # Wraps Quality focal loss around existing loss_fcn(), i.e. criteria = FocalLoss(nn.BCEWithLogitsLoss(), gamma=1.5)
+    """Implements Quality Focal Loss to handle class imbalance with a modulating factor and alpha."""
+
     def __init__(self, loss_fcn, gamma=1.5, alpha=0.25):
         """Initializes QFocalLoss with specified loss function, gamma, and alpha for element-wise focal loss
         application.
@@ -103,6 +106,8 @@ class QFocalLoss(nn.Module):
 
 
 class ComputeLoss:
+    """Computes the total loss for YOLO models by aggregating classification, box regression, and objectness losses."""
+
     sort_obj_iou = False
 
     # Compute losses
