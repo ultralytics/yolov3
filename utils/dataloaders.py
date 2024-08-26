@@ -92,7 +92,7 @@ def exif_size(img):
 def exif_transpose(image):
     """
     Transpose a PIL image accordingly if it has an EXIF Orientation tag.
-    Inplace version of https://github.com/python-pillow/Pillow/blob/master/src/PIL/ImageOps.py exif_transpose()
+    Inplace version of https://github.com/python-pillow/Pillow/blob/master/src/PIL/ImageOps.py exif_transpose().
 
     :param image: The image to transpose.
     :return: An image.
@@ -1052,7 +1052,7 @@ def extract_boxes(path=DATASETS_DIR / "coco128"):  # from utils.dataloaders impo
 
 def autosplit(path=DATASETS_DIR / "coco128/images", weights=(0.9, 0.1, 0.0), annotated_only=False):
     """Autosplit a dataset into train/val/test splits and save path/autosplit_*.txt files
-    Usage: from utils.dataloaders import *; autosplit()
+    Usage: from utils.dataloaders import *; autosplit().
 
     Arguments:
         path:            Path to images directory
