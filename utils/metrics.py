@@ -122,7 +122,8 @@ def compute_ap(recall, precision):
 
 
 class ConfusionMatrix:
-    # Updated version of https://github.com/kaanakan/object_detection_confusion_matrix
+    """Computes and visualizes a confusion matrix for object detection tasks with configurable thresholds."""
+
     def __init__(self, nc, conf=0.25, iou_thres=0.45):
         """Initializes confusion matrix for object detection with adjustable confidence and IoU thresholds."""
         self.matrix = np.zeros((nc + 1, nc + 1))

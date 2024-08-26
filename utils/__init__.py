@@ -12,7 +12,8 @@ def emojis(str=""):
 
 
 class TryExcept(contextlib.ContextDecorator):
-    # YOLOv3 TryExcept class. Usage: @TryExcept() decorator or 'with TryExcept():' context manager
+    """A context manager and decorator for handling exceptions with optional custom messages."""
+
     def __init__(self, msg=""):
         """Initializes TryExcept with optional custom message, used as decorator or context manager for exception
         handling.

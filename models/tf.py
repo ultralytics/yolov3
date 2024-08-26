@@ -49,7 +49,8 @@ from utils.general import LOGGER, make_divisible, print_args
 
 
 class TFBN(keras.layers.Layer):
-    # TensorFlow BatchNormalization wrapper
+    """A TensorFlow BatchNormalization wrapper layer initialized with specific weights for YOLOv3 models."""
+
     def __init__(self, w=None):
         """Initializes TFBN with weights, wrapping TensorFlow's BatchNormalization layer with specific initializers."""
         super().__init__()
@@ -67,7 +68,8 @@ class TFBN(keras.layers.Layer):
 
 
 class TFPad(keras.layers.Layer):
-    # Pad inputs in spatial dimensions 1 and 2
+    """Pads inputs in spatial dimensions 1 and 2 using specified padding width as an int or (int, int) tuple/list."""
+
     def __init__(self, pad):
         """Initializes a padding layer for spatial dimensions 1 and 2, with `pad` as int or (int, int) tuple/list."""
         super().__init__()
@@ -84,7 +86,8 @@ class TFPad(keras.layers.Layer):
 
 
 class TFConv(keras.layers.Layer):
-    # Standard convolution
+    """Implements a standard convolutional layer with optional batch normalization and activation for TensorFlow."""
+
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True, w=None):
         """Initializes a convolutional layer with customizable filters, kernel size, stride, padding, groups, and
         activation.
@@ -112,7 +115,8 @@ class TFConv(keras.layers.Layer):
 
 
 class TFDWConv(keras.layers.Layer):
-    # Depthwise convolution
+    """Implements a depthwise convolutional layer with optional batch normalization and activation for TensorFlow."""
+
     def __init__(self, c1, c2, k=1, s=1, p=None, act=True, w=None):
         """Initializes a depthwise convolutional layer with optional batch normalization and activation."""
         super().__init__()
@@ -136,7 +140,8 @@ class TFDWConv(keras.layers.Layer):
 
 
 class TFDWConvTranspose2d(keras.layers.Layer):
-    # Depthwise ConvTranspose2d
+    """Implements a depthwise transposed convolutional layer for TensorFlow with equal input and output channels."""
+
     def __init__(self, c1, c2, k=1, s=1, p1=0, p2=0, w=None):
         """Initializes TFDWConvTranspose2d with ch_in=c1=ch_out, k=4, p1=1; sets up depthwise Conv2DTranspose layers."""
         super().__init__()
@@ -166,7 +171,8 @@ class TFDWConvTranspose2d(keras.layers.Layer):
 
 
 class TFFocus(keras.layers.Layer):
-    # Focus wh information into c-space
+    """Focuses spatial information into channel space using a convolutional layer for efficient feature extraction."""
+
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True, w=None):
         """Initializes TFFocus layer for efficient information focusing into channel-space with customizable convolution
         parameters.
@@ -183,7 +189,8 @@ class TFFocus(keras.layers.Layer):
 
 
 class TFBottleneck(keras.layers.Layer):
-    # Standard bottleneck
+    """A TensorFlow bottleneck layer with optional shortcut connections, channel expansion, and group convolutions."""
+
     def __init__(self, c1, c2, shortcut=True, g=1, e=0.5, w=None):  # ch_in, ch_out, shortcut, groups, expansion
         """Initializes a standard bottleneck layer with optional shortcut, channel expansion, and group convolutions."""
         super().__init__()
@@ -200,7 +207,8 @@ class TFBottleneck(keras.layers.Layer):
 
 
 class TFCrossConv(keras.layers.Layer):
-    # Cross Convolution
+    """Implements a cross convolutional layer with customizable channels, kernel size, stride, groups, and shortcut."""
+
     def __init__(self, c1, c2, k=3, s=1, g=1, e=1.0, shortcut=False, w=None):
         """Initializes cross convolutional layer with parameters for channel sizes, kernel size, stride, groups,
         expansion factor, shortcut option, and weights.
@@ -217,7 +225,8 @@ class TFCrossConv(keras.layers.Layer):
 
 
 class TFConv2d(keras.layers.Layer):
-    # Substitution for PyTorch nn.Conv2D
+    """Implements a TensorFlow 2.2+ Conv2D layer as a substitute for PyTorch's Conv2D with customizable parameters."""
+
     def __init__(self, c1, c2, k, s=1, g=1, bias=True, w=None):
         """Initializes TFConv2d layer for TensorFlow 2.2+, substituting PyTorch Conv2D; c1, c2: channels, k: kernel
         size, s: stride.
@@ -240,7 +249,8 @@ class TFConv2d(keras.layers.Layer):
 
 
 class TFBottleneckCSP(keras.layers.Layer):
-    # CSP Bottleneck https://github.com/WongKinYiu/CrossStagePartialNetworks
+    """Implements a Cross Stage Partial (CSP) Bottleneck layer for efficient feature extraction in neural networks."""
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5, w=None):
         """Initializes CSP Bottleneck layer with channel configurations and optional shortcut, groups, expansion, and
         weights.
@@ -263,7 +273,8 @@ class TFBottleneckCSP(keras.layers.Layer):
 
 
 class TFC3(keras.layers.Layer):
-    # CSP Bottleneck with 3 convolutions
+    """CSP Bottleneck layer with 3 convolutions for enhanced feature extraction and integration in TensorFlow models."""
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5, w=None):
         """Initializes a CSP Bottleneck layer with 3 convolutions for channel manipulation and feature integration."""
         super().__init__()
@@ -281,7 +292,8 @@ class TFC3(keras.layers.Layer):
 
 
 class TFC3x(keras.layers.Layer):
-    # 3 module with cross-convolutions
+    """Implements a CSP Bottleneck layer with cross-convolutions for enhanced feature extraction in YOLOv3 models."""
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5, w=None):
         """Initializes a TFC3x layer with cross-convolutions, expanding and concatenating features for given channel
         inputs and outputs.
@@ -301,7 +313,8 @@ class TFC3x(keras.layers.Layer):
 
 
 class TFSPP(keras.layers.Layer):
-    # Spatial pyramid pooling layer used in YOLOv3-SPP
+    """Implements Spatial Pyramid Pooling (SPP) for YOLOv3-SPP with configurable channels and kernel sizes."""
+
     def __init__(self, c1, c2, k=(5, 9, 13), w=None):
         """Initializes a Spatial Pyramid Pooling layer for YOLOv3-SPP with configurable in/out channels and kernel
         sizes.
@@ -319,7 +332,8 @@ class TFSPP(keras.layers.Layer):
 
 
 class TFSPPF(keras.layers.Layer):
-    # Spatial pyramid pooling-Fast layer
+    """Implements a fast spatial pyramid pooling layer for efficient multi-scale feature extraction in YOLOv3 models."""
+
     def __init__(self, c1, c2, k=5, w=None):
         """Initializes a Spatial Pyramid Pooling-Fast layer with specified channels, kernel size, and optional
         weights.
@@ -339,7 +353,8 @@ class TFSPPF(keras.layers.Layer):
 
 
 class TFDetect(keras.layers.Layer):
-    # TF YOLOv3 Detect layer
+    """Implements YOLOv3 detection layer in TensorFlow for object detection with configurable classes and anchors."""
+
     def __init__(self, nc=80, anchors=(), ch=(), imgsz=(640, 640), w=None):  # detection layer
         """Initializes a YOLOv3 detection layer with specified classes, anchors, channels, image size, and weights."""
         super().__init__()
@@ -393,7 +408,8 @@ class TFDetect(keras.layers.Layer):
 
 
 class TFSegment(TFDetect):
-    # YOLOv3 Segment head for segmentation models
+    """Implements YOLOv3 segmentation head for object detection and segmentation tasks using TensorFlow."""
+
     def __init__(self, nc=80, anchors=(), nm=32, npr=256, ch=(), imgsz=(640, 640), w=None):
         """Initializes a YOLOv3 Segment head with customizable parameters for segmentation models."""
         super().__init__(nc, anchors, ch, imgsz, w)
@@ -414,6 +430,8 @@ class TFSegment(TFDetect):
 
 
 class TFProto(keras.layers.Layer):
+    """Implements a TensorFlow layer for feature processing with convolution and upsample operations."""
+
     def __init__(self, c1, c_=256, c2=32, w=None):
         """Initializes a TFProto layer with convolution and upsample operations for feature processing."""
         super().__init__()
@@ -428,7 +446,8 @@ class TFProto(keras.layers.Layer):
 
 
 class TFUpsample(keras.layers.Layer):
-    # TF version of torch.nn.Upsample()
+    """Implements an upsample layer using TensorFlow with specified size, scale factor, and interpolation mode."""
+
     def __init__(self, size, scale_factor, mode, w=None):  # warning: all arguments needed including 'w'
         """Initializes an upsample layer with specific size, doubling scale factor (>0, even), interpolation mode, and
         optional weights.
@@ -447,7 +466,8 @@ class TFUpsample(keras.layers.Layer):
 
 
 class TFConcat(keras.layers.Layer):
-    # TF version of torch.concat()
+    """Concatenates input tensors along the specified dimension (NHWC format) using TensorFlow."""
+
     def __init__(self, dimension=1, w=None):
         """Initializes a TensorFlow layer to concatenate tensors along the NHWC dimension, requiring dimension=1."""
         super().__init__()
@@ -534,7 +554,8 @@ def parse_model(d, ch, model, imgsz):  # model_dict, input_channels(3)
 
 
 class TFModel:
-    # TF YOLOv3 model
+    """TensorFlow implementation of YOLOv3 for object detection, supporting Keras and TFLite models."""
+
     def __init__(self, cfg="yolov5s.yaml", ch=3, nc=None, model=None, imgsz=(640, 640)):  # model, channels, classes
         """Initializes TF YOLOv3 model with config, channels, classes, optional pre-loaded model, and input image
         size.
@@ -606,7 +627,8 @@ class TFModel:
 
 
 class AgnosticNMS(keras.layers.Layer):
-    # TF Agnostic NMS
+    """Applies class-agnostic non-maximum suppression (NMS) to filter detections by IoU and confidence thresholds."""
+
     def call(self, input, topk_all, iou_thres, conf_thres):
         """Applies non-maximum suppression (NMS) to filter detections based on IoU, confidence thresholds, and top-K."""
         return tf.map_fn(

@@ -18,7 +18,8 @@ IMAGENET_STD = 0.229, 0.224, 0.225  # RGB standard deviation
 
 
 class Albumentations:
-    # YOLOv3 Albumentations class (optional, only used if package is installed)
+    """Provides optional image augmentation for YOLOv3 using the Albumentations library if installed."""
+
     def __init__(self, size=640):
         """Initializes Albumentations class for optional YOLOv3 data augmentation with default size 640."""
         self.transform = None
@@ -363,7 +364,8 @@ def classify_transforms(size=224):
 
 
 class LetterBox:
-    # YOLOv3 LetterBox class for image preprocessing, i.e. T.Compose([LetterBox(size), ToTensor()])
+    """Resizes and pads images to a specified size while maintaining aspect ratio."""
+
     def __init__(self, size=(640, 640), auto=False, stride=32):
         """Initializes LetterBox for YOLOv3 image preprocessing with optional auto-sizing and stride; `size` can be int
         or tuple.
@@ -388,7 +390,8 @@ class LetterBox:
 
 
 class CenterCrop:
-    # YOLOv3 CenterCrop class for image preprocessing, i.e. T.Compose([CenterCrop(size), ToTensor()])
+    """Crops the center of an image to a specified size, maintaining aspect ratio."""
+
     def __init__(self, size=640):
         """Initializes a CenterCrop object for YOLOv3, to crop images to a specified size, with default 640x640."""
         super().__init__()
@@ -403,7 +406,8 @@ class CenterCrop:
 
 
 class ToTensor:
-    # YOLOv3 ToTensor class for image preprocessing, i.e. T.Compose([LetterBox(size), ToTensor()])
+    """Converts a BGR image in numpy format to a PyTorch tensor in RGB format, with optional half precision."""
+
     def __init__(self, half=False):
         """Initializes ToTensor class for YOLOv3 image preprocessing to convert images to PyTorch tensors, optionally in
         half precision.

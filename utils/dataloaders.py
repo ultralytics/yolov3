@@ -226,7 +226,8 @@ class _RepeatSampler:
 
 
 class LoadScreenshots:
-    # YOLOv3 screenshot dataloader, i.e. `python detect.py --source "screen 0 100 100 512 256"`
+    """Loads screenshots as input data for YOLOv3, capturing screen regions specified by coordinates and dimensions."""
+
     def __init__(self, source, img_size=640, stride=32, auto=True, transforms=None):
         """Initializes a screenshot dataloader for YOLOv3; source format: [screen_number left top width height], default
         img_size=640, stride=32.
@@ -278,7 +279,8 @@ class LoadScreenshots:
 
 
 class LoadImages:
-    # YOLOv3 image/video dataloader, i.e. `python detect.py --source image.jpg/vid.mp4`
+    """Loads images and videos for YOLOv3 from various sources, including directories and '*.txt' path lists."""
+
     def __init__(self, path, img_size=640, stride=32, auto=True, transforms=None, vid_stride=1):
         """Initializes the data loader for YOLOv3, supporting image, video, directory, and '*.txt' path lists with
         customizable image sizing.
@@ -389,7 +391,8 @@ class LoadImages:
 
 
 class LoadStreams:
-    # YOLOv3 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
+    """Loads video streams for YOLOv3 inference, supporting multiple sources and customizable frame sizes."""
+
     def __init__(self, sources="file.streams", img_size=640, stride=32, auto=True, transforms=None, vid_stride=1):
         """Initializes a stream loader for YOLOv3, handling video sources or files with customizable frame sizes and
         intervals.
@@ -492,7 +495,8 @@ def img2label_paths(img_paths):
 
 
 class LoadImagesAndLabels(Dataset):
-    # YOLOv3 train_loader/val_loader, loads images and labels for training and validation
+    """Loads images and labels for YOLOv3 training and validation with support for augmentations and caching."""
+
     cache_version = 0.6  # dataset labels *.cache version
     rand_interp_methods = [cv2.INTER_NEAREST, cv2.INTER_LINEAR, cv2.INTER_CUBIC, cv2.INTER_AREA, cv2.INTER_LANCZOS4]
 
