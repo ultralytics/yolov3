@@ -1,6 +1,6 @@
 # Ultralytics YOLOv3 🚀, AGPL-3.0 license
 """
-Export a YOLOv3 PyTorch model to other formats. TensorFlow exports authored by https://github.com/zldrobit
+Export a YOLOv3 PyTorch model to other formats. TensorFlow exports authored by https://github.com/zldrobit.
 
 Format                      | `export.py --include`         | Model
 ---                         | ---                           | ---
@@ -1562,7 +1562,7 @@ def parse_opt(known=False):
 
 
 def main(opt):
-    """Run(**vars(opt))"""
+    """Run(**vars(opt))."""
     for opt.weights in opt.weights if isinstance(opt.weights, list) else [opt.weights]:
         run(**vars(opt))
 
