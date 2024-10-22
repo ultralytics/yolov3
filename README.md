@@ -151,9 +151,9 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov5n.yaml  -
 - [Hyperparameter Evolution](https://docs.ultralytics.com/yolov5/tutorials/hyperparameter_evolution/)
 - [Transfer Learning with Frozen Layers](https://docs.ultralytics.com/yolov5/tutorials/transfer_learning_with_frozen_layers/)
 - [Architecture Summary](https://docs.ultralytics.com/yolov5/tutorials/architecture_description/) 🌟 NEW
-- [Roboflow for Datasets, Labeling, and Active Learning](https://docs.ultralytics.com/yolov5/tutorials/roboflow_datasets_integration/)
-- [ClearML Logging](https://docs.ultralytics.com/yolov5/tutorials/clearml_logging_integration/) 🌟 NEW
-- [YOLOv5 with Neural Magic's Deepsparse](https://docs.ultralytics.com/yolov5/tutorials/neural_magic_pruning_quantization/) 🌟 NEW
+- [Ultralytics HUB to train and deploy YOLO](https://www.ultralytics.com/hub) 🚀 RECOMMENDED
+- [ClearML Logging](https://docs.ultralytics.com/yolov5/tutorials/clearml_logging_integration/)
+- [YOLOv5 with Neural Magic's Deepsparse](https://docs.ultralytics.com/yolov5/tutorials/neural_magic_pruning_quantization/)
 - [Comet Logging](https://docs.ultralytics.com/yolov5/tutorials/comet_logging_integration/) 🌟 NEW
 
 </details>
