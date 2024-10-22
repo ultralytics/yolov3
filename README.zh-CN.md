@@ -42,21 +42,21 @@ YOLOv3 🚀 是世界上最受欢迎的视觉 AI，代表<a href="https://www.ul
 </div>
 </div>
 
-## <div align="center">YOLOv8 🚀 新品</div>
+## <div align="center">YOLO11 🚀 全新发布</div>
 
-我们很高兴宣布 Ultralytics YOLOv8 🚀 的发布，这是我们新推出的领先水平、最先进的（SOTA）模型，发布于 **[https://github.com/ultralytics/ultralytics](https://github.com/ultralytics/ultralytics)**。 YOLOv8 旨在快速、准确且易于使用，使其成为广泛的物体检测、图像分割和图像分类任务的极佳选择。
+我们很高兴宣布推出 Ultralytics YOLO11 🚀，这是我们最先进视觉模型的最新进展！现已在 **[GitHub](https://github.com/ultralytics/ultralytics)** 上发布。YOLO11 在速度、精度和易用性方面进一步提升，无论是处理目标检测、图像分割还是图像分类任务，YOLO11 都具备出色的性能和多功能性，助您在各种应用中脱颖而出。
 
-请查看 [YOLOv8 文档](https://docs.ultralytics.com/)了解详细信息，并开始使用：
+立即开始，解锁 YOLO11 的全部潜力！访问 [Ultralytics 文档](https://docs.ultralytics.com/) 获取全面的指南和资源：
 
 [![PyPI 版本](https://badge.fury.io/py/ultralytics.svg)](https://badge.fury.io/py/ultralytics) [![下载量](https://static.pepy.tech/badge/ultralytics)](https://pepy.tech/project/ultralytics)
 
-```commandline
+```bash
 pip install ultralytics
 ```
 
 <div align="center">
   <a href="https://www.ultralytics.com/yolo" target="_blank">
-  <img width="100%" src="https://raw.githubusercontent.com/ultralytics/assets/main/yolov8/yolo-comparison-plots.png"></a>
+  <img width="100%" src="https://raw.githubusercontent.com/ultralytics/assets/refs/heads/main/yolo/performance-comparison.png"></a>
 </div>
 
 ## <div align="center">文档</div>
