@@ -44,7 +44,7 @@ class ComputeLoss:
         self.anchors = m.anchors
         self.device = device
 
-    def __call__(self, preds, targets, masks):    # predictions, targets, model
+    def __call__(self, preds, targets, masks):  # predictions, targets, model
         """Computes losses given predictions, targets, and masks; returns tuple of class, box, object, and segmentation
         losses.
         """

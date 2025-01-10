@@ -138,7 +138,7 @@ class ComputeLoss:
         self.anchors = m.anchors
         self.device = device
 
-    def __call__(self, p, targets):    # predictions, targets
+    def __call__(self, p, targets):  # predictions, targets
         """Computes loss given predictions and targets, returning class, box, and object loss as tensors."""
         lcls = torch.zeros(1, device=self.device)  # class loss
         lbox = torch.zeros(1, device=self.device)  # box loss
