@@ -69,9 +69,9 @@ See the [YOLOv3 Docs](https://docs.ultralytics.com/) for full documentation on t
 Clone repo and install [requirements.txt](https://github.com/ultralytics/yolov5/blob/master/requirements.txt) in a [**Python>=3.7.0**](https://www.python.org/) environment, including [**PyTorch>=1.7**](https://pytorch.org/get-started/locally/).
 
 ```bash
-git clone https://github.com/ultralytics/yolov3  # clone
+git clone https://github.com/ultralytics/yolov3 # clone
 cd yolov3
-pip install -r requirements.txt  # install
+pip install -r requirements.txt # install
 ```
 
 </details>
@@ -105,16 +105,16 @@ results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
 `detect.py` runs inference on a variety of sources, downloading [models](https://github.com/ultralytics/yolov5/tree/master/models) automatically from the latest YOLOv3 [release](https://github.com/ultralytics/yolov5/releases) and saving results to `runs/detect`.
 
 ```bash
-python detect.py --weights yolov5s.pt --source 0                               # webcam
-                                               img.jpg                         # image
-                                               vid.mp4                         # video
-                                               screen                          # screenshot
-                                               path/                           # directory
-                                               list.txt                        # list of images
-                                               list.streams                    # list of streams
-                                               'path/*.jpg'                    # glob
-                                               'https://youtu.be/LNwODJXcvt4'  # YouTube
-                                               'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
+python detect.py --weights yolov3.pt --source 0                              # webcam
+python detect.py --weights yolov3.pt --source img.jpg                        # image
+python detect.py --weights yolov3.pt --source vid.mp4                        # video
+python detect.py --weights yolov3.pt --source screen                         # screenshot
+python detect.py --weights yolov3.pt --source path/                          # directory
+python detect.py --weights yolov3.pt --source list.txt                       # list of images
+python detect.py --weights yolov3.pt --source list.streams                   # list of streams
+python detect.py --weights yolov3.pt --source 'path/*.jpg'                   # glob
+python detect.py --weights yolov3.pt --source 'https://youtu.be/LNwODJXcvt4' # YouTube
+python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4' # RTSP, RTMP, HTTP stream
 ```
 
 </details>
@@ -125,11 +125,7 @@ python detect.py --weights yolov5s.pt --source 0                               #
 The commands below reproduce YOLOv3 [COCO](https://github.com/ultralytics/yolov5/blob/master/data/scripts/get_coco.sh) results. [Models](https://github.com/ultralytics/yolov5/tree/master/models) and [datasets](https://github.com/ultralytics/yolov5/tree/master/data) download automatically from the latest YOLOv3 [release](https://github.com/ultralytics/yolov5/releases). Training times for YOLOv5n/s/m/l/x are 1/2/4/6/8 days on a V100 GPU ([Multi-GPU](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training/) times faster). Use the largest `--batch-size` possible, or pass `--batch-size -1` for YOLOv3 [AutoBatch](https://github.com/ultralytics/yolov5/pull/5092). Batch sizes shown for V100-16GB.
 
 ```bash
-python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov5n.yaml  --batch-size 128
-                                                                 yolov5s                    64
-                                                                 yolov5m                    40
-                                                                 yolov5l                    24
-                                                                 yolov5x                    16
+python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3.yaml --batch-size 128
 ```
 
 <img width="800" src="https://user-images.githubusercontent.com/26833433/90222759-949d8800-ddc1-11ea-9fa1-1c97eed2b963.png">
@@ -288,8 +284,8 @@ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 segment/train
 Validate YOLOv5s-seg mask mAP on COCO dataset:
 
 ```bash
-bash data/scripts/get_coco.sh --val --segments  # download COCO val segments split (780MB, 5000 images)
-python segment/val.py --weights yolov5s-seg.pt --data coco.yaml --img 640  # validate
+bash data/scripts/get_coco.sh --val --segments                            # download COCO val segments split (780MB, 5000 images)
+python segment/val.py --weights yolov5s-seg.pt --data coco.yaml --img 640 # validate
 ```
 
 ### Predict
@@ -379,8 +375,8 @@ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 classify/trai
 Validate YOLOv5m-cls accuracy on ImageNet-1k dataset:
 
 ```bash
-bash data/scripts/get_imagenet.sh --val  # download ImageNet val split (6.3G, 50000 images)
-python classify/val.py --weights yolov5m-cls.pt --data ../datasets/imagenet --img 224  # validate
+bash data/scripts/get_imagenet.sh --val                                               # download ImageNet val split (6.3G, 50000 images)
+python classify/val.py --weights yolov5m-cls.pt --data ../datasets/imagenet --img 224 # validate
 ```
 
 ### Predict
