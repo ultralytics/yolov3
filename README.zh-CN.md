@@ -105,16 +105,16 @@ results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
 `detect.py` 在各种来源上运行推理， [模型](https://github.com/ultralytics/yolov5/tree/master/models) 自动从 最新的YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) 中下载，并将结果保存到 `runs/detect` 。
 
 ```bash
-python detect.py --weights yolov5s.pt --source 0 # webcam
-img.jpg                                          # image
-vid.mp4                                          # video
-screen                                           # screenshot
-path/                                            # directory
-list.txt                                         # list of images
-list.streams                                     # list of streams
-'path/*.jpg'                                     # glob
-'https://youtu.be/LNwODJXcvt4'                   # YouTube
-'rtsp://example.com/media.mp4'                   # RTSP, RTMP, HTTP stream
+python detect.py --weights yolov3.pt --source 0                              # 摄像头
+python detect.py --weights yolov3.pt --source img.jpg                        # 图片
+python detect.py --weights yolov3.pt --source vid.mp4                        # 视频
+python detect.py --weights yolov3.pt --source screen                         # 截图
+python detect.py --weights yolov3.pt --source path/                          # 目录
+python detect.py --weights yolov3.pt --source list.txt                       # 图片列表
+python detect.py --weights yolov3.pt --source list.streams                   # 流列表
+python detect.py --weights yolov3.pt --source 'path/*.jpg'                   # glob 通配符
+python detect.py --weights yolov3.pt --source 'https://youtu.be/LNwODJXcvt4' # YouTube
+python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4' # RTSP, RTMP, HTTP 流
 ```
 
 </details>
@@ -125,11 +125,7 @@ list.streams                                     # list of streams
 下面的命令重现 YOLOv3 在 [COCO](https://github.com/ultralytics/yolov5/blob/master/data/scripts/get_coco.sh) 数据集上的结果。 最新的 [模型](https://github.com/ultralytics/yolov5/tree/master/models) 和 [数据集](https://github.com/ultralytics/yolov5/tree/master/data) 将自动的从 YOLOv3 [release](https://github.com/ultralytics/yolov5/releases) 中下载。 YOLOv5n/s/m/l/x 在 V100 GPU 的训练时间为 1/2/4/6/8 天（ [多GPU](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training/) 训练速度更快）。 尽可能使用更大的 `--batch-size` ，或通过 `--batch-size -1` 实现 YOLOv3 [自动批处理](https://github.com/ultralytics/yolov5/pull/5092) 。下方显示的 batchsize 适用于 V100-16GB。
 
 ```bash
-python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov5n.yaml --batch-size 128
-yolov5s 64
-yolov5m 40
-yolov5l 24
-yolov5x 16
+python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3.yaml --batch-size 128
 ```
 
 <img width="800" src="https://user-images.githubusercontent.com/26833433/90222759-949d8800-ddc1-11ea-9fa1-1c97eed2b963.png">
