@@ -265,8 +265,8 @@ python utils/loggers/comet/hpo.py \
 Use the `comet optimizer` command to run the sweep with multiple workers:
 
 ```shell
-comet optimizer -j < number_of_workers > \
-  utils/loggers/comet/optimizer_config.json utils/loggers/comet/hpo.py
+comet optimizer -j \
+  utils/loggers/comet/hpo.py < number_of_workers > utils/loggers/comet/optimizer_config.json
 ```
 
 ### Visualizing Results
