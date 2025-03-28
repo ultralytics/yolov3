@@ -89,7 +89,7 @@ Perform inference using YOLOv3 models loaded via [PyTorch Hub](https://pytorch.o
 import torch
 
 # Load a YOLOv3 model (e.g., yolov3, yolov3-spp)
-model = torch.hub.load("ultralytics/yolov3", "yolov3", pretrained=True) # specify 'yolov3' or other variants
+model = torch.hub.load("ultralytics/yolov3", "yolov3", pretrained=True)  # specify 'yolov3' or other variants
 
 # Define image source (URL, file path, PIL image, OpenCV image, numpy array, list of images)
 img_source = "https://ultralytics.com/images/zidane.jpg"
@@ -115,15 +115,15 @@ The `detect.py` script runs inference on various sources. It automatically downl
 ```bash
 # Run inference using detect.py with different sources
 python detect.py --weights yolov3.pt --source 0                              # Webcam
-python detect.py --weights yolov3.pt --source image.jpg                       # Single image
-python detect.py --weights yolov3.pt --source video.mp4                       # Video file
-python detect.py --weights yolov3.pt --source screen                          # Screen capture
-python detect.py --weights yolov3.pt --source path/                           # Directory of images/videos
-python detect.py --weights yolov3.pt --source list.txt                        # Text file with image paths
-python detect.py --weights yolov3.pt --source list.streams                    # Text file with stream URLs
-python detect.py --weights yolov3.pt --source 'path/*.jpg'                    # Glob pattern for images
-python detect.py --weights yolov3.pt --source 'https://youtu.be/LNwODJXcvt4'  # YouTube video URL
-python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream URL
+python detect.py --weights yolov3.pt --source image.jpg                      # Single image
+python detect.py --weights yolov3.pt --source video.mp4                      # Video file
+python detect.py --weights yolov3.pt --source screen                         # Screen capture
+python detect.py --weights yolov3.pt --source path/                          # Directory of images/videos
+python detect.py --weights yolov3.pt --source list.txt                       # Text file with image paths
+python detect.py --weights yolov3.pt --source list.streams                   # Text file with stream URLs
+python detect.py --weights yolov3.pt --source 'path/*.jpg'                   # Glob pattern for images
+python detect.py --weights yolov3.pt --source 'https://youtu.be/LNwODJXcvt4' # YouTube video URL
+python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4' # RTSP, RTMP, HTTP stream URL
 ```
 
 </details>
@@ -188,8 +188,8 @@ Our key integrations with leading AI platforms extend Ultralytics' capabilities,
     <img src="https://github.com/ultralytics/assets/raw/main/partners/logo-neuralmagic.png" width="10%" alt="NeuralMagic logo"></a>
 </div>
 
-|                                                         Ultralytics HUB 🚀                                                         |                                                               W&B                                                               |                                                                      Comet ⭐ NEW                                                                       |                                              Neural Magic                                              |
-| :--------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------: |
+|                                                       Ultralytics HUB 🚀                                                        |                                                                 W&B                                                                 |                                                                              Comet ⭐ NEW                                                                              |                                                        Neural Magic                                                         |
+| :-----------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------: |
 | Streamline YOLO workflows: Label, train, and deploy effortlessly with [Ultralytics HUB](https://hub.ultralytics.com/). Try now! | Track experiments, hyperparameters, and results with [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/). | Free forever, [Comet](https://docs.ultralytics.com/integrations/comet/) lets you save YOLO models, resume training, and interactively visualize and debug predictions. | Run YOLO inference up to 6x faster with [Neural Magic DeepSparse](https://docs.ultralytics.com/integrations/neural-magic/). |
 
 ## <div align="center">☁️ Ultralytics HUB</div>
@@ -203,9 +203,9 @@ Experience seamless AI development with [Ultralytics HUB](https://hub.ultralytic
 
 YOLOv3 marked a significant step in the evolution of real-time object detectors. Its key contributions include:
 
--   **Multi-Scale Predictions:** Detecting objects at three different scales using feature pyramids, improving accuracy for objects of varying sizes, especially small ones.
--   **Improved Backbone:** Utilizing Darknet-53, a deeper and more complex network than its predecessor (Darknet-19), enhancing feature extraction capabilities.
--   **Class Prediction:** Using logistic classifiers instead of softmax for class predictions, allowing for multi-label classification where an object can belong to multiple categories.
+- **Multi-Scale Predictions:** Detecting objects at three different scales using feature pyramids, improving accuracy for objects of varying sizes, especially small ones.
+- **Improved Backbone:** Utilizing Darknet-53, a deeper and more complex network than its predecessor (Darknet-19), enhancing feature extraction capabilities.
+- **Class Prediction:** Using logistic classifiers instead of softmax for class predictions, allowing for multi-label classification where an object can belong to multiple categories.
 
 While newer models like [YOLOv5](https://docs.ultralytics.com/models/yolov5/) and [YOLOv8](https://docs.ultralytics.com/models/yolov8/) offer further improvements in speed and accuracy, YOLOv3 remains a foundational model in the field and is still widely used and studied. The table below shows comparisons with later YOLOv5 models for context.
 
@@ -323,7 +323,7 @@ python segment/predict.py --weights yolov5m-seg.pt --data data/images/bus.jpg
 ```
 
 | ![Zidane Segmentation Example](https://user-images.githubusercontent.com/26833433/203113421-decef4c4-183d-4a0a-a6c2-6435b33bc5d3.jpg) | ![Bus Segmentation Example](https://user-images.githubusercontent.com/26833433/203113416-11fe0025-69f7-4874-a0a6-65d0bfe2999a.jpg) |
-| ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 
 ### Export
 
@@ -461,8 +461,8 @@ We welcome your contributions! Making contributions to YOLOv3 should be easy and
 
 Ultralytics provides two licensing options to suit different needs:
 
--   **AGPL-3.0 License**: Ideal for students, researchers, and enthusiasts, this [OSI-approved](https://opensource.org/license/agpl-v3) open-source license encourages open collaboration and knowledge sharing. See the [LICENSE](https://github.com/ultralytics/yolov3/blob/master/LICENSE) file for details.
--   **Enterprise License**: Tailored for commercial applications, this license allows the integration of Ultralytics software and AI models into commercial products and services, bypassing the open-source requirements of AGPL-3.0. For commercial use cases, please contact us via [Ultralytics Licensing](https://www.ultralytics.com/license).
+- **AGPL-3.0 License**: Ideal for students, researchers, and enthusiasts, this [OSI-approved](https://opensource.org/license/agpl-v3) open-source license encourages open collaboration and knowledge sharing. See the [LICENSE](https://github.com/ultralytics/yolov3/blob/master/LICENSE) file for details.
+- **Enterprise License**: Tailored for commercial applications, this license allows the integration of Ultralytics software and AI models into commercial products and services, bypassing the open-source requirements of AGPL-3.0. For commercial use cases, please contact us via [Ultralytics Licensing](https://www.ultralytics.com/license).
 
 ## <div align="center">📞 Contact</div>
 

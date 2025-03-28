@@ -16,7 +16,7 @@ Install Flask using pip:
 pip install Flask torch torchvision
 ```
 
-*Note: `torch` and `torchvision` are required by the YOLOv5 model from PyTorch Hub.*
+_Note: `torch` and `torchvision` are required by the YOLOv5 model from PyTorch Hub._
 
 ## ▶️ Run the API
 
@@ -40,7 +40,7 @@ Send a POST request with an image file (`zidane.jpg` in this example) to the `/v
 curl -X POST -F image=@zidane.jpg 'http://localhost:5000/v1/object-detection/yolov5s'
 ```
 
-*Ensure `zidane.jpg` (or your test image) is present in the directory where you run the `curl` command.*
+_Ensure `zidane.jpg` (or your test image) is present in the directory where you run the `curl` command._
 
 ## 📄 Understand the Response
 

@@ -10,11 +10,11 @@ This guide explains how to integrate [ClearML](https://clear.ml/), an open-sourc
 
 [ClearML](https://clear.ml/) is an [open-source](https://github.com/clearml/clearml) suite of tools designed to manage, automate, and orchestrate machine learning workflows, significantly saving development time ⏱️. Integrating ClearML with Ultralytics YOLOv5 provides several benefits:
 
--   **Experiment Management**: Automatically track every YOLOv5 training run, including code versions, configurations, metrics, and outputs in a centralized dashboard. Learn more about [Ultralytics experiment tracking integrations](https://docs.ultralytics.com/integrations/).
--   **Data Versioning**: Use the ClearML Data Versioning Tool to manage and easily access your custom training datasets. See how Ultralytics handles [datasets](https://docs.ultralytics.com/datasets/).
--   **Remote Execution**: Remotely train and monitor your YOLOv5 models using ClearML Agent on different machines or cloud instances. Explore [model deployment options](https://docs.ultralytics.com/guides/model-deployment-options/).
--   **Hyperparameter Optimization**: Leverage ClearML Hyperparameter Optimization to find the best model configurations and improve [Mean Average Precision (mAP)](https://www.ultralytics.com/glossary/mean-average-precision-map). Check out the Ultralytics [Hyperparameter Tuning guide](https://docs.ultralytics.com/guides/hyperparameter-tuning/).
--   **Model Deployment**: Turn your trained YOLOv5 models into scalable APIs using ClearML Serving with just a few commands.
+- **Experiment Management**: Automatically track every YOLOv5 training run, including code versions, configurations, metrics, and outputs in a centralized dashboard. Learn more about [Ultralytics experiment tracking integrations](https://docs.ultralytics.com/integrations/).
+- **Data Versioning**: Use the ClearML Data Versioning Tool to manage and easily access your custom training datasets. See how Ultralytics handles [datasets](https://docs.ultralytics.com/datasets/).
+- **Remote Execution**: Remotely train and monitor your YOLOv5 models using ClearML Agent on different machines or cloud instances. Explore [model deployment options](https://docs.ultralytics.com/guides/model-deployment-options/).
+- **Hyperparameter Optimization**: Leverage ClearML Hyperparameter Optimization to find the best model configurations and improve [Mean Average Precision (mAP)](https://www.ultralytics.com/glossary/mean-average-precision-map). Check out the Ultralytics [Hyperparameter Tuning guide](https://docs.ultralytics.com/guides/hyperparameter-tuning/).
+- **Model Deployment**: Turn your trained YOLOv5 models into scalable APIs using ClearML Serving with just a few commands.
 
 You can choose to use any combination of these tools to fit your project needs.
 
@@ -30,6 +30,7 @@ To start using ClearML, you need to connect the SDK to a ClearML Server instance
 Follow these steps to get started:
 
 1.  Install the `clearml` Python package using pip:
+
     ```bash
     pip install clearml
     ```
@@ -46,7 +47,7 @@ Once configured, ClearML is ready to integrate with your YOLOv5 workflows! 😎
 Enabling ClearML experiment tracking for YOLOv5 is straightforward. Simply ensure the `clearml` package is installed:
 
 ```bash
-pip install clearml>=1.2.0
+pip install clearml > =1.2.0
 ```
 
 With the package installed, ClearML automatically captures details for every YOLOv5 [training run](https://docs.ultralytics.com/modes/train/).
@@ -69,15 +70,15 @@ python train.py --project my_yolo_project --name experiment_001 --img 640 --batc
 
 ClearML will automatically capture:
 
--   Git repository details (URL, commit ID, entry point) and local code changes.
--   Installed Python packages and versions.
--   [Hyperparameters](https://www.ultralytics.com/glossary/hyperparameter-tuning) and script arguments.
--   [Model checkpoints](https://www.ultralytics.com/glossary/model-weights) (use `--save-period n` to save every `n` epochs).
--   Console output (stdout and stderr).
--   Performance [metrics/scalars](https://docs.ultralytics.com/guides/yolo-performance-metrics/) like mAP_0.5, mAP_0.5:0.95, precision, recall, losses, and learning rates.
--   Machine details, runtime, and creation date.
--   Generated plots like label correlograms and [confusion matrices](https://www.ultralytics.com/glossary/confusion-matrix).
--   Debug samples: images with bounding boxes, mosaic visualizations, and validation images per epoch.
+- Git repository details (URL, commit ID, entry point) and local code changes.
+- Installed Python packages and versions.
+- [Hyperparameters](https://www.ultralytics.com/glossary/hyperparameter-tuning) and script arguments.
+- [Model checkpoints](https://www.ultralytics.com/glossary/model-weights) (use `--save-period n` to save every `n` epochs).
+- Console output (stdout and stderr).
+- Performance [metrics/scalars](https://docs.ultralytics.com/guides/yolo-performance-metrics/) like mAP_0.5, mAP_0.5:0.95, precision, recall, losses, and learning rates.
+- Machine details, runtime, and creation date.
+- Generated plots like label correlograms and [confusion matrices](https://www.ultralytics.com/glossary/confusion-matrix).
+- Debug samples: images with bounding boxes, mosaic visualizations, and validation images per epoch.
 
 This comprehensive tracking allows you to visualize progress in the ClearML UI, compare experiments, and easily identify the best-performing models by sorting based on metrics like [mAP](https://www.ultralytics.com/glossary/mean-average-precision-map).
 
@@ -140,7 +141,7 @@ Once your dataset is versioned in ClearML, you can reference it directly in your
 
 ```bash
 # Replace <your_dataset_id> with the actual ID from ClearML
-python train.py --img 640 --batch 16 --epochs 3 --data clearml://<your_dataset_id> --weights yolov5s.pt --cache
+python train.py --img 640 --batch 16 --epochs 3 --data clearml:// yolov5s.pt --cache < your_dataset_id > --weights
 ```
 
 The dataset ID used will be logged as a parameter in your ClearML experiment, ensuring full traceability.
@@ -167,13 +168,13 @@ This script clones the template task, applies new hyperparameters suggested by t
 
 ClearML Agent enables running experiments on remote machines (e.g., powerful on-premises servers or cloud GPUs). The agent fetches tasks from a queue, replicates the original environment (code, packages, uncommitted changes), executes the task, and reports results back to the ClearML Server.
 
--   **Learn More**: Watch the [ClearML Agent Introduction](https://www.youtube.com/watch?v=MX3BrXnaULs) or read the [documentation](https://clear.ml/docs/latest/docs/clearml_agent).
+- **Learn More**: Watch the [ClearML Agent Introduction](https://www.youtube.com/watch?v=MX3BrXnaULs) or read the [documentation](https://clear.ml/docs/latest/docs/clearml_agent).
 
 Turn any machine into a ClearML Agent by running the following command:
 
 ```bash
 # Replace <queues_to_listen_to> with the name(s) of your queue(s)
-clearml-agent daemon --queue <queues_to_listen_to> [--docker] # Use --docker to run in a Docker container
+clearml-agent daemon --queue < queues_to_listen_to > [--docker] # Use --docker to run in a Docker container
 ```
 
 ### Cloning, Editing, and Enqueuing Tasks

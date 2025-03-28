@@ -68,20 +68,20 @@ By default, Comet automatically logs the following:
 
 ## Metrics
 
--   Box Loss, Object Loss, Classification Loss (Training and Validation)
--   mAP_0.5, mAP_0.5:0.95 (Validation)
--   Precision and Recall (Validation)
+- Box Loss, Object Loss, Classification Loss (Training and Validation)
+- mAP_0.5, mAP_0.5:0.95 (Validation)
+- Precision and Recall (Validation)
 
 ## Parameters
 
--   Model Hyperparameters
--   All command-line options passed during training
+- Model Hyperparameters
+- All command-line options passed during training
 
 ## Visualizations
 
--   Confusion Matrix of model predictions on validation data
--   Plots for PR and F1 curves across all classes
--   Correlogram of Class Labels
+- Confusion Matrix of model predictions on validation data
+- Plots for PR and F1 curves across all classes
+- Correlogram of Class Labels
 
 # ⚙️ Configure Comet Logging
 
@@ -232,9 +232,10 @@ Create a JSON configuration file for the sweep (e.g., `utils/loggers/comet/optim
     "objective": "minimize", // "minimize" or "maximize"
     "metric": "metrics/mAP_0.5", // Metric to optimize
     "algorithm": "bayes", // Optimization algorithm
-    "parameters": { // Hyperparameters to tune
-      "lr0": {"type": "float", "min": 0.001, "max": 0.01},
-      "momentum": {"type": "float", "min": 0.85, "max": 0.95}
+    "parameters": {
+      // Hyperparameters to tune
+      "lr0": { "type": "float", "min": 0.001, "max": 0.01 },
+      "momentum": { "type": "float", "min": 0.85, "max": 0.95 }
       // Add other hyperparameters from train.py args
     }
   },
@@ -264,8 +265,8 @@ python utils/loggers/comet/hpo.py \
 Use the `comet optimizer` command to run the sweep with multiple workers:
 
 ```shell
-comet optimizer -j <number_of_workers> utils/loggers/comet/hpo.py \
-  utils/loggers/comet/optimizer_config.json
+comet optimizer -j \
+  utils/loggers/comet/optimizer_config.json < number_of_workers > utils/loggers/comet/hpo.py
 ```
 
 ### Visualizing Results
