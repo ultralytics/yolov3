@@ -1,30 +1,52 @@
-# Flask REST API
+<a href="https://www.ultralytics.com/"><img src="https://raw.githubusercontent.com/ultralytics/assets/main/logo/Ultralytics_Logotype_Original.svg" width="320" alt="Ultralytics logo"></a>
 
-[REST](https://en.wikipedia.org/wiki/Representational_state_transfer) [API](https://en.wikipedia.org/wiki/API)s are commonly used to expose Machine Learning (ML) models to other services. This folder contains an example REST API created using Flask to expose the YOLOv5s model from [PyTorch Hub](https://pytorch.org/hub/ultralytics_yolov5/).
+# Flask REST API Example for YOLO Models
 
-## Requirements
+[Representational State Transfer (REST)](https://en.wikipedia.org/wiki/Representational_state_transfer) [Application Programming Interfaces (APIs)](https://developer.mozilla.org/en-US/docs/Web/API) are a standard way to expose [Machine Learning (ML)](https://www.ultralytics.com/glossary/machine-learning-ml) models, allowing other services or applications to interact with them over a network. This directory provides an example REST API built using the [Flask](https://palletsprojects.com/projects/flask/) microframework to serve predictions from an [Ultralytics YOLOv5s](https://docs.ultralytics.com/models/yolov5/) model loaded via [PyTorch Hub](https://pytorch.org/hub/ultralytics_yolov5/).
 
-[Flask](https://palletsprojects.com/projects/flask/) is required. Install with:
+Deploying models via APIs is a crucial step in [MLOps](https://www.ultralytics.com/glossary/machine-learning-operations-mlops) and enables integration into larger systems. You can explore various [model deployment options](https://docs.ultralytics.com/guides/model-deployment-options/) for different scenarios.
 
-```shell
-$ pip install Flask
-```
+## 🔧 Requirements
 
-## Run
+Ensure you have the necessary Python packages installed. The primary requirement is Flask.
 
-After Flask installation run:
+Install Flask using pip:
 
 ```shell
-$ python3 restapi.py --port 5000
+pip install Flask torch torchvision
 ```
 
-Then use [curl](https://curl.se/) to perform a request:
+_Note: `torch` and `torchvision` are required by the YOLOv5 model from PyTorch Hub._
+
+## ▶️ Run the API
+
+Once Flask and dependencies are installed, you can start the API server.
+
+Execute the Python script:
 
 ```shell
-$ curl -X POST -F image=@zidane.jpg 'http://localhost:5000/v1/object-detection/yolov5s'
+python restapi.py --port 5000
 ```
 
-The model inference results are returned as a JSON response:
+The API server will start listening on the specified port (default is 5000).
+
+## 🚀 Make a Prediction Request
+
+You can send prediction requests to the running API using tools like [`curl`](https://curl.se/) or scripting languages.
+
+Send a POST request with an image file (`zidane.jpg` in this example) to the `/v1/object-detection/yolov5s` endpoint:
+
+```shell
+curl -X POST -F image=@zidane.jpg 'http://localhost:5000/v1/object-detection/yolov5s'
+```
+
+_Ensure `zidane.jpg` (or your test image) is present in the directory where you run the `curl` command._
+
+## 📄 Understand the Response
+
+The API processes the image and returns the [object detection](https://www.ultralytics.com/glossary/object-detection) results in [JSON](https://www.ultralytics.com/glossary/json) format. Each object detected includes its class ID, confidence score, bounding box coordinates (normalized), and class name.
+
+Example JSON response:
 
 ```json
 [
@@ -67,4 +89,8 @@ The model inference results are returned as a JSON response:
 ]
 ```
 
-An example python script to perform inference using [requests](https://docs.python-requests.org/en/master/) is given in `example_request.py`
+An example Python script (`example_request.py`) demonstrating how to send requests using the popular [requests](https://requests.readthedocs.io/en/latest/) library is also included in this directory.
+
+## 🤝 Contributing
+
+Contributions to enhance this example or add support for other Ultralytics models are welcome! Please see the main Ultralytics [CONTRIBUTING](https://docs.ultralytics.com/help/contributing/) guide for more information on how to get involved.
