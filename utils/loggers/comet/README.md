@@ -2,19 +2,19 @@
 
 <img src="https://cdn.comet.ml/img/notebook_logo.png">
 
-# YOLOv5 Integration with Comet
+# YOLOv3 Integration with Comet
 
-This guide details how to effectively use YOLOv5 with [Comet](https://bit.ly/yolov5-readme-comet2) for experiment tracking and model optimization.
+This guide details how to effectively use YOLOv3 with [Comet](https://bit.ly/yolov5-readme-comet2) for experiment tracking and model optimization.
 
-# About Comet
+## ℹ️ About Comet
 
 [Comet](https://www.comet.com/site/?utm_source=yolov5&utm_medium=partner&utm_campaign=partner_yolov5_2022&utm_content=github) provides tools designed to help data scientists, engineers, and team leaders accelerate and optimize machine learning and deep learning models.
 
 With Comet, you can track and visualize model metrics in real-time, save hyperparameters, datasets, and model checkpoints, and visualize model predictions using [Comet Custom Panels](https://www.comet.com/docs/v2/guides/comet-dashboard/code-panels/about-panels/?utm_source=yolov5&utm_medium=partner&utm_campaign=partner_yolov5_2022&utm_content=github). Comet ensures your work is never lost and simplifies sharing results and collaboration across teams of any size.
 
-# 🚀 Getting Started
+## 🚀 Getting Started
 
-## Install Comet
+### Install Comet
 
 Install the necessary package using pip:
 
@@ -22,15 +22,15 @@ Install the necessary package using pip:
 pip install comet_ml
 ```
 
-## Configure Comet Credentials
+### Configure Comet Credentials
 
-You can configure Comet credentials for YOLOv5 in two ways:
+You can configure Comet credentials for YOLOv3 in two ways:
 
 1.  **Environment Variables**: Set your credentials directly in your environment.
 
     ```shell
     export COMET_API_KEY=<Your Comet API Key>
-    export COMET_PROJECT_NAME=<Your Comet Project Name> # Defaults to 'yolov5' if not set
+    export COMET_PROJECT_NAME=<Your Comet Project Name> # Defaults to 'yolov3' if not set
     ```
 
 2.  **Comet Configuration File**: Create a `.comet.config` file in your working directory and add your credentials there.
@@ -38,23 +38,23 @@ You can configure Comet credentials for YOLOv5 in two ways:
     ```
     [comet]
     api_key=<Your Comet API Key>
-    project_name=<Your Comet Project Name> # Defaults to 'yolov5' if not set
+    project_name=<Your Comet Project Name> # Defaults to 'yolov3' if not set
     ```
 
-## Run the Training Script
+### Run the Training Script
 
-Execute the [Ultralytics training script](https://docs.ultralytics.com/modes/train/) as you normally would. Comet automatically integrates with YOLOv5.
+Execute the [Ultralytics training script](https://docs.ultralytics.com/modes/train/) as you normally would. Comet automatically integrates with YOLOv3.
 
 ```shell
-# Train YOLOv5s on COCO128 for 5 epochs
-python train.py --img 640 --batch 16 --epochs 5 --data coco128.yaml --weights yolov5s.pt
+# Train YOLOv3 on COCO128 for 5 epochs
+python train.py --img 640 --batch 16 --epochs 5 --data coco128.yaml --weights yolov3.pt
 ```
 
 That's it! Comet will automatically log your hyperparameters, command-line arguments, training metrics, and validation metrics. You can visualize and analyze your runs in the Comet UI. For more details on metrics like mAP and Recall, see the [YOLO Performance Metrics guide](https://docs.ultralytics.com/guides/yolo-performance-metrics/).
 
-<img width="1920" alt="Comet UI showing YOLOv5 training run" src="https://user-images.githubusercontent.com/26833433/202851203-164e94e1-2238-46dd-91f8-de020e9d6b41.png">
+<img width="1920" alt="Comet UI showing YOLO training run" src="https://user-images.githubusercontent.com/26833433/202851203-164e94e1-2238-46dd-91f8-de020e9d6b41.png">
 
-# ✨ Try an Example!
+## ✨ Try an Example!
 
 Explore an example of a [completed run in the Comet UI](https://www.comet.com/examples/comet-example-yolov5/a0e29e0e9b984e4a822db2a62d0cb357?experiment-tab=chart&showOutliers=true&smoothing=0&transformY=smoothing&xAxis=step&utm_source=yolov5&utm_medium=partner&utm_campaign=partner_yolov5_2022&utm_content=github).
 
@@ -62,35 +62,35 @@ Or, try it yourself using this Colab Notebook:
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/comet-ml/comet-examples/blob/master/integrations/model-training/yolov5/notebooks/Comet_and_YOLOv5.ipynb)
 
-# 📊 Automatic Logging
+## 📊 Automatic Logging
 
 By default, Comet automatically logs the following:
 
-## Metrics
+### Metrics
 
 - Box Loss, Object Loss, Classification Loss (Training and Validation)
 - mAP_0.5, mAP_0.5:0.95 (Validation)
 - Precision and Recall (Validation)
 
-## Parameters
+### Parameters
 
 - Model Hyperparameters
 - All command-line options passed during training
 
-## Visualizations
+### Visualizations
 
 - Confusion Matrix of model predictions on validation data
 - Plots for PR and F1 curves across all classes
 - Correlogram of Class Labels
 
-# ⚙️ Configure Comet Logging
+## ⚙️ Configure Comet Logging
 
 You can configure Comet to log additional data using command-line flags or environment variables.
 
 ```shell
 # Environment Variables for Comet Configuration
 export COMET_MODE=online # 'online' or 'offline'. Defaults to online.
-export COMET_MODEL_NAME=<your_model_name> # Name for the saved model. Defaults to yolov5.
+export COMET_MODEL_NAME=<your_model_name> # Name for the saved model. Defaults to yolov3.
 export COMET_LOG_CONFUSION_MATRIX=false # Disable logging Confusion Matrix. Defaults to true.
 export COMET_MAX_IMAGE_UPLOADS=<number> # Max prediction images to log. Defaults to 100.
 export COMET_LOG_PER_CLASS_METRICS=true # Log evaluation metrics per class. Defaults to false.
@@ -99,7 +99,7 @@ export COMET_LOG_BATCH_LEVEL_METRICS=true # Log training metrics per batch. Defa
 export COMET_LOG_PREDICTIONS=true # Set to false to disable logging model predictions. Defaults to true.
 ```
 
-## Logging Checkpoints with Comet
+### Logging Checkpoints with Comet
 
 Logging [model checkpoints](https://docs.ultralytics.com/guides/model-training-tips/#checkpoints) to Comet is disabled by default. Enable it by passing the `save-period` argument to the training script. Checkpoints will be saved to Comet at the specified interval.
 
@@ -109,15 +109,15 @@ python train.py \
   --batch 16 \
   --epochs 5 \
   --data coco128.yaml \
-  --weights yolov5s.pt \
+  --weights yolov3.pt \
   --save-period 1 # Saves checkpoints every epoch
 ```
 
-## Logging Model Predictions
+### Logging Model Predictions
 
 Model predictions (images, ground truth labels, bounding boxes) are logged to Comet by default. Control the frequency using the `bbox_interval` argument. This value corresponds to logging every Nth batch per epoch. Predictions can be visualized using Comet's Object Detection Custom Panel.
 
-**Note:** The YOLOv5 validation dataloader defaults to a batch size of 32. Adjust the logging frequency accordingly.
+**Note:** The YOLOv3 validation dataloader defaults to a batch size of 32. Adjust the logging frequency accordingly.
 
 See an [example project using the Panel here](https://www.comet.com/examples/comet-example-yolov5?shareable=YcwMiJaZSXfcEXpGOHDD12vA1&utm_source=yolov5&utm_medium=partner&utm_campaign=partner_yolov5_2022&utm_content=github).
 
@@ -127,11 +127,11 @@ python train.py \
   --batch 16 \
   --epochs 5 \
   --data coco128.yaml \
-  --weights yolov5s.pt \
+  --weights yolov3.pt \
   --bbox_interval 2 # Logs predictions every 2nd batch per epoch
 ```
 
-### Controlling the Number of Prediction Images Logged
+#### Controlling the Number of Prediction Images Logged
 
 Comet logs images associated with predictions. The default maximum is 100 validation images. Adjust this using the `COMET_MAX_IMAGE_UPLOADS` environment variable.
 
@@ -141,11 +141,11 @@ env COMET_MAX_IMAGE_UPLOADS=200 python train.py \
   --batch 16 \
   --epochs 5 \
   --data coco128.yaml \
-  --weights yolov5s.pt \
+  --weights yolov3.pt \
   --bbox_interval 1
 ```
 
-### Logging Class Level Metrics
+#### Logging Class Level Metrics
 
 Use the `COMET_LOG_PER_CLASS_METRICS` environment variable to log mAP, precision, recall, and F1-score for each class.
 
@@ -155,7 +155,7 @@ env COMET_LOG_PER_CLASS_METRICS=true python train.py \
   --batch 16 \
   --epochs 5 \
   --data coco128.yaml \
-  --weights yolov5s.pt
+  --weights yolov3.pt
 ```
 
 ## 💾 Uploading a Dataset to Comet Artifacts
@@ -168,7 +168,7 @@ python train.py \
   --batch 16 \
   --epochs 5 \
   --data coco128.yaml \
-  --weights yolov5s.pt \
+  --weights yolov3.pt \
   --upload_dataset # Uploads the dataset specified in coco128.yaml
 ```
 
@@ -201,7 +201,7 @@ python train.py \
   --batch 16 \
   --epochs 5 \
   --data artifact.yaml \
-  --weights yolov5s.pt
+  --weights yolov3.pt
 ```
 
 Artifacts also enable tracking data lineage throughout your experimentation workflow. The graph below shows experiments that used the uploaded dataset.
@@ -218,7 +218,7 @@ python train.py \
 
 ## 🔍 Hyperparameter Search with the Comet Optimizer
 
-YOLOv5 integrates with Comet's Optimizer for easy [hyperparameter tuning](https://docs.ultralytics.com/guides/hyperparameter-tuning/) and visualization.
+YOLOv3 integrates with Comet's Optimizer for easy [hyperparameter tuning](https://docs.ultralytics.com/guides/hyperparameter-tuning/) and visualization.
 
 ### Configuring an Optimizer Sweep
 
@@ -239,7 +239,7 @@ Create a JSON configuration file for the sweep (e.g., `utils/loggers/comet/optim
       // Add other hyperparameters from train.py args
     }
   },
-  "name": "YOLOv5 Hyperparameter Sweep", // Name of the sweep
+  "name": "YOLOv3 Hyperparameter Sweep", // Name of the sweep
   "trials": 1 // Number of trials per experiment combination
 }
 ```
@@ -265,8 +265,8 @@ python utils/loggers/comet/hpo.py \
 Use the `comet optimizer` command to run the sweep with multiple workers:
 
 ```shell
-comet optimizer -j \
-  utils/loggers/comet/optimizer_config.json < number_of_workers > utils/loggers/comet/hpo.py
+comet optimizer -j < number_of_workers > \
+  utils/loggers/comet/optimizer_config.json utils/loggers/comet/hpo.py
 ```
 
 ### Visualizing Results
@@ -275,6 +275,6 @@ Comet offers various visualizations for sweep results. Explore a [project with a
 
 <img width="1626" alt="Comet UI showing hyperparameter optimization results" src="https://user-images.githubusercontent.com/7529846/186914869-7dc1de14-583f-4323-967b-c9a66a29e495.png">
 
-# 🤝 Contributing
+## 🤝 Contributing
 
 Contributions to enhance this integration are welcome! Please see the [Ultralytics Contributing Guide](https://docs.ultralytics.com/help/contributing/) for more information on how to get involved. Thank you for helping improve the Ultralytics ecosystem!

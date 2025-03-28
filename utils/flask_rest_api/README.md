@@ -2,7 +2,7 @@
 
 # Flask REST API Example for YOLO Models
 
-[Representational State Transfer (REST)](https://en.wikipedia.org/wiki/Representational_state_transfer) [Application Programming Interfaces (APIs)](https://developer.mozilla.org/en-US/docs/Web/API) are a standard way to expose [Machine Learning (ML)](https://www.ultralytics.com/glossary/machine-learning-ml) models, allowing other services or applications to interact with them over a network. This directory provides an example REST API built using the [Flask](https://palletsprojects.com/projects/flask/) microframework to serve predictions from an [Ultralytics YOLOv5s](https://docs.ultralytics.com/models/yolov5/) model loaded via [PyTorch Hub](https://pytorch.org/hub/ultralytics_yolov5/).
+[Representational State Transfer (REST)](https://en.wikipedia.org/wiki/Representational_state_transfer) [Application Programming Interfaces (APIs)](https://developer.mozilla.org/en-US/docs/Web/API) are a standard way to expose [Machine Learning (ML)](https://www.ultralytics.com/glossary/machine-learning-ml) models, allowing other services or applications to interact with them over a network. This directory provides an example REST API built using the [Flask](https://palletsprojects.com/projects/flask/) microframework to serve predictions from an [Ultralytics YOLOv3](https://docs.ultralytics.com/models/yolov3/) model, potentially loaded via [PyTorch Hub](https://pytorch.org/hub/) or other standard PyTorch methods.
 
 Deploying models via APIs is a crucial step in [MLOps](https://www.ultralytics.com/glossary/machine-learning-operations-mlops) and enables integration into larger systems. You can explore various [model deployment options](https://docs.ultralytics.com/guides/model-deployment-options/) for different scenarios.
 
@@ -16,7 +16,7 @@ Install Flask using pip:
 pip install Flask torch torchvision
 ```
 
-_Note: `torch` and `torchvision` are required by the YOLOv5 model from PyTorch Hub._
+_Note: `torch` and `torchvision` are required for loading and running PyTorch-based models like YOLOv3._
 
 ## ▶️ Run the API
 
@@ -34,10 +34,10 @@ The API server will start listening on the specified port (default is 5000).
 
 You can send prediction requests to the running API using tools like [`curl`](https://curl.se/) or scripting languages.
 
-Send a POST request with an image file (`zidane.jpg` in this example) to the `/v1/object-detection/yolov5s` endpoint:
+Send a POST request with an image file (`zidane.jpg` in this example) to the `/v1/object-detection/yolov3` endpoint:
 
 ```shell
-curl -X POST -F image=@zidane.jpg 'http://localhost:5000/v1/object-detection/yolov5s'
+curl -X POST -F image=@zidane.jpg 'http://localhost:5000/v1/object-detection/yolov3'
 ```
 
 _Ensure `zidane.jpg` (or your test image) is present in the directory where you run the `curl` command._
