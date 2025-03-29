@@ -20,7 +20,7 @@
   </div>
   <br>
 
-Ultralytics YOLOv3 是由 [Ultralytics](https://www.ultralytics.com/) 开发的一款强大而高效的[计算机视觉](https://www.ultralytics.com/glossary/computer-vision-cv)模型。该实现基于 [PyTorch](https://pytorch.org/) 框架，构建在原始 YOLOv3 架构之上，该架构以其相比前代在[目标检测](https://www.ultralytics.com/glossary/object-detection)速度和准确性方面的显著改进而闻名。它融合了广泛研究和开发的见解与最佳实践，使其成为各种视觉 AI 任务的可靠选择。
+Ultralytics YOLOv3 是由 [Ultralytics](https://www.ultralytics.com/) 开发的一款强大而高效的[计算机视觉](https://www.ultralytics.com/glossary/computer-vision-cv)模型。该实现基于 [PyTorch](https://pytorch.org/) 框架，建立在原始 YOLOv3 架构之上。与之前的版本相比，YOLOv3 以其在[目标检测](https://www.ultralytics.com/glossary/object-detection)速度和准确性方面的显著改进而闻名。它融合了广泛研究和开发的见解与最佳实践，使其成为各种视觉 AI 任务的可靠选择。
 
 我们希望这里的资源能帮助您充分利用 YOLOv3。请浏览 [Ultralytics 文档](https://docs.ultralytics.com/)获取详细信息（注意：特定的 YOLOv3 文档可能有限，请参考通用的 YOLO 原则），在 [GitHub](https://github.com/ultralytics/yolov5/issues/new/choose) 上提出问题以获得支持，并加入我们的 [Discord 社区](https://discord.com/invite/ultralytics)进行提问和讨论！
 
@@ -46,7 +46,7 @@ Ultralytics YOLOv3 是由 [Ultralytics](https://www.ultralytics.com/) 开发的�
 
 ## 🚀 YOLO11：下一代进化
 
-我们激动地宣布推出 **Ultralytics YOLO11** 🚀，这是我们最先进（SOTA）视觉模型的最新进展！YOLO11 现已在 [Ultralytics YOLO GitHub 仓库](https://github.com/ultralytics/ultralytics)发布，它继承了我们速度、精度和易用性的传统。无论您是处理[目标检测](https://docs.ultralytics.com/tasks/detect/)、[实例分割](https://docs.ultralytics.com/tasks/segment/)、[姿态估计](https://docs.ultralytics.com/tasks/pose/)、[图像分类](https://docs.ultralytics.com/tasks/classify/)，还是[旋转目标检测 (OBB)](https://docs.ultralytics.com/tasks/obb/)，YOLO11 都能提供在各种应用中脱颖而出所需的性能和多功能性。
+我们激动地宣布推出 **Ultralytics YOLO11** 🚀，这是我们最先进（SOTA）视觉模型的最新进展！YOLO11 现已在 [Ultralytics YOLO GitHub 仓库](https://github.com/ultralytics/ultralytics)发布，它继承了我们在速度、精度和易用性方面的传统。无论您是处理[目标检测](https://docs.ultralytics.com/tasks/detect/)、[实例分割](https://docs.ultralytics.com/tasks/segment/)、[姿态估计](https://docs.ultralytics.com/tasks/pose/)、[图像分类](https://docs.ultralytics.com/tasks/classify/)还是[旋转目标检测 (OBB)](https://docs.ultralytics.com/tasks/obb/)，YOLO11 都能提供在各种应用中脱颖而出所需的性能和多功能性。
 
 立即开始，释放 YOLO11 的全部潜力！访问 [Ultralytics 文档](https://docs.ultralytics.com/)获取全面的指南和资源：
 
@@ -64,7 +64,7 @@ pip install ultralytics
 
 ## 📚 文档
 
-请参阅 [Ultralytics 文档](https://docs.ultralytics.com/models/yolov3/)，了解使用 Ultralytics 框架进行训练、测试和部署的完整文档。虽然特定的 YOLOv3 文档可能有限，但通用原则仍然适用。请参阅下方为 YOLOv3 概念调整的快速入门示例。
+请参阅 [Ultralytics 文档](https://docs.ultralytics.com/models/yolov3/)，了解使用 Ultralytics 框架进行训练、测试和部署的完整文档。虽然特定的 YOLOv3 文档可能有限，但通用原则仍然适用。请参阅下方为 YOLOv3 概念改编的快速入门示例。
 
 <details open>
 <summary>安装</summary>
@@ -115,7 +115,7 @@ results.save()  # 将结果保存到 runs/detect/exp
 `detect.py` 脚本在各种来源上运行推理。使用 `--weights yolov3.pt` 或其他 YOLOv3 变体。它会自动下载模型并将结果保存到 `runs/detect`。
 
 ```bash
-# 使用 yolov3-tiny 通过网络摄像头运行推理
+# 使用 yolov3-tiny 和网络摄像头运行推理
 python detect.py --weights yolov3-tiny.pt --source 0
 
 # 使用 yolov3 在本地图像文件上运行推理
@@ -169,10 +169,10 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml
 <details open>
 <summary>教程</summary>
 
-注意：这些教程主要使用 YOLOv5 示例，但其原则通常适用于 Ultralytics 框架内的 YOLOv3。
+注意：这些教程主要使用 YOLOv5 示例，但其原理通常适用于 Ultralytics 框架内的 YOLOv3。
 
 - **[训练自定义数据](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data/)** 🚀 **推荐**：学习如何在您自己的数据集上训练模型。
-- **[获得最佳训练结果的技巧](https://docs.ultralytics.com/guides/model-training-tips/)** ☘️：通过专家技巧提高模型性能。
+- **[获得最佳训练结果的技巧](https://docs.ultralytics.com/guides/model-training-tips/)** ☘️：利用专家技巧提高模型性能。
 - **[多 GPU 训练](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training/)**：使用多个 GPU 加速训练。
 - **[PyTorch Hub 集成](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading/)** 🌟 **新增**：使用 PyTorch Hub 轻松加载模型。
 - **[模型导出 (TFLite, ONNX, CoreML, TensorRT)](https://docs.ultralytics.com/yolov5/tutorials/model_export/)** 🚀：将您的模型转换为各种部署格式。
@@ -182,7 +182,7 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml
 - **[模型剪枝/稀疏化](https://docs.ultralytics.com/yolov5/tutorials/model_pruning_and_sparsity/)**：优化模型的大小和速度。
 - **[超参数进化](https://docs.ultralytics.com/yolov5/tutorials/hyperparameter_evolution/)**：自动找到最佳训练超参数。
 - **[使用冻结层的迁移学习](https://docs.ultralytics.com/yolov5/tutorials/transfer_learning_with_frozen_layers/)**：高效地将预训练模型应用于新任务。
-- **[架构总结](https://docs.ultralytics.com/yolov5/tutorials/architecture_description/)** 🌟 **新增**：理解模型架构（侧重于 YOLOv3 原则）。
+- **[架构总结](https://docs.ultralytics.com/yolov5/tutorials/architecture_description/)** 🌟 **新增**：理解模型架构（侧重于 YOLOv3 原理）。
 - **[Ultralytics HUB 训练](https://www.ultralytics.com/hub)** 🚀 **推荐**：使用 Ultralytics HUB 训练和部署 YOLO 模型。
 - **[ClearML 日志记录](https://docs.ultralytics.com/yolov5/tutorials/clearml_logging_integration/)**：与 ClearML 集成以进行实验跟踪。
 - **[Neural Magic DeepSparse 集成](https://docs.ultralytics.com/yolov5/tutorials/neural_magic_pruning_quantization/)**：使用 DeepSparse 加速推理。
@@ -190,13 +190,13 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml
 
 </details>
 
-## 🛠️ 集成
+## 🧩 集成
 
-探索 Ultralytics 与领先 AI 平台的关键集成。这些合作为数据集标注、训练、可视化和模型管理提供了增强的功能。了解 Ultralytics 如何与 [Weights & Biases (W&B)](https://docs.wandb.ai/guides/integrations/ultralytics/)、[Comet ML](https://bit.ly/yolov5-readme-comet)、[Roboflow](https://roboflow.com/?ref=ultralytics) 和 [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino/) 合作以优化您的 AI 工作流程。
+我们与领先 AI 平台的关键集成扩展了 Ultralytics 产品的功能，增强了诸如数据集标注、训练、可视化和模型管理等任务。了解 Ultralytics 如何与 [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/)、[Comet ML](https://docs.ultralytics.com/integrations/comet/)、[Roboflow](https://docs.ultralytics.com/integrations/roboflow/) 和 [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino/) 等合作伙伴协作，优化您的 AI 工作流程。在 [Ultralytics 集成](https://docs.ultralytics.com/integrations/) 探索更多信息。
 
-<br>
-<a href="https://www.ultralytics.com/hub" target="_blank">
-<img width="100%" src="https://github.com/ultralytics/assets/raw/main/yolov8/banner-integrations.png" alt="Ultralytics Active Learning Integrations Banner"></a>
+<a href="https://docs.ultralytics.com/integrations/" target="_blank">
+    <img width="100%" src="https://github.com/ultralytics/assets/raw/main/yolov8/banner-integrations.png" alt="Ultralytics active learning integrations">
+</a>
 <br>
 <br>
 
@@ -214,24 +214,24 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml
     <img src="https://github.com/ultralytics/assets/raw/main/partners/logo-neuralmagic.png" width="10%" alt="Neural Magic logo"></a>
 </div>
 
-|                                              Ultralytics HUB 🚀                                              |                                                     W&B                                                      |                                                     Comet ⭐ 新增                                                     |                                               Neural Magic                                               |
-| :----------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
-| 简化 YOLO 工作流程：使用 [Ultralytics HUB](https://www.ultralytics.com/hub) 轻松标注、训练和部署。立即试用！ | 使用 [Weights & Biases](https://docs.wandb.ai/guides/integrations/ultralytics/) 无缝跟踪实验、超参数和结果。 | 永久免费的 [Comet](https://bit.ly/yolov5-readme-comet) 让您能够保存 YOLO 模型、恢复训练，并交互式地可视化和调试预测。 | 使用 [Neural Magic DeepSparse](https://bit.ly/yolov5-neuralmagic) 在 CPU 上将 YOLO 推理速度提高达 6 倍。 |
+|                                                       Ultralytics HUB 🌟                                                       |                                                          Weights & Biases                                                           |                                                                              Comet                                                                              |                                                        Neural Magic                                                         |
+| :----------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------: |
+| 简化 YOLO 工作流程：使用 [Ultralytics HUB](https://hub.ultralytics.com) 轻松标注、训练和部署。立即试用！ | 使用 [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/) 跟踪实验、超参数和结果。 | 永久免费，[Comet ML](https://docs.ultralytics.com/integrations/comet/) 让您保存 YOLO 模型、恢复训练并交互式地可视化预测。 | 使用 [Neural Magic DeepSparse](https://docs.ultralytics.com/integrations/neural-magic/) 将 YOLO 推理速度提高多达 6 倍。 |
 
 ## ⭐ Ultralytics HUB
 
-通过 [Ultralytics HUB](https://www.ultralytics.com/hub) ⭐ 体验无缝的 AI 开发，这是构建、训练和部署计算机视觉模型的终极平台。无需编写任何代码即可可视化数据集、训练 YOLOv3、YOLOv5 和 YOLOv8 🚀 模型，并将它们部署到实际应用中。使用我们尖端的工具和用户友好的 [Ultralytics App](https://www.ultralytics.com/app-install) 将图像转化为可操作的见解。立即开始您的**免费**之旅！
+通过 [Ultralytics HUB](https://www.ultralytics.com/hub) ⭐ 体验无缝的 AI 开发，这是构建、训练和部署计算机视觉模型的终极平台。无需编写任何代码，即可可视化数据集、训练 YOLOv3、YOLOv5 和 YOLOv8 🚀 模型，并将它们部署到实际应用中。使用我们尖端的工具和用户友好的 [Ultralytics App](https://www.ultralytics.com/app-install)，将图像转化为可操作的见解。立即开始您的**免费**旅程！
 
 <a align="center" href="https://www.ultralytics.com/hub" target="_blank">
 <img width="100%" src="https://github.com/ultralytics/assets/raw/main/im/ultralytics-hub.png" alt="Ultralytics HUB Platform Screenshot"></a>
 
-## 🤔 为什么选择 YOLOv3？
+## 🤔 为何选择 YOLOv3？
 
-YOLOv3 在发布时代表了实时目标检测领域的一个重要进步。其主要优势包括：
+YOLOv3 在发布时代表了实时目标检测领域的一大进步。其主要优势包括：
 
-- **更高的准确性：** 与 YOLOv2 相比，对小目标的检测效果更好。
-- **多尺度预测：** 在三个不同的尺度上检测目标，提高了对各种尺寸目标的性能。
-- **类别预测：** 使用逻辑分类器而不是 softmax 来预测目标类别，允许进行多标签分类。
+- **提高准确性：** 与 YOLOv2 相比，对小目标的检测效果更好。
+- **多尺度预测：** 在三个不同尺度上检测目标，提高了对各种尺寸目标的性能。
+- **类别预测：** 使用逻辑分类器预测目标类别，而不是 softmax，允许进行多标签分类。
 - **特征提取器：** 与 YOLOv2 中使用的 Darknet-19 相比，使用了更深的网络（Darknet-53）。
 
 虽然像 YOLOv5 和 YOLO11 这样的更新模型提供了进一步的改进，但 YOLOv3 仍然是一个坚实且被广泛理解的基准，由 Ultralytics 在 PyTorch 中高效实现。
@@ -262,7 +262,7 @@ YOLOv3 在发布时代表了实时目标检测领域的一个重要进步。其�
 
 ## 🤝 贡献
 
-我们欢迎您的贡献！让 YOLO 模型易于访问和有效是社区共同努力的结果。请参阅我们的[贡献指南](https://docs.ultralytics.com/help/contributing/)开始。通过 [Ultralytics 调查](https://www.ultralytics.com/survey?utm_source=github&utm_medium=social&utm_campaign=Survey)分享您的反馈。感谢所有为使 Ultralytics YOLO 变得更好而做出贡献的人！
+我们欢迎您的贡献！让 YOLO 模型易于使用且高效是社区共同努力的目标。请参阅我们的[贡献指南](https://docs.ultralytics.com/help/contributing/)开始。通过 [Ultralytics 调查](https://www.ultralytics.com/survey?utm_source=github&utm_medium=social&utm_campaign=Survey)分享您的反馈。感谢所有为使 Ultralytics YOLO 变得更好而做出贡献的人！
 
 [![Ultralytics open-source contributors](https://raw.githubusercontent.com/ultralytics/assets/main/im/image-contributors.png)](https://github.com/ultralytics/yolov5/graphs/contributors)
 
@@ -270,8 +270,8 @@ YOLOv3 在发布时代表了实时目标检测领域的一个重要进步。其�
 
 Ultralytics 提供两种许可选项以满足不同需求：
 
-- **AGPL-3.0 许可证**：一种 [OSI 批准](https://opensource.org/license/agpl-v3)的开源许可证，非常适合学术研究、个人项目和测试。它促进开放合作和知识共享。详情请参阅 [LICENSE](https://github.com/ultralytics/yolov5/blob/master/LICENSE) 文件。
-- **企业许可证**：专为商业应用量身定制，此许可证允许将 Ultralytics 软件和 AI 模型无缝集成到商业产品和服务中，绕过 AGPL-3.0 的开源要求。对于商业用途，请通过 [Ultralytics 许可](https://www.ultralytics.com/license)联系我们。
+- **AGPL-3.0 许可证**：一种经 [OSI 批准](https://opensource.org/license/agpl-v3)的开源许可证，非常适合学术研究、个人项目和测试。它促进开放合作和知识共享。详情请参阅 [LICENSE](https://github.com/ultralytics/yolov5/blob/master/LICENSE) 文件。
+- **企业许可证**：专为商业应用量身定制，此许可证允许将 Ultralytics 软件和 AI 模型无缝集成到商业产品和服务中，绕过 AGPL-3.0 的开源要求。对于商业用途，请通过 [Ultralytics 许可](https://www.ultralytics.com/license)与我们联系。
 
 ## 📧 联系
 
