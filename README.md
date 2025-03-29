@@ -190,13 +190,13 @@ Note: These tutorials primarily use YOLOv5 examples but the principles often app
 
 </details>
 
-## 🛠️ Integrations
+## 🧩 Integrations
 
-Explore Ultralytics' key integrations with leading AI platforms. These collaborations enhance capabilities for dataset labeling, training, visualization, and model management. Discover how Ultralytics works with [Weights & Biases (W&B)](https://docs.wandb.ai/guides/integrations/ultralytics/), [Comet ML](https://bit.ly/yolov5-readme-comet), [Roboflow](https://roboflow.com/?ref=ultralytics), and [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino/) to optimize your AI workflows.
+Our key integrations with leading AI platforms extend the functionality of Ultralytics' offerings, enhancing tasks like dataset labeling, training, visualization, and model management. Discover how Ultralytics, in collaboration with partners like [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/), [Comet ML](https://docs.ultralytics.com/integrations/comet/), [Roboflow](https://docs.ultralytics.com/integrations/roboflow/), and [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino/), can optimize your AI workflow. Explore more at [Ultralytics Integrations](https://docs.ultralytics.com/integrations/).
 
-<br>
-<a href="https://www.ultralytics.com/hub" target="_blank">
-<img width="100%" src="https://github.com/ultralytics/assets/raw/main/yolov8/banner-integrations.png" alt="Ultralytics Active Learning Integrations Banner"></a>
+<a href="https://docs.ultralytics.com/integrations/" target="_blank">
+    <img width="100%" src="https://github.com/ultralytics/assets/raw/main/yolov8/banner-integrations.png" alt="Ultralytics active learning integrations">
+</a>
 <br>
 <br>
 
@@ -214,9 +214,9 @@ Explore Ultralytics' key integrations with leading AI platforms. These collabora
     <img src="https://github.com/ultralytics/assets/raw/main/partners/logo-neuralmagic.png" width="10%" alt="Neural Magic logo"></a>
 </div>
 
-|                                                         Ultralytics HUB 🚀                                                         |                                                                     W&B                                                                     |                                                                       Comet ⭐ NEW                                                                       |                                                 Neural Magic                                                  |
-| :--------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------: |
-| Streamline YOLO workflows: Label, train, and deploy effortlessly with [Ultralytics HUB](https://www.ultralytics.com/hub). Try now! | Track experiments, hyperparameters, and results seamlessly with [Weights & Biases](https://docs.wandb.ai/guides/integrations/ultralytics/). | Free forever, [Comet](https://bit.ly/yolov5-readme-comet) lets you save YOLO models, resume training, and interactively visualize and debug predictions. | Run YOLO inference up to 6x faster on CPUs with [Neural Magic DeepSparse](https://bit.ly/yolov5-neuralmagic). |
+|                                                       Ultralytics HUB 🌟                                                       |                                                          Weights & Biases                                                           |                                                                              Comet                                                                              |                                                        Neural Magic                                                         |
+| :----------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------: |
+| Streamline YOLO workflows: Label, train, and deploy effortlessly with [Ultralytics HUB](https://hub.ultralytics.com). Try now! | Track experiments, hyperparameters, and results with [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/). | Free forever, [Comet ML](https://docs.ultralytics.com/integrations/comet/) lets you save YOLO models, resume training, and interactively visualize predictions. | Run YOLO inference up to 6x faster with [Neural Magic DeepSparse](https://docs.ultralytics.com/integrations/neural-magic/). |
 
 ## ⭐ Ultralytics HUB
 
