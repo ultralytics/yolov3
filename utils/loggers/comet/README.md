@@ -35,8 +35,8 @@ You can set up Comet credentials for YOLOv3 in two ways:
    Set your credentials in your environment:
 
    ```shell
-   export COMET_API_KEY=<Your Comet API Key>
-   export COMET_PROJECT_NAME=<Your Comet Project Name> # Defaults to 'yolov3' if not set
+   export COMET_API_KEY=YOUR_COMET_API_KEY
+   export COMET_PROJECT_NAME=YOUR_COMET_PROJECT_NAME # Defaults to 'yolov3' if not set
    ```
 
 2. **Comet Configuration File**  
@@ -44,8 +44,8 @@ You can set up Comet credentials for YOLOv3 in two ways:
 
    ```
    [comet]
-   api_key=<Your Comet API Key>
-   project_name=<Your Comet Project Name> # Defaults to 'yolov3' if not set
+   api_key=YOUR_API_KEY
+   project_name=YOUR_PROJECT_NAME # Defaults to 'yolov3' if not set
    ```
 
 ### Run the Training Script
@@ -97,11 +97,11 @@ You can customize Comet logging using environment variables:
 ```shell
 # Comet Logging Configuration
 export COMET_MODE=online # 'online' or 'offline'. Defaults to online.
-export COMET_MODEL_NAME=<your_model_name> # Name for the saved model. Defaults to yolov3.
+export COMET_MODEL_NAME=YOUR_MODEL_NAME # Name for the saved model. Defaults to yolov3.
 export COMET_LOG_CONFUSION_MATRIX=false # Disable confusion matrix logging. Defaults to true.
-export COMET_MAX_IMAGE_UPLOADS=<number> # Max prediction images to log. Defaults to 100.
+export COMET_MAX_IMAGE_UPLOADS=NUMBER # Max prediction images to log. Defaults to 100.
 export COMET_LOG_PER_CLASS_METRICS=true # Log per-class metrics. Defaults to false.
-export COMET_DEFAULT_CHECKPOINT_FILENAME=<your_checkpoint.pt> # Checkpoint for resuming. Defaults to 'last.pt'.
+export COMET_DEFAULT_CHECKPOINT_FILENAME=your_checkpoint.pt # Checkpoint for resuming. Defaults to 'last.pt'.
 export COMET_LOG_BATCH_LEVEL_METRICS=true # Log batch-level metrics. Defaults to false.
 export COMET_LOG_PREDICTIONS=true # Set to false to disable prediction logging. Defaults to true.
 ```
@@ -220,7 +220,7 @@ If your training run is interrupted, resume it with the `--resume` flag and the 
 
 ```shell
 python train.py \
-  --resume "comet://<your_workspace>/<your_project>/<experiment_id>"
+  --resume "comet://YOUR_WORKSPACE/YOUR_WORKSPACE/EXPERIMENT_ID"
 ```
 
 ## 🔍 Hyperparameter Search with the Comet Optimizer
