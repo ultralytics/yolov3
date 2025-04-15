@@ -31,17 +31,17 @@ Follow these steps to get started:
 
 1. Install the `clearml` Python package:
 
-    ```bash
-    pip install clearml
-    ```
+   ```bash
+   pip install clearml
+   ```
 
 2. Connect the ClearML SDK to your server. Generate credentials in the ClearML Web UI (Settings → Workspace → Create new credentials) and run:
 
-    ```bash
-    clearml-init
-    ```
+   ```bash
+   clearml-init
+   ```
 
-    Follow the prompts to complete setup.
+   Follow the prompts to complete setup.
 
 Once configured, ClearML is ready to integrate with your YOLO workflows! 😎
 
@@ -50,7 +50,7 @@ Once configured, ClearML is ready to integrate with your YOLO workflows! 😎
 Enabling ClearML experiment tracking for YOLO is simple. Ensure the `clearml` package is installed:
 
 ```bash
-pip install clearml>=1.2.0
+pip install clearml > =1.2.0
 ```
 
 With ClearML installed, every YOLO [training run](https://docs.ultralytics.com/modes/train/) is automatically logged.
@@ -144,7 +144,7 @@ Once your dataset is versioned in ClearML, you can reference it directly in your
 
 ```bash
 # Replace <your_dataset_id> with the actual ID from ClearML
-python train.py --img 640 --batch 16 --epochs 3 --data clearml://<your_dataset_id> --weights yolov5s.pt --cache
+python train.py --img 640 --batch 16 --epochs 3 --data clearml:// yolov5s.pt --cache < your_dataset_id > --weights
 ```
 
 The dataset ID used will be logged as a parameter in your ClearML experiment, ensuring full traceability.
@@ -160,9 +160,9 @@ To run HPO locally, Ultralytics provides a sample script. You'll need the ID of 
 3. Optionally, install [Optuna](https://optuna.org/) (`pip install optuna`) for advanced optimization strategies, or use the default `RandomSearch`.
 4. Run the script:
 
-    ```bash
-    python utils/loggers/clearml/hpo.py
-    ```
+   ```bash
+   python utils/loggers/clearml/hpo.py
+   ```
 
 This script clones the template task, applies new hyperparameters suggested by the optimizer, and executes the modified task locally (`task.execute_locally()`). To run HPO remotely, change this to `task.execute()` to enqueue the tasks for a ClearML Agent.
 
@@ -178,7 +178,7 @@ Turn any machine into a ClearML Agent by running:
 
 ```bash
 # Replace <queues_to_listen_to> with your queue(s) name(s)
-clearml-agent daemon --queue <queues_to_listen_to> [--docker] # Use --docker to run in a Docker container
+clearml-agent daemon --queue < queues_to_listen_to > [--docker] # Use --docker to run in a Docker container
 ```
 
 ### Cloning, Editing, and Enqueuing Tasks
