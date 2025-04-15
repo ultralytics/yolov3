@@ -1,4 +1,3 @@
-
 # Contributing To YOLOv3 🚀
 
 We value your input and welcome your contributions to Ultralytics YOLOv3! Whether you're interested in:
