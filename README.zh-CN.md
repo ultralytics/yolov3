@@ -4,7 +4,7 @@
       <img width="100%" src="https://raw.githubusercontent.com/ultralytics/assets/main/yolov3/banner-yolov3.png" alt="Ultralytics YOLOv3 banner"></a>
   </p>
 
-[English](https://docs.ultralytics.com/en) | [한국어](https://docs.ultralytics.com/ko) | [日本語](https://docs.ultralytics.com/ja) | [Русский](https://docs.ultralytics.com/ru) | [Deutsch](https://docs.ultralytics.com/de) | [Français](https://docs.ultralytics.com/fr) | [Español](https://docs.ultralytics.com/es) | [Português](https://docs.ultralytics.com/pt) | [Türkçe](https://docs.ultralytics.com/tr) | [Tiếng Việt](https://docs.ultralytics.com/vi) | [العربية](https://docs.ultralytics.com/ar)
+[English](https://docs.ultralytics.com/en/) | [한국어](https://docs.ultralytics.com/ko) | [日本語](https://docs.ultralytics.com/ja) | [Русский](https://docs.ultralytics.com/ru) | [Deutsch](https://docs.ultralytics.com/de) | [Français](https://docs.ultralytics.com/fr) | [Español](https://docs.ultralytics.com/es) | [Português](https://docs.ultralytics.com/pt) | [Türkçe](https://docs.ultralytics.com/tr) | [Tiếng Việt](https://docs.ultralytics.com/vi) | [العربية](https://docs.ultralytics.com/ar)
 
 <div>
     <a href="https://github.com/ultralytics/yolov3/actions/workflows/ci-testing.yml"><img src="https://github.com/ultralytics/yolov3/actions/workflows/ci-testing.yml/badge.svg" alt="YOLOv3 CI"></a>
@@ -176,7 +176,7 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml
 - **[多 GPU 训练](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training/)**：使用多个 GPU 加速训练。
 - **[PyTorch Hub 集成](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading/)** 🌟 **新增**：使用 PyTorch Hub 轻松加载模型。
 - **[模型导出 (TFLite, ONNX, CoreML, TensorRT)](https://docs.ultralytics.com/yolov5/tutorials/model_export/)** 🚀：将您的模型转换为各种部署格式。
-- **[NVIDIA Jetson 部署](https://docs.ultralytics.com/yolov5/tutorials/running_on_jetson_nano/)** 🌟 **新增**：在 NVIDIA Jetson 设备上部署模型。
+- **[NVIDIA Jetson 部署](https://docs.ultralytics.com/guides/nvidia-jetson/)** 🌟 **新增**：在 NVIDIA Jetson 设备上部署模型。
 - **[测试时增强 (TTA)](https://docs.ultralytics.com/yolov5/tutorials/test_time_augmentation/)**：使用 TTA 提高预测准确性。
 - **[模型集成](https://docs.ultralytics.com/yolov5/tutorials/model_ensembling/)**：组合多个模型以获得更好的性能。
 - **[模型剪枝/稀疏化](https://docs.ultralytics.com/yolov5/tutorials/model_pruning_and_sparsity/)**：优化模型的大小和速度。
@@ -216,7 +216,7 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml
 
 |                                            Ultralytics HUB 🌟                                            |                                              Weights & Biases                                               |                                                           Comet                                                           |                                                      Neural Magic                                                       |
 | :------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------: |
-| 简化 YOLO 工作流程：使用 [Ultralytics HUB](https://hub.ultralytics.com) 轻松标注、训练和部署。立即试用！ | 使用 [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/) 跟踪实验、超参数和结果。 | 永久免费，[Comet ML](https://docs.ultralytics.com/integrations/comet/) 让您保存 YOLO 模型、恢复训练并交互式地可视化预测。 | 使用 [Neural Magic DeepSparse](https://docs.ultralytics.com/integrations/neural-magic/) 将 YOLO 推理速度提高多达 6 倍。 |
+| 简化 YOLO 工作流程：使用 [Ultralytics HUB](https://hub.ultralytics.com/) 轻松标注、训练和部署。立即试用！ | 使用 [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/) 跟踪实验、超参数和结果。 | 永久免费，[Comet ML](https://docs.ultralytics.com/integrations/comet/) 让您保存 YOLO 模型、恢复训练并交互式地可视化预测。 | 使用 [Neural Magic DeepSparse](https://docs.ultralytics.com/integrations/neural-magic/) 将 YOLO 推理速度提高多达 6 倍。 |
 
 ## ⭐ Ultralytics HUB
 

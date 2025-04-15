@@ -180,7 +180,7 @@ def yolov5s(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=Tr
         model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
         ```
 
-    For more information, refer to [PyTorch Hub models](https://pytorch.org/hub/ultralytics_yolov5).
+    For more information, refer to [PyTorch Hub models](https://pytorch.org/hub/ultralytics_yolov5/).
     """
     return _create("yolov5s", pretrained, channels, classes, autoshape, _verbose, device)
 
@@ -236,7 +236,7 @@ def yolov5l(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=Tr
         model = torch.hub.load('ultralytics/yolov5', 'yolov5l', pretrained=True)
         ```
 
-    For more information, refer to [PyTorch Hub models](https://pytorch.org/hub/ultralytics_yolov5).
+    For more information, refer to [PyTorch Hub models](https://pytorch.org/hub/ultralytics_yolov5/).
     """
     return _create("yolov5l", pretrained, channels, classes, autoshape, _verbose, device)
 
@@ -270,7 +270,7 @@ def yolov5x(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=Tr
         model = torch.hub.load('ultralytics/yolov5', 'yolov5x', device='cuda:0')
         ```
 
-    For more details, refer to [PyTorch Hub models](https://pytorch.org/hub/ultralytics_yolov5).
+    For more details, refer to [PyTorch Hub models](https://pytorch.org/hub/ultralytics_yolov5/).
     """
     return _create("yolov5x", pretrained, channels, classes, autoshape, _verbose, device)
 
