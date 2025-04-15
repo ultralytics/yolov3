@@ -20,11 +20,11 @@
   </div>
   <br>
 
-Ultralytics YOLOv3 is a robust and efficient [computer vision](https://www.ultralytics.com/glossary/computer-vision-cv) model developed by [Ultralytics](https://www.ultralytics.com/). Based on the [PyTorch](https://pytorch.org/) framework, this implementation builds upon the original YOLOv3 architecture, known for its significant improvements in [object detection](https://www.ultralytics.com/glossary/object-detection) speed and accuracy compared to its predecessors. It incorporates insights and best practices from extensive research and development, making it a reliable choice for various vision AI tasks.
+Ultralytics YOLOv3 is a robust and efficient [computer vision](https://www.ultralytics.com/glossary/computer-vision-cv) model developed by [Ultralytics](https://www.ultralytics.com/). Built on the [PyTorch](https://pytorch.org/) framework, this implementation extends the original YOLOv3 architecture, renowned for its improvements in [object detection](https://www.ultralytics.com/glossary/object-detection) speed and accuracy over earlier versions. It incorporates best practices and insights from extensive research, making it a reliable choice for a wide range of vision AI applications.
 
-We hope the resources here help you get the most out of YOLOv3. Please browse the [Ultralytics Docs](https://docs.ultralytics.com/) for detailed information (note: specific YOLOv3 docs may be limited, refer to general YOLO principles), raise an issue on [GitHub](https://github.com/ultralytics/yolov5/issues/new/choose) for support, and join our [Discord community](https://discord.com/invite/ultralytics) for questions and discussions!
+Explore the [Ultralytics Docs](https://docs.ultralytics.com/) for in-depth guidance (YOLOv3-specific docs may be limited, but general YOLO principles apply), open an issue on [GitHub](https://github.com/ultralytics/yolov5/issues/new/choose) for support, and join our [Discord community](https://discord.com/invite/ultralytics) for questions and discussions!
 
-To request an Enterprise License, please complete the form at [Ultralytics Licensing](https://www.ultralytics.com/license).
+For Enterprise License requests, please complete the form at [Ultralytics Licensing](https://www.ultralytics.com/license).
 
 <div align="center">
   <a href="https://github.com/ultralytics"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-github.png" width="2%" alt="Ultralytics GitHub"></a>
@@ -46,11 +46,11 @@ To request an Enterprise License, please complete the form at [Ultralytics Licen
 
 ## 🚀 YOLO11: The Next Evolution
 
-We are excited to announce the launch of **Ultralytics YOLO11** 🚀, the latest advancement in our state-of-the-art (SOTA) vision models! Available now at the [Ultralytics YOLO GitHub repository](https://github.com/ultralytics/ultralytics), YOLO11 builds on our legacy of speed, precision, and ease of use. Whether you're tackling [object detection](https://docs.ultralytics.com/tasks/detect/), [instance segmentation](https://docs.ultralytics.com/tasks/segment/), [pose estimation](https://docs.ultralytics.com/tasks/pose/), [image classification](https://docs.ultralytics.com/tasks/classify/), or [oriented object detection (OBB)](https://docs.ultralytics.com/tasks/obb/), YOLO11 delivers the performance and versatility needed to excel in diverse applications.
+We are thrilled to introduce **Ultralytics YOLO11** 🚀, the latest advancement in our state-of-the-art vision models! Available now at the [Ultralytics YOLO GitHub repository](https://github.com/ultralytics/ultralytics), YOLO11 continues our legacy of speed, precision, and user-friendly design. Whether you're working on [object detection](https://docs.ultralytics.com/tasks/detect/), [instance segmentation](https://docs.ultralytics.com/tasks/segment/), [pose estimation](https://docs.ultralytics.com/tasks/pose/), [image classification](https://docs.ultralytics.com/tasks/classify/), or [oriented object detection (OBB)](https://docs.ultralytics.com/tasks/obb/), YOLO11 delivers the performance and flexibility needed for modern computer vision tasks.
 
 Get started today and unlock the full potential of YOLO11! Visit the [Ultralytics Docs](https://docs.ultralytics.com/) for comprehensive guides and resources:
 
-[![PyPI version](https://badge.fury.io/py/ultralytics.svg)](https://badge.fury.io/py/ultralytics) [![Downloads](https://static.pepy.tech/badge/ultralytics)](https://www.pepy.tech/projects/ultralytics)
+[![PyPI version](https://badge.fury.io/py/ultralytics.svg)](https://badge.fury.io/py/ultralytics) [![Downloads](https://static.pepy.tech/badge/ultralytics)](https://pepy.tech/projects/ultralytics)
 
 ```bash
 # Install the ultralytics package
@@ -64,12 +64,12 @@ pip install ultralytics
 
 ## 📚 Documentation
 
-See the [Ultralytics Docs](https://docs.ultralytics.com/models/yolov3/) for full documentation on training, testing, and deployment using the Ultralytics framework. While specific YOLOv3 documentation might be limited, the general principles apply. See below for quickstart examples adapted for YOLOv3 concepts.
+See the [Ultralytics Docs for YOLOv3](https://docs.ultralytics.com/models/yolov3/) for full documentation on training, testing, and deployment using the Ultralytics framework. While YOLOv3-specific documentation may be limited, the general YOLO principles apply. Below are quickstart examples adapted for YOLOv3 concepts.
 
 <details open>
 <summary>Install</summary>
 
-Clone the repository and install dependencies from [requirements.txt](https://github.com/ultralytics/yolov5/blob/master/requirements.txt) in a [**Python>=3.8.0**](https://www.python.org/) environment. Ensure you have [**PyTorch>=1.8**](https://pytorch.org/get-started/locally/) installed. (Note: This repo is originally YOLOv5, dependencies should be compatible but tailored testing for YOLOv3 is recommended).
+Clone the repository and install dependencies from `requirements.txt` in a [**Python>=3.8.0**](https://www.python.org/) environment. Ensure you have [**PyTorch>=1.8**](https://pytorch.org/get-started/locally/) installed. (Note: This repo is originally YOLOv5, dependencies should be compatible but tailored testing for YOLOv3 is recommended).
 
 ```bash
 # Clone the YOLOv3 repository
@@ -192,7 +192,7 @@ Note: These tutorials primarily use YOLOv5 examples but the principles often app
 
 ## 🧩 Integrations
 
-Our key integrations with leading AI platforms extend the functionality of Ultralytics' offerings, enhancing tasks like dataset labeling, training, visualization, and model management. Discover how Ultralytics, in collaboration with partners like [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/), [Comet ML](https://docs.ultralytics.com/integrations/comet/), [Roboflow](https://docs.ultralytics.com/integrations/roboflow/), and [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino/), can optimize your AI workflow. Explore more at [Ultralytics Integrations](https://docs.ultralytics.com/integrations/).
+Ultralytics offers robust integrations with leading AI platforms to enhance your workflow, including dataset labeling, training, visualization, and model management. Discover how Ultralytics, in collaboration with partners like [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/), [Comet ML](https://docs.ultralytics.com/integrations/comet/), [Roboflow](https://docs.ultralytics.com/integrations/roboflow/), and [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino/), can optimize your AI projects. Explore more at [Ultralytics Integrations](https://docs.ultralytics.com/integrations/).
 
 <a href="https://docs.ultralytics.com/integrations/" target="_blank">
     <img width="100%" src="https://github.com/ultralytics/assets/raw/main/yolov8/banner-integrations.png" alt="Ultralytics active learning integrations">
@@ -220,21 +220,21 @@ Our key integrations with leading AI platforms extend the functionality of Ultra
 
 ## ⭐ Ultralytics HUB
 
-Experience seamless AI development with [Ultralytics HUB](https://www.ultralytics.com/hub) ⭐, the ultimate platform for building, training, and deploying computer vision models. Visualize datasets, train YOLOv3, YOLOv5 and YOLOv8 🚀 models, and deploy them to real-world applications without writing any code. Transform images into actionable insights using our cutting-edge tools and user-friendly [Ultralytics App](https://www.ultralytics.com/app-install). Start your journey for **Free** today!
+Experience seamless AI development with [Ultralytics HUB](https://www.ultralytics.com/hub) ⭐, the ultimate platform for building, training, and deploying computer vision models. Visualize datasets, train YOLOv3, YOLOv5, and YOLOv8 🚀 models, and deploy them to real-world applications without writing any code. Transform images into actionable insights using our advanced tools and user-friendly [Ultralytics App](https://www.ultralytics.com/app-install). Start your journey for **Free** today!
 
 <a align="center" href="https://www.ultralytics.com/hub" target="_blank">
 <img width="100%" src="https://github.com/ultralytics/assets/raw/main/im/ultralytics-hub.png" alt="Ultralytics HUB Platform Screenshot"></a>
 
 ## 🤔 Why YOLOv3?
 
-YOLOv3 represented a significant step forward in real-time object detection upon its release. Key advantages include:
+YOLOv3 marked a major leap forward in real-time object detection at its release. Key advantages include:
 
-- **Improved Accuracy:** Better detection of small objects compared to YOLOv2.
-- **Multi-Scale Predictions:** Detects objects at three different scales, enhancing performance across various object sizes.
-- **Class Prediction:** Uses logistic classifiers for predicting object classes instead of softmax, allowing for multi-label classification.
-- **Feature Extractor:** Utilizes a deeper network (Darknet-53) compared to Darknet-19 used in YOLOv2.
+- **Improved Accuracy:** Enhanced detection of small objects compared to YOLOv2.
+- **Multi-Scale Predictions:** Detects objects at three different scales, boosting performance across varied object sizes.
+- **Class Prediction:** Uses logistic classifiers for object classes, enabling multi-label classification.
+- **Feature Extractor:** Employs a deeper network (Darknet-53) versus the Darknet-19 used in YOLOv2.
 
-While newer models like YOLOv5 and YOLO11 offer further improvements, YOLOv3 remains a solid and widely understood baseline implemented efficiently in PyTorch by Ultralytics.
+While newer models like YOLOv5 and YOLO11 offer further advancements, YOLOv3 remains a reliable and widely adopted baseline, efficiently implemented in PyTorch by Ultralytics.
 
 ## ☁️ Environments
 
@@ -256,7 +256,7 @@ Get started quickly with our pre-configured environments. Click the icons below 
   <a href="https://docs.ultralytics.com/integrations/amazon-sagemaker/">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-aws-small.png" width="10%" alt="AWS Marketplace"/></a>
   <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="5%" alt="" />
-  <a href="https://docs.ultralytics.com/integrations/google-cloud/">
+  <a href="https://docs.ultralytics.com/integrations/google-colab/">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-gcp-small.png" width="10%" alt="GCP Quickstart"/></a>
 </div>
 
