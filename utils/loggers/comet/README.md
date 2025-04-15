@@ -232,22 +232,19 @@ YOLOv3 integrates with Comet's Optimizer for [hyperparameter tuning](https://doc
 Create a JSON config file for the sweep (e.g., `utils/loggers/comet/optimizer_config.json`):
 
 ```json
-// Example optimizer_config.json
 {
   "spec": {
-    "maxCombo": 10, // Max number of experiments to run
-    "objective": "minimize", // "minimize" or "maximize"
-    "metric": "metrics/mAP_0.5", // Metric to optimize
-    "algorithm": "bayes", // Optimization algorithm
+    "maxCombo": 10,
+    "objective": "minimize",
+    "metric": "metrics/mAP_0.5",
+    "algorithm": "bayes",
     "parameters": {
-      // Hyperparameters to tune
       "lr0": { "type": "float", "min": 0.001, "max": 0.01 },
       "momentum": { "type": "float", "min": 0.85, "max": 0.95 }
-      // Add other hyperparameters from train.py args
     }
   },
-  "name": "YOLOv3 Hyperparameter Sweep", // Name of the sweep
-  "trials": 1 // Number of trials per experiment combination
+  "name": "YOLOv3 Hyperparameter Sweep",
+  "trials": 1
 }
 ```
 
