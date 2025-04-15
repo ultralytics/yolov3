@@ -96,14 +96,14 @@ You can customize Comet logging using environment variables:
 
 ```shell
 # Comet Logging Configuration
-export COMET_MODE=online # 'online' or 'offline'. Defaults to online.
-export COMET_MODEL_NAME=YOUR_MODEL_NAME # Name for the saved model. Defaults to yolov3.
-export COMET_LOG_CONFUSION_MATRIX=false # Disable confusion matrix logging. Defaults to true.
-export COMET_MAX_IMAGE_UPLOADS=NUMBER # Max prediction images to log. Defaults to 100.
-export COMET_LOG_PER_CLASS_METRICS=true # Log per-class metrics. Defaults to false.
+export COMET_MODE=online                                    # 'online' or 'offline'. Defaults to online.
+export COMET_MODEL_NAME=YOUR_MODEL_NAME                     # Name for the saved model. Defaults to yolov3.
+export COMET_LOG_CONFUSION_MATRIX=false                     # Disable confusion matrix logging. Defaults to true.
+export COMET_MAX_IMAGE_UPLOADS=NUMBER                       # Max prediction images to log. Defaults to 100.
+export COMET_LOG_PER_CLASS_METRICS=true                     # Log per-class metrics. Defaults to false.
 export COMET_DEFAULT_CHECKPOINT_FILENAME=your_checkpoint.pt # Checkpoint for resuming. Defaults to 'last.pt'.
-export COMET_LOG_BATCH_LEVEL_METRICS=true # Log batch-level metrics. Defaults to false.
-export COMET_LOG_PREDICTIONS=true # Set to false to disable prediction logging. Defaults to true.
+export COMET_LOG_BATCH_LEVEL_METRICS=true                   # Log batch-level metrics. Defaults to false.
+export COMET_LOG_PREDICTIONS=true                           # Set to false to disable prediction logging. Defaults to true.
 ```
 
 ### Logging Checkpoints with Comet
