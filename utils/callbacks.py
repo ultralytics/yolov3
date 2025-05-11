@@ -6,7 +6,7 @@ import threading
 
 
 class Callbacks:
-    """ " Handles all registered callbacks for YOLOv3 Hooks."""
+    """Handles all registered callbacks for YOLOv3 Hooks."""
 
     def __init__(self):
         """Initializes a Callbacks object to manage YOLOv3 training hooks with various event triggers."""
