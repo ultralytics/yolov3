@@ -1,49 +1,50 @@
 # YOLOv3 requirements
 # Usage: pip install -r requirements.txt
+# Python >= 3.8 recommended
 
 # Base ------------------------------------------------------------------------
-gitpython>=3.1.30
-matplotlib>=3.3
-numpy>=1.23.5
-opencv-python>=4.1.1
-Pillow>=10.3.0
-psutil  # system resources
-PyYAML>=5.3.1
-requests>=2.32.2
-scipy>=1.4.1
-thop>=0.1.1  # FLOPs computation
-torch>=1.8.0  # see https://pytorch.org/get-started/locally (recommended)
-torchvision>=0.9.0
-tqdm>=4.66.3
-ultralytics>=8.2.34  # https://ultralytics.com
-# protobuf<=3.20.1  # https://github.com/ultralytics/yolov5/issues/8012
+gitpython>=3.1.30            # Git repo interaction for training/versioning
+matplotlib>=3.5.0            # Plotting results and graphs
+numpy>=1.23.5                # Fundamental for array/matrix operations
+opencv-python>=4.1.1         # Image/video processing
+Pillow>=10.3.0               # Image reading/writing support
+psutil>=5.9.0                # System monitoring (RAM, CPU, etc.)
+PyYAML>=5.3.1                # Reading configs (yaml files)
+requests>=2.32.2             # HTTP requests, used in model hub/downloads
+scipy>=1.4.1                 # Scientific computing (e.g. IoU, metrics)
+thop>=0.1.1                  # Model profiling - FLOPs and parameter count
+torch>=1.8.0                 # Core PyTorch for training/inference
+torchvision>=0.9.0           # Torch utilities for vision (transforms, datasets)
+tqdm>=4.66.3                 # Progress bar in CLI
+ultralytics>=8.2.34          # YOLO framework library (models, training, utils)
+# protobuf<=3.20.1           # For ONNX/TensorFlow export compatibility
 
 # Logging ---------------------------------------------------------------------
-# tensorboard>=2.4.1
-# clearml>=1.2.0
-# comet
+# tensorboard>=2.4.1         # Visual logging (scalars, images)
+# clearml>=1.2.0             # Experiment tracking
+# comet                      # Another logging/monitoring tool
 
 # Plotting --------------------------------------------------------------------
-pandas>=1.1.4
-seaborn>=0.11.0
+pandas>=1.1.4                # Data handling and manipulation
+seaborn>=0.11.0              # Statistical data visualization (confusion matrix, etc.)
 
-# Export ----------------------------------------------------------------------
-# coremltools>=6.0  # CoreML export
-# onnx>=1.10.0  # ONNX export
-# onnx-simplifier>=0.4.1  # ONNX simplifier
-# nvidia-pyindex  # TensorRT export
-# nvidia-tensorrt  # TensorRT export
-# scikit-learn<=1.1.2  # CoreML quantization
-# tensorflow>=2.4.0  # TF exports (-cpu, -aarch64, -macos)
-# tensorflowjs>=3.9.0  # TF.js export
-# openvino-dev>=2023.0  # OpenVINO export
+# Export (optional) -----------------------------------------------------------
+# coremltools>=6.0           # Apple CoreML export support
+# onnx>=1.10.0               # ONNX export support
+# onnx-simplifier>=0.4.1     # Optimizes ONNX models
+# nvidia-pyindex             # Required for installing NVIDIA TensorRT
+# nvidia-tensorrt            # TensorRT export and inference
+# scikit-learn<=1.1.2        # Used in CoreML quantization (used in older code)
+# tensorflow>=2.4.0          # TensorFlow export
+# tensorflowjs>=3.9.0        # TensorFlow.js export
+# openvino-dev>=2023.0       # Intel OpenVINO export
 
 # Deploy ----------------------------------------------------------------------
-setuptools>=70.0.0 # Snyk vulnerability fix
-# tritonclient[all]~=2.24.0
+setuptools>=70.0.0           # Required to avoid known vulnerabilities
+# tritonclient[all]~=2.24.0  # NVIDIA Triton server deployment (optional)
 
 # Extras ----------------------------------------------------------------------
-# ipython  # interactive notebook
-# mss  # screenshots
-# albumentations>=1.0.3
-# pycocotools>=2.0.6  # COCO mAP
+# ipython                    # Enhanced interactive shell
+# mss                        # Screenshot capturing for inference UI
+# albumentations>=1.0.3      # Powerful image augmentation library
+# pycocotools>=2.0.6         # COCO dataset metrics (mAP, etc.)
