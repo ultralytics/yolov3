@@ -34,6 +34,7 @@ import torch
 import torchvision
 import yaml
 from ultralytics.utils.checks import check_requirements
+from ultralytics.utils.patches import torch_load
 
 from utils import TryExcept, emojis
 from utils.downloads import curl_download, gsutil_getsize
@@ -1119,7 +1120,7 @@ def non_max_suppression(
 
 def strip_optimizer(f="best.pt", s=""):  # from utils.general import *; strip_optimizer()
     """Strips optimizer from a checkpoint file 'f', optionally saving as 's', to finalize training."""
-    x = torch.load(f, map_location=torch.device("cpu"))
+    x = torch_load(f, map_location=torch.device("cpu"))
     if x.get("ema"):
         x["model"] = x["ema"]  # replace model with ema
     for k in "optimizer", "best_fitness", "ema", "updates":  # keys
