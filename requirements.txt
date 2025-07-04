@@ -16,7 +16,7 @@ thop>=0.1.1                  # Model profiling - FLOPs and parameter count
 torch>=1.8.0                 # Core PyTorch for training/inference
 torchvision>=0.9.0           # Torch utilities for vision (transforms, datasets)
 tqdm>=4.66.3                 # Progress bar in CLI
-ultralytics>=8.2.34          # YOLO framework library (models, training, utils)
+ultralytics>=8.2.64          # YOLO framework library (models, training, utils)
 # protobuf<=3.20.1           # For ONNX/TensorFlow export compatibility
 
 # Logging ---------------------------------------------------------------------
