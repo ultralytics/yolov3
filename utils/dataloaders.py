@@ -1008,11 +1008,11 @@ class LoadImagesAndLabels(Dataset):
 # Ancillary functions --------------------------------------------------------------------------------------------------
 def flatten_recursive(path=DATASETS_DIR / "coco128"):
     """Flattens a directory recursively by copying all files to a new top-level directory, given an input path."""
-    new_path = Path(f"{str(path)}_flat")
+    new_path = Path(f"{path!s}_flat")
     if os.path.exists(new_path):
         shutil.rmtree(new_path)  # delete output folder
     os.makedirs(new_path)  # make new output folder
-    for file in tqdm(glob.glob(f"{str(Path(path))}/**/*.*", recursive=True)):
+    for file in tqdm(glob.glob(f"{Path(path)!s}/**/*.*", recursive=True)):
         shutil.copyfile(file, new_path / Path(file).name)
 
 
@@ -1282,7 +1282,7 @@ class ClassificationDataset(torchvision.datasets.ImageFolder):
         self.album_transforms = classify_albumentations(augment, imgsz) if augment else None
         self.cache_ram = cache is True or cache == "ram"
         self.cache_disk = cache == "disk"
-        self.samples = [list(x) + [Path(x[0]).with_suffix(".npy"), None] for x in self.samples]  # file, index, npy, im
+        self.samples = [[*list(x), Path(x[0]).with_suffix(".npy"), None] for x in self.samples]  # file, index, npy, im
 
     def __getitem__(self, i):
         """Fetches the item at index `i`, applies caching and transformations, and returns image-sample and index."""
