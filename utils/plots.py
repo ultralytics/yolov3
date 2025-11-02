@@ -73,12 +73,8 @@ colors = Colors()  # create instance for 'from utils.plots import colors'
 
 
 def feature_visualization(x, module_type, stage, n=32, save_dir=Path("runs/detect/exp")):
-    """
-    x:              Features to be visualized
-    module_type:    Module type
-    stage:          Module stage within model
-    n:              Maximum number of feature maps to plot
-    save_dir:       Directory to save results.
+    """x: Features to be visualized module_type: Module type stage: Module stage within model n: Maximum number of
+    feature maps to plot save_dir: Directory to save results.
     """
     if "Detect" not in module_type:
         _batch, channels, height, width = x.shape  # batch, channels, height, width
@@ -110,8 +106,7 @@ def hist2d(x, y, n=100):
 
 
 def butter_lowpass_filtfilt(data, cutoff=1500, fs=50000, order=5):
-    """
-    Applies a low-pass Butterworth filter using forward-backward method.
+    """Applies a low-pass Butterworth filter using forward-backward method.
 
     See: https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy
     """
@@ -119,7 +114,9 @@ def butter_lowpass_filtfilt(data, cutoff=1500, fs=50000, order=5):
 
     # https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy
     def butter_lowpass(cutoff, fs, order):
-        """Applies a low-pass Butterworth filter to input data using forward-backward method; see https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy."""
+        """Applies a low-pass Butterworth filter to input data using forward-backward method; see
+        https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy.
+        """
         nyq = 0.5 * fs
         normal_cutoff = cutoff / nyq
         return butter(order, normal_cutoff, btype="low", analog=False)

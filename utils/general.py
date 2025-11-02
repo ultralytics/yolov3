@@ -79,8 +79,8 @@ def is_colab():
 
 
 def is_jupyter():
-    """
-    Check if the current script is running inside a Jupyter Notebook. Verified on Colab, Jupyterlab, Kaggle, Paperspace.
+    """Check if the current script is running inside a Jupyter Notebook. Verified on Colab, Jupyterlab, Kaggle,
+    Paperspace.
 
     Returns:
         bool: True if running inside a Jupyter Notebook, False otherwise.
@@ -180,8 +180,7 @@ class Profile(contextlib.ContextDecorator):
     """Profiles code execution time, usable as a context manager or decorator for performance monitoring."""
 
     def __init__(self, t=0.0):
-        """Initializes a profiling context for YOLOv3 with optional timing threshold `t` and checks CUDA
-        availability.
+        """Initializes a profiling context for YOLOv3 with optional timing threshold `t` and checks CUDA availability.
         """
         self.t = t
         self.cuda = torch.cuda.is_available()
@@ -209,8 +208,7 @@ class Timeout(contextlib.ContextDecorator):
     """Enforces a timeout on code execution, raising TimeoutError on expiry."""
 
     def __init__(self, seconds, *, timeout_msg="", suppress_timeout_errors=True):
-        """Initializes a timeout context/decorator with specified duration, custom message, and error handling
-        option.
+        """Initializes a timeout context/decorator with specified duration, custom message, and error handling option.
         """
         self.seconds = int(seconds)
         self.timeout_message = timeout_msg
@@ -302,8 +300,7 @@ def get_default_args(func):
 
 
 def get_latest_run(search_dir="."):
-    """Returns path to the most recent 'last.pt' file within 'search_dir' for resuming, or an empty string if not
-    found.
+    """Returns path to the most recent 'last.pt' file within 'search_dir' for resuming, or an empty string if not found.
     """
     last_list = glob.glob(f"{search_dir}/**/last*.pt", recursive=True)
     return max(last_list, key=os.path.getctime) if last_list else ""
@@ -334,8 +331,7 @@ def file_size(path):
 
 
 def check_online():
-    """Checks internet connectivity by attempting to connect to "1.1.1.1" on port 443 twice; returns True if
-    successful.
+    """Checks internet connectivity by attempting to connect to "1.1.1.1" on port 443 twice; returns True if successful.
     """
     import socket
 
@@ -391,8 +387,7 @@ def check_git_status(repo="ultralytics/yolov5", branch="master"):
 
 @WorkingDirectory(ROOT)
 def check_git_info(path="."):
-    """
-    Checks YOLOv3 git info (remote, branch, commit) in path, requires 'gitpython'.
+    """Checks YOLOv3 git info (remote, branch, commit) in path, requires 'gitpython'.
 
     Returns dict.
     """
@@ -643,13 +638,11 @@ def url2file(url):
 
 
 def download(url, dir=".", unzip=True, delete=True, curl=False, threads=1, retry=3):
-    """Downloads files from URLs into a specified directory, optionally unzips, and supports multithreading and
-    retries.
+    """Downloads files from URLs into a specified directory, optionally unzips, and supports multithreading and retries.
     """
 
     def download_one(url, dir):
-        """Downloads a file from a URL into the specified directory, supporting retries and using curl or torch
-        methods.
+        """Downloads a file from a URL into the specified directory, supporting retries and using curl or torch methods.
         """
         success = True
         if os.path.isfile(url):
@@ -706,15 +699,14 @@ def clean_str(s):
 
 
 def one_cycle(y1=0.0, y2=1.0, steps=100):
-    """Generates a lambda for a sinusoidal ramp from y1 to y2 over 'steps'; usage: `lambda x: ((1 - math.cos(x *
-    math.pi / steps)) / 2) * (y2 - y1) + y1`.
+    """Generates a lambda for a sinusoidal ramp from y1 to y2 over 'steps'; usage: `lambda x: ((1 - math.cos(x * math.pi
+    / steps)) / 2) * (y2 - y1) + y1`.
     """
     return lambda x: ((1 - math.cos(x * math.pi / steps)) / 2) * (y2 - y1) + y1
 
 
 def colorstr(*input):
-    """
-    Colors strings using ANSI escape codes; see usage example `colorstr('blue', 'hello world')`.
+    """Colors strings using ANSI escape codes; see usage example `colorstr('blue', 'hello world')`.
 
     [https://en.wikipedia.org/wiki/ANSI_escape_code]
     """
@@ -772,8 +764,7 @@ def labels_to_image_weights(labels, nc=80, class_weights=np.ones(80)):
 
 
 def coco80_to_coco91_class():  # converts 80-index (val2014) to 91-index (paper)
-    """
-    Converts COCO 80-class index to COCO 91-class index.
+    """Converts COCO 80-class index to COCO 91-class index.
 
     Reference: https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
     """
@@ -1017,11 +1008,10 @@ def non_max_suppression(
     max_det=300,
     nm=0,  # number of masks
 ):
-    """
-    Non-Maximum Suppression (NMS) on inference results to reject overlapping detections.
+    """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections.
 
     Returns:
-         list of detections, on (n,6) tensor per image [xyxy, conf, cls]
+        list of detections, on (n,6) tensor per image [xyxy, conf, cls]
     """
     # Checks
     assert 0 <= conf_thres <= 1, f"Invalid Confidence threshold {conf_thres}, valid values are between 0.0 and 1.0"
@@ -1226,8 +1216,7 @@ def apply_classifier(x, model, img, im0):
 
 
 def increment_path(path, exist_ok=False, sep="", mkdir=False):
-    """
-    Increments file or directory path, optionally creating the directory, not thread-safe.
+    """Increments file or directory path, optionally creating the directory, not thread-safe.
 
     Args: path (str/Path), exist_ok (bool), sep (str), mkdir (bool).
     """
@@ -1266,8 +1255,7 @@ def imread(filename, flags=cv2.IMREAD_COLOR):
 
 
 def imwrite(filename, img):
-    """
-    Writes an image to a file; returns True on success, False on failure.
+    """Writes an image to a file; returns True on success, False on failure.
 
     Args: filename (str), img (ndarray).
     """

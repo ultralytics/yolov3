@@ -183,8 +183,7 @@ def create_dataloader(
 
 
 class InfiniteDataLoader(dataloader.DataLoader):
-    """
-    Dataloader that reuses workers.
+    """Dataloader that reuses workers.
 
     Uses same syntax as vanilla DataLoader
     """
@@ -208,8 +207,7 @@ class InfiniteDataLoader(dataloader.DataLoader):
 
 
 class _RepeatSampler:
-    """
-    Sampler that repeats forever.
+    """Sampler that repeats forever.
 
     Args:
         sampler (Sampler)
@@ -486,8 +484,7 @@ class LoadStreams:
 
 
 def img2label_paths(img_paths):
-    """Converts image paths to corresponding label paths by replacing `/images/` with `/labels/` and `.jpg` with
-    `.txt`.
+    """Converts image paths to corresponding label paths by replacing `/images/` with `/labels/` and `.jpg` with `.txt`.
     """
     sa, sb = f"{os.sep}images{os.sep}", f"{os.sep}labels{os.sep}"  # /images/, /labels/ substrings
     return [sb.join(x.rsplit(sa, 1)).rsplit(".", 1)[0] + ".txt" for x in img_paths]
@@ -828,8 +825,7 @@ class LoadImagesAndLabels(Dataset):
             np.save(f.as_posix(), cv2.imread(self.im_files[i]))
 
     def load_mosaic(self, index):
-        """Loads 4 images into a mosaic for YOLOv3 training, enhancing detection capabilities through data
-        augmentation.
+        """Loads 4 images into a mosaic for YOLOv3 training, enhancing detection capabilities through data augmentation.
         """
         labels4, segments4 = [], []
         s = self.img_size
@@ -1053,13 +1049,13 @@ def extract_boxes(path=DATASETS_DIR / "coco128"):  # from utils.dataloaders impo
 
 
 def autosplit(path=DATASETS_DIR / "coco128/images", weights=(0.9, 0.1, 0.0), annotated_only=False):
-    """Autosplit a dataset into train/val/test splits and save path/autosplit_*.txt files
-    Usage: from utils.dataloaders import *; autosplit().
+    """Autosplit a dataset into train/val/test splits and save path/autosplit_*.txt files Usage: from utils.dataloaders
+    import *; autosplit().
 
-    Arguments:
-        path:            Path to images directory
-        weights:         Train, val, test weights (list, tuple)
-        annotated_only:  Only use images with an annotated txt file
+    Args:
+        path: Path to images directory
+        weights: Train, val, test weights (list, tuple)
+        annotated_only: Only use images with an annotated txt file
     """
     path = Path(path)  # images dir
     files = sorted(x for x in path.rglob("*.*") if x.suffix[1:].lower() in IMG_FORMATS)  # image files only
@@ -1131,14 +1127,13 @@ def verify_image_label(args):
 
 
 class HUBDatasetStats:
-    """
-    Class for generating HUB dataset JSON and `-hub` dataset directory.
+    """Class for generating HUB dataset JSON and `-hub` dataset directory.
 
-    Arguments:
-        path:           Path to data.yaml or data.zip (with data.yaml inside data.zip)
-        autodownload:   Attempt to download dataset if not found locally
+    Args:
+        path: Path to data.yaml or data.zip (with data.yaml inside data.zip)
+        autodownload: Attempt to download dataset if not found locally
 
-    Usage
+            Usage
         from utils.dataloaders import HUBDatasetStats
         stats = HUBDatasetStats('coco128.yaml', autodownload=True)  # usage 1
         stats = HUBDatasetStats('path/to/coco128.zip')  # usage 2
@@ -1264,12 +1259,11 @@ class HUBDatasetStats:
 
 # Classification dataloaders -------------------------------------------------------------------------------------------
 class ClassificationDataset(torchvision.datasets.ImageFolder):
-    """
-    YOLOv3 Classification Dataset.
+    """YOLOv3 Classification Dataset.
 
-    Arguments:
-        root:  Dataset path
-        transform:  torchvision transforms, used by default
+    Args:
+        root: Dataset path
+        transform: torchvision transforms, used by default
         album_transform: Albumentations transforms, used if installed
     """
 

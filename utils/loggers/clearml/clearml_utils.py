@@ -61,8 +61,7 @@ def construct_dataset(clearml_info_string):
 
 
 class ClearmlLogger:
-    """
-    Log training runs, datasets, models, and predictions to ClearML.
+    """Log training runs, datasets, models, and predictions to ClearML.
 
     This logger sends information to ClearML at app.clear.ml or to your own hosted server. By default, this information
     includes hyperparameters, system configuration and metrics, model metrics, code information and basic data metrics
@@ -72,14 +71,11 @@ class ClearmlLogger:
     """
 
     def __init__(self, opt, hyp):
-        """
-        - Initialize ClearML Task, this object will capture the experiment
-        - Upload dataset version to ClearML Data if opt.upload_dataset is True.
+        """- Initialize ClearML Task, this object will capture the experiment - Upload dataset version to ClearML Data
+        if opt.upload_dataset is True.
 
-        Arguments:
-        opt (namespace) -- Commandline arguments for this run
-        hyp (dict) -- Hyperparameters for this run
-
+        Args:
+            opt (namespace) -- Commandline arguments for this run: hyp (dict) -- Hyperparameters for this run
         """
         self.current_epoch = 0
         # Keep tracked of amount of logged images to enforce a limit
@@ -124,12 +120,11 @@ class ClearmlLogger:
                 opt.data = self.data_dict
 
     def log_debug_samples(self, files, title="Debug Samples"):
-        """
-        Log files (images) as debug samples in the ClearML task.
+        """Log files (images) as debug samples in the ClearML task.
 
-        Arguments:
-        files (List(PosixPath)) a list of file paths in PosixPath format
-        title (str) A title that groups together images with the same values
+        Args:
+            files (List(PosixPath)) a list of file paths in PosixPath format: title (str) A title that groups together
+                images with the same values
         """
         for f in files:
             if f.exists():
@@ -140,14 +135,13 @@ class ClearmlLogger:
                 )
 
     def log_image_with_boxes(self, image_path, boxes, class_names, image, conf_threshold=0.25):
-        """
-        Draw the bounding boxes on a single image and report the result as a ClearML debug sample.
+        """Draw the bounding boxes on a single image and report the result as a ClearML debug sample.
 
-        Arguments:
-        image_path (PosixPath) the path the original image file
-        boxes (list): list of scaled predictions in the format - [xmin, ymin, xmax, ymax, confidence, class]
-        class_names (dict): dict containing mapping of class int to class name
-        image (Tensor): A torch tensor containing the actual image data
+        Args:
+            image_path (PosixPath) the path the original image file
+            boxes (list): list of scaled predictions in the format - [xmin, ymin, xmax, ymax, confidence, class]
+            class_names (dict): dict containing mapping of class int to class name
+            image (Tensor): A torch tensor containing the actual image data
         """
         if (
             len(self.current_epoch_logged_images) < self.max_imgs_to_log_per_epoch

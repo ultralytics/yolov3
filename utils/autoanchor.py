@@ -33,8 +33,7 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
     wh = torch.tensor(np.concatenate([l[:, 3:5] * s for s, l in zip(shapes * scale, dataset.labels)])).float()  # wh
 
     def metric(k):  # compute metric
-        """Computes and returns best possible recall (bpr) and anchors above threshold (aat) metrics for given
-        anchors.
+        """Computes and returns best possible recall (bpr) and anchors above threshold (aat) metrics for given anchors.
         """
         r = wh[:, None] / k[None]
         x = torch.min(r, 1 / r).min(2)[0]  # ratio metric
@@ -66,10 +65,9 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
 
 
 def kmean_anchors(dataset="./data/coco128.yaml", n=9, img_size=640, thr=4.0, gen=1000, verbose=True):
-    """
-    Creates kmeans-evolved anchors from training dataset.
+    """Creates kmeans-evolved anchors from training dataset.
 
-    Arguments:
+    Args:
         dataset: path to data.yaml, or a loaded dataset
         n: number of anchors
         img_size: image size used for training
@@ -77,10 +75,10 @@ def kmean_anchors(dataset="./data/coco128.yaml", n=9, img_size=640, thr=4.0, gen
         gen: generations to evolve anchors using genetic algorithm
         verbose: print all results
 
-    Return:
+    Returns:
         k: kmeans evolved anchors
 
-    Usage:
+    Examples:
         from utils.autoanchor import *; _ = kmean_anchors()
     """
     from scipy.cluster.vq import kmeans

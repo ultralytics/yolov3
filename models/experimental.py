@@ -15,8 +15,7 @@ class Sum(nn.Module):
     """Computes the weighted or unweighted sum of multiple input layers per https://arxiv.org/abs/1911.09070."""
 
     def __init__(self, n, weight=False):  # n: number of inputs
-        """
-        Initializes a module to compute weighted/unweighted sum of n inputs, with optional learning weights.
+        """Initializes a module to compute weighted/unweighted sum of n inputs, with optional learning weights.
 
         https://arxiv.org/abs/1911.09070
         """
@@ -27,8 +26,7 @@ class Sum(nn.Module):
             self.w = nn.Parameter(-torch.arange(1.0, n) / 2, requires_grad=True)  # layer weights
 
     def forward(self, x):
-        """
-        Performs forward pass, blending `x` elements with optional learnable weights.
+        """Performs forward pass, blending `x` elements with optional learnable weights.
 
         See https://arxiv.org/abs/1911.09070 for more.
         """
@@ -47,8 +45,7 @@ class MixConv2d(nn.Module):
     """Implements mixed depth-wise convolutions for efficient neural networks; see https://arxiv.org/abs/1907.09595."""
 
     def __init__(self, c1, c2, k=(1, 3), s=1, equal_ch=True):  # ch_in, ch_out, kernel, stride, ch_strategy
-        """Initializes MixConv2d with mixed depth-wise convolution layers; details at
-        https://arxiv.org/abs/1907.09595.
+        """Initializes MixConv2d with mixed depth-wise convolution layers; details at https://arxiv.org/abs/1907.09595.
         """
         super().__init__()
         n = len(k)  # number of convolutions

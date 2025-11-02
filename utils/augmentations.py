@@ -61,8 +61,7 @@ def normalize(x, mean=IMAGENET_MEAN, std=IMAGENET_STD, inplace=False):
 
 
 def denormalize(x, mean=IMAGENET_MEAN, std=IMAGENET_STD):
-    """
-    Converts normalized images back to original form using ImageNet stats; inputs in BCHW format.
+    """Converts normalized images back to original form using ImageNet stats; inputs in BCHW format.
 
     Example: `denormalize(tensor)`.
     """
@@ -72,8 +71,7 @@ def denormalize(x, mean=IMAGENET_MEAN, std=IMAGENET_STD):
 
 
 def augment_hsv(im, hgain=0.5, sgain=0.5, vgain=0.5):
-    """
-    Applies HSV color-space augmentation with optional gains; expects BGR image input.
+    """Applies HSV color-space augmentation with optional gains; expects BGR image input.
 
     Example: `augment_hsv(image)`.
     """
@@ -286,8 +284,7 @@ def cutout(im, labels, p=0.5):
 
 
 def mixup(im, labels, im2, labels2):
-    """Applies MixUp augmentation by blending images and labels; see https://arxiv.org/pdf/1710.09412.pdf for
-    details.
+    """Applies MixUp augmentation by blending images and labels; see https://arxiv.org/pdf/1710.09412.pdf for details.
     """
     r = np.random.beta(32.0, 32.0)  # mixup ratio, alpha=beta=32.0
     im = (im * r + im2 * (1 - r)).astype(np.uint8)

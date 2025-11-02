@@ -66,8 +66,7 @@ class Loggers:
     """Manages logging for training and validation using TensorBoard, Weights & Biases, ClearML, and Comet ML."""
 
     def __init__(self, save_dir=None, weights=None, opt=None, hyp=None, logger=None, include=LOGGERS):
-        """Initializes YOLOv3 logging with directory, weights, options, hyperparameters, and includes specified
-        loggers.
+        """Initializes YOLOv3 logging with directory, weights, options, hyperparameters, and includes specified loggers.
         """
         self.save_dir = save_dir
         self.weights = weights
@@ -166,8 +165,7 @@ class Loggers:
             self.comet_logger.on_pretrain_routine_start()
 
     def on_pretrain_routine_end(self, labels, names):
-        """
-        Logs pretrain routine end, plots labels if enabled, updates WandB/Comet with images.
+        """Logs pretrain routine end, plots labels if enabled, updates WandB/Comet with images.
 
         Takes `labels` (List of int), `names` (List of str).
         """
@@ -225,8 +223,7 @@ class Loggers:
             self.clearml.log_image_with_boxes(path, pred, names, im)
 
     def on_val_batch_end(self, batch_i, im, targets, paths, shapes, out):
-        """
-        Logs a single validation batch for Comet ML analytics (batch_i: int, im: tensor, targets: tensor, paths:
+        """Logs a single validation batch for Comet ML analytics (batch_i: int, im: tensor, targets: tensor, paths:.
 
         list, shapes: list, out: tensor).
         """
@@ -279,8 +276,7 @@ class Loggers:
             self.comet_logger.on_fit_epoch_end(x, epoch=epoch)
 
     def on_model_save(self, last, epoch, final_epoch, best_fitness, fi):
-        """Logs model to WandB/ClearML, considering save_period and if not final_epoch, also notes if best model so
-        far.
+        """Logs model to WandB/ClearML, considering save_period and if not final_epoch, also notes if best model so far.
         """
         if (epoch + 1) % self.opt.save_period == 0 and not final_epoch and self.opt.save_period != -1:
             if self.wandb:
@@ -338,14 +334,13 @@ class Loggers:
 
 
 class GenericLogger:
-    """
-    YOLOv3 General purpose logger for non-task specific logging
-    Usage: from utils.loggers import GenericLogger; logger = GenericLogger(...).
+    """YOLOv3 General purpose logger for non-task specific logging Usage: from utils.loggers import GenericLogger;
+    logger = GenericLogger(...).
 
-    Arguments:
-        opt:             Run arguments
-        console_logger:  Console logger
-        include:         loggers to include
+    Args:
+        opt: Run arguments
+        console_logger: Console logger
+        include: loggers to include
     """
 
     def __init__(self, opt, console_logger, include=("tb", "wandb")):
@@ -430,8 +425,7 @@ def log_tensorboard_graph(tb, model, imgsz=(640, 640)):
 
 
 def web_project_name(project):
-    """Converts local project name to a web-friendly format by adding a suffix based on its type (classify or
-    segment).
+    """Converts local project name to a web-friendly format by adding a suffix based on its type (classify or segment).
     """
     if not project.startswith("runs/train"):
         return project

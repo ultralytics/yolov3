@@ -36,15 +36,13 @@ class TryExcept(contextlib.ContextDecorator):
 
 
 def threaded(func):
-    """
-    Decorates a function to run in a separate thread, returning the thread object.
+    """Decorates a function to run in a separate thread, returning the thread object.
 
     Usage: @threaded.
     """
 
     def wrapper(*args, **kwargs):
-        """
-        Runs the decorated function in a separate thread and returns the thread object.
+        """Runs the decorated function in a separate thread and returns the thread object.
 
         Usage: @threaded.
         """

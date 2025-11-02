@@ -95,13 +95,12 @@ def run(
     dnn=False,  # use OpenCV DNN for ONNX inference
     vid_stride=1,  # video frame-rate stride
 ):
-    """
-    Run YOLOv3 detection inference on various input sources such as images, videos, streams, and YouTube URLs.
+    """Run YOLOv3 detection inference on various input sources such as images, videos, streams, and YouTube URLs.
 
     Args:
         weights (str | Path): Path to the model weights file or a Triton URL (default: 'yolov5s.pt').
         source (str | Path): Source of input data such as a file, directory, URL, glob pattern, or device identifier
-            (default: 'data/images').
+        (default: 'data/images').
         data (str | Path): Path to the dataset YAML file (default: 'data/coco128.yaml').
         imgsz (tuple[int, int]): Inference size as a tuple (height, width) (default: (640, 640)).
         conf_thres (float): Confidence threshold for detection (default: 0.25).
@@ -120,7 +119,8 @@ def run(
         update (bool): Whether to update all models (default: False).
         project (str | Path): Path to the project directory where results will be saved (default: 'runs/detect').
         name (str): Name for the specific run within the project directory (default: 'exp').
-        exist_ok (bool): Whether to allow existing project/name directory without incrementing run index (default: False).
+        exist_ok (bool): Whether to allow existing project/name directory without incrementing run index (default:
+            False).
         line_thickness (int): Thickness of bounding box lines in pixels (default: 3).
         hide_labels (bool): Whether to hide labels in the results (default: False).
         hide_conf (bool): Whether to hide confidences in the results (default: False).
@@ -130,12 +130,6 @@ def run(
 
     Returns:
         None
-
-    Notes:
-        This function supports a variety of input sources such as image files, video files, directories, URL patterns,
-        webcam streams, and YouTube links. It also supports multiple model formats including PyTorch, ONNX, OpenVINO,
-        TensorRT, CoreML, TensorFlow, PaddlePaddle, and others. The results can be visualized in real-time or saved to
-        specified directories. Use command-line arguments to modify the behavior of the function.
 
     Examples:
         ```python
@@ -148,6 +142,12 @@ def run(
         # Run YOLOv3 inference on a webcam
         run(weights='yolov5s.pt', source='0', view_img=True)
         ```
+
+    Notes:
+        This function supports a variety of input sources such as image files, video files, directories, URL patterns,
+        webcam streams, and YouTube links. It also supports multiple model formats including PyTorch, ONNX, OpenVINO,
+        TensorRT, CoreML, TensorFlow, PaddlePaddle, and others. The results can be visualized in real-time or saved to
+        specified directories. Use command-line arguments to modify the behavior of the function.
     """
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
@@ -286,8 +286,7 @@ def run(
 
 
 def parse_opt():
-    """
-    Parses and returns command-line options for running YOLOv3 model detection.
+    """Parses and returns command-line options for running YOLOv3 model detection.
 
     Args:
         --weights (list[str]): Model path or Triton URL. Default: ROOT / "yolov3-tiny.pt".
@@ -321,7 +320,7 @@ def parse_opt():
     Returns:
         argparse.Namespace: Parsed command-line arguments for YOLOv3 inference configurations.
 
-    Example:
+    Examples:
         ```python
         options = parse_opt()
         run(**vars(options))
@@ -364,8 +363,7 @@ def parse_opt():
 
 
 def main(opt):
-    """
-    Entry point for running the YOLO model; checks requirements and calls `run` with parsed options.
+    """Entry point for running the YOLO model; checks requirements and calls `run` with parsed options.
 
     Args:
         opt (argparse.Namespace): Parsed command-line options, which include:
@@ -400,7 +398,7 @@ def main(opt):
     Returns:
         None
 
-    Example:
+    Examples:
         ```python
         if __name__ == "__main__":
             opt = parse_opt()

@@ -335,8 +335,7 @@ class TFSPPF(keras.layers.Layer):
     """Implements a fast spatial pyramid pooling layer for efficient multi-scale feature extraction in YOLOv3 models."""
 
     def __init__(self, c1, c2, k=5, w=None):
-        """Initializes a Spatial Pyramid Pooling-Fast layer with specified channels, kernel size, and optional
-        weights.
+        """Initializes a Spatial Pyramid Pooling-Fast layer with specified channels, kernel size, and optional weights.
         """
         super().__init__()
         c_ = c1 // 2  # hidden channels
@@ -480,8 +479,7 @@ class TFConcat(keras.layers.Layer):
 
 
 def parse_model(d, ch, model, imgsz):  # model_dict, input_channels(3)
-    """Parses model configuration and constructs Keras model with layer connectivity, returning the model and save
-    list.
+    """Parses model configuration and constructs Keras model with layer connectivity, returning the model and save list.
     """
     LOGGER.info(f"\n{'':>3}{'from':>18}{'n':>3}{'params':>10}  {'module':<40}{'arguments':<30}")
     anchors, nc, gd, gw = d["anchors"], d["nc"], d["depth_multiple"], d["width_multiple"]
@@ -557,8 +555,7 @@ class TFModel:
     """TensorFlow implementation of YOLOv3 for object detection, supporting Keras and TFLite models."""
 
     def __init__(self, cfg="yolov5s.yaml", ch=3, nc=None, model=None, imgsz=(640, 640)):  # model, channels, classes
-        """Initializes TF YOLOv3 model with config, channels, classes, optional pre-loaded model, and input image
-        size.
+        """Initializes TF YOLOv3 model with config, channels, classes, optional pre-loaded model, and input image size.
         """
         super().__init__()
         if isinstance(cfg, dict):
@@ -619,8 +616,7 @@ class TFModel:
 
     @staticmethod
     def _xywh2xyxy(xywh):
-        """Converts bounding boxes from [x, y, w, h] format to [x1, y1, x2, y2], where xy1=top-left, xy2=bottom-
-        right.
+        """Converts bounding boxes from [x, y, w, h] format to [x1, y1, x2, y2], where xy1=top-left, xy2=bottom- right.
         """
         x, y, w, h = tf.split(xywh, num_or_size_splits=4, axis=-1)
         return tf.concat([x - w / 2, y - h / 2, x + w / 2, y + h / 2], axis=-1)

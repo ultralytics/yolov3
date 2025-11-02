@@ -60,8 +60,7 @@ def run(
     pt_only=False,  # test PyTorch only
     hard_fail=False,  # throw error on benchmark failure
 ):
-    """
-    Run YOLOv3 benchmarks on multiple export formats and validate performance metrics.
+    """Run YOLOv3 benchmarks on multiple export formats and validate performance metrics.
 
     Args:
         weights (str | Path): Path to the weights file. Defaults to 'yolov5s.pt'.
@@ -77,11 +76,6 @@ def run(
     Returns:
         None
 
-    Notes:
-        This function iterates over multiple export formats, performs the export, and then validates the model's performance
-        using appropriate validation functions for detection and segmentation models. The results are logged, and optionally,
-        benchmarks can be configured to raise errors on failures using the `hard_fail` argument.
-
     Examples:
         ```python
         # Run benchmarks on the default 'yolov5s.pt' model with an image size of 640 pixels
@@ -93,6 +87,11 @@ def run(
         # Test only PyTorch export
         run(pt_only=True)
         ```
+
+    Notes:
+        This function iterates over multiple export formats, performs the export, and then validates the model's performance
+        using appropriate validation functions for detection and segmentation models. The results are logged, and optionally,
+        benchmarks can be configured to raise errors on failures using the `hard_fail` argument.
     """
     y, t = [], time.time()
     device = select_device(device)
@@ -158,8 +157,7 @@ def test(
     pt_only=False,  # test PyTorch only
     hard_fail=False,  # throw error on benchmark failure
 ):
-    """
-    Run YOLOv3 export tests for various formats and log the results, including export success status.
+    """Run YOLOv3 export tests for various formats and log the results, including export success status.
 
     Args:
         weights (str | Path): Path to the weights file. Defaults to ROOT / "yolov5s.pt".
@@ -222,8 +220,7 @@ def test(
 
 
 def parse_opt():
-    """
-    Parses command line arguments for YOLOv3 inference and export configurations.
+    """Parses command line arguments for YOLOv3 inference and export configurations.
 
     Args:
         --weights (str): Path to the weights file. Default is 'ROOT / "yolov3-tiny.pt"'.
@@ -241,7 +238,7 @@ def parse_opt():
     Returns:
         argparse.Namespace: The parsed arguments as a namespace object.
 
-    Example:
+    Examples:
         To run inference on the YOLOv3-tiny model with a different image size:
 
         ```python
@@ -272,8 +269,7 @@ def parse_opt():
 
 
 def main(opt):
-    """
-    Executes the export and benchmarking pipeline for YOLOv3 models, testing multiple export formats and validating
+    """Executes the export and benchmarking pipeline for YOLOv3 models, testing multiple export formats and validating
     performance metrics.
 
     Args:
@@ -287,11 +283,7 @@ def main(opt):
             - mAP50-95: Mean Average Precision for the model
             - Inference time (ms): Time taken for inference
 
-    Notes:
-        The function runs the main pipeline by exporting the YOLOv3 model to various formats and running benchmarks to
-        evaluate performance. If `opt.test` is set to True, it only tests the export process and logs the results.
-
-    Example:
+    Examples:
         Running the function from command line with required arguments:
 
         ```python
@@ -299,6 +291,10 @@ def main(opt):
         ```
 
     For more details, visit the Ultralytics YOLOv3 repository on [GitHub](https://github.com/ultralytics/ultralytics).
+
+    Notes:
+        The function runs the main pipeline by exporting the YOLOv3 model to various formats and running benchmarks to
+        evaluate performance. If `opt.test` is set to True, it only tests the export process and logs the results.
     """
     test(**vars(opt)) if opt.test else run(**vars(opt))
 
