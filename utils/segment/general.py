@@ -76,8 +76,7 @@ def process_mask_native(protos, masks_in, bboxes, shape):
 
 
 def scale_image(im1_shape, masks, im0_shape, ratio_pad=None):
-    """img1_shape: model input shape, [h, w] img0_shape: origin pic shape, [h, w, 3] masks: [h, w, num].
-    """
+    """Img1_shape: model input shape, [h, w] img0_shape: origin pic shape, [h, w, 3] masks: [h, w, num]."""
     # Rescale coordinates (xyxy) from im1_shape to im0_shape
     if ratio_pad is None:  # calculate from im0_shape
         gain = min(im1_shape[0] / im0_shape[0], im1_shape[1] / im0_shape[1])  # gain  = old / new
