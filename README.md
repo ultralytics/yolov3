@@ -20,6 +20,8 @@
   </div>
   <br>
 
+
+
 Ultralytics YOLOv3 is a robust and efficient [computer vision](https://www.ultralytics.com/glossary/computer-vision-cv) model developed by [Ultralytics](https://www.ultralytics.com/). Built on the [PyTorch](https://pytorch.org/) framework, this implementation extends the original YOLOv3 architecture, renowned for its improvements in [object detection](https://www.ultralytics.com/glossary/object-detection) speed and accuracy over earlier versions. It incorporates best practices and insights from extensive research, making it a reliable choice for a wide range of vision AI applications.
 
 Explore the [Ultralytics Docs](https://docs.ultralytics.com/) for in-depth guidance (YOLOv3-specific docs may be limited, but general YOLO principles apply), open an issue on [GitHub](https://github.com/ultralytics/yolov5/issues/new/choose) for support, and join our [Discord community](https://discord.com/invite/ultralytics) for questions and discussions!
