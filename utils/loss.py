@@ -87,8 +87,7 @@ class QFocalLoss(nn.Module):
         self.loss_fcn.reduction = "none"  # required to apply FL to each element
 
     def forward(self, pred, true):
-        """Computes focal loss between predictions and true labels using configured loss function, `gamma`, and
-        `alpha`.
+        """Computes focal loss between predictions and true labels using configured loss function, `gamma`, and `alpha`.
         """
         loss = self.loss_fcn(pred, true)
 

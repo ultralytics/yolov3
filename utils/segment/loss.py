@@ -115,8 +115,7 @@ class ComputeLoss:
         return loss * bs, torch.cat((lbox, lseg, lobj, lcls)).detach()
 
     def single_mask_loss(self, gt_mask, pred, proto, xyxy, area):
-        """
-        Computes single image mask loss using BCE, cropping based on bbox.
+        """Computes single image mask loss using BCE, cropping based on bbox.
 
         Args: gt_mask[n,h,w], pred[n,nm], proto[nm,h,w], xyxy[n,4], area[n].
         """
@@ -125,8 +124,7 @@ class ComputeLoss:
         return (crop_mask(loss, xyxy).mean(dim=(1, 2)) / area).mean()
 
     def build_targets(self, p, targets):
-        """Prepares targets for loss computation by appending anchor indices; supports optional target overlap
-        handling.
+        """Prepares targets for loss computation by appending anchor indices; supports optional target overlap handling.
         """
         na, nt = self.na, targets.shape[0]  # number of anchors, targets
         tcls, tbox, indices, anch, tidxs, xywhn = [], [], [], [], [], []

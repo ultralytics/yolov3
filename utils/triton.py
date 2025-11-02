@@ -9,17 +9,14 @@ import torch
 
 
 class TritonRemoteModel:
-    """
-    A wrapper over a model served by the Triton Inference Server.
+    """A wrapper over a model served by the Triton Inference Server.
 
     It can be configured to communicate over GRPC or HTTP. It accepts Torch Tensors as input and returns them as
     outputs.
     """
 
     def __init__(self, url: str):
-        """
-        Keyword Arguments:
-        url: Fully qualified address of the Triton server - for e.g. grpc://localhost:8000.
+        """Keyword Arguments: url: Fully qualified address of the Triton server - for e.g. grpc://localhost:8000.
         """
         parsed_url = urlparse(url)
         if parsed_url.scheme == "grpc":
@@ -56,8 +53,7 @@ class TritonRemoteModel:
         return self.metadata.get("backend", self.metadata.get("platform"))
 
     def __call__(self, *args, **kwargs) -> torch.Tensor | tuple[torch.Tensor, ...]:
-        """
-        Invokes the model.
+        """Invokes the model.
 
         Parameters can be provided via args or kwargs. args, if provided, are assumed to match the order of inputs of
         the model. kwargs are matched with the model input names.
@@ -71,8 +67,7 @@ class TritonRemoteModel:
         return result[0] if len(result) == 1 else result
 
     def _create_inputs(self, *args, **kwargs):
-        """Generates model inputs from args or kwargs, not allowing both; raises error if neither or both are
-        provided.
+        """Generates model inputs from args or kwargs, not allowing both; raises error if neither or both are provided.
         """
         args_len, kwargs_len = len(args), len(kwargs)
         if not args_len and not kwargs_len:

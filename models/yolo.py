@@ -62,8 +62,7 @@ class Detect(nn.Module):
         self.inplace = inplace  # use inplace ops (e.g. slice assignment)
 
     def forward(self, x):
-        """
-        Processes input through convolutional layers, reshaping output for detection.
+        """Processes input through convolutional layers, reshaping output for detection.
 
         Expects x as list of tensors with shape(bs, C, H, W).
         """
@@ -92,8 +91,7 @@ class Detect(nn.Module):
         return x if self.training else (torch.cat(z, 1),) if self.export else (torch.cat(z, 1), x)
 
     def _make_grid(self, nx=20, ny=20, i=0, torch_1_10=check_version(torch.__version__, "1.10.0")):
-        """Generates a grid and corresponding anchor grid with shape `(1, num_anchors, ny, nx, 2)` for indexing
-        anchors.
+        """Generates a grid and corresponding anchor grid with shape `(1, num_anchors, ny, nx, 2)` for indexing anchors.
         """
         d = self.anchors[i].device
         t = self.anchors[i].dtype

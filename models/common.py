@@ -161,8 +161,7 @@ class Bottleneck(nn.Module):
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
-        """Executes forward pass, performing convolutional ops and optional shortcut addition; expects input tensor
-        x.
+        """Executes forward pass, performing convolutional ops and optional shortcut addition; expects input tensor x.
         """
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
 
@@ -185,8 +184,7 @@ class BottleneckCSP(nn.Module):
         self.m = nn.Sequential(*(Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
 
     def forward(self, x):
-        """Processes input through layers, combining outputs with activation and normalization for feature
-        extraction.
+        """Processes input through layers, combining outputs with activation and normalization for feature extraction.
         """
         y1 = self.cv3(self.m(self.cv1(x)))
         y2 = self.cv2(x)
@@ -215,8 +213,7 @@ class C3(nn.Module):
     """Implements a CSP Bottleneck with 3 convolutions, optional shortcuts, group convolutions, and expansion factor."""
 
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
-        """Initializes CSP Bottleneck with 3 convolutions, optional shortcuts, group convolutions, and expansion
-        factor.
+        """Initializes CSP Bottleneck with 3 convolutions, optional shortcuts, group convolutions, and expansion factor.
         """
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
@@ -274,8 +271,7 @@ class SPP(nn.Module):
     """Implements Spatial Pyramid Pooling (SPP) for enhanced feature extraction; see https://arxiv.org/abs/1406.4729."""
 
     def __init__(self, c1, c2, k=(5, 9, 13)):
-        """
-        Initializes SPP layer with specified channels and kernels.
+        """Initializes SPP layer with specified channels and kernels.
 
         More at https://arxiv.org/abs/1406.4729
         """
@@ -286,8 +282,8 @@ class SPP(nn.Module):
         self.m = nn.ModuleList([nn.MaxPool2d(kernel_size=x, stride=1, padding=x // 2) for x in k])
 
     def forward(self, x):
-        """
-        Applies convolution and max pooling layers to the input tensor `x`, concatenates results for feature extraction.
+        """Applies convolution and max pooling layers to the input tensor `x`, concatenates results for feature
+        extraction.
 
         `x` is a tensor of shape [N, C, H, W]. See https://arxiv.org/abs/1406.4729 for more details.
         """
@@ -743,8 +739,7 @@ class DetectMultiBackend(nn.Module):
 
     @staticmethod
     def _model_type(p="path/to/model.pt"):
-        """
-        Determines model type from filepath or URL, supports various formats including ONNX, PT, JIT.
+        """Determines model type from filepath or URL, supports various formats including ONNX, PT, JIT.
 
         See `export_formats` for all.
         """
@@ -958,16 +953,14 @@ class Detections:
 
     @TryExcept("Showing images is not supported in this environment")
     def show(self, labels=True):
-        """
-        Displays image results with optional labels.
+        """Displays image results with optional labels.
 
         Usage: `show(labels=True)`
         """
         self._run(show=True, labels=labels)  # show results
 
     def save(self, labels=True, save_dir="runs/detect/exp", exist_ok=False):
-        """
-        Saves image results with optional labels to a specified directory.
+        """Saves image results with optional labels to a specified directory.
 
         Usage: `save(labels=True, save_dir='runs/detect/exp', exist_ok=False)`
         """
@@ -975,8 +968,7 @@ class Detections:
         self._run(save=True, labels=labels, save_dir=save_dir)  # save results
 
     def crop(self, save=True, save_dir="runs/detect/exp", exist_ok=False):
-        """
-        Crops detection results; can save to `save_dir`.
+        """Crops detection results; can save to `save_dir`.
 
         Usage: `crop(save=True, save_dir='runs/detect/exp')`.
         """
@@ -984,8 +976,7 @@ class Detections:
         return self._run(crop=True, save=save, save_dir=save_dir)  # crop results
 
     def render(self, labels=True):
-        """
-        Renders detection results, optionally displaying labels.
+        """Renders detection results, optionally displaying labels.
 
         Usage: `render(labels=True)`.
         """

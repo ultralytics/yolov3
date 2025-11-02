@@ -113,8 +113,7 @@ def plot_images_and_masks(images, targets, masks, paths=None, fname="images.jpg"
 
 
 def plot_results_with_masks(file="path/to/results.csv", dir="", best=True):
-    """Plots training results from CSV, highlighting best/last metrics; supports custom file paths and directory
-    saving.
+    """Plots training results from CSV, highlighting best/last metrics; supports custom file paths and directory saving.
     """
     save_dir = Path(file).parent if file else Path(dir)
     fig, ax = plt.subplots(2, 8, figsize=(18, 6), tight_layout=True)

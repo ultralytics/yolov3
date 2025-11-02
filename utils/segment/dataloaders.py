@@ -304,8 +304,7 @@ def polygon2mask(img_size, polygons, color=1, downsample_ratio=1):
     """
     Args:
         img_size (tuple): The image size.
-        polygons (np.ndarray): [N, M], N is the number of polygons,
-            M is the number of points(Be divided by 2).
+        polygons (np.ndarray): [N, M], N is the number of polygons, M is the number of points(Be divided by 2).
     """
     mask = np.zeros(img_size, dtype=np.uint8)
     polygons = np.asarray(polygons)
@@ -324,9 +323,8 @@ def polygons2masks(img_size, polygons, color, downsample_ratio=1):
     """
     Args:
         img_size (tuple): The image size.
-        polygons (list[np.ndarray]): each polygon is [N, M],
-            N is the number of polygons,
-            M is the number of points(Be divided by 2).
+        polygons (list[np.ndarray]): each polygon is [N, M], N is the number of polygons, M is the number of points(Be
+            divided by 2).
     """
     masks = []
     for si in range(len(polygons)):

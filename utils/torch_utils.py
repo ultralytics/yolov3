@@ -55,8 +55,7 @@ def smartCrossEntropyLoss(label_smoothing=0.0):
 
 
 def smart_DDP(model):
-    """
-    Initializes DDP for a model with version checks; fails for torch==1.12.0 due to known issues.
+    """Initializes DDP for a model with version checks; fails for torch==1.12.0 due to known issues.
 
     See https://github.com/ultralytics/yolov5/issues/8395.
     """
@@ -160,8 +159,9 @@ def time_sync():
 
 
 def profile(input, ops, n=10, device=None):
-    """YOLOv3 speed/memory/FLOPs profiler
-    Usage:
+    """YOLOv3 speed/memory/FLOPs profiler.
+
+    Examples:
         input = torch.randn(16, 3, 640, 640)
         m1 = lambda x: x * torch.sigmoid(x)
         m2 = nn.SiLU()
@@ -243,8 +243,7 @@ def find_modules(model, mclass=nn.Conv2d):
 
 
 def sparsity(model):
-    """Calculates and returns the global sparsity of a model as the ratio of zero-valued parameters to total
-    parameters.
+    """Calculates and returns the global sparsity of a model as the ratio of zero-valued parameters to total parameters.
     """
     a, b = 0, 0
     for p in model.parameters():
@@ -295,8 +294,7 @@ def fuse_conv_and_bn(conv, bn):
 
 
 def model_info(model, verbose=False, imgsz=640):
-    """
-    Prints model layers, parameters, gradients, and GFLOPs if verbose; handles various `imgsz`.
+    """Prints model layers, parameters, gradients, and GFLOPs if verbose; handles various `imgsz`.
 
     Usage: model_info(model).
     """
@@ -382,8 +380,7 @@ def smart_optimizer(model, name="Adam", lr=0.001, momentum=0.9, decay=1e-5):
 
 
 def smart_hub_load(repo="ultralytics/yolov5", model="yolov5s", **kwargs):
-    """
-    Loads YOLO model from Ultralytics repo with smart error handling, supports `force_reload` on failure.
+    """Loads YOLO model from Ultralytics repo with smart error handling, supports `force_reload` on failure.
 
     See https://github.com/ultralytics/yolov5
     """
@@ -452,9 +449,9 @@ class EarlyStopping:
 
 
 class ModelEMA:
-    """Updated Exponential Moving Average (EMA) from https://github.com/rwightman/pytorch-image-models
-    Keeps a moving average of everything in the model state_dict (parameters and buffers)
-    For EMA details see https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage.
+    """Updated Exponential Moving Average (EMA) from https://github.com/rwightman/pytorch-image-models Keeps a moving
+    average of everything in the model state_dict (parameters and buffers) For EMA details
+    see https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage.
     """
 
     def __init__(self, model, decay=0.9999, tau=2000, updates=0):
