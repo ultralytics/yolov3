@@ -17,7 +17,7 @@ body:
         Please search the Ultralytics YOLOv3 [README](https://github.com/ultralytics/yolov3#readme) and [issues](https://github.com/ultralytics/yolov3/issues) to see if a similar bug report already exists.
       options:
         - label: >
-            I have searched https://github.com/ultralytics/yolov3/issues and did not find a similar report.
+            I have searched the [issues](https://github.com/ultralytics/yolov3/issues) and did not find a similar report.
           required: true
 
   - type: dropdown
