@@ -48,3 +48,4 @@ setuptools>=70.0.0           # Required to avoid known vulnerabilities
 # mss                        # Screenshot capturing for inference UI
 # albumentations>=1.0.3      # Powerful image augmentation library
 # pycocotools>=2.0.6         # COCO dataset metrics (mAP, etc.)
+fonttools>=4.61.0 # not directly required, pinned by Snyk to avoid a vulnerability
