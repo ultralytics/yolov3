@@ -1203,7 +1203,7 @@ class HUBDatasetStats:
             cv2.imwrite(str(f_new), im)
 
     def get_json(self, save=False, verbose=False):
-        """Generates dataset JSON for Ultralytics HUB, with optional saving and verbosity; rounds labels to int class
+        """Generates dataset JSON for Ultralytics Platform, with optional saving and verbosity; rounds labels to int class
         and 6 decimal floats.
         """
 
@@ -1243,7 +1243,7 @@ class HUBDatasetStats:
         return self.stats
 
     def process_images(self):
-        """Compresses images for Ultralytics HUB, saving them to specified directory; supports 'train', 'val', 'test'
+        """Compresses images for Ultralytics Platform, saving them to specified directory; supports 'train', 'val', 'test'
         splits.
         """
         for split in "train", "val", "test":
