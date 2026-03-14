@@ -267,10 +267,10 @@ def detect(cam, color_model, grey_model, vehicle_model, config, ha):
         show_count += count
         if cam.counts.get(o, -1) != count:
             logger.info(f"Publishing count {cam.ha_name}/{o}/count={count}")
-            cam.mqtt_client.publish(f"{cam.ha_name}/{o}/count", count, retain=False)
+            cam.publish(f"{cam.ha_name}/{o}/count", count, retain=False)
             cam.counts[o] = count
     if show_count != cam.last_show_count:
-        cam.mqtt_client.publish(f"{cam.ha_name}/show", show_count > 0, retain=False)
+        cam.publish(f"{cam.ha_name}/show", show_count > 0, retain=False)
         cam.last_show_count = show_count
 
     if len(new_objects):

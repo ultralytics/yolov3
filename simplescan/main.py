@@ -55,6 +55,14 @@ def device_info(version: str) -> dict:
     }
 
 
+def mqtt_publish(client: paho.Client, topic: str, payload: Any, **kwargs: Any) -> None:
+    """Publish to MQTT, tolerating short disconnects."""
+    try:
+        client.publish(topic, payload, **kwargs)
+    except Exception:
+        mlog.warning("MQTT publish failed (topic=%s), will retry on reconnect", topic)
+
+
 def on_publish(client: paho.Client, userdata: Any, mid: int) -> None:
     mlog.debug("on_publish({},{})".format(userdata, mid))
 
@@ -148,7 +156,7 @@ async def main(options: argparse.Namespace) -> None:
     i = 0
     while "cam%d" % i in config.sections():
         cams.append(
-            Camera(config["cam%d" % i], excludes.get(config["cam%d" % i]["name"], {}), mqtt_config)
+            Camera(config["cam%d" % i], excludes.get(config["cam%d" % i]["name"], {}), mqtt_client)
         )
         i += 1
     log.info("Configured %i cams" % i)
@@ -164,7 +172,7 @@ async def main(options: argparse.Namespace) -> None:
     dev = device_info(version)
 
     # Publish device-level diagnostic sensors
-    mqtt_client.publish(
+    mqtt_publish(mqtt_client,
         f"homeassistant/sensor/{DEVICE_ID}-version/config",
         json.dumps(
             {
@@ -179,9 +187,9 @@ async def main(options: argparse.Namespace) -> None:
         ),
         retain=True,
     )
-    mqtt_client.publish(f"{DEVICE_ID}/version", version, retain=True)
+    mqtt_publish(mqtt_client,f"{DEVICE_ID}/version", version, retain=True)
 
-    mqtt_client.publish(
+    mqtt_publish(mqtt_client,
         f"homeassistant/sensor/{DEVICE_ID}-status/config",
         json.dumps(
             {
@@ -196,9 +204,9 @@ async def main(options: argparse.Namespace) -> None:
         ),
         retain=True,
     )
-    mqtt_client.publish(f"{DEVICE_ID}/device_status", "running", retain=True)
+    mqtt_publish(mqtt_client,f"{DEVICE_ID}/device_status", "running", retain=True)
 
-    mqtt_client.publish(
+    mqtt_publish(mqtt_client,
         f"homeassistant/sensor/{DEVICE_ID}-cameras/config",
         json.dumps(
             {
@@ -213,10 +221,10 @@ async def main(options: argparse.Namespace) -> None:
         ),
         retain=True,
     )
-    mqtt_client.publish(f"{DEVICE_ID}/camera_count", len(cams), retain=True)
+    mqtt_publish(mqtt_client,f"{DEVICE_ID}/camera_count", len(cams), retain=True)
 
     for cam in cams:
-        mqtt_client.publish(
+        mqtt_publish(mqtt_client,
             f"homeassistant/binary_sensor/show-{cam.ha_name}/config",
             json.dumps(
                 {
@@ -233,9 +241,9 @@ async def main(options: argparse.Namespace) -> None:
             ),
             retain=True,
         )
-        mqtt_client.publish(f"{cam.ha_name}/show", False, retain=True)
+        mqtt_publish(mqtt_client,f"{cam.ha_name}/show", False, retain=True)
         for item in cam.mqtt:
-            mqtt_client.publish(
+            mqtt_publish(mqtt_client,
                 f"homeassistant/sensor/{cam.ha_name}-{item}/config",
                 json.dumps(
                     {
@@ -251,7 +259,7 @@ async def main(options: argparse.Namespace) -> None:
                 ),
                 retain=True,
             )
-            mqtt_client.publish(f"{cam.ha_name}/{item}/count", 0, retain=True)
+            mqtt_publish(mqtt_client,f"{cam.ha_name}/{item}/count", 0, retain=True)
 
     sd.notify("READY=1")
     sd.notify("STATUS=Running")
@@ -373,8 +381,8 @@ async def main(options: argparse.Namespace) -> None:
     # set item counts to unavailable
     for cam in cams:
         for item in cam.mqtt:
-            mqtt_client.publish(f"{cam.name}/{item}/count", None, retain=False)
-            mqtt_client.publish(f"{cam.ha_name}/{item}/count", None, retain=False)
+            mqtt_publish(mqtt_client,f"{cam.name}/{item}/count", None, retain=False)
+            mqtt_publish(mqtt_client,f"{cam.ha_name}/{item}/count", None, retain=False)
         del cam
     # graceful shutdown
     log.info("Graceful shutdown initiated")

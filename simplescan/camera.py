@@ -9,7 +9,6 @@ from urllib.parse import urlparse
 
 import cv2
 import numpy as np
-import paho.mqtt.client as paho
 import requests
 from requests.auth import HTTPDigestAuth
 
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Camera:
-    def __init__(self, config, excludes, mqtt_config):
+    def __init__(self, config, excludes, mqtt_client):
         self.name = config["name"]
         self.ha_name = self.name.replace(" ", "_")
         self.config = config
@@ -45,10 +44,7 @@ class Camera:
         self.interval = config.getint("interval", 30)
         self.session = None
         self.mqtt = set(config.get("mqtt", "").split(","))
-        self.mqtt_client = paho.Client(f"aicam-{self.ha_name}")
-        self.mqtt_client.username_pw_set(mqtt_config["user"], mqtt_config["password"])
-        self.mqtt_client.connect(mqtt_config["host"], mqtt_config.getint("port", 1883))
-        self.mqtt_client.loop_start()
+        self.mqtt_client = mqtt_client
         road_line_raw = config.get("road_line", None)
         if road_line_raw == "all":
             self.road_line = "all"
@@ -73,9 +69,12 @@ class Camera:
                 return y0 + t * (y1 - y0)
         return points[-1][1]
 
-    def __del__(self):
-        self.mqtt_client.disconnect()  # disconnect gracefully
-        self.mqtt_client.loop_stop()  # disconnect gracefully
+    def publish(self, topic, payload, **kwargs):
+        """Publish to MQTT, tolerating short disconnects."""
+        try:
+            self.mqtt_client.publish(topic, payload, **kwargs)
+        except Exception:
+            logger.warning("MQTT publish failed for %s (topic=%s), will retry on reconnect", self.name, topic)
 
     def poll(self):
         # logger.debug('read ftp {}'.format(self.name))
