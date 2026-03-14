@@ -9,6 +9,7 @@ import logging
 import os
 import pathlib
 import signal
+import subprocess
 import sys
 import time
 from datetime import datetime, timedelta
@@ -28,6 +29,30 @@ from utils import cleanup
 log: logging.Logger = logging.getLogger("aicam")
 mlog: logging.Logger = logging.getLogger("mqtt")
 kill_now: bool = False
+
+DEVICE_ID = "aicam"
+DEVICE_NAME = "AI Camera Detector"
+
+
+def get_version() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "describe", "--always", "--dirty"],
+            cwd=os.path.dirname(__file__),
+            stderr=subprocess.DEVNULL,
+        ).decode().strip()
+    except Exception:
+        return "unknown"
+
+
+def device_info(version: str) -> dict:
+    return {
+        "identifiers": [DEVICE_ID],
+        "name": DEVICE_NAME,
+        "manufacturer": "aicam",
+        "model": "Jetson Nano Detector",
+        "sw_version": version,
+    }
 
 
 def on_publish(client: paho.Client, userdata: Any, mid: int) -> None:
@@ -135,8 +160,62 @@ async def main(options: argparse.Namespace) -> None:
     else:
         async_pool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
 
+    version = get_version()
+    dev = device_info(version)
+
+    # Publish device-level diagnostic sensors
+    mqtt_client.publish(
+        f"homeassistant/sensor/{DEVICE_ID}-version/config",
+        json.dumps(
+            {
+                "name": "Version",
+                "state_topic": f"{DEVICE_ID}/version",
+                "uniq_id": f"{DEVICE_ID}-version",
+                "availability_topic": lwt,
+                "icon": "mdi:tag",
+                "entity_category": "diagnostic",
+                "device": dev,
+            }
+        ),
+        retain=True,
+    )
+    mqtt_client.publish(f"{DEVICE_ID}/version", version, retain=True)
+
+    mqtt_client.publish(
+        f"homeassistant/sensor/{DEVICE_ID}-status/config",
+        json.dumps(
+            {
+                "name": "Status",
+                "state_topic": f"{DEVICE_ID}/device_status",
+                "uniq_id": f"{DEVICE_ID}-status",
+                "availability_topic": lwt,
+                "icon": "mdi:information-outline",
+                "entity_category": "diagnostic",
+                "device": dev,
+            }
+        ),
+        retain=True,
+    )
+    mqtt_client.publish(f"{DEVICE_ID}/device_status", "running", retain=True)
+
+    mqtt_client.publish(
+        f"homeassistant/sensor/{DEVICE_ID}-cameras/config",
+        json.dumps(
+            {
+                "name": "Camera Count",
+                "state_topic": f"{DEVICE_ID}/camera_count",
+                "uniq_id": f"{DEVICE_ID}-cameras",
+                "availability_topic": lwt,
+                "icon": "mdi:camera",
+                "entity_category": "diagnostic",
+                "device": dev,
+            }
+        ),
+        retain=True,
+    )
+    mqtt_client.publish(f"{DEVICE_ID}/camera_count", len(cams), retain=True)
+
     for cam in cams:
-        # mosquitto_pub -h mqtt.home -t homeassistant/binary_sensor/show-shed/config -r -m '{"name": "Show Shed", "state_topic": "shed/show", "device_class": "occupancy", "uniq_id": "show-shed", "availability_topic": "aicam/status", "native_value": "boolean", "payload_off":false, "payload_on":true}'
         mqtt_client.publish(
             f"homeassistant/binary_sensor/show-{cam.ha_name}/config",
             json.dumps(
@@ -149,6 +228,7 @@ async def main(options: argparse.Namespace) -> None:
                     "native_value": "boolean",
                     "payload_off": False,
                     "payload_on": True,
+                    "device": dev,
                 }
             ),
             retain=True,
@@ -166,6 +246,7 @@ async def main(options: argparse.Namespace) -> None:
                         "availability_topic": lwt,
                         "icon": mqtt_icons.get(item, f"mdi:{item}"),
                         "native_value": "int",
+                        "device": dev,
                     }
                 ),
                 retain=True,
