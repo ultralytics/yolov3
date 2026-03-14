@@ -1,4 +1,0 @@
-classes=80
-train=data/coco1.txt
-valid=data/coco1.txt
-names=data/coco.names

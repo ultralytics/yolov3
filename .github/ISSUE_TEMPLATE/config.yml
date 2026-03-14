@@ -1,0 +1,16 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+blank_issues_enabled: true
+contact_links:
+  - name: 📘 YOLOv3 README
+    url: https://github.com/ultralytics/yolov3#readme
+    about: Usage guide and background for YOLOv3
+  - name: 💬 Forum
+    url: https://community.ultralytics.com/
+    about: Ask the Ultralytics community for workflow help
+  - name: 🎧 Discord
+    url: https://ultralytics.com/discord
+    about: Chat with the Ultralytics team and other builders
+  - name: ⌨️ Reddit
+    url: https://reddit.com/r/ultralytics
+    about: Discuss Ultralytics projects on Reddit

@@ -1,23 +1,52 @@
-# pip install -U -r requirements.txt
-numpy
-opencv-python >= 4.1
-torch >= 1.5
-matplotlib
-cython
-pycocotools
-tqdm
-pillow
-tensorboard >= 1.14
+# YOLOv3 requirements
+# Usage: pip install -r requirements.txt
+# Python >= 3.8 recommended
 paho-mqtt
 sdnotify
 
-# Nvidia Apex (optional) for mixed precision training --------------------------
-# git clone https://github.com/NVIDIA/apex && cd apex && pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" . --user && cd .. && rm -rf apex
+# Base ------------------------------------------------------------------------
+gitpython>=3.1.30            # Git repo interaction for training/versioning
+matplotlib>=3.5.0            # Plotting results and graphs
+numpy>=1.23.5                # Fundamental for array/matrix operations
+opencv-python>=4.1.1         # Image/video processing
+Pillow>=10.3.0               # Image reading/writing support
+psutil>=5.9.0                # System monitoring (RAM, CPU, etc.)
+PyYAML>=5.3.1                # Reading configs (yaml files)
+requests>=2.32.2             # HTTP requests, used in model hub/downloads
+scipy>=1.4.1                 # Scientific computing (e.g. IoU, metrics)
+thop>=0.1.1                  # Model profiling - FLOPs and parameter count
+torch>=1.8.0                 # Core PyTorch for training/inference
+torchvision>=0.9.0           # Torch utilities for vision (transforms, datasets)
+tqdm>=4.66.3                 # Progress bar in CLI
+ultralytics>=8.2.64          # YOLO framework library (models, training, utils)
+# protobuf<=3.20.1           # For ONNX/TensorFlow export compatibility
 
-# Conda commands (in place of pip) ---------------------------------------------
-# conda update -yn base -c defaults conda
-# conda install -yc anaconda numpy opencv matplotlib tqdm pillow ipython
-# conda install -yc conda-forge scikit-image pycocotools tensorboard
-# conda install -yc spyder-ide spyder-line-profiler
-# conda install -yc pytorch pytorch torchvision
-# conda install -yc conda-forge protobuf numpy && pip install onnx  # https://github.com/onnx/onnx#linux-and-macos
+# Logging ---------------------------------------------------------------------
+# tensorboard>=2.4.1         # Visual logging (scalars, images)
+# clearml>=1.2.0             # Experiment tracking
+# comet                      # Another logging/monitoring tool
+
+# Plotting --------------------------------------------------------------------
+pandas>=1.1.4                # Data handling and manipulation
+seaborn>=0.11.0              # Statistical data visualization (confusion matrix, etc.)
+
+# Export (optional) -----------------------------------------------------------
+# coremltools>=6.0           # Apple CoreML export support
+# onnx>=1.10.0               # ONNX export support
+# onnx-simplifier>=0.4.1     # Optimizes ONNX models
+# nvidia-pyindex             # Required for installing NVIDIA TensorRT
+# nvidia-tensorrt            # TensorRT export and inference
+# scikit-learn<=1.1.2        # Used in CoreML quantization (used in older code)
+# tensorflow>=2.4.0          # TensorFlow export
+# tensorflowjs>=3.9.0        # TensorFlow.js export
+# openvino-dev>=2023.0       # Intel OpenVINO export
+
+# Deploy ----------------------------------------------------------------------
+setuptools>=70.0.0           # Required to avoid known vulnerabilities
+# tritonclient[all]~=2.24.0  # NVIDIA Triton server deployment (optional)
+
+# Extras ----------------------------------------------------------------------
+# ipython                    # Enhanced interactive shell
+# mss                        # Screenshot capturing for inference UI
+# albumentations>=1.0.3      # Powerful image augmentation library
+# pycocotools>=2.0.6         # COCO dataset metrics (mAP, etc.)
