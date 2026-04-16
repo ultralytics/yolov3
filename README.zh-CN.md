@@ -272,7 +272,7 @@ YOLOv3 发布时推动了实时目标检测的进步。其核心优势包括：
 
 Ultralytics 提供两种许可选项以满足不同需求：
 
-- **AGPL-3.0 许可证**：经 [OSI 批准](https://opensource.org/license/agpl-3.0)的开源协议，适合学术、个人项目和测试，促进开放合作。详情见 [LICENSE](https://github.com/ultralytics/yolov5/blob/master/LICENSE)。
+- **AGPL-3.0 许可证**：经 [OSI 批准](https://opensource.org/license/agpl-3.0)的开源协议，适合学术、个人项目和测试，促进开放合作。详情见 [LICENSE](https://github.com/ultralytics/yolov3/blob/master/LICENSE)。
 - **企业许可证**：专为商业应用设计，允许将 Ultralytics 软件和模型集成到商业产品和服务，无需遵守 AGPL-3.0 的开源要求。请通过 [Ultralytics 许可](https://www.ultralytics.com/license) 联系我们。
 
 ## 📧 联系
