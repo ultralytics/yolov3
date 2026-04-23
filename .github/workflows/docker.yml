@@ -17,6 +17,8 @@ jobs:
     if: github.repository == 'ultralytics/yolov3'
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
