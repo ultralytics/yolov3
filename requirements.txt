@@ -3,7 +3,7 @@
 # Python >= 3.8 recommended
 
 # Base ------------------------------------------------------------------------
-gitpython>=3.1.30            # Git repo interaction for training/versioning
+gitpython>=3.1.47            # Git repo interaction for training/versioning
 matplotlib>=3.5.0            # Plotting results and graphs
 numpy>=1.23.5                # Fundamental for array/matrix operations
 opencv-python>=4.1.1         # Image/video processing
