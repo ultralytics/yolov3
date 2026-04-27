@@ -40,7 +40,7 @@ seaborn>=0.11.0              # Statistical data visualization (confusion matrix,
 # openvino-dev>=2023.0       # Intel OpenVINO export
 
 # Deploy ----------------------------------------------------------------------
-setuptools>=70.0.0           # Required to avoid known vulnerabilities
+setuptools>=82.0.1           # Required to avoid known vulnerabilities
 # tritonclient[all]~=2.24.0  # NVIDIA Triton server deployment (optional)
 
 # Extras ----------------------------------------------------------------------
