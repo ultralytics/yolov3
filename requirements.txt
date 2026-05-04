@@ -5,7 +5,7 @@
 # Base ------------------------------------------------------------------------
 gitpython>=3.1.30            # Git repo interaction for training/versioning
 matplotlib>=3.5.0            # Plotting results and graphs
-numpy>=1.23.5                # Fundamental for array/matrix operations
+numpy>=2.0.2                # Fundamental for array/matrix operations
 opencv-python>=4.1.1         # Image/video processing
 Pillow>=10.3.0               # Image reading/writing support
 psutil>=5.9.0                # System monitoring (RAM, CPU, etc.)
