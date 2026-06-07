@@ -2,13 +2,13 @@
 
 # ClearML Integration for Ultralytics YOLO
 
-This guide details how to integrate [ClearML](https://clear.ml/), a leading open-source MLOps platform, with your Ultralytics YOLO projects. ClearML streamlines the entire machine learning lifecycle—from experiment tracking to deployment—making it easier to manage and scale your computer vision workflows.
+This guide details how to integrate [ClearML](https://www.clear.ml/), a leading open-source MLOps platform, with your Ultralytics YOLO projects. ClearML streamlines the entire machine learning lifecycle—from experiment tracking to deployment—making it easier to manage and scale your computer vision workflows.
 
 <img align="center" src="https://github.com/thepycoder/clearml_screenshots/raw/main/logos_dark.png#gh-light-mode-only" alt="Clear|ML"><img align="center" src="https://github.com/thepycoder/clearml_screenshots/raw/main/logos_light.png#gh-dark-mode-only" alt="Clear|ML">
 
 ## ✨ About ClearML
 
-[ClearML](https://clear.ml/) is an [open-source MLOps suite](https://github.com/clearml/clearml) that enables you to manage, automate, and orchestrate machine learning workflows efficiently. Integrating ClearML with Ultralytics YOLO unlocks several advantages:
+[ClearML](https://www.clear.ml/) is an [open-source MLOps suite](https://github.com/clearml/clearml) that enables you to manage, automate, and orchestrate machine learning workflows efficiently. Integrating ClearML with Ultralytics YOLO unlocks several advantages:
 
 - **Experiment Management**: Automatically track every YOLO training run, including code versions, configurations, metrics, and outputs in a centralized dashboard. Explore more about [Ultralytics experiment tracking integrations](https://docs.ultralytics.com/integrations/).
 - **Data Versioning**: Manage and access your custom training datasets with ClearML Data Versioning. See how [Ultralytics datasets](https://docs.ultralytics.com/datasets/) are structured.
@@ -25,7 +25,7 @@ You can leverage any combination of these tools to fit your project requirements
 To use ClearML, connect the SDK to a ClearML Server instance. You have two main options:
 
 1. **ClearML Hosted Service**: Register for a free account at the [ClearML Hosted Service](https://app.clear.ml/).
-2. **Self-Hosted Server**: Deploy your own [ClearML Server](https://clear.ml/docs/latest/docs/deploying_clearml/clearml_server) for full control and data privacy.
+2. **Self-Hosted Server**: Deploy your own [ClearML Server](https://docs.clear.ml/docs/latest/docs/deploying_clearml/clearml_server) for full control and data privacy.
 
 Follow these steps to get started:
 
@@ -172,7 +172,7 @@ This script clones the template task, applies new hyperparameters suggested by t
 
 ClearML Agent enables running experiments on remote machines, such as on-premises servers or cloud GPUs. The agent fetches tasks from a queue, replicates the original environment (code, packages, uncommitted changes), executes the task, and reports results back to the ClearML Server.
 
-- **Learn More**: Watch the [ClearML Agent Introduction](https://www.youtube.com/watch?v=MX3BrXnaULs) or read the [ClearML Agent documentation](https://clear.ml/docs/latest/docs/clearml_agent).
+- **Learn More**: Watch the [ClearML Agent Introduction](https://www.youtube.com/watch?v=MX3BrXnaULs) or read the [ClearML Agent documentation](https://docs.clear.ml/docs/latest/docs/clearml_agent).
 
 Turn any machine into a ClearML Agent by running:
 
