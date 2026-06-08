@@ -4,17 +4,17 @@ Run YOLOv3 benchmarks on all supported export formats.
 
 Format                      | `export.py --include`         | Model
 ---                         | ---                           | ---
-PyTorch                     | -                             | yolov5s.pt
-TorchScript                 | `torchscript`                 | yolov5s.torchscript
-ONNX                        | `onnx`                        | yolov5s.onnx
-OpenVINO                    | `openvino`                    | yolov5s_openvino_model/
-TensorRT                    | `engine`                      | yolov5s.engine
-CoreML                      | `coreml`                      | yolov5s.mlmodel
-TensorFlow SavedModel       | `saved_model`                 | yolov5s_saved_model/
-TensorFlow GraphDef         | `pb`                          | yolov5s.pb
-TensorFlow Lite             | `tflite`                      | yolov5s.tflite
-TensorFlow Edge TPU         | `edgetpu`                     | yolov5s_edgetpu.tflite
-TensorFlow.js               | `tfjs`                        | yolov5s_web_model/
+PyTorch                     | -                             | yolov3-tiny.pt
+TorchScript                 | `torchscript`                 | yolov3-tiny.torchscript
+ONNX                        | `onnx`                        | yolov3-tiny.onnx
+OpenVINO                    | `openvino`                    | yolov3-tiny_openvino_model/
+TensorRT                    | `engine`                      | yolov3-tiny.engine
+CoreML                      | `coreml`                      | yolov3-tiny.mlmodel
+TensorFlow SavedModel       | `saved_model`                 | yolov3-tiny_saved_model/
+TensorFlow GraphDef         | `pb`                          | yolov3-tiny.pb
+TensorFlow Lite             | `tflite`                      | yolov3-tiny.tflite
+TensorFlow Edge TPU         | `edgetpu`                     | yolov3-tiny_edgetpu.tflite
+TensorFlow.js               | `tfjs`                        | yolov3-tiny_web_model/
 
 Requirements:
     $ pip install -r requirements.txt coremltools onnx onnx-simplifier onnxruntime openvino-dev tensorflow-cpu  # CPU
@@ -22,7 +22,7 @@ Requirements:
     $ pip install -U nvidia-tensorrt --index-url https://pypi.ngc.nvidia.com  # TensorRT
 
 Usage:
-    $ python benchmarks.py --weights yolov5s.pt --img 640
+    $ python benchmarks.py --weights yolov3-tiny.pt --img 640
 """
 
 import argparse
@@ -40,9 +40,6 @@ if str(ROOT) not in sys.path:
 # ROOT = ROOT.relative_to(Path.cwd())  # relative
 
 import export
-from models.experimental import attempt_load
-from models.yolo import SegmentationModel
-from segment.val import run as val_seg
 from utils import notebook_init
 from utils.general import LOGGER, check_yaml, file_size, print_args
 from utils.torch_utils import select_device
@@ -50,7 +47,7 @@ from val import run as val_det
 
 
 def run(
-    weights=ROOT / "yolov5s.pt",  # weights path
+    weights=ROOT / "yolov3-tiny.pt",  # weights path
     imgsz=640,  # inference size (pixels)
     batch_size=1,  # batch size
     data=ROOT / "data/coco128.yaml",  # dataset.yaml path
@@ -63,7 +60,7 @@ def run(
     """Run YOLOv3 benchmarks on multiple export formats and validate performance metrics.
 
     Args:
-        weights (str | Path): Path to the weights file. Defaults to 'yolov5s.pt'.
+        weights (str | Path): Path to the weights file. Defaults to 'yolov3-tiny.pt'.
         imgsz (int): Inference image size in pixels. Defaults to 640.
         batch_size (int): Batch size for inference. Defaults to 1.
         data (str | Path): Path to the dataset configuration file (dataset.yaml). Defaults to 'data/coco128.yaml'.
@@ -78,7 +75,7 @@ def run(
 
     Examples:
         ```python
-        # Run benchmarks on the default 'yolov5s.pt' model with an image size of 640 pixels
+        # Run benchmarks on the default 'yolov3-tiny.pt' model with an image size of 640 pixels
         run()
 
         # Run benchmarks on a specific model with GPU and half-precision enabled
@@ -90,12 +87,11 @@ def run(
 
     Notes:
         This function iterates over multiple export formats, performs the export, and then validates the model's performance
-        using appropriate validation functions for detection and segmentation models. The results are logged, and optionally,
+        using the detection validation function. The results are logged, and optionally,
         benchmarks can be configured to raise errors on failures using the `hard_fail` argument.
     """
     y, t = [], time.time()
     device = select_device(device)
-    model_type = type(attempt_load(weights, fuse=False))  # DetectionModel, SegmentationModel, etc.
     for i, (name, f, suffix, cpu, gpu) in export.export_formats().iterrows():  # index, (name, file, suffix, CPU, GPU)
         try:
             assert i not in (9, 10), "inference not supported"  # Edge TPU and TF.js are unsupported
@@ -115,12 +111,8 @@ def run(
             assert suffix in str(w), "export failed"
 
             # Validate
-            if model_type == SegmentationModel:
-                result = val_seg(data, w, batch_size, imgsz, plots=False, device=device, task="speed", half=half)
-                metric = result[0][7]  # (box(p, r, map50, map), mask(p, r, map50, map), *loss(box, obj, cls))
-            else:  # DetectionModel:
-                result = val_det(data, w, batch_size, imgsz, plots=False, device=device, task="speed", half=half)
-                metric = result[0][3]  # (p, r, map50, map, *loss(box, obj, cls))
+            result = val_det(data, w, batch_size, imgsz, plots=False, device=device, task="speed", half=half)
+            metric = result[0][3]  # (p, r, map50, map, *loss(box, obj, cls))
             speed = result[2][1]  # times (preprocess, inference, postprocess)
             y.append([name, round(file_size(w), 1), round(metric, 4), round(speed, 2)])  # MB, mAP, t_inference
         except Exception as e:
@@ -135,19 +127,19 @@ def run(
     LOGGER.info("\n")
     parse_opt()
     notebook_init()  # print system info
-    c = ["Format", "Size (MB)", "mAP50-95", "Inference time (ms)"] if map else ["Format", "Export", "", ""]
+    c = ["Format", "Size (MB)", "mAP50-95", "Inference time (ms)"]
     py = pd.DataFrame(y, columns=c)
     LOGGER.info(f"\nBenchmarks complete ({time.time() - t:.2f}s)")
-    LOGGER.info(str(py if map else py.iloc[:, :2]))
+    LOGGER.info(str(py))
     if hard_fail and isinstance(hard_fail, str):
         metrics = py["mAP50-95"].array  # values to compare to floor
-        floor = eval(hard_fail)  # minimum metric floor to pass, i.e. = 0.29 mAP for YOLOv5n
+        floor = eval(hard_fail)  # minimum metric floor to pass, i.e. = 0.29 mAP for YOLOv3-tiny
         assert all(x > floor for x in metrics if pd.notna(x)), f"HARD FAIL: mAP50-95 < floor {floor}"
     return py
 
 
 def test(
-    weights=ROOT / "yolov5s.pt",  # weights path
+    weights=ROOT / "yolov3-tiny.pt",  # weights path
     imgsz=640,  # inference size (pixels)
     batch_size=1,  # batch size
     data=ROOT / "data/coco128.yaml",  # dataset.yaml path
@@ -160,7 +152,7 @@ def test(
     """Run YOLOv3 export tests for various formats and log the results, including export success status.
 
     Args:
-        weights (str | Path): Path to the weights file. Defaults to ROOT / "yolov5s.pt".
+        weights (str | Path): Path to the weights file. Defaults to ROOT / "yolov3-tiny.pt".
         imgsz (int): Inference size in pixels. Defaults to 640.
         batch_size (int): Number of images per batch. Defaults to 1.
         data (str | Path): Path to the dataset yaml file. Defaults to ROOT / "data/coco128.yaml".
@@ -175,10 +167,8 @@ def test(
 
     Examples:
         ```python
-        from ultralytics import test
-
         results = test(
-            weights="path/to/yolov5s.pt",
+            weights="path/to/yolov3-tiny.pt",
             imgsz=640,
             batch_size=1,
             data="path/to/coco128.yaml",
@@ -193,11 +183,11 @@ def test(
 
     Notes:
         Ensure all required packages are installed as specified in the Ultralytics YOLOv3 documentation:
-        https://github.com/ultralytics/ultralytics
+        https://github.com/ultralytics/yolov3
     """
     y, t = [], time.time()
     device = select_device(device)
-    for i, (name, f, suffix, gpu) in export.export_formats().iterrows():  # index, (name, file, suffix, gpu-capable)
+    for i, (name, f, suffix, cpu, gpu) in export.export_formats().iterrows():  # index, (name, file, suffix, CPU, GPU)
         try:
             w = (
                 weights
@@ -250,7 +240,7 @@ def parse_opt():
         represents the minimum acceptable metric value, such as '0.29' for mAP (mean Average Precision).
 
     Links:
-        https://github.com/ultralytics/ultralytics
+        https://github.com/ultralytics/yolov3
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", type=str, default=ROOT / "yolov3-tiny.pt", help="weights path")
@@ -287,10 +277,10 @@ def main(opt):
         Running the function from command line with required arguments:
 
         ```python
-        $ python benchmarks.py --weights yolov5s.pt --img 640
+        $ python benchmarks.py --weights yolov3-tiny.pt --img 640
         ```
 
-    For more details, visit the Ultralytics YOLOv3 repository on [GitHub](https://github.com/ultralytics/ultralytics).
+    For more details, visit the Ultralytics YOLOv3 repository on [GitHub](https://github.com/ultralytics/yolov3).
 
     Notes:
         The function runs the main pipeline by exporting the YOLOv3 model to various formats and running benchmarks to

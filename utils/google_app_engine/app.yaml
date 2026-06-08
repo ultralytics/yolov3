@@ -3,7 +3,7 @@
 runtime: custom
 env: flex
 
-service: yolov5app
+service: yolov3app
 
 liveness_check:
   initial_delay_sec: 600

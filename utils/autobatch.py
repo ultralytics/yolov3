@@ -23,7 +23,7 @@ def autobatch(model, imgsz=640, fraction=0.8, batch_size=16):
     # Usage:
     #     import torch
     #     from utils.autobatch import autobatch
-    #     model = torch.hub.load('ultralytics/yolov5', 'yolov5s', autoshape=False)
+    #     model = torch.hub.load('ultralytics/yolov3', 'yolov3_tiny', autoshape=False)
     #     print(autobatch(model))
 
     # Check device
@@ -54,6 +54,7 @@ def autobatch(model, imgsz=640, fraction=0.8, batch_size=16):
         results = profile(img, model, n=3, device=device)
     except Exception as e:
         LOGGER.warning(f"{prefix}{e}")
+        return batch_size
 
     # Fit a solution
     y = [x[2] for x in results if x]  # memory [2]

@@ -45,7 +45,7 @@ class Callbacks:
         self._callbacks[hook].append({"name": name, "callback": callback})
 
     def get_registered_actions(self, hook=None):
-        """" Returns all the registered actions by callback hook.
+        """Returns all the registered actions by callback hook.
 
         Args:
             hook: The name of the hook to check, defaults to all

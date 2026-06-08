@@ -3,7 +3,7 @@
 Run YOLOv3 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
 
 Usage - sources:
-    $ python detect.py --weights yolov5s.pt --source 0                               # webcam
+    $ python detect.py --weights yolov3-tiny.pt --source 0                           # webcam
                                                      img.jpg                         # image
                                                      vid.mp4                         # video
                                                      screen                          # screenshot
@@ -15,17 +15,17 @@ Usage - sources:
                                                      'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
 
 Usage - formats:
-    $ python detect.py --weights yolov5s.pt                 # PyTorch
-                                 yolov5s.torchscript        # TorchScript
-                                 yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
-                                 yolov5s_openvino_model     # OpenVINO
-                                 yolov5s.engine             # TensorRT
-                                 yolov5s.mlmodel            # CoreML (macOS-only)
-                                 yolov5s_saved_model        # TensorFlow SavedModel
-                                 yolov5s.pb                 # TensorFlow GraphDef
-                                 yolov5s.tflite             # TensorFlow Lite
-                                 yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
-                                 yolov5s_paddle_model       # PaddlePaddle
+    $ python detect.py --weights yolov3-tiny.pt                 # PyTorch
+                                 yolov3-tiny.torchscript        # TorchScript
+                                 yolov3-tiny.onnx               # ONNX Runtime or OpenCV DNN with --dnn
+                                 yolov3-tiny_openvino_model     # OpenVINO
+                                 yolov3-tiny.engine             # TensorRT
+                                 yolov3-tiny.mlmodel            # CoreML (macOS-only)
+                                 yolov3-tiny_saved_model        # TensorFlow SavedModel
+                                 yolov3-tiny.pb                 # TensorFlow GraphDef
+                                 yolov3-tiny.tflite             # TensorFlow Lite
+                                 yolov3-tiny_edgetpu.tflite     # TensorFlow Edge TPU
+                                 yolov3-tiny_paddle_model       # PaddlePaddle
 """
 
 import argparse
@@ -67,7 +67,7 @@ from utils.torch_utils import select_device, smart_inference_mode
 
 @smart_inference_mode()
 def run(
-    weights=ROOT / "yolov5s.pt",  # model path or triton URL
+    weights=ROOT / "yolov3-tiny.pt",  # model path or triton URL
     source=ROOT / "data/images",  # file/dir/URL/glob/screen/0(webcam)
     data=ROOT / "data/coco128.yaml",  # dataset.yaml path
     imgsz=(640, 640),  # inference size (height, width)
@@ -98,7 +98,7 @@ def run(
     """Run YOLOv3 detection inference on various input sources such as images, videos, streams, and YouTube URLs.
 
     Args:
-        weights (str | Path): Path to the model weights file or a Triton URL (default: 'yolov5s.pt').
+        weights (str | Path): Path to the model weights file or a Triton URL (default: 'yolov3-tiny.pt').
         source (str | Path): Source of input data such as a file, directory, URL, glob pattern, or device identifier
         (default: 'data/images').
         data (str | Path): Path to the dataset YAML file (default: 'data/coco128.yaml').
@@ -134,13 +134,13 @@ def run(
     Examples:
         ```python
         # Run YOLOv3 inference on an image
-        run(weights='yolov5s.pt', source='data/images/bus.jpg')
+        run(weights='yolov3-tiny.pt', source='data/images/bus.jpg')
 
         # Run YOLOv3 inference on a video
-        run(weights='yolov5s.pt', source='data/videos/video.mp4', view_img=True)
+        run(weights='yolov3-tiny.pt', source='data/videos/video.mp4', view_img=True)
 
         # Run YOLOv3 inference on a webcam
-        run(weights='yolov5s.pt', source='0', view_img=True)
+        run(weights='yolov3-tiny.pt', source='0', view_img=True)
         ```
 
     Notes:

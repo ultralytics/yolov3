@@ -425,9 +425,7 @@ def log_tensorboard_graph(tb, model, imgsz=(640, 640)):
 
 
 def web_project_name(project):
-    """Converts local project name to a web-friendly format by adding a suffix based on its type (classify or segment).
-    """
+    """Converts a local detection project name to its web-friendly form, returning 'YOLOv3' for default runs."""
     if not project.startswith("runs/train"):
         return project
-    suffix = "-Classify" if project.endswith("-cls") else "-Segment" if project.endswith("-seg") else ""
-    return f"YOLOv3{suffix}"
+    return "YOLOv3"

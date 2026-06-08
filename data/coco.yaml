@@ -3,7 +3,7 @@
 # COCO 2017 dataset http://cocodataset.org by Microsoft
 # Example usage: python train.py --data coco.yaml
 # parent
-# ├── yolov5
+# ├── yolov3
 # └── datasets
 #     └── coco  ← downloads here (20.1 GB)
 

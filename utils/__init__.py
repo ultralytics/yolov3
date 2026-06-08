@@ -2,13 +2,9 @@
 """utils/initialization."""
 
 import contextlib
-import platform
 import threading
 
-
-def emojis(str=""):
-    """Returns platform-dependent emoji-safe version of str; ignores emojis on Windows, else returns original str."""
-    return str.encode().decode("ascii", "ignore") if platform.system() == "Windows" else str
+from ultralytics.utils import emojis
 
 
 class TryExcept(contextlib.ContextDecorator):
@@ -53,24 +49,12 @@ def threaded(func):
     return wrapper
 
 
-def join_threads(verbose=False):
-    """Joins all daemon threads, excluding the main thread, with an optional verbose flag for logging."""
-    main_thread = threading.current_thread()
-    for t in threading.enumerate():
-        if t is not main_thread:
-            if verbose:
-                print(f"Joining thread {t.name}")
-            t.join()
-
-
 def notebook_init(verbose=True):
     """Initializes notebook environment by checking hardware, software requirements, and cleaning up if in Colab."""
     print("Checking setup...")
 
     import os
     import shutil
-
-    from ultralytics.utils.checks import check_requirements
 
     from utils.general import check_font, is_colab
     from utils.torch_utils import select_device  # imports
@@ -79,8 +63,6 @@ def notebook_init(verbose=True):
 
     import psutil
 
-    if check_requirements("wandb", install=False):
-        os.system("pip uninstall -y wandb")  # eliminate unexpected account creation prompt with infinite hang
     if is_colab():
         shutil.rmtree("/content/sample_data", ignore_errors=True)  # remove colab /sample_data directory
 

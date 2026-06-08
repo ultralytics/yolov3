@@ -50,7 +50,7 @@ Once configured, ClearML is ready to integrate with your YOLO workflows! 😎
 Enabling ClearML experiment tracking for YOLO is simple. Ensure the `clearml` package is installed:
 
 ```bash
-pip install clearml > =1.2.0
+pip install clearml>=1.2.0
 ```
 
 With ClearML installed, every YOLO [training run](https://docs.ultralytics.com/modes/train/) is automatically logged.
@@ -61,14 +61,14 @@ By default, experiments are organized under the `YOLO` project with the task nam
 
 ```bash
 # Train with default project/task names
-python train.py --img 640 --batch 16 --epochs 3 --data coco128.yaml --weights yolov5s.pt --cache
+python train.py --img 640 --batch 16 --epochs 3 --data coco128.yaml --weights yolov3-tiny.pt --cache
 ```
 
 **Example with Custom Names:**
 
 ```bash
 # Train with custom project and task names
-python train.py --project my_yolo_project --name experiment_001 --img 640 --batch 16 --epochs 3 --data coco128.yaml --weights yolov5s.pt --cache
+python train.py --project my_yolo_project --name experiment_001 --img 640 --batch 16 --epochs 3 --data coco128.yaml --weights yolov3-tiny.pt --cache
 ```
 
 ClearML will automatically capture:
@@ -144,7 +144,7 @@ Once your dataset is versioned in ClearML, you can reference it directly in your
 
 ```bash
 # Replace <your_dataset_id> with the actual ID from ClearML
-python train.py --img 640 --batch 16 --epochs 3 --data clearml:// yolov5s.pt --cache < your_dataset_id > --weights
+python train.py --img 640 --batch 16 --epochs 3 --data clearml://<your_dataset_id> --weights yolov3-tiny.pt --cache
 ```
 
 The dataset ID used will be logged as a parameter in your ClearML experiment, ensuring full traceability.

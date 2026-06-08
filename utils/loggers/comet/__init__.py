@@ -19,7 +19,7 @@ try:
 
     # Project Configuration
     config = comet_ml.config.get_config()
-    COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.project_name", default="yolov5")
+    COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.project_name", default="yolov3")
 except ImportError:
     comet_ml = None
     COMET_PROJECT_NAME = None
@@ -38,7 +38,7 @@ COMET_PREFIX = "comet://"
 COMET_MODE = os.getenv("COMET_MODE", "online")
 
 # Model Saving Settings
-COMET_MODEL_NAME = os.getenv("COMET_MODEL_NAME", "yolov5")
+COMET_MODEL_NAME = os.getenv("COMET_MODEL_NAME", "yolov3")
 
 # Dataset Artifact Settings
 COMET_UPLOAD_DATASET = os.getenv("COMET_UPLOAD_DATASET", "false").lower() == "true"
@@ -349,8 +349,8 @@ class CometLogger:
         return artifact
 
     def upload_dataset_artifact(self):
-        """Uploads dataset to Comet as an artifact with optional custom dataset name, defaulting to 'yolov5-dataset'."""
-        dataset_name = self.data_dict.get("dataset_name", "yolov5-dataset")
+        """Uploads dataset to Comet as an artifact with optional custom dataset name, defaulting to 'yolov3-dataset'."""
+        dataset_name = self.data_dict.get("dataset_name", "yolov3-dataset")
         path = str((ROOT / Path(self.data_dict["path"])).resolve())
 
         metadata = self.data_dict.copy()

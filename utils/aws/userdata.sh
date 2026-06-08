@@ -7,12 +7,12 @@
 # Use >300 GB SSD
 
 cd home/ubuntu
-if [ ! -d yolov5 ]; then
+if [ ! -d yolov3 ]; then
   echo "Running first-time script." # install dependencies, download COCO, pull Docker
-  git clone https://github.com/ultralytics/yolov5 -b master && sudo chmod -R 777 yolov5
-  cd yolov5
+  git clone https://github.com/ultralytics/yolov3 -b master && sudo chmod -R 777 yolov3
+  cd yolov3
   bash data/scripts/get_coco.sh && echo "COCO done." &
-  sudo docker pull ultralytics/yolov5:latest && echo "Docker done." &
+  sudo docker pull ultralytics/yolov3:latest && echo "Docker done." &
   python -m pip install --upgrade pip && pip install -r requirements.txt && python detect.py && echo "Requirements done." &
   wait && echo "All tasks done." # finish background tasks
 else

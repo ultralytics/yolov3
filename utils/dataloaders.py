@@ -370,7 +370,6 @@ class LoadImages:
         self.cap = cv2.VideoCapture(path)
         self.frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT) / self.vid_stride)
         self.orientation = int(self.cap.get(cv2.CAP_PROP_ORIENTATION_META))  # rotation degrees
-        # self.cap.set(cv2.CAP_PROP_ORIENTATION_AUTO, 0)  # disable https://github.com/ultralytics/yolov5/issues/8493
 
     def _cv2_rotate(self, im):
         """Rotates a cv2 image based on the video's metadata orientation; returns the rotated image."""
@@ -1034,7 +1033,7 @@ def extract_boxes(path=DATASETS_DIR / "coco128"):  # from utils.dataloaders impo
 
                 for j, x in enumerate(lb):
                     c = int(x[0])  # class
-                    f = (path / "classifier") / f"{c}" / f"{path.stem}_{im_file.stem}_{j}.jpg"  # new filename
+                    f = (path / "classification") / f"{c}" / f"{path.stem}_{im_file.stem}_{j}.jpg"  # new filename
                     if not f.parent.is_dir():
                         f.parent.mkdir(parents=True)
 

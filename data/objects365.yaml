@@ -3,7 +3,7 @@
 # Objects365 dataset https://www.objects365.org/ by Megvii
 # Example usage: python train.py --data Objects365.yaml
 # parent
-# ├── yolov5
+# ├── yolov3
 # └── datasets
 #     └── Objects365  ← downloads here (712 GB = 367G data + 345G zips)
 

@@ -4,43 +4,43 @@ Export a YOLOv3 PyTorch model to other formats. TensorFlow exports authored by h
 
 Format                      | `export.py --include`         | Model
 ---                         | ---                           | ---
-PyTorch                     | -                             | yolov5s.pt
-TorchScript                 | `torchscript`                 | yolov5s.torchscript
-ONNX                        | `onnx`                        | yolov5s.onnx
-OpenVINO                    | `openvino`                    | yolov5s_openvino_model/
-TensorRT                    | `engine`                      | yolov5s.engine
-CoreML                      | `coreml`                      | yolov5s.mlmodel
-TensorFlow SavedModel       | `saved_model`                 | yolov5s_saved_model/
-TensorFlow GraphDef         | `pb`                          | yolov5s.pb
-TensorFlow Lite             | `tflite`                      | yolov5s.tflite
-TensorFlow Edge TPU         | `edgetpu`                     | yolov5s_edgetpu.tflite
-TensorFlow.js               | `tfjs`                        | yolov5s_web_model/
-PaddlePaddle                | `paddle`                      | yolov5s_paddle_model/
+PyTorch                     | -                             | yolov3-tiny.pt
+TorchScript                 | `torchscript`                 | yolov3-tiny.torchscript
+ONNX                        | `onnx`                        | yolov3-tiny.onnx
+OpenVINO                    | `openvino`                    | yolov3-tiny_openvino_model/
+TensorRT                    | `engine`                      | yolov3-tiny.engine
+CoreML                      | `coreml`                      | yolov3-tiny.mlmodel
+TensorFlow SavedModel       | `saved_model`                 | yolov3-tiny_saved_model/
+TensorFlow GraphDef         | `pb`                          | yolov3-tiny.pb
+TensorFlow Lite             | `tflite`                      | yolov3-tiny.tflite
+TensorFlow Edge TPU         | `edgetpu`                     | yolov3-tiny_edgetpu.tflite
+TensorFlow.js               | `tfjs`                        | yolov3-tiny_web_model/
+PaddlePaddle                | `paddle`                      | yolov3-tiny_paddle_model/
 
 Requirements:
     $ pip install -r requirements.txt coremltools onnx onnx-simplifier onnxruntime openvino-dev tensorflow-cpu  # CPU
     $ pip install -r requirements.txt coremltools onnx onnx-simplifier onnxruntime-gpu openvino-dev tensorflow  # GPU
 
 Usage:
-    $ python export.py --weights yolov5s.pt --include torchscript onnx openvino engine coreml tflite ...
+    $ python export.py --weights yolov3-tiny.pt --include torchscript onnx openvino engine coreml tflite ...
 
 Inference:
-    $ python detect.py --weights yolov5s.pt                 # PyTorch
-                                 yolov5s.torchscript        # TorchScript
-                                 yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
-                                 yolov5s_openvino_model     # OpenVINO
-                                 yolov5s.engine             # TensorRT
-                                 yolov5s.mlmodel            # CoreML (macOS-only)
-                                 yolov5s_saved_model        # TensorFlow SavedModel
-                                 yolov5s.pb                 # TensorFlow GraphDef
-                                 yolov5s.tflite             # TensorFlow Lite
-                                 yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
-                                 yolov5s_paddle_model       # PaddlePaddle
+    $ python detect.py --weights yolov3-tiny.pt                 # PyTorch
+                                 yolov3-tiny.torchscript        # TorchScript
+                                 yolov3-tiny.onnx               # ONNX Runtime or OpenCV DNN with --dnn
+                                 yolov3-tiny_openvino_model     # OpenVINO
+                                 yolov3-tiny.engine             # TensorRT
+                                 yolov3-tiny.mlmodel            # CoreML (macOS-only)
+                                 yolov3-tiny_saved_model        # TensorFlow SavedModel
+                                 yolov3-tiny.pb                 # TensorFlow GraphDef
+                                 yolov3-tiny.tflite             # TensorFlow Lite
+                                 yolov3-tiny_edgetpu.tflite     # TensorFlow Edge TPU
+                                 yolov3-tiny_paddle_model       # PaddlePaddle
 
 TensorFlow.js:
     $ cd .. && git clone https://github.com/zldrobit/tfjs-yolov5-example.git && cd tfjs-yolov5-example
     $ npm install
-    $ ln -s ../../yolov5/yolov5s_web_model public/yolov5s_web_model
+    $ ln -s ../../yolov3/yolov3-tiny_web_model public/yolov3-tiny_web_model
     $ npm start
 """
 
@@ -720,7 +720,7 @@ def export_saved_model(
         from models.common import DetectMultiBackend
         import torch
 
-        model = DetectMultiBackend(weights='yolov5s.pt')
+        model = DetectMultiBackend(weights='yolov3-tiny.pt')
         im = torch.zeros(1, 3, 640, 640)  # Sample input tensor
         file = Path("output/saved_model")
 
@@ -729,7 +729,7 @@ def export_saved_model(
 
     Notes:
         - Ensure that required TensorFlow libraries are installed (e.g., `pip install tensorflow`).
-        - For more information, visit https://github.com/ultralytics/yolov5.
+        - For more information, visit https://github.com/ultralytics/yolov3.
     """
     # YOLOv3 TensorFlow SavedModel export
     try:
@@ -839,11 +839,11 @@ def export_tflite(keras_model, im, file, int8, data, nms, agnostic_nms, prefix=c
         from models.experimental import attempt_load
 
         # Load and prepare model
-        model = attempt_load('yolov5s.pt', map_location='cpu')
+        model = attempt_load('yolov3-tiny.pt', map_location='cpu')
         im = torch.zeros(1, 3, 640, 640)  # Dummy input tensor
 
         # Export model
-        export_tflite(model, im, Path('yolov5s'), int8=False, data=None, nms=True, agnostic_nms=False)
+        export_tflite(model, im, Path('yolov3-tiny'), int8=False, data=None, nms=True, agnostic_nms=False)
         ```
 
     For more details, refer to:
@@ -886,7 +886,7 @@ def export_tflite(keras_model, im, file, int8, data, nms, agnostic_nms, prefix=c
 
 @try_export
 def export_edgetpu(file, prefix=colorstr("Edge TPU:")):
-    """Export a YOLOv5 model to TensorFlow Edge TPU format with INT8 quantization.
+    """Export a YOLOv3 model to TensorFlow Edge TPU format with INT8 quantization.
 
     Args:
         file (Path): The file path for the PyTorch model to be exported, with a `.pt` suffix.
@@ -906,7 +906,7 @@ def export_edgetpu(file, prefix=colorstr("Edge TPU:")):
         from pathlib import Path
         from ultralytics import export_edgetpu
 
-        model_file = Path('yolov5s.pt')
+        model_file = Path('yolov3-tiny.pt')
         exported_model, _ = export_edgetpu(model_file)
         print(f"Model exported to {exported_model}")
         ```
@@ -972,7 +972,7 @@ def export_tfjs(file, int8, prefix=colorstr("TensorFlow.js:")):
     Examples:
         ```python
         from pathlib import Path
-        export_tfjs(file=Path("yolov5s.pt"), int8=False)
+        export_tfjs(file=Path("yolov3-tiny.pt"), int8=False)
         ```
 
         The converted model can be used directly in JavaScript environments using the TensorFlow.js library.
@@ -988,7 +988,7 @@ def export_tfjs(file, int8, prefix=colorstr("TensorFlow.js:")):
                 ```
             - Create a symbolic link to the exported web model:
                 ```bash
-                ln -s ../../yolov5/yolov5s_web_model public/yolov5s_web_model
+                ln -s ../../yolov3/yolov3-tiny_web_model public/yolov3-tiny_web_model
                 ```
             - Start the example application:
                 ```bash
@@ -1177,7 +1177,7 @@ def pipeline_coreml(model, im, file, names, y, prefix=colorstr("CoreML Pipeline:
 
     References:
     - `coremltools`: https://github.com/apple/coremltools
-    - YOLOv3: https://github.com/ultralytics/yolov5
+    - YOLOv3: https://github.com/ultralytics/yolov3
     """
     import coremltools as ct
     from PIL import Image
@@ -1282,10 +1282,10 @@ def pipeline_coreml(model, im, file, names, y, prefix=colorstr("CoreML Pipeline:
 
     # Update metadata
     pipeline.spec.specificationVersion = 5
-    pipeline.spec.description.metadata.versionString = "https://github.com/ultralytics/yolov5"
-    pipeline.spec.description.metadata.shortDescription = "https://github.com/ultralytics/yolov5"
+    pipeline.spec.description.metadata.versionString = "https://github.com/ultralytics/yolov3"
+    pipeline.spec.description.metadata.shortDescription = "https://github.com/ultralytics/yolov3"
     pipeline.spec.description.metadata.author = "glenn.jocher@ultralytics.com"
-    pipeline.spec.description.metadata.license = "https://github.com/ultralytics/yolov5/blob/master/LICENSE"
+    pipeline.spec.description.metadata.license = "https://github.com/ultralytics/yolov3/blob/master/LICENSE"
     pipeline.spec.description.metadata.userDefined.update(
         {
             "classes": ",".join(names.values()),
@@ -1311,7 +1311,7 @@ def pipeline_coreml(model, im, file, names, y, prefix=colorstr("CoreML Pipeline:
 @smart_inference_mode()
 def run(
     data=ROOT / "data/coco128.yaml",  # 'dataset.yaml path'
-    weights=ROOT / "yolov5s.pt",  # weights path
+    weights=ROOT / "yolov3-tiny.pt",  # weights path
     imgsz=(640, 640),  # image (height, width)
     batch_size=1,  # batch size
     device="cpu",  # cuda device, i.e. 0 or 0,1,2,3 or cpu
@@ -1366,7 +1366,7 @@ def run(
         ```python
         run(
             data='data/coco128.yaml',
-            weights='yolov5s.pt',
+            weights='yolov3-tiny.pt',
             imgsz=(640, 640),
             batch_size=1,
             device='cpu',
@@ -1484,7 +1484,7 @@ def run(
             f"\nResults saved to {colorstr('bold', file.parent.resolve())}"
             f"\nDetect:          python {dir / ('detect.py' if det else 'predict.py')} --weights {f[-1]} {h}"
             f"\nValidate:        python {dir / 'val.py'} --weights {f[-1]} {h}"
-            f"\nPyTorch Hub:     model = torch.hub.load('ultralytics/yolov5', 'custom', '{f[-1]}')  {s}"
+            f"\nPyTorch Hub:     model = torch.hub.load('ultralytics/yolov3', 'custom', '{f[-1]}')  {s}"
             f"\nVisualize:       https://netron.app"
         )
     return f  # return list of exported files/dirs

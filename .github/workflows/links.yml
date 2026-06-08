@@ -77,7 +77,6 @@ jobs:
             --exclude 'https?://(bit\.ly/(yolov5-paperspace-notebook|yolov5-readme-comet2)|cutt\.ly/yolov5-notebook-clearml)/?' \
             --exclude 'https://image-net\.org/data/ILSVRC/2012/ILSVRC2012_img_val\.tar/n' \
             --exclude 'https://img\.youtube\.com/vi/ZN3nRZT7b24/maxresdefault\.jpg/?' \
-            --exclude 'https://raw\.githubusercontent\.com/ultralytics/assets/main/yolov5/v70/splash\.png/?' \
             --exclude 'https://www\.youtube\.com/watch\?v=ZN3nRZT7b24\\' \
             --exclude-path './**/ci.yml' \
             --github-token ${{ secrets.GITHUB_TOKEN }} \

@@ -1,6 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
-# Resume all interrupted trainings in yolov5/ dir including DDP trainings
+# Resume all interrupted trainings in yolov3/ dir including DDP trainings
 # Usage: $ python utils/aws/resume.py
 
 import os

@@ -23,7 +23,7 @@ from utils.torch_utils import select_device
 
 # Project Configuration
 config = comet_ml.config.get_config()
-COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.project_name", default="yolov5")
+COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.project_name", default="yolov3")
 
 
 def get_args(known=False):

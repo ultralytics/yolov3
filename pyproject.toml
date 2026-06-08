@@ -29,7 +29,7 @@ description = "Ultralytics YOLOv3 for object detection."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { "text" = "AGPL-3.0" }
-keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv8", "HUB", "Ultralytics"]
+keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "HUB", "Ultralytics"]
 authors = [
     { name = "Glenn Jocher" },
     { name = "Ayush Chaurasia" },
@@ -62,6 +62,7 @@ classifiers = [
 
 # Required dependencies ------------------------------------------------------------------------------------------------
 dependencies = [
+    "gitpython>=3.1.30", # git repo interaction for training/versioning
     "matplotlib>=3.3.0",
     "numpy>=1.22.2",
     "opencv-python>=4.6.0",

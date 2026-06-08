@@ -8,6 +8,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from ultralytics.utils.metrics import box_iou
 
 from utils import TryExcept, threaded
 
@@ -259,26 +260,6 @@ def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7
     return iou  # IoU
 
 
-def box_iou(box1, box2, eps=1e-7):
-    # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
-    """Return intersection-over-union (Jaccard index) of boxes.
-
-    Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
-
-    Args:
-        box1 (Tensor[N, 4]): box2 (Tensor[M, 4])
-
-    Returns:
-        iou (Tensor[N, M]): the NxM matrix containing the pairwise IoU values for every element in boxes1 and boxes2
-    """
-    # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
-    (a1, a2), (b1, b2) = box1.unsqueeze(1).chunk(2, 2), box2.unsqueeze(0).chunk(2, 2)
-    inter = (torch.min(a2, b2) - torch.max(a1, b1)).clamp(0).prod(2)
-
-    # IoU = inter / (area1 + area2 - inter)
-    return inter / ((a2 - a1).prod(2) + (b2 - b1).prod(2) - inter + eps)
-
-
 def bbox_ioa(box1, box2, eps=1e-7):
     """Returns the intersection over box2 area given box1, box2.
 
@@ -298,14 +279,6 @@ def bbox_ioa(box1, box2, eps=1e-7):
 
     # Intersection over box2 area
     return inter_area / box2_area
-
-
-def wh_iou(wh1, wh2, eps=1e-7):
-    """Calculates the IoU of width-height pairs, wh1[n,2] and wh2[m,2], returning an nxm IoU matrix."""
-    wh1 = wh1[:, None]  # [N,1,2]
-    wh2 = wh2[None]  # [1,M,2]
-    inter = torch.min(wh1, wh2).prod(2)  # [N,M]
-    return inter / (wh1.prod(2) + wh2.prod(2) - inter + eps)  # iou = inter / (area1 + area2 - inter)
 
 
 # Plots ----------------------------------------------------------------------------------------------------------------
