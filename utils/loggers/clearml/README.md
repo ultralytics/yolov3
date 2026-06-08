@@ -2,13 +2,13 @@
 
 # ClearML Integration for Ultralytics YOLO
 
-This guide details how to integrate [ClearML](https://www.clear.ml/), a leading open-source MLOps platform, with your Ultralytics YOLO projects. ClearML streamlines the entire machine learning lifecycle—from experiment tracking to deployment—making it easier to manage and scale your computer vision workflows.
+This guide details how to integrate [ClearML](https://docs.clear.ml/docs/latest/), a leading open-source MLOps platform, with your Ultralytics YOLO projects. ClearML streamlines the entire machine learning lifecycle—from experiment tracking to deployment—making it easier to manage and scale your computer vision workflows.
 
 <img align="center" src="https://github.com/thepycoder/clearml_screenshots/raw/main/logos_dark.png#gh-light-mode-only" alt="Clear|ML"><img align="center" src="https://github.com/thepycoder/clearml_screenshots/raw/main/logos_light.png#gh-dark-mode-only" alt="Clear|ML">
 
 ## ✨ About ClearML
 
-[ClearML](https://www.clear.ml/) is an [open-source MLOps suite](https://github.com/clearml/clearml) that enables you to manage, automate, and orchestrate machine learning workflows efficiently. Integrating ClearML with Ultralytics YOLO unlocks several advantages:
+[ClearML](https://docs.clear.ml/docs/latest/) is an [open-source MLOps suite](https://github.com/clearml/clearml) that enables you to manage, automate, and orchestrate machine learning workflows efficiently. Integrating ClearML with Ultralytics YOLO unlocks several advantages:
 
 - **Experiment Management**: Automatically track every YOLO training run, including code versions, configurations, metrics, and outputs in a centralized dashboard. Explore more about [Ultralytics experiment tracking integrations](https://docs.ultralytics.com/integrations/).
 - **Data Versioning**: Manage and access your custom training datasets with ClearML Data Versioning. See how [Ultralytics datasets](https://docs.ultralytics.com/datasets/) are structured.
