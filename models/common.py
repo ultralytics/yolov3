@@ -434,7 +434,9 @@ class Concat(nn.Module):
 class DetectMultiBackend(nn.Module):
     """YOLOv3 multi-backend class for inference on frameworks like PyTorch, ONNX, TensorRT, and more."""
 
-    def __init__(self, weights="yolov3-tiny.pt", device=torch.device("cpu"), dnn=False, data=None, fp16=False, fuse=True):
+    def __init__(
+        self, weights="yolov3-tiny.pt", device=torch.device("cpu"), dnn=False, data=None, fp16=False, fuse=True
+    ):
         """Initializes multi-backend detection with options for various frameworks and devices, also handles model
         download.
         """

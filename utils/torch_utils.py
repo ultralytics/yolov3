@@ -13,7 +13,6 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 from torch.nn.parallel import DistributedDataParallel as DDP
-
 from ultralytics.utils.torch_utils import copy_attr, time_sync
 from ultralytics.utils.torch_utils import initialize_weights as initialize_weights
 from ultralytics.utils.torch_utils import scale_img as scale_img

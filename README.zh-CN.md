@@ -194,11 +194,11 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml
 
 YOLOv3 检测系列在 [COCO](https://docs.ultralytics.com/datasets/detect/coco/) 数据集（80 类）上训练。首次使用时，权重会从[最新的 YOLOv3 版本](https://github.com/ultralytics/yolov3/releases)自动下载。
 
-| 模型                                                                                            | 说明                                                  |
-| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [yolov3-tiny.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-tiny.pt) | 轻量、最快的变体——适合 CPU 和边缘设备。               |
-| [yolov3.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3.pt)           | 采用 Darknet-53 主干的原始 YOLOv3——速度与精度均衡。   |
-| [yolov3-spp.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-spp.pt)   | 增加空间金字塔池化模块，扩大感受野并提升精度。        |
+| 模型                                                                                            | 说明                                                |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| [yolov3-tiny.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-tiny.pt) | 轻量、最快的变体——适合 CPU 和边缘设备。             |
+| [yolov3.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3.pt)           | 采用 Darknet-53 主干的原始 YOLOv3——速度与精度均衡。 |
+| [yolov3-spp.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-spp.pt)   | 增加空间金字塔池化模块，扩大感受野并提升精度。      |
 
 架构细节请参阅 [Ultralytics YOLOv3 文档](https://docs.ultralytics.com/models/yolov3/)，COCO 指标请参阅[发布说明](https://github.com/ultralytics/yolov3/releases)。
 

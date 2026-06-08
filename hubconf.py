@@ -32,7 +32,7 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
 
     Raises:
         Exception: If an error occurs while loading the model, returns an error message with a helpful URL:
-        "https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading".
+        "https: //docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading".
 
     Examples:
         ```python

@@ -194,11 +194,11 @@ These tutorials are written for the shared Ultralytics training framework; the w
 
 The YOLOv3 detection lineup is trained on the [COCO](https://docs.ultralytics.com/datasets/detect/coco/) dataset (80 classes). Checkpoints download automatically from the [latest YOLOv3 release](https://github.com/ultralytics/yolov3/releases) on first use.
 
-| Model                                                                                    | Description                                                                                  |
-| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| [yolov3-tiny.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-tiny.pt) | Lightweight, fastest variant — ideal for CPU and edge devices.                               |
-| [yolov3.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3.pt)           | The original YOLOv3 with a Darknet-53 backbone — balanced speed and accuracy.                |
-| [yolov3-spp.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-spp.pt)   | Adds a Spatial Pyramid Pooling block for a larger receptive field and improved accuracy.     |
+| Model                                                                                           | Description                                                                              |
+| ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [yolov3-tiny.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-tiny.pt) | Lightweight, fastest variant — ideal for CPU and edge devices.                           |
+| [yolov3.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3.pt)           | The original YOLOv3 with a Darknet-53 backbone — balanced speed and accuracy.            |
+| [yolov3-spp.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-spp.pt)   | Adds a Spatial Pyramid Pooling block for a larger receptive field and improved accuracy. |
 
 See the [Ultralytics YOLOv3 Docs](https://docs.ultralytics.com/models/yolov3/) for architecture details and the [release notes](https://github.com/ultralytics/yolov3/releases) for reported COCO metrics.
 
