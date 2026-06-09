@@ -60,16 +60,6 @@ def normalize(x, mean=IMAGENET_MEAN, std=IMAGENET_STD, inplace=False):
     return TF.normalize(x, mean, std, inplace=inplace)
 
 
-def denormalize(x, mean=IMAGENET_MEAN, std=IMAGENET_STD):
-    """Converts normalized images back to original form using ImageNet stats; inputs in BCHW format.
-
-    Example: `denormalize(tensor)`.
-    """
-    for i in range(3):
-        x[:, i] = x[:, i] * std[i] + mean[i]
-    return x
-
-
 def augment_hsv(im, hgain=0.5, sgain=0.5, vgain=0.5):
     """Applies HSV color-space augmentation with optional gains; expects BGR image input.
 

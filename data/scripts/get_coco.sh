@@ -8,31 +8,25 @@
 # └── datasets
 #     └── coco  ← downloads here
 
-# Arguments (optional) Usage: bash data/scripts/get_coco.sh --train --val --test --segments
+# Arguments (optional) Usage: bash data/scripts/get_coco.sh --train --val --test
 if [ "$#" -gt 0 ]; then
   for opt in "$@"; do
     case "${opt}" in
       --train) train=true ;;
       --val) val=true ;;
       --test) test=true ;;
-      --segments) segments=true ;;
     esac
   done
 else
   train=true
   val=true
   test=false
-  segments=false
 fi
 
 # Download/unzip labels
 d='../datasets' # unzip directory
 url=https://github.com/ultralytics/assets/releases/download/v0.0.0/
-if [ "$segments" == "true" ]; then
-  f='coco2017labels-segments.zip' # 168 MB
-else
-  f='coco2017labels.zip' # 46 MB
-fi
+f='coco2017labels.zip' # 46 MB
 echo 'Downloading' $url$f ' ...'
 curl -L $url$f -o $f -# && unzip -q $f -d $d && rm $f &
 

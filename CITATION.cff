@@ -8,7 +8,6 @@ preferred-citation:
       orcid: "https://orcid.org/0000-0001-5950-6979"
   title: "YOLOv3 by Ultralytics"
   version: 9.6.0
-  doi: 10.5281/zenodo.7347926
   date-released: 2021-11-14
   license: AGPL-3.0
   url: "https://github.com/ultralytics/yolov3"

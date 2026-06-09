@@ -32,7 +32,7 @@ def predict(model):
 
         if model in models:
             results = models[model](im, size=640)  # reduce size=320 for faster inference
-            return results.pandas().xywhn[0].to_json(orient="records")
+            return results.pandas().xyxy[0].to_json(orient="records")
 
 
 if __name__ == "__main__":
