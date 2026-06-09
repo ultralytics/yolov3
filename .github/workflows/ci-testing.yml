@@ -24,19 +24,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest] # macos-latest bug https://github.com/ultralytics/yolov5/pull/9049
-        python-version: ["3.11"]
+        python-version: ["3.x"] # latest stable Python release
         model: [yolov3-tiny]
         include:
-          # - os: ubuntu-latest
-          #   python-version: "3.8" # '3.6.8' min (warning, this test is failing)
-          #   model: yolov3-tiny
           - os: ubuntu-latest
-            python-version: "3.9"
+            python-version: "3.11" # mid-version coverage
             model: yolov3-tiny
           - os: ubuntu-latest
-            python-version: "3.8" # torch 1.8.0 requires python >=3.6, <=3.8
+            python-version: "3.8" # minimum supported Python (torch 1.8.0 supports python <=3.9)
             model: yolov3-tiny
-            torch: "1.8.0" # min torch version CI https://pypi.org/project/torchvision/
+            torch: "1.8.0" # minimum supported torch (PyTorch>=1.8)
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
