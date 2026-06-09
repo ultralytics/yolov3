@@ -186,7 +186,8 @@ class ComputeLoss:
         return (lbox + lobj + lcls) * bs, torch.cat((lbox, lobj, lcls)).detach()
 
     def build_targets(self, p, targets):
-        """Match `targets` (image, class, x, y, w, h) to anchors per layer, returning tcls, tbox, indices, and anchors."""
+        """Match `targets` (image, class, x, y, w, h) to anchors per layer, returning tcls, tbox, indices, and anchors.
+        """
         na, nt = self.na, targets.shape[0]  # number of anchors, targets
         tcls, tbox, indices, anch = [], [], [], []
         gain = torch.ones(7, device=self.device)  # normalized to gridspace gain

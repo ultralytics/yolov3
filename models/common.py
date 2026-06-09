@@ -95,8 +95,8 @@ class DWConvTranspose2d(nn.ConvTranspose2d):
     """Implements a depth-wise transpose convolution layer with specified channels, kernel size, stride, and padding."""
 
     def __init__(self, c1, c2, k=1, s=1, p1=0, p2=0):  # ch_in, ch_out, kernel, stride, padding, padding_out
-        """Initializes a depth-wise transpose convolution layer with specified in/out channels, kernel size, stride,
-        and input/output padding.
+        """Initializes a depth-wise transpose convolution layer with specified in/out channels, kernel size, stride, and
+        input/output padding.
         """
         super().__init__(c1, c2, k, s, p1, p2, groups=math.gcd(c1, c2))
 

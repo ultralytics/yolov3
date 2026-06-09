@@ -19,7 +19,8 @@ class TritonRemoteModel:
         """Initialize the Triton client from a server URL, selecting the GRPC or HTTP backend by scheme.
 
         Args:
-            url (str): Fully qualified address of the Triton server, e.g. grpc://localhost:8000 or http://localhost:8000.
+            url (str): Fully qualified address of the Triton server, e.g. grpc://localhost:8000 or
+                http://localhost:8000.
         """
         parsed_url = urlparse(url)
         if parsed_url.scheme == "grpc":

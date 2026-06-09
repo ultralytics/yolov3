@@ -95,14 +95,14 @@ results.save()  # save the annotated image to runs/detect/exp
 `detect.py` runs inference on a wide range of sources, downloading models automatically and saving results to `runs/detect`.
 
 ```bash
-python detect.py --weights yolov3.pt --source 0                             # webcam
-python detect.py --weights yolov3.pt --source img.jpg                       # image
-python detect.py --weights yolov3.pt --source vid.mp4                       # video
-python detect.py --weights yolov3.pt --source screen                        # screenshot
-python detect.py --weights yolov3.pt --source path/                         # directory
-python detect.py --weights yolov3.pt --source 'path/*.jpg'                  # glob
-python detect.py --weights yolov3.pt --source 'https://youtu.be/LNwODJXcvt4'  # YouTube
-python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
+python detect.py --weights yolov3.pt --source 0                              # webcam
+python detect.py --weights yolov3.pt --source img.jpg                        # image
+python detect.py --weights yolov3.pt --source vid.mp4                        # video
+python detect.py --weights yolov3.pt --source screen                         # screenshot
+python detect.py --weights yolov3.pt --source path/                          # directory
+python detect.py --weights yolov3.pt --source 'path/*.jpg'                   # glob
+python detect.py --weights yolov3.pt --source 'https://youtu.be/LNwODJXcvt4' # YouTube
+python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4' # RTSP, RTMP, HTTP stream
 ```
 
 </details>
@@ -165,11 +165,11 @@ Models are defined declaratively in [`models/*.yaml`](https://github.com/ultraly
 
 All three models are trained on [COCO](https://docs.ultralytics.com/datasets/detect/coco/) (80 classes) and download automatically from the [YOLOv3 release assets](https://github.com/ultralytics/yolov3/releases) on first use.
 
-| Model                                                                                           | Description                                                                         |
-| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [yolov3-tiny.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-tiny.pt) | Lightweight two-scale model — the fastest option, ideal for CPU and edge devices.   |
-| [yolov3.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3.pt)           | The original Darknet-53 model — a strong balance of speed and accuracy.             |
-| [yolov3-spp.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-spp.pt)   | Adds Spatial Pyramid Pooling for a larger receptive field and improved accuracy.    |
+| Model                                                                                           | Description                                                                       |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [yolov3-tiny.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-tiny.pt) | Lightweight two-scale model — the fastest option, ideal for CPU and edge devices. |
+| [yolov3.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3.pt)           | The original Darknet-53 model — a strong balance of speed and accuracy.           |
+| [yolov3-spp.pt](https://github.com/ultralytics/yolov3/releases/download/v9.6.0/yolov3-spp.pt)   | Adds Spatial Pyramid Pooling for a larger receptive field and improved accuracy.  |
 
 ## 🧩 Integrations
 

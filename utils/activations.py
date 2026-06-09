@@ -97,7 +97,9 @@ class MetaAconC(nn.Module):
     """
 
     def __init__(self, c1, k=1, s=1, r=16):  # ch_in, kernel, stride, r
-        """Initialize MetaAconC with a small bottleneck network (kernel `k`, stride `s`, reduction `r`) that generates beta."""
+        """Initialize MetaAconC with a small bottleneck network (kernel `k`, stride `s`, reduction `r`) that generates
+        beta.
+        """
         super().__init__()
         c2 = max(r, c1 // r)
         self.p1 = nn.Parameter(torch.randn(1, c1, 1, 1))
@@ -108,7 +110,8 @@ class MetaAconC(nn.Module):
         # self.bn2 = nn.BatchNorm2d(c1)
 
     def forward(self, x):
-        """Apply the MetaAconC activation, generating beta from the input's spatial average via the bottleneck network."""
+        """Apply the MetaAconC activation, generating beta from the input's spatial average via the bottleneck network.
+        """
         y = x.mean(dim=2, keepdims=True).mean(dim=3, keepdims=True)
         # batch-size 1 bug/instabilities https://github.com/ultralytics/yolov5/issues/2891
         # beta = torch.sigmoid(self.bn2(self.fc2(self.bn1(self.fc1(y)))))  # bug/unstable

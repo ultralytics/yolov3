@@ -272,7 +272,9 @@ class Loggers:
             self.comet_logger.on_fit_epoch_end(x, epoch=epoch)
 
     def on_model_save(self, last, epoch, final_epoch, best_fitness, fi):
-        """Log the checkpoint to W&B/ClearML on save_period epochs (excluding the final epoch), flagging the best so far."""
+        """Log the checkpoint to W&B/ClearML on save_period epochs (excluding the final epoch), flagging the best so
+        far.
+        """
         if (epoch + 1) % self.opt.save_period == 0 and not final_epoch and self.opt.save_period != -1:
             if self.wandb:
                 self.wandb.log_model(last.parent, self.opt, epoch, fi, best_model=best_fitness == fi)
@@ -329,14 +331,14 @@ class Loggers:
 class GenericLogger:
     """General-purpose logger for non-task-specific logging to CSV, TensorBoard, and Weights & Biases.
 
-    Usage:
-        from utils.loggers import GenericLogger
-        logger = GenericLogger(...)
-
     Args:
         opt: Run arguments.
         console_logger: Console logger.
         include: Loggers to include.
+
+    Examples:
+        from utils.loggers import GenericLogger
+        logger = GenericLogger(...)
     """
 
     def __init__(self, opt, console_logger, include=("tb", "wandb")):

@@ -89,8 +89,7 @@ class Ensemble(nn.ModuleList):
 
 
 def attempt_load(weights, device=None, inplace=True, fuse=True):
-    """
-    Load a single model or an ensemble of models from one or more checkpoints.
+    """Load a single model or an ensemble of models from one or more checkpoints.
 
     Args:
         weights (str | list[str]): Path or list of paths to model checkpoint(s); missing files are auto-downloaded.

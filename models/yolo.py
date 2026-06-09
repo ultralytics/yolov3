@@ -342,12 +342,11 @@ class ClassificationModel(BaseModel):
 
 
 def parse_model(d, ch):  # model_dict, input_channels(3)
-    """
-    Parse a YOLOv3 model dict into an `nn.Sequential` module, scaling depth and width per the config.
+    """Parse a YOLOv3 model dict into an `nn.Sequential` module, scaling depth and width per the config.
 
     Args:
-        d (dict): Model configuration with `backbone`/`head` layer lists plus `anchors`, `nc`, `depth_multiple`,
-            and `width_multiple` keys.
+        d (dict): Model configuration with `backbone`/`head` layer lists plus `anchors`, `nc`, `depth_multiple`, and
+            `width_multiple` keys.
         ch (list[int]): Input channels, typically `[3]` for RGB images.
 
     Returns:

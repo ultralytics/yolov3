@@ -144,7 +144,7 @@ Once your dataset is versioned in ClearML, you can reference it directly in your
 
 ```bash
 # Replace <your_dataset_id> with the actual ID from ClearML
-python train.py --img 640 --batch 16 --epochs 3 --data clearml://<your_dataset_id> --weights yolov3-tiny.pt --cache
+python train.py --img 640 --batch 16 --epochs 3 --data clearml:// yolov3-tiny.pt --cache < your_dataset_id > --weights
 ```
 
 The dataset ID used will be logged as a parameter in your ClearML experiment, ensuring full traceability.
@@ -178,7 +178,7 @@ Turn any machine into a ClearML Agent by running:
 
 ```bash
 # Replace <queues_to_listen_to> with your queue(s) name(s)
-clearml-agent daemon --queue <queues_to_listen_to> [--docker] # Use --docker to run in a Docker container
+clearml-agent daemon --queue < queues_to_listen_to > [--docker] # Use --docker to run in a Docker container
 ```
 
 ### Cloning, Editing, and Enqueuing Tasks
