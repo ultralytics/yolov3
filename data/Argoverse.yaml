@@ -67,6 +67,7 @@ download: |
   if not (dir / 'Argoverse-1.1').exists():
       print('\n\nWARNING: Argoverse dataset MUST be downloaded manually, autodownload will NOT work.')
       print(f"WARNING: Manually download Argoverse dataset '{urls[0]}' to '{dir}' and re-run your command.\n\n")
+      raise FileNotFoundError(f'Argoverse dataset not found at {dir}, manual download required')
   else:
       # Convert
       annotations_dir = 'Argoverse-HD/annotations/'

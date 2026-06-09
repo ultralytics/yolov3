@@ -100,7 +100,6 @@ python detect.py --weights yolov3.pt --source vid.mp4                        # v
 python detect.py --weights yolov3.pt --source screen                         # screenshot
 python detect.py --weights yolov3.pt --source path/                          # directory
 python detect.py --weights yolov3.pt --source 'path/*.jpg'                   # glob
-python detect.py --weights yolov3.pt --source 'https://youtu.be/LNwODJXcvt4' # YouTube
 python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4' # RTSP, RTMP, HTTP stream
 ```
 

@@ -100,7 +100,6 @@ python detect.py --weights yolov3.pt --source vid.mp4                        # �
 python detect.py --weights yolov3.pt --source screen                         # 屏幕截图
 python detect.py --weights yolov3.pt --source path/                          # 目录
 python detect.py --weights yolov3.pt --source 'path/*.jpg'                   # glob 匹配
-python detect.py --weights yolov3.pt --source 'https://youtu.be/LNwODJXcvt4' # YouTube
 python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4' # RTSP、RTMP、HTTP 流
 ```
 

@@ -1,6 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 """
-Run YOLOv3 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
+Run YOLOv3 detection inference on images, videos, directories, globs, webcam, streams, etc.
 
 Usage - sources:
     $ python detect.py --weights yolov3-tiny.pt --source 0                           # webcam
@@ -11,7 +11,6 @@ Usage - sources:
                                                      list.txt                        # list of images
                                                      list.streams                    # list of streams
                                                      'path/*.jpg'                    # glob
-                                                     'https://youtu.be/LNwODJXcvt4'  # YouTube
                                                      'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
 
 Usage - formats:
@@ -95,7 +94,7 @@ def run(
     dnn=False,  # use OpenCV DNN for ONNX inference
     vid_stride=1,  # video frame-rate stride
 ):
-    """Run YOLOv3 detection inference on various input sources such as images, videos, streams, and YouTube URLs.
+    """Run YOLOv3 detection inference on various input sources such as images, videos, and streams.
 
     Args:
         weights (str | Path): Path to the model weights file or a Triton URL (default: 'yolov3-tiny.pt').
@@ -145,7 +144,7 @@ def run(
 
     Notes:
         This function supports a variety of input sources such as image files, video files, directories, URL patterns,
-        webcam streams, and YouTube links. It also supports multiple model formats including PyTorch, ONNX, OpenVINO,
+        and webcam streams. It also supports multiple model formats including PyTorch, ONNX, OpenVINO,
         TensorRT, CoreML, TensorFlow, PaddlePaddle, and others. The results can be visualized in real-time or saved to
         specified directories. Use command-line arguments to modify the behavior of the function.
     """
