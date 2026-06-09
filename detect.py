@@ -363,7 +363,7 @@ def parse_opt():
 
 
 def main(opt):
-    """Entry point for running the YOLO model; checks requirements and calls `run` with parsed options.
+    """Entry point for running the YOLOv3 model; checks requirements and calls `run` with parsed options.
 
     Args:
         opt (argparse.Namespace): Parsed command-line options, which include:
@@ -406,7 +406,7 @@ def main(opt):
         ```
 
     Notes:
-        Run this function as the entry point for using YOLO for object detection on a variety of input sources such as
+        Run this function as the entry point for using YOLOv3 for object detection on a variety of input sources such as
         images, videos, directories, webcams, streams, etc. This function ensures all requirements are checked and
         subsequently initiates the detection process by calling the `run` function with appropriate options.
     """

@@ -15,9 +15,9 @@ class Sum(nn.Module):
     """Computes the weighted or unweighted sum of multiple input layers per https://arxiv.org/abs/1911.09070."""
 
     def __init__(self, n, weight=False):  # n: number of inputs
-        """Initializes a module to compute weighted/unweighted sum of n inputs, with optional learning weights.
+        """Initialize a module to compute the weighted or unweighted sum of n inputs, with optional learnable weights.
 
-        https://arxiv.org/abs/1911.09070
+        See https://arxiv.org/abs/1911.09070 for the weighted feature fusion details.
         """
         super().__init__()
         self.weight = weight  # apply weights boolean
@@ -45,8 +45,7 @@ class MixConv2d(nn.Module):
     """Implements mixed depth-wise convolutions for efficient neural networks; see https://arxiv.org/abs/1907.09595."""
 
     def __init__(self, c1, c2, k=(1, 3), s=1, equal_ch=True):  # ch_in, ch_out, kernel, stride, ch_strategy
-        """Initializes MixConv2d with mixed depth-wise convolution layers; details at https://arxiv.org/abs/1907.09595.
-        """
+        """Initialize MixConv2d with mixed depth-wise convolution layers; see https://arxiv.org/abs/1907.09595."""
         super().__init__()
         n = len(k)  # number of convolutions
         if equal_ch:  # equal c_ per group
@@ -90,7 +89,18 @@ class Ensemble(nn.ModuleList):
 
 
 def attempt_load(weights, device=None, inplace=True, fuse=True):
-    """Loads an ensemble or single model weights, supports device placement and model fusion."""
+    """
+    Load a single model or an ensemble of models from one or more checkpoints.
+
+    Args:
+        weights (str | list[str]): Path or list of paths to model checkpoint(s); missing files are auto-downloaded.
+        device (torch.device, optional): Device to load the model onto.
+        inplace (bool): Use inplace ops (e.g. slice assignment) for compatibility across torch versions.
+        fuse (bool): Fuse Conv2d and BatchNorm2d layers for faster inference.
+
+    Returns:
+        (torch.nn.Module): The loaded model, or an `Ensemble` if multiple weights are provided.
+    """
     from models.yolo import Detect, Model
 
     model = Ensemble()

@@ -73,8 +73,14 @@ colors = Colors()  # create instance for 'from utils.plots import colors'
 
 
 def feature_visualization(x, module_type, stage, n=32, save_dir=Path("runs/detect/exp")):
-    """x: Features to be visualized module_type: Module type stage: Module stage within model n: Maximum number of
-    feature maps to plot save_dir: Directory to save results.
+    """Visualize feature maps of a module's output during inference.
+
+    Args:
+        x (torch.Tensor): Features to be visualized.
+        module_type (str): Module type.
+        stage (int): Module stage within the model.
+        n (int): Maximum number of feature maps to plot.
+        save_dir (Path): Directory to save results.
     """
     if "Detect" not in module_type:
         _batch, channels, height, width = x.shape  # batch, channels, height, width
@@ -114,9 +120,7 @@ def butter_lowpass_filtfilt(data, cutoff=1500, fs=50000, order=5):
 
     # https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy
     def butter_lowpass(cutoff, fs, order):
-        """Applies a low-pass Butterworth filter to input data using forward-backward method; see
-        https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy.
-        """
+        """Design and return low-pass Butterworth filter coefficients for the given cutoff, sample rate, and order."""
         nyq = 0.5 * fs
         normal_cutoff = cutoff / nyq
         return butter(order, normal_cutoff, btype="low", analog=False)

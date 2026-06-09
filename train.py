@@ -1,6 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 """
-Train a YOLOv3 model on a custom dataset. Models and datasets download automatically from the latest YOLOv3 release.
+Train a YOLOv3 model on a custom dataset. Models and datasets download automatically from the Ultralytics release.
 
 Usage - Single-GPU training:
     $ python train.py --data coco128.yaml --weights yolov3-tiny.pt --img 640  # from pretrained (recommended)
@@ -112,7 +112,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         callbacks (Callbacks): Callbacks to handle various stages of the training lifecycle.
 
     Returns:
-        None
+        (tuple): Final validation results (P, R, mAP@0.5, mAP@0.5:0.95, val_box_loss, val_obj_loss, val_cls_loss).
 
     Examples:
         ```python
@@ -532,7 +532,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
 
 
 def parse_opt(known=False):
-    """Parse command line arguments for configuring the training of a YOLO model.
+    """Parse command line arguments for configuring the training of a YOLOv3 model.
 
     Args:
         known (bool): Flag to parse known arguments only, defaults to False.
@@ -716,7 +716,7 @@ def main(opt, callbacks=Callbacks()):
             "perspective": (0, 0.0, 0.001),  # image perspective (+/- fraction), range 0-0.001
             "flipud": (1, 0.0, 1.0),  # image flip up-down (probability)
             "fliplr": (0, 0.0, 1.0),  # image flip left-right (probability)
-            "mosaic": (1, 0.0, 1.0),  # image mixup (probability)
+            "mosaic": (1, 0.0, 1.0),  # image mosaic (probability)
             "mixup": (1, 0.0, 1.0),  # image mixup (probability)
             "copy_paste": (1, 0.0, 1.0),
         }  # segment copy-paste (probability)
@@ -838,7 +838,7 @@ def run(**kwargs):
         local_rank (int): For automatic DDP Multi-GPU argument parsing, do not modify.
 
     Returns:
-        None
+        (argparse.Namespace): The parsed options namespace with all keyword overrides applied.
 
     Examples:
         ```python

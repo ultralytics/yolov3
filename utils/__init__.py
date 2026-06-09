@@ -11,21 +11,15 @@ class TryExcept(contextlib.ContextDecorator):
     """A context manager and decorator for handling exceptions with optional custom messages."""
 
     def __init__(self, msg=""):
-        """Initializes TryExcept with optional custom message, used as decorator or context manager for exception
-        handling.
-        """
+        """Initialize with an optional message prefixed to any caught exception when printed."""
         self.msg = msg
 
     def __enter__(self):
-        """Begin exception-handling block, optionally customizing exception message when used with TryExcept context
-        manager.
-        """
+        """Enter the exception-handling block (no setup required)."""
         pass
 
     def __exit__(self, exc_type, value, traceback):
-        """Ends exception-handling block, optionally prints custom message with exception, suppressing exceptions within
-        context.
-        """
+        """Print the message and exception on exit, suppressing the exception so execution continues."""
         if value:
             print(emojis(f"{self.msg}{': ' if self.msg else ''}{value}"))
         return True
@@ -38,10 +32,7 @@ def threaded(func):
     """
 
     def wrapper(*args, **kwargs):
-        """Runs the decorated function in a separate thread and returns the thread object.
-
-        Usage: @threaded.
-        """
+        """Start the wrapped function in a daemon thread and return the started thread."""
         thread = threading.Thread(target=func, args=args, kwargs=kwargs, daemon=True)
         thread.start()
         return thread

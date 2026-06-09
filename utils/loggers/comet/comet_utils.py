@@ -1,4 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+"""Comet ML helpers for downloading checkpoints and restoring run state when resuming YOLOv3 training."""
 
 import logging
 import os

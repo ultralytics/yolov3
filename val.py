@@ -219,7 +219,7 @@ def run(
     callbacks=Callbacks(),
     compute_loss=None,
 ):
-    """Validates a trained YOLO model on a dataset and saves detection results in specified formats.
+    """Validate a trained YOLOv3 detection model on a dataset and optionally save results in the requested formats.
 
     Args:
         data (str | dict): Path to the dataset configuration file (.yaml) or a dictionary containing the dataset paths.
@@ -254,13 +254,14 @@ def run(
 
     Returns:
         (tuple): A tuple containing:
-            - metrics (torch.Tensor): Dictionary containing metrics such as precision, recall, mAP, F1 score, etc.
-            - times (dict): Dictionary containing times for different parts of the pipeline (e.g., preprocessing, inference, NMS).
-            - samples (torch.Tensor): Torch tensor containing validation samples.
+            - results (tuple): (mean_precision, mean_recall, mAP@0.5, mAP@0.5:0.95, val_box_loss, val_obj_loss,
+              val_cls_loss).
+            - maps (np.ndarray): Per-class mAP@0.5:0.95 of shape (nc,).
+            - t (tuple): Per-image timing in milliseconds for (preprocess, inference, NMS).
 
     Examples:
         ```python
-        metrics, times, samples = run(
+        results, maps, t = run(
             data='data/coco.yaml',
             weights='yolov3-tiny.pt',
             batch_size=32,

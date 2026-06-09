@@ -31,8 +31,8 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
         torch.nn.Module: YOLOv3 model loaded with or without pretrained weights.
 
     Raises:
-        Exception: If an error occurs while loading the model, returns an error message with a helpful URL:
-        "https: //docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading".
+        Exception: If model loading fails, re-raised with a message pointing to the PyTorch Hub troubleshooting guide:
+            https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading
 
     Examples:
         ```python

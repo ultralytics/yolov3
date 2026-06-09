@@ -16,9 +16,7 @@ DETECTION_URL = "/v1/object-detection/<model>"
 
 @app.route(DETECTION_URL, methods=["POST"])
 def predict(model):
-    """Predicts objects in an image using YOLOv3 models exposed via Flask REST API; expects 'image' file in POST
-    request.
-    """
+    """Run inference on a POSTed image with the named YOLOv3 model and return detections as JSON."""
     if request.method != "POST":
         return
 

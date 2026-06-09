@@ -9,7 +9,7 @@ from utils.torch_utils import de_parallel
 
 
 def smooth_BCE(eps=0.1):  # https://github.com/ultralytics/yolov3/issues/238#issuecomment-598028441
-    """Applies label smoothing to BCE targets, returning smoothed positive/negative labels; eps default is 0.1."""
+    """Return smoothed positive and negative BCE targets for label smoothing with factor `eps` (default 0.1)."""
     return 1.0 - 0.5 * eps, 0.5 * eps
 
 
@@ -23,9 +23,7 @@ class BCEBlurWithLogitsLoss(nn.Module):
         self.alpha = alpha
 
     def forward(self, pred, true):
-        """Calculates modified BCEWithLogitsLoss factoring in missing labels, taking `pred` logits and `true` labels as
-        inputs.
-        """
+        """Compute mean BCE loss between `pred` logits and `true` labels, downweighting probable missing labels."""
         loss = self.loss_fcn(pred, true)
         pred = torch.sigmoid(pred)  # prob from logits
         dx = pred - true  # reduce only missing label effects
@@ -50,9 +48,7 @@ class FocalLoss(nn.Module):
         self.loss_fcn.reduction = "none"  # required to apply FL to each element
 
     def forward(self, pred, true):
-        """Computes the focal loss between `pred` and `true` using specific alpha and gamma, not applying the modulating
-        factor.
-        """
+        """Compute focal loss between `pred` and `true`, scaling by alpha- and gamma-weighted modulating factors."""
         loss = self.loss_fcn(pred, true)
         # p_t = torch.exp(-loss)
         # loss *= self.alpha * (1.000001 - p_t) ** self.gamma  # non-zero power for gradient stability
@@ -190,9 +186,7 @@ class ComputeLoss:
         return (lbox + lobj + lcls) * bs, torch.cat((lbox, lobj, lcls)).detach()
 
     def build_targets(self, p, targets):
-        """Generates matching anchor targets for compute_loss() from given images and labels in format
-        (image,class,x,y,w,h).
-        """
+        """Match `targets` (image, class, x, y, w, h) to anchors per layer, returning tcls, tbox, indices, and anchors."""
         na, nt = self.na, targets.shape[0]  # number of anchors, targets
         tcls, tbox, indices, anch = [], [], [], []
         gain = torch.ones(7, device=self.device)  # normalized to gridspace gain

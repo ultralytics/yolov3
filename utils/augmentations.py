@@ -21,7 +21,7 @@ class Albumentations:
     """Provides optional image augmentation for YOLOv3 using the Albumentations library if installed."""
 
     def __init__(self, size=640):
-        """Initializes Albumentations class for optional YOLOv3 data augmentation with default size 640."""
+        """Build the Albumentations transform pipeline for `size`-pixel images, or no-op if the package is missing."""
         self.transform = None
         prefix = colorstr("albumentations: ")
         try:
@@ -331,7 +331,7 @@ def classify_albumentations(
                 if vflip > 0:
                     T += [A.VerticalFlip(p=vflip)]
                 if jitter > 0:
-                    color_jitter = (float(jitter),) * 3  # repeat value for brightness, contrast, satuaration, 0 hue
+                    color_jitter = (float(jitter),) * 3  # repeat value for brightness, contrast, saturation, 0 hue
                     T += [A.ColorJitter(*color_jitter, 0)]
         else:  # Use fixed crop for eval set (reproducibility)
             T = [A.SmallestMaxSize(max_size=size), A.CenterCrop(height=size, width=size)]
@@ -356,18 +356,14 @@ class LetterBox:
     """Resizes and pads images to a specified size while maintaining aspect ratio."""
 
     def __init__(self, size=(640, 640), auto=False, stride=32):
-        """Initializes LetterBox for YOLOv3 image preprocessing with optional auto-sizing and stride; `size` can be int
-        or tuple.
-        """
+        """Initialize LetterBox with a target `size` (int or tuple), optional `auto` short-side sizing, and `stride`."""
         super().__init__()
         self.h, self.w = (size, size) if isinstance(size, int) else size
         self.auto = auto  # pass max size integer, automatically solve for short side using stride
         self.stride = stride  # used with auto
 
     def __call__(self, im):  # im = np.array HWC
-        """Resizes and pads image `im` (np.array HWC) to specified `size` and `stride`, possibly autosizing for the
-        short side.
-        """
+        """Resize and pad an HWC image, optionally solving the short side from `stride` when `auto` is set."""
         imh, imw = im.shape[:2]
         r = min(self.h / imh, self.w / imw)  # ratio of new/old
         h, w = round(imh * r), round(imw * r)  # resized image
@@ -382,12 +378,12 @@ class CenterCrop:
     """Crops the center of an image to a specified size, maintaining aspect ratio."""
 
     def __init__(self, size=640):
-        """Initializes a CenterCrop object for YOLOv3, to crop images to a specified size, with default 640x640."""
+        """Initialize CenterCrop with a target `size` (int for square, or (h, w) tuple)."""
         super().__init__()
         self.h, self.w = (size, size) if isinstance(size, int) else size
 
     def __call__(self, im):  # im = np.array HWC
-        """Crops and resizes an image to specified dimensions, defaulting to 640x640, maintaining aspect ratio."""
+        """Center-crop an HWC image to its largest square, then resize to the target dimensions."""
         imh, imw = im.shape[:2]
         m = min(imh, imw)  # min dimension
         top, left = (imh - m) // 2, (imw - m) // 2
@@ -398,16 +394,12 @@ class ToTensor:
     """Converts a BGR image in numpy format to a PyTorch tensor in RGB format, with optional half precision."""
 
     def __init__(self, half=False):
-        """Initializes ToTensor class for YOLOv3 image preprocessing to convert images to PyTorch tensors, optionally in
-        half precision.
-        """
+        """Initialize ToTensor, optionally producing half-precision (fp16) tensors when `half` is True."""
         super().__init__()
         self.half = half
 
     def __call__(self, im):  # im = np.array HWC in BGR order
-        """Converts a BGR image in numpy format to a PyTorch tensor in RGB format, with options for half precision and
-        normalization.
-        """
+        """Convert an HWC BGR numpy image to a normalized CHW RGB tensor, in fp16 if `half` was set."""
         im = np.ascontiguousarray(im.transpose((2, 0, 1))[::-1])  # HWC to CHW -> BGR to RGB -> contiguous
         im = torch.from_numpy(im)  # to torch
         im = im.half() if self.half else im.float()  # uint8 to fp16/32

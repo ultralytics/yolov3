@@ -1,4 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+"""Run a Comet Optimizer hyperparameter sweep over YOLOv3 training."""
 
 import argparse
 import json

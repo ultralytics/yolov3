@@ -71,24 +71,11 @@ def run(
         hard_fail (bool): Raise an error if any benchmark test fails. Defaults to False.
 
     Returns:
-        None
-
-    Examples:
-        ```python
-        # Run benchmarks on the default 'yolov3-tiny.pt' model with an image size of 640 pixels
-        run()
-
-        # Run benchmarks on a specific model with GPU and half-precision enabled
-        run(weights='custom_model.pt', device='0', half=True)
-
-        # Test only PyTorch export
-        run(pt_only=True)
-        ```
+        (pandas.DataFrame): Per-format results with columns ["Format", "Size (MB)", "mAP50-95", "Inference time (ms)"].
 
     Notes:
-        This function iterates over multiple export formats, performs the export, and then validates the model's performance
-        using the detection validation function. The results are logged, and optionally,
-        benchmarks can be configured to raise errors on failures using the `hard_fail` argument.
+        Iterates over the supported export formats, exports each, then validates it with the detection validator and
+        logs the results. When `hard_fail` is a numeric string, mAP below that floor raises an assertion.
     """
     y, t = [], time.time()
     device = select_device(device)
@@ -163,27 +150,8 @@ def test(
         hard_fail (bool): Raise an error on benchmark failure. Defaults to False.
 
     Returns:
-        pd.DataFrame: A DataFrame containing the export formats and their success status.
-
-    Examples:
-        ```python
-        results = test(
-            weights="path/to/yolov3-tiny.pt",
-            imgsz=640,
-            batch_size=1,
-            data="path/to/coco128.yaml",
-            device="0",
-            half=False,
-            test=True,
-            pt_only=False,
-            hard_fail=True,
-        )
-        print(results)
-        ```
-
-    Notes:
-        Ensure all required packages are installed as specified in the Ultralytics YOLOv3 documentation:
-        https://github.com/ultralytics/yolov3
+        (pandas.DataFrame): Table with columns ["Format", "Export"] indicating whether each format exported
+            successfully.
     """
     y, t = [], time.time()
     device = select_device(device)
@@ -226,21 +194,17 @@ def parse_opt():
             minimum metric floor for success. Default is False.
 
     Returns:
-        argparse.Namespace: The parsed arguments as a namespace object.
+        (argparse.Namespace): The parsed arguments as a namespace object.
 
     Examples:
-        To run inference on the YOLOv3-tiny model with a different image size:
-
-        ```python
-        $ python benchmarks.py --weights yolov3-tiny.pt --imgsz 512 --device 0
+        Run benchmarks on the YOLOv3-tiny model with a custom image size:
+        ```bash
+        python benchmarks.py --weights yolov3-tiny.pt --imgsz 512 --device 0
         ```
 
     Notes:
-        The `--hard-fail` argument can be a boolean or a string. If a string is provided, it should be an expression that
-        represents the minimum acceptable metric value, such as '0.29' for mAP (mean Average Precision).
-
-    Links:
-        https://github.com/ultralytics/yolov3
+        `--hard-fail` may be a boolean or a string. As a string it is an expression for the minimum acceptable metric,
+        such as '0.29' for mAP (mean Average Precision).
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", type=str, default=ROOT / "yolov3-tiny.pt", help="weights path")
@@ -267,24 +231,12 @@ def main(opt):
             dataset path, device, half-precision inference, test mode, PyTorch-only testing, and hard fail conditions.
 
     Returns:
-        pd.DataFrame: A DataFrame containing benchmarking results with columns:
-            - Format: Name of the export format
-            - Size (MB): File size of the exported model
-            - mAP50-95: Mean Average Precision for the model
-            - Inference time (ms): Time taken for inference
-
-    Examples:
-        Running the function from command line with required arguments:
-
-        ```python
-        $ python benchmarks.py --weights yolov3-tiny.pt --img 640
-        ```
-
-    For more details, visit the Ultralytics YOLOv3 repository on [GitHub](https://github.com/ultralytics/yolov3).
+        (pandas.DataFrame): Benchmark results with columns ["Format", "Size (MB)", "mAP50-95", "Inference time (ms)"],
+            or export-status results when `opt.test` is True.
 
     Notes:
-        The function runs the main pipeline by exporting the YOLOv3 model to various formats and running benchmarks to
-        evaluate performance. If `opt.test` is set to True, it only tests the export process and logs the results.
+        When `opt.test` is True, only the export process is tested; otherwise full benchmarks (export plus validation)
+        are run.
     """
     test(**vars(opt)) if opt.test else run(**vars(opt))
 

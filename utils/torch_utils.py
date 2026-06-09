@@ -37,7 +37,7 @@ def smart_inference_mode(torch_1_9=check_version(torch.__version__, "1.9.0")):
     """Applies torch.inference_mode() if torch>=1.9.0 or torch.no_grad() otherwise as a decorator to functions."""
 
     def decorate(fn):
-        """Applies torch.inference_mode() if torch>=1.9.0, otherwise torch.no_grad(), as a decorator to functions."""
+        """Wrap a function in torch.inference_mode() if torch>=1.9.0 else torch.no_grad()."""
         return (torch.inference_mode if torch_1_9 else torch.no_grad)()(fn)
 
     return decorate
@@ -374,9 +374,11 @@ class EarlyStopping:
 
 
 class ModelEMA:
-    """Updated Exponential Moving Average (EMA) from https://github.com/rwightman/pytorch-image-models Keeps a moving
-    average of everything in the model state_dict (parameters and buffers) For EMA details
-    see https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage.
+    """Exponential Moving Average of a model's state_dict (parameters and buffers).
+
+    Maintains a smoothed copy of all values in the model state_dict to stabilize training. Adapted from
+    https://github.com/rwightman/pytorch-image-models; see
+    https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage for EMA details.
     """
 
     def __init__(self, model, decay=0.9999, tau=2000, updates=0):

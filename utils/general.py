@@ -667,9 +667,7 @@ def clean_str(s):
 
 
 def one_cycle(y1=0.0, y2=1.0, steps=100):
-    """Generates a lambda for a sinusoidal ramp from y1 to y2 over 'steps'; usage: `lambda x: ((1 - math.cos(x * math.pi
-    / steps)) / 2) * (y2 - y1) + y1`.
-    """
+    """Return a function mapping step x to a sinusoidal (1 - cos) ramp from y1 to y2 over `steps`."""
     return lambda x: ((1 - math.cos(x * math.pi / steps)) / 2) * (y2 - y1) + y1
 
 
@@ -946,10 +944,21 @@ def non_max_suppression(
     max_det=300,
     nm=0,  # number of masks
 ):
-    """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections.
+    """Run Non-Maximum Suppression (NMS) on inference results to reject overlapping detections.
+
+    Args:
+        prediction (torch.Tensor | list | tuple): Model output; the inference tensor is used if a tuple/list is passed.
+        conf_thres (float): Confidence threshold in [0, 1]; boxes below it are discarded.
+        iou_thres (float): IoU threshold in [0, 1] for the NMS overlap test.
+        classes (list | None): If set, keep only detections whose class is in this list.
+        agnostic (bool): If True, perform class-agnostic NMS (boxes not offset by class).
+        multi_label (bool): If True, allow multiple labels per box.
+        labels (tuple): Optional apriori labels per image for autolabelling.
+        max_det (int): Maximum number of detections to keep per image.
+        nm (int): Number of mask coefficients (segmentation); 0 for detection.
 
     Returns:
-        list of detections, on (n,6) tensor per image [xyxy, conf, cls]
+        (list[torch.Tensor]): One (n, 6 + nm) tensor per image, each row [xyxy, conf, cls, mask...].
     """
     # Checks
     assert 0 <= conf_thres <= 1, f"Invalid Confidence threshold {conf_thres}, valid values are between 0.0 and 1.0"
@@ -1142,7 +1151,7 @@ def apply_classifier(x, model, img, im0):
                 cutout = im0[i][int(a[1]) : int(a[3]), int(a[0]) : int(a[2])]
                 im = cv2.resize(cutout, (224, 224))  # BGR
 
-                im = im[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+                im = im[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, HWC to CHW
                 im = np.ascontiguousarray(im, dtype=np.float32)  # uint8 to float32
                 im /= 255  # 0 - 255 to 0.0 - 1.0
                 ims.append(im)
@@ -1154,9 +1163,19 @@ def apply_classifier(x, model, img, im0):
 
 
 def increment_path(path, exist_ok=False, sep="", mkdir=False):
-    """Increments file or directory path, optionally creating the directory, not thread-safe.
+    """Increment a file or directory path, e.g. runs/exp -> runs/exp2, optionally creating the directory.
 
-    Args: path (str/Path), exist_ok (bool), sep (str), mkdir (bool).
+    Args:
+        path (str | Path): Base path to increment.
+        exist_ok (bool): If True, return the path unchanged without incrementing.
+        sep (str): Separator inserted between the path and the increment number.
+        mkdir (bool): If True, create the resulting directory.
+
+    Returns:
+        (Path): The (possibly incremented) path.
+
+    Notes:
+        Not thread-safe.
     """
     path = Path(path)  # os-agnostic
     if path.exists() and not exist_ok:
@@ -1193,9 +1212,14 @@ def imread(filename, flags=cv2.IMREAD_COLOR):
 
 
 def imwrite(filename, img):
-    """Writes an image to a file; returns True on success, False on failure.
+    """Write an image to a file, supporting multilanguage paths; returns True on success, False on failure.
 
-    Args: filename (str), img (ndarray).
+    Args:
+        filename (str): Destination file path.
+        img (np.ndarray): Image array to write.
+
+    Returns:
+        (bool): True if the image was written successfully, False otherwise.
     """
     try:
         cv2.imencode(Path(filename).suffix, img)[1].tofile(filename)

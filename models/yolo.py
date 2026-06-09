@@ -342,7 +342,18 @@ class ClassificationModel(BaseModel):
 
 
 def parse_model(d, ch):  # model_dict, input_channels(3)
-    """Parses a YOLOv3 model configuration from a dictionary and constructs the model."""
+    """
+    Parse a YOLOv3 model dict into an `nn.Sequential` module, scaling depth and width per the config.
+
+    Args:
+        d (dict): Model configuration with `backbone`/`head` layer lists plus `anchors`, `nc`, `depth_multiple`,
+            and `width_multiple` keys.
+        ch (list[int]): Input channels, typically `[3]` for RGB images.
+
+    Returns:
+        model (torch.nn.Sequential): Assembled model layers.
+        save (list[int]): Sorted indices of layers whose outputs are retained for later use (skip connections).
+    """
     LOGGER.info(f"\n{'':>3}{'from':>18}{'n':>3}{'params':>10}  {'module':<40}{'arguments':<30}")
     anchors, nc, gd, gw, act = d["anchors"], d["nc"], d["depth_multiple"], d["width_multiple"], d.get("activation")
     if act:

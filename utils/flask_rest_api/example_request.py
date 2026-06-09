@@ -1,5 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
-"""Perform test request."""
+"""Send a sample image to the Flask REST API and print the returned YOLOv3 detections."""
 
 import pprint
 

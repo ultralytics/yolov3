@@ -90,12 +90,15 @@ def exif_size(img):
 
 
 def exif_transpose(image):
-    """
-    Transpose a PIL image accordingly if it has an EXIF Orientation tag.
-    Inplace version of https://github.com/python-pillow/Pillow/blob/master/src/PIL/ImageOps.py exif_transpose().
+    """Transpose a PIL image according to its EXIF Orientation tag and remove the tag.
 
-    :param image: The image to transpose.
-    :return: An image.
+    In-place variant of Pillow's `ImageOps.exif_transpose()`.
+
+    Args:
+        image (PIL.Image.Image): Image to transpose.
+
+    Returns:
+        (PIL.Image.Image): The transposed image.
     """
     exif = image.getexif()
     orientation = exif.get(0x0112, 1)  # default 1
@@ -478,7 +481,7 @@ class LoadStreams:
         return self.sources, im, im0, None, ""
 
     def __len__(self):
-        """Returns the number of sources in the dataset, supporting up to 1E12 frames across streams and scenarios."""
+        """Returns the number of stream sources."""
         return len(self.sources)  # 1E12 frames = 32 streams at 30 FPS for 30 years
 
 
@@ -824,8 +827,7 @@ class LoadImagesAndLabels(Dataset):
             np.save(f.as_posix(), cv2.imread(self.im_files[i]))
 
     def load_mosaic(self, index):
-        """Loads 4 images into a mosaic for YOLOv3 training, enhancing detection capabilities through data augmentation.
-        """
+        """Build a 4-image mosaic from the image at `index` plus 3 random images, returning the mosaic and labels."""
         labels4, segments4 = [], []
         s = self.img_size
         yc, xc = (int(random.uniform(-x, 2 * s + x)) for x in self.mosaic_border)  # mosaic center x, y
@@ -1126,18 +1128,18 @@ def verify_image_label(args):
 
 
 class HUBDatasetStats:
-    """Class for generating HUB dataset JSON and `-hub` dataset directory.
+    """Generate dataset statistics JSON and a `-hub` directory of downscaled images for the Ultralytics Platform.
 
     Args:
-        path: Path to data.yaml or data.zip (with data.yaml inside data.zip)
-        autodownload: Attempt to download dataset if not found locally
+        path (str): Path to data.yaml, or data.zip with data.yaml inside.
+        autodownload (bool): Attempt to download the dataset if not found locally.
 
-            Usage
-        from utils.dataloaders import HUBDatasetStats
-        stats = HUBDatasetStats('coco128.yaml', autodownload=True)  # usage 1
-        stats = HUBDatasetStats('path/to/coco128.zip')  # usage 2
-        stats.get_json(save=False)
-        stats.process_images()
+    Examples:
+        >>> from utils.dataloaders import HUBDatasetStats
+        >>> stats = HUBDatasetStats("coco128.yaml", autodownload=True)  # from a data.yaml
+        >>> stats = HUBDatasetStats("path/to/coco128.zip")  # from a data.zip
+        >>> stats.get_json(save=False)
+        >>> stats.process_images()
     """
 
     def __init__(self, path="coco128.yaml", autodownload=False):
@@ -1258,18 +1260,17 @@ class HUBDatasetStats:
 
 # Classification dataloaders -------------------------------------------------------------------------------------------
 class ClassificationDataset(torchvision.datasets.ImageFolder):
-    """YOLOv3 Classification Dataset.
+    """YOLOv3 classification dataset that applies torchvision transforms, or Albumentations transforms if installed.
 
     Args:
-        root: Dataset path
-        transform: torchvision transforms, used by default
-        album_transform: Albumentations transforms, used if installed
+        root (str): Dataset path passed to `torchvision.datasets.ImageFolder`.
+        augment (bool): Apply training augmentations.
+        imgsz (int): Target image size.
+        cache (bool | str): Cache images in RAM (`True` or `"ram"`) or on disk (`"disk"`).
     """
 
     def __init__(self, root, augment, imgsz, cache=False):
-        """Initializes classification dataset with optional augmentation, image resizing, caching, inheriting from
-        ImageFolder.
-        """
+        """Initialize the classification dataset with optional augmentation, resizing, and RAM/disk caching."""
         super().__init__(root=root)
         self.torch_transforms = classify_transforms(imgsz)
         self.album_transforms = classify_albumentations(augment, imgsz) if augment else None

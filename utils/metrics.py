@@ -28,17 +28,23 @@ def smooth(y, f=0.05):
 
 
 def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir=".", names=(), eps=1e-16, prefix=""):
-    """Compute the average precision, given the recall and precision curves.
+    """Compute the average precision per class from the recall and precision curves.
 
-    Source: https://github.com/rafaelpadilla/Object-Detection-Metrics. # Arguments
-        tp:  True positives (nparray, nx1 or nx10).
-        conf:  Objectness value from 0-1 (nparray).
-        pred_cls:  Predicted object classes (nparray).
-        target_cls:  True object classes (nparray).
-        plot:  Plot precision-recall curve at mAP@0.5
-        save_dir:  Plot save directory
-    # Returns
-        The average precision as computed in py-faster-rcnn.
+    Source: https://github.com/rafaelpadilla/Object-Detection-Metrics.
+
+    Args:
+        tp (np.ndarray): True positives (nx1 or nx10).
+        conf (np.ndarray): Objectness values from 0-1.
+        pred_cls (np.ndarray): Predicted object classes.
+        target_cls (np.ndarray): True object classes.
+        plot (bool): Plot precision-recall curve at mAP@0.5.
+        save_dir (str): Directory in which to save plots.
+        names (dict): Class index to name mapping for plot legends.
+        eps (float): Small value to avoid division by zero.
+        prefix (str): Filename prefix for saved plots.
+
+    Returns:
+        (tuple): Per-class true positives, false positives, precision, recall, F1, AP, and unique classes.
     """
     # Sort by objectness
     i = np.argsort(-conf)
@@ -94,8 +100,14 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir=".", names
 
 
 def compute_ap(recall, precision):
-    """Compute the average precision, given the recall and precision curves # Arguments recall: The recall curve (list)
-    precision: The precision curve (list) # Returns Average precision, precision curve, recall curve.
+    """Compute average precision from the recall and precision curves.
+
+    Args:
+        recall (list): The recall curve.
+        precision (list): The precision curve.
+
+    Returns:
+        (tuple): Average precision, precision envelope, and recall curve.
     """
     # Append sentinel values to beginning and end
     mrec = np.concatenate(([0.0], recall, [1.0]))
@@ -127,15 +139,14 @@ class ConfusionMatrix:
         self.iou_thres = iou_thres
 
     def process_batch(self, detections, labels):
-        """Return intersection-over-union (Jaccard index) of boxes.
-
-        Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
+        """Match detections to ground-truth labels by IoU and update the confusion matrix.
 
         Args:
-            detections (Array[N, 6]), x1, y1, x2, y2, conf, class: labels (Array[M, 5]), class, x1, y1, x2, y2
+            detections (torch.Tensor): Detections with shape (N, 6) as x1, y1, x2, y2, conf, class.
+            labels (torch.Tensor): Ground-truth labels with shape (M, 5) as class, x1, y1, x2, y2.
 
         Returns:
-            None, updates confusion matrix accordingly
+            None. Updates the confusion matrix in place.
         """
         if detections is None:
             gt_classes = labels.int()
@@ -261,10 +272,7 @@ def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7
 
 
 def bbox_ioa(box1, box2, eps=1e-7):
-    """Returns the intersection over box2 area given box1, box2.
-
-    Boxes are x1y1x2y2 box1: np.array of shape(4) box2: np.array of shape(nx4) returns: np.array of shape(n)
-    """
+    """Return the intersection over box2 area, given box1 of shape (4) and box2 of shape (n, 4) in x1y1x2y2 format."""
     # Get the coordinates of bounding boxes
     b1_x1, b1_y1, b1_x2, b1_y2 = box1
     b2_x1, b2_y1, b2_x2, b2_y2 = box2.T
