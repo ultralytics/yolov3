@@ -6,15 +6,9 @@ import random
 
 import cv2
 import numpy as np
-import torch
-import torchvision.transforms as T
-import torchvision.transforms.functional as TF
 
 from utils.general import LOGGER, check_version, colorstr, resample_segments, segment2box, xywhn2xyxy
 from utils.metrics import bbox_ioa
-
-IMAGENET_MEAN = 0.485, 0.456, 0.406  # RGB mean
-IMAGENET_STD = 0.229, 0.224, 0.225  # RGB standard deviation
 
 
 class Albumentations:
@@ -53,11 +47,6 @@ class Albumentations:
             new = self.transform(image=im, bboxes=labels[:, 1:], class_labels=labels[:, 0])  # transformed
             im, labels = new["image"], np.array([[c, *b] for c, b in zip(new["class_labels"], new["bboxes"])])
         return im, labels
-
-
-def normalize(x, mean=IMAGENET_MEAN, std=IMAGENET_STD, inplace=False):
-    """Normalizes RGB images in BCHW format using ImageNet stats; use `inplace=True` for in-place normalization."""
-    return TF.normalize(x, mean, std, inplace=inplace)
 
 
 def augment_hsv(im, hgain=0.5, sgain=0.5, vgain=0.5):
@@ -288,110 +277,3 @@ def box_candidates(box1, box2, wh_thr=2, ar_thr=100, area_thr=0.1, eps=1e-16):  
     w2, h2 = box2[2] - box2[0], box2[3] - box2[1]
     ar = np.maximum(w2 / (h2 + eps), h2 / (w2 + eps))  # aspect ratio
     return (w2 > wh_thr) & (h2 > wh_thr) & (w2 * h2 / (w1 * h1 + eps) > area_thr) & (ar < ar_thr)  # candidates
-
-
-def classify_albumentations(
-    augment=True,
-    size=224,
-    scale=(0.08, 1.0),
-    ratio=(0.75, 1.0 / 0.75),  # 0.75, 1.33
-    hflip=0.5,
-    vflip=0.0,
-    jitter=0.4,
-    mean=IMAGENET_MEAN,
-    std=IMAGENET_STD,
-    auto_aug=False,
-):
-    # YOLOv3 classification Albumentations (optional, only used if package is installed)
-    """Generates an Albumentations transform pipeline for image classification with optional augmentations."""
-    prefix = colorstr("albumentations: ")
-    try:
-        import albumentations as A
-        from albumentations.pytorch import ToTensorV2
-
-        check_version(A.__version__, "1.0.3", hard=True)  # version requirement
-        if augment:  # Resize and crop
-            T = [A.RandomResizedCrop(height=size, width=size, scale=scale, ratio=ratio)]
-            if auto_aug:
-                # TODO: implement AugMix, AutoAug & RandAug in albumentation
-                LOGGER.info(f"{prefix}auto augmentations are currently not supported")
-            else:
-                if hflip > 0:
-                    T += [A.HorizontalFlip(p=hflip)]
-                if vflip > 0:
-                    T += [A.VerticalFlip(p=vflip)]
-                if jitter > 0:
-                    color_jitter = (float(jitter),) * 3  # repeat value for brightness, contrast, saturation, 0 hue
-                    T += [A.ColorJitter(*color_jitter, 0)]
-        else:  # Use fixed crop for eval set (reproducibility)
-            T = [A.SmallestMaxSize(max_size=size), A.CenterCrop(height=size, width=size)]
-        T += [A.Normalize(mean=mean, std=std), ToTensorV2()]  # Normalize and convert to Tensor
-        LOGGER.info(prefix + ", ".join(f"{x}".replace("always_apply=False, ", "") for x in T if x.p))
-        return A.Compose(T)
-
-    except ImportError:  # package not installed, skip
-        LOGGER.warning(f"{prefix}⚠️ not found, install with `pip install albumentations` (recommended)")
-    except Exception as e:
-        LOGGER.info(f"{prefix}{e}")
-
-
-def classify_transforms(size=224):
-    """Applies classification transforms including center cropping, tensor conversion, and normalization."""
-    assert isinstance(size, int), f"ERROR: classify_transforms size {size} must be integer, not (list, tuple)"
-    # T.Compose([T.ToTensor(), T.Resize(size), T.CenterCrop(size), T.Normalize(IMAGENET_MEAN, IMAGENET_STD)])
-    return T.Compose([CenterCrop(size), ToTensor(), T.Normalize(IMAGENET_MEAN, IMAGENET_STD)])
-
-
-class LetterBox:
-    """Resizes and pads images to a specified size while maintaining aspect ratio."""
-
-    def __init__(self, size=(640, 640), auto=False, stride=32):
-        """Initialize LetterBox with a target `size` (int or tuple), optional `auto` short-side sizing, and `stride`."""
-        super().__init__()
-        self.h, self.w = (size, size) if isinstance(size, int) else size
-        self.auto = auto  # pass max size integer, automatically solve for short side using stride
-        self.stride = stride  # used with auto
-
-    def __call__(self, im):  # im = np.array HWC
-        """Resize and pad an HWC image, optionally solving the short side from `stride` when `auto` is set."""
-        imh, imw = im.shape[:2]
-        r = min(self.h / imh, self.w / imw)  # ratio of new/old
-        h, w = round(imh * r), round(imw * r)  # resized image
-        hs, ws = (math.ceil(x / self.stride) * self.stride for x in (h, w)) if self.auto else (self.h, self.w)
-        top, left = round((hs - h) / 2 - 0.1), round((ws - w) / 2 - 0.1)
-        im_out = np.full((self.h, self.w, 3), 114, dtype=im.dtype)
-        im_out[top : top + h, left : left + w] = cv2.resize(im, (w, h), interpolation=cv2.INTER_LINEAR)
-        return im_out
-
-
-class CenterCrop:
-    """Crops the center of an image to a specified size, maintaining aspect ratio."""
-
-    def __init__(self, size=640):
-        """Initialize CenterCrop with a target `size` (int for square, or (h, w) tuple)."""
-        super().__init__()
-        self.h, self.w = (size, size) if isinstance(size, int) else size
-
-    def __call__(self, im):  # im = np.array HWC
-        """Center-crop an HWC image to its largest square, then resize to the target dimensions."""
-        imh, imw = im.shape[:2]
-        m = min(imh, imw)  # min dimension
-        top, left = (imh - m) // 2, (imw - m) // 2
-        return cv2.resize(im[top : top + m, left : left + m], (self.w, self.h), interpolation=cv2.INTER_LINEAR)
-
-
-class ToTensor:
-    """Converts a BGR image in numpy format to a PyTorch tensor in RGB format, with optional half precision."""
-
-    def __init__(self, half=False):
-        """Initialize ToTensor, optionally producing half-precision (fp16) tensors when `half` is True."""
-        super().__init__()
-        self.half = half
-
-    def __call__(self, im):  # im = np.array HWC in BGR order
-        """Convert an HWC BGR numpy image to a normalized CHW RGB tensor, in fp16 if `half` was set."""
-        im = np.ascontiguousarray(im.transpose((2, 0, 1))[::-1])  # HWC to CHW -> BGR to RGB -> contiguous
-        im = torch.from_numpy(im)  # to torch
-        im = im.half() if self.half else im.float()  # uint8 to fp16/32
-        im /= 255.0  # 0-255 to 0.0-1.0
-        return im

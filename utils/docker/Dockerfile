@@ -32,7 +32,7 @@ RUN git clone https://github.com/ultralytics/yolov3 /usr/src/app
 COPY requirements.txt .
 RUN python -m pip install uv wheel
 RUN uv pip install --prefix "$(python -c 'import sys; print(sys.prefix)')" --no-cache -r requirements.txt albumentations comet gsutil notebook \
-    coremltools onnx onnx-simplifier onnxruntime 'openvino-dev>=2023.0'
+    coremltools onnx onnxruntime 'openvino-dev>=2023.0'
 
 # Set environment variables
 ENV OMP_NUM_THREADS=1

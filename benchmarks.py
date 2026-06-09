@@ -10,15 +10,11 @@ ONNX                        | `onnx`                        | yolov3-tiny.onnx
 OpenVINO                    | `openvino`                    | yolov3-tiny_openvino_model/
 TensorRT                    | `engine`                      | yolov3-tiny.engine
 CoreML                      | `coreml`                      | yolov3-tiny.mlmodel
-TensorFlow SavedModel       | `saved_model`                 | yolov3-tiny_saved_model/
-TensorFlow GraphDef         | `pb`                          | yolov3-tiny.pb
-TensorFlow Lite             | `tflite`                      | yolov3-tiny.tflite
-TensorFlow Edge TPU         | `edgetpu`                     | yolov3-tiny_edgetpu.tflite
-TensorFlow.js               | `tfjs`                        | yolov3-tiny_web_model/
+PaddlePaddle                | `paddle`                      | yolov3-tiny_paddle_model/
 
 Requirements:
-    $ pip install -r requirements.txt coremltools onnx onnx-simplifier onnxruntime openvino-dev tensorflow-cpu  # CPU
-    $ pip install -r requirements.txt coremltools onnx onnx-simplifier onnxruntime-gpu openvino-dev tensorflow  # GPU
+    $ pip install -r requirements.txt coremltools onnx onnxruntime openvino-dev  # CPU
+    $ pip install -r requirements.txt coremltools onnx onnxruntime-gpu openvino-dev  # GPU
     $ pip install -U nvidia-tensorrt --index-url https://pypi.ngc.nvidia.com  # TensorRT
 
 Usage:
@@ -81,7 +77,7 @@ def run(
     device = select_device(device)
     for i, (name, f, suffix, cpu, gpu) in export.export_formats().iterrows():  # index, (name, file, suffix, CPU, GPU)
         try:
-            assert i not in (9, 10), "inference not supported"  # Edge TPU and TF.js are unsupported
+            assert i not in (6, 7, 8, 9, 10), "TensorFlow export not supported by this repository"
             assert i != 5 or platform.system() == "Darwin", "inference only supported on macOS>=10.13"  # CoreML
             if "cpu" in device.type:
                 assert cpu, "inference not supported on CPU"
@@ -112,7 +108,6 @@ def run(
 
     # Print results
     LOGGER.info("\n")
-    parse_opt()
     notebook_init()  # print system info
     c = ["Format", "Size (MB)", "mAP50-95", "Inference time (ms)"]
     py = pd.DataFrame(y, columns=c)
@@ -120,7 +115,7 @@ def run(
     LOGGER.info(str(py))
     if hard_fail and isinstance(hard_fail, str):
         metrics = py["mAP50-95"].array  # values to compare to floor
-        floor = eval(hard_fail)  # minimum metric floor to pass, i.e. = 0.29 mAP for YOLOv3-tiny
+        floor = float(hard_fail)  # minimum metric floor to pass, i.e. = 0.29 mAP for YOLOv3-tiny
         assert all(x > floor for x in metrics if pd.notna(x)), f"HARD FAIL: mAP50-95 < floor {floor}"
     return py
 
@@ -169,7 +164,6 @@ def test(
 
     # Print results
     LOGGER.info("\n")
-    parse_opt()
     notebook_init()  # print system info
     py = pd.DataFrame(y, columns=["Format", "Export"])
     LOGGER.info(f"\nExports complete ({time.time() - t:.2f}s)")

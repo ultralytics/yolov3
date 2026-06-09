@@ -583,9 +583,6 @@ def main(opt):
         $ python val.py --task speed --data coco.yaml --weights yolov3.pt --batch-size 1
         ```
 
-    Links:
-        For more information, visit the official repository: https://github.com/ultralytics/ultralytics
-
     Notes:
         This function orchestrates different tasks based on the user input provided through command-line arguments. It supports tasks
         like `train`, `val`, `test`, `speed`, and `study`. Depending on the task, it validates the model on a dataset, performs speed

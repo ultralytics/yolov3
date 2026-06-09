@@ -76,16 +76,10 @@ class Detect(nn.Module):
                 if self.dynamic or self.grid[i].shape[2:4] != x[i].shape[2:4]:
                     self.grid[i], self.anchor_grid[i] = self._make_grid(nx, ny, i)
 
-                if isinstance(self, Segment):  # (boxes + masks)
-                    xy, wh, conf, mask = x[i].split((2, 2, self.nc + 1, self.no - self.nc - 5), 4)
-                    xy = (xy.sigmoid() * 2 + self.grid[i]) * self.stride[i]  # xy
-                    wh = (wh.sigmoid() * 2) ** 2 * self.anchor_grid[i]  # wh
-                    y = torch.cat((xy, wh, conf.sigmoid(), mask), 4)
-                else:  # Detect (boxes only)
-                    xy, wh, conf = x[i].sigmoid().split((2, 2, self.nc + 1), 4)
-                    xy = (xy * 2 + self.grid[i]) * self.stride[i]  # xy
-                    wh = (wh * 2) ** 2 * self.anchor_grid[i]  # wh
-                    y = torch.cat((xy, wh, conf), 4)
+                xy, wh, conf = x[i].sigmoid().split((2, 2, self.nc + 1), 4)
+                xy = (xy * 2 + self.grid[i]) * self.stride[i]  # xy
+                wh = (wh * 2) ** 2 * self.anchor_grid[i]  # wh
+                y = torch.cat((xy, wh, conf), 4)
                 z.append(y.view(bs, self.na * nx * ny, self.no))
 
         return x if self.training else (torch.cat(z, 1),) if self.export else (torch.cat(z, 1), x)
@@ -102,30 +96,6 @@ class Detect(nn.Module):
         grid = torch.stack((xv, yv), 2).expand(shape) - 0.5  # add grid offset, i.e. y = 2.0 * x - 0.5
         anchor_grid = (self.anchors[i] * self.stride[i]).view((1, self.na, 1, 1, 2)).expand(shape)
         return grid, anchor_grid
-
-
-class Segment(Detect):
-    """YOLOv3 Segment head for segmentation models, adding mask prediction and prototyping to detection."""
-
-    def __init__(self, nc=80, anchors=(), nm=32, npr=256, ch=(), inplace=True):
-        """Initializes the YOLOv3 segment head with customizable class count, anchors, masks, protos, channels, and
-        inplace option.
-        """
-        super().__init__(nc, anchors, ch, inplace)
-        self.nm = nm  # number of masks
-        self.npr = npr  # number of protos
-        self.no = 5 + nc + self.nm  # number of outputs per anchor
-        self.m = nn.ModuleList(nn.Conv2d(x, self.no * self.na, 1) for x in ch)  # output conv
-        self.proto = Proto(ch[0], self.npr, self.nm)  # protos
-        self.detect = Detect.forward
-
-    def forward(self, x):
-        """Executes forward pass, returning predictions and protos, with different outputs based on training and export
-        states.
-        """
-        p = self.proto(x[0])
-        x = self.detect(self, x)
-        return (x, p) if self.training else (x[0], p) if self.export else (x[0], p, x[1])
 
 
 class BaseModel(nn.Module):
@@ -184,7 +154,7 @@ class BaseModel(nn.Module):
         """Applies `to()`, `cpu()`, `cuda()`, `half()` to model tensors, excluding parameters or registered buffers."""
         self = super()._apply(fn)
         m = self.model[-1]  # Detect()
-        if isinstance(m, (Detect, Segment)):
+        if isinstance(m, Detect):
             m.stride = fn(m.stride)
             m.grid = list(map(fn, m.grid))
             if isinstance(m.anchor_grid, list):
@@ -221,15 +191,10 @@ class DetectionModel(BaseModel):
 
         # Build strides, anchors
         m = self.model[-1]  # Detect()
-        if isinstance(m, (Detect, Segment)):
+        if isinstance(m, Detect):
             s = 256  # 2x min stride
             m.inplace = self.inplace
-
-            def forward(x):
-                """Passes the input 'x' through the model and returns the processed output."""
-                return self.forward(x)[0] if isinstance(m, Segment) else self.forward(x)
-
-            m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
+            m.stride = torch.tensor([s / x.shape[-2] for x in self.forward(torch.zeros(1, ch, s, s))])  # forward
             check_anchor_order(m)
             m.anchors /= m.stride.view(-1, 1, 1)
             self.stride = m.stride
@@ -305,42 +270,6 @@ class DetectionModel(BaseModel):
 Model = DetectionModel  # retain YOLOv3 'Model' class for backwards compatibility
 
 
-class SegmentationModel(DetectionModel):
-    """Implements a YOLOv3-based segmentation model with customizable configuration, channels, classes, and anchors."""
-
-    def __init__(self, cfg="yolov3-tiny.yaml", ch=3, nc=None, anchors=None):
-        """Initializes a SegmentationModel with optional configuration, channel, class count, and anchors parameters."""
-        super().__init__(cfg, ch, nc, anchors)
-
-
-class ClassificationModel(BaseModel):
-    """Implements a YOLOv3-based image classification model with configurable architecture and class count."""
-
-    def __init__(self, cfg=None, model=None, nc=1000, cutoff=10):  # yaml, model, number of classes, cutoff index
-        """Initializes a ClassificationModel from a detection model or YAML, with configurable classes and cutoff."""
-        super().__init__()
-        self._from_detection_model(model, nc, cutoff) if model is not None else self._from_yaml(cfg)
-
-    def _from_detection_model(self, model, nc=1000, cutoff=10):
-        """Initializes a classification model from a YOLOv3 detection model, configuring classes and cutoff."""
-        if isinstance(model, DetectMultiBackend):
-            model = model.model  # unwrap DetectMultiBackend
-        model.model = model.model[:cutoff]  # backbone
-        m = model.model[-1]  # last layer
-        ch = m.conv.in_channels if hasattr(m, "conv") else m.cv1.conv.in_channels  # ch into module
-        c = Classify(ch, nc)  # Classify()
-        c.i, c.f, c.type = m.i, m.f, "models.common.Classify"  # index, from, type
-        model.model[-1] = c  # replace
-        self.model = model.model
-        self.stride = model.stride
-        self.save = []
-        self.nc = nc
-
-    def _from_yaml(self, cfg):
-        """Creates a YOLOv3 classification model from a YAML file configuration."""
-        self.model = None
-
-
 def parse_model(d, ch):  # model_dict, input_channels(3)
     """Parse a YOLOv3 model dict into an `nn.Sequential` module, scaling depth and width per the config.
 
@@ -402,12 +331,10 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
         # TODO: channel, gw, gd
-        elif m in {Detect, Segment}:
+        elif m is Detect:
             args.append([ch[x] for x in f])
             if isinstance(args[1], int):  # number of anchors
                 args[1] = [list(range(args[1] * 2))] * len(f)
-            if m is Segment:
-                args[3] = make_divisible(args[3] * gw, 8)
         elif m is Contract:
             c2 = ch[f] * args[0] ** 2
         elif m is Expand:

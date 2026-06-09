@@ -21,7 +21,7 @@ RUN apt update \
 COPY requirements.txt .
 RUN python3 -m pip install uv wheel
 RUN uv pip install --system --no-cache -r requirements.txt albumentations gsutil notebook \
-    coremltools onnx onnx-simplifier onnxruntime 'openvino-dev>=2023.0' \
+    coremltools onnx onnxruntime 'openvino-dev>=2023.0' \
     --extra-index-url https://download.pytorch.org/whl/cpu \
     --index-strategy unsafe-best-match
 

@@ -122,7 +122,7 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3.yaml --b
 python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml --batch-size 16
 ```
 
-使用 `python val.py --weights yolov3.pt --data coco.yaml` 验证精度，并使用 `python export.py --weights yolov3.pt --include onnx` 导出为其他格式（TorchScript、ONNX、OpenVINO、TensorRT、CoreML、TFLite 等）。
+使用 `python val.py --weights yolov3.pt --data coco.yaml` 验证精度，并使用 `python export.py --weights yolov3.pt --include onnx` 导出为其他格式（TorchScript、ONNX、OpenVINO、TensorRT、CoreML、PaddlePaddle）。
 
 </details>
 
@@ -131,14 +131,14 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml
 
 以下指南基于 Ultralytics 通用训练框架，同样适用于 YOLOv3：
 
-- [训练自定义数据](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data/) — 在自有数据集上训练。
+- [训练自定义数据](https://docs.ultralytics.com/modes/train/) — 在自有数据集上训练。
 - [最佳训练技巧](https://docs.ultralytics.com/guides/model-training-tips/) — 充分发挥训练效果。
 - [多 GPU 训练](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training/) — 跨 GPU 扩展训练。
 - [PyTorch Hub 加载](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading/) — 以编程方式加载模型。
-- [模型导出](https://docs.ultralytics.com/yolov5/tutorials/model_export/) — 部署到 ONNX、TensorRT、CoreML、TFLite 等。
+- [模型导出](https://docs.ultralytics.com/modes/export/) — 部署到 ONNX、TensorRT、CoreML 等。
 - [测试时增强 (TTA)](https://docs.ultralytics.com/yolov5/tutorials/test_time_augmentation/) — 提升推理精度。
 - [模型集成](https://docs.ultralytics.com/yolov5/tutorials/model_ensembling/) — 融合多个模型以获得更好结果。
-- [超参数进化](https://docs.ultralytics.com/yolov5/tutorials/hyperparameter_evolution/) — 自动调优超参数。
+- [超参数调优](https://docs.ultralytics.com/guides/hyperparameter-tuning/) — 自动调优超参数。
 - [冻结层迁移学习](https://docs.ultralytics.com/yolov5/tutorials/transfer_learning_with_frozen_layers/) — 高效迁移预训练模型。
 
 </details>

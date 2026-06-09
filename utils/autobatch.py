@@ -5,6 +5,7 @@ from copy import deepcopy
 
 import numpy as np
 import torch
+from ultralytics.utils.torch_utils import autocast
 
 from utils.general import LOGGER, colorstr
 from utils.torch_utils import profile
@@ -12,7 +13,7 @@ from utils.torch_utils import profile
 
 def check_train_batch_size(model, imgsz=640, amp=True):
     """Compute the optimal training batch size for a YOLOv3 model under AMP autocast at the given image size."""
-    with torch.cuda.amp.autocast(amp):
+    with autocast(amp):
         return autobatch(deepcopy(model).train(), imgsz)  # compute optimal batch size
 
 

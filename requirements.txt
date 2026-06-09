@@ -6,7 +6,7 @@
 gitpython>=3.1.30            # Git repo interaction for training/versioning
 matplotlib>=3.5.0            # Plotting results and graphs
 numpy>=1.23.5                # Fundamental for array/matrix operations
-opencv-python>=4.1.1         # Image/video processing
+opencv-python>=4.6.0         # Image/video processing
 packaging>=20.0             # Version parsing for utils/general.py and loggers
 Pillow>=10.3.0               # Image reading/writing support
 psutil>=5.9.0                # System monitoring (RAM, CPU, etc.)
@@ -18,7 +18,6 @@ torch>=1.8.0                 # Core PyTorch for training/inference
 torchvision>=0.9.0           # Torch utilities for vision (transforms, datasets)
 tqdm>=4.66.3                 # Progress bar in CLI
 ultralytics>=8.4.58          # YOLO framework library (models, training, utils)
-# protobuf<=3.20.1           # For ONNX/TensorFlow export compatibility
 
 # Logging ---------------------------------------------------------------------
 # tensorboard>=2.4.1         # Visual logging (scalars, images)
@@ -36,8 +35,6 @@ seaborn>=0.11.0              # Statistical data visualization (confusion matrix,
 # nvidia-pyindex             # Required for installing NVIDIA TensorRT
 # nvidia-tensorrt            # TensorRT export and inference
 # scikit-learn<=1.1.2        # Used in CoreML quantization (used in older code)
-# tensorflow>=2.4.0          # TensorFlow export
-# tensorflowjs>=3.9.0        # TensorFlow.js export
 # openvino-dev>=2023.0       # Intel OpenVINO export
 
 # Deploy ----------------------------------------------------------------------

@@ -16,8 +16,8 @@ def is_url(url, check=True):
         url = str(url)
         result = urllib.parse.urlparse(url)
         assert all([result.scheme, result.netloc])  # check if is url
-        return (urllib.request.urlopen(url).getcode() == 200) if check else True  # check if exists online
-    except (AssertionError, urllib.request.HTTPError):
+        return (urllib.request.urlopen(url, timeout=5).getcode() == 200) if check else True  # check if exists online
+    except Exception:
         return False
 
 
@@ -29,7 +29,7 @@ def gsutil_getsize(url=""):
 
 def url_getsize(url="https://ultralytics.com/images/bus.jpg"):
     """Fetches file size in bytes from a URL using an HTTP HEAD request; defaults to -1 if not found."""
-    response = requests.head(url, allow_redirects=True)
+    response = requests.head(url, allow_redirects=True, timeout=10)
     return int(response.headers.get("content-length", -1))
 
 
@@ -77,6 +77,7 @@ def safe_download(file, url, url2=None, min_bytes=1e0, error_msg=""):
         LOGGER.info("")
 
 
+# Keep local (do not dedup): pinned to YOLOv3 release assets
 def attempt_download(file, repo="ultralytics/yolov3", release="v9.6.0"):
     """Download a file from a URL or a GitHub release asset if it is not already present locally."""
     from utils.general import LOGGER
@@ -85,7 +86,7 @@ def attempt_download(file, repo="ultralytics/yolov3", release="v9.6.0"):
         """Returns GitHub tag and assets for a given repository and version from the GitHub API."""
         if version != "latest":
             version = f"tags/{version}"  # i.e. tags/v7.0
-        response = requests.get(f"https://api.github.com/repos/{repository}/releases/{version}").json()  # github api
+        response = requests.get(f"https://api.github.com/repos/{repository}/releases/{version}", timeout=10).json()
         return response["tag_name"], [x["name"] for x in response["assets"]]  # tag, assets
 
     file = Path(str(file).strip().replace("'", ""))

@@ -8,7 +8,6 @@ import glob
 import inspect
 import logging
 import logging.config
-import math
 import os
 import platform
 import random
@@ -32,14 +31,21 @@ import pandas as pd
 import torch
 import torchvision
 import yaml
-from packaging.version import parse
 from ultralytics.utils import colorstr
 from ultralytics.utils.checks import check_requirements as check_requirements_ultralytics
+from ultralytics.utils.checks import check_version as check_version_ultralytics
 from ultralytics.utils.files import file_date as file_date
 from ultralytics.utils.files import file_size as file_size
+from ultralytics.utils.files import increment_path as increment_path_ultralytics
+from ultralytics.utils.ops import clip_boxes as clip_boxes
 from ultralytics.utils.ops import make_divisible
+from ultralytics.utils.ops import xywh2xyxy as xywh2xyxy
+from ultralytics.utils.ops import xywhn2xyxy as xywhn2xyxy
+from ultralytics.utils.ops import xyxy2xywh as xyxy2xywh
+from ultralytics.utils.ops import xyxy2xywhn as xyxy2xywhn
 from ultralytics.utils.patches import torch_load
 from ultralytics.utils.torch_utils import intersect_dicts as intersect_dicts
+from ultralytics.utils.torch_utils import one_cycle as one_cycle
 
 from utils import TryExcept, emojis
 from utils.downloads import curl_download, gsutil_getsize
@@ -62,7 +68,7 @@ np.set_printoptions(linewidth=320, formatter={"float_kind": "{:11.5g}".format}) 
 pd.options.display.max_columns = 10
 cv2.setNumThreads(0)  # prevent OpenCV from multithreading (incompatible with PyTorch DataLoader)
 os.environ["NUMEXPR_MAX_THREADS"] = str(NUM_THREADS)  # NumExpr max threads
-os.environ["OMP_NUM_THREADS"] = "1" if platform.system() == "darwin" else str(NUM_THREADS)  # OpenMP (PyTorch and SciPy)
+os.environ["OMP_NUM_THREADS"] = "1" if platform.system() == "Darwin" else str(NUM_THREADS)  # OpenMP (PyTorch and SciPy)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # suppress verbose TF compiler warnings in Colab
 
 
@@ -280,6 +286,7 @@ def print_args(args: dict | None = None, show_file=True, show_func=False):
     LOGGER.info(colorstr(s) + ", ".join(f"{k}={v}" for k, v in args.items()))
 
 
+# Keep local (do not dedup): stricter deterministic semantics than ultralytics init_seeds (no warn_only fallback)
 def init_seeds(seed=0, deterministic=False):
     """Initializes RNG seeds for reproducibility; `seed`: RNG seed, `deterministic`: enforces deterministic behavior if
     True.
@@ -393,15 +400,8 @@ def check_python(minimum="3.8.0"):
 
 
 def check_version(current="0.0.0", minimum="0.0.0", name="version ", pinned=False, hard=False, verbose=False):
-    """Compares current and minimum version requirements, optionally enforcing minimum version and logging warnings."""
-    current, minimum = (parse(x) for x in (current, minimum))
-    result = (current == minimum) if pinned else (current >= minimum)  # bool
-    s = f"WARNING ⚠️ {name}{minimum} is required by YOLOv3, but {name}{current} is currently installed"  # string
-    if hard:
-        assert result, emojis(s)  # assert min requirements met
-    if verbose and not result:
-        LOGGER.warning(s)
-    return result
+    """Check `current` against a `minimum` version (exact match if `pinned`) with the installed Ultralytics checker."""
+    return check_version_ultralytics(current, f"=={minimum}" if pinned else f">={minimum}", name, hard, verbose)
 
 
 def check_img_size(imgsz, s=32, floor=0):
@@ -539,14 +539,15 @@ def check_dataset(data, autodownload=True):
             t = time.time()
             if s.startswith("http") and s.endswith(".zip"):  # URL
                 download(s, dir=DATASETS_DIR, curl=True)
-                r = None  # success
+                r = 0  # success
             elif s.startswith("bash "):  # bash script
                 LOGGER.info(f"Running {s} ...")
-                r = subprocess.run(s, shell=True)
+                r = subprocess.run(s, shell=True).returncode
             else:  # python script
-                r = exec(s, {"yaml": data})  # return None
+                exec(s, {"yaml": data})
+                r = 0  # exec returns None, treat completion without exception as success
             dt = f"({round(time.time() - t, 1)}s)"
-            s = f"success ✅ {dt}, saved to {colorstr('bold', DATASETS_DIR)}" if r in (0, None) else f"failure {dt} ❌"
+            s = f"success ✅ {dt}, saved to {colorstr('bold', DATASETS_DIR)}" if r == 0 else f"failure {dt} ❌"
             LOGGER.info(f"Dataset download {s}")
     check_font("Arial.ttf" if is_ascii(data["names"]) else "Arial.Unicode.ttf", progress=True)  # download fonts
     return data  # dictionary
@@ -575,7 +576,7 @@ def check_amp(model):
         LOGGER.info(f"{prefix}checks passed ✅")
         return True
     except Exception:
-        help_url = "https://github.com/ultralytics/yolov5/issues/7908"
+        help_url = "https://docs.ultralytics.com/guides/yolo-common-issues/"
         LOGGER.warning(f"{prefix}checks failed ❌, disabling Automatic Mixed Precision. See {help_url}")
         return False
 
@@ -661,14 +662,10 @@ def download(url, dir=".", unzip=True, delete=True, curl=False, threads=1, retry
             download_one(u, dir)
 
 
+# Keep local (do not dedup): regex differs from ultralytics clean_str (strips ´, keeps backtick)
 def clean_str(s):
     """Cleans a string by replacing special characters with underscores, e.g., 'test@string!' to 'test_string_'."""
     return re.sub(pattern="[|@#!¡·$€%&()=?¿^*;:,¨´><+]", repl="_", string=s)
-
-
-def one_cycle(y1=0.0, y2=1.0, steps=100):
-    """Return a function mapping step x to a sinusoidal (1 - cos) ramp from y1 to y2 over `steps`."""
-    return lambda x: ((1 - math.cos(x * math.pi / steps)) / 2) * (y2 - y1) + y1
 
 
 def labels_to_class_weights(labels, nc=80):
@@ -792,48 +789,7 @@ def coco80_to_coco91_class():  # converts 80-index (val2014) to 91-index (paper)
     ]
 
 
-def xyxy2xywh(x):
-    """Converts nx4 bounding boxes from corners [x1, y1, x2, y2] to center format [x, y, w, h]."""
-    y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
-    y[..., 0] = (x[..., 0] + x[..., 2]) / 2  # x center
-    y[..., 1] = (x[..., 1] + x[..., 3]) / 2  # y center
-    y[..., 2] = x[..., 2] - x[..., 0]  # width
-    y[..., 3] = x[..., 3] - x[..., 1]  # height
-    return y
-
-
-def xywh2xyxy(x):
-    """Converts bbox format from [x, y, w, h] to [x1, y1, x2, y2], supporting torch.Tensor and np.ndarray."""
-    y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
-    y[..., 0] = x[..., 0] - x[..., 2] / 2  # top left x
-    y[..., 1] = x[..., 1] - x[..., 3] / 2  # top left y
-    y[..., 2] = x[..., 0] + x[..., 2] / 2  # bottom right x
-    y[..., 3] = x[..., 1] + x[..., 3] / 2  # bottom right y
-    return y
-
-
-def xywhn2xyxy(x, w=640, h=640, padw=0, padh=0):
-    """Converts boxes from normalized [x, y, w, h] to [x1, y1, x2, y2] format, applies padding."""
-    y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
-    y[..., 0] = w * (x[..., 0] - x[..., 2] / 2) + padw  # top left x
-    y[..., 1] = h * (x[..., 1] - x[..., 3] / 2) + padh  # top left y
-    y[..., 2] = w * (x[..., 0] + x[..., 2] / 2) + padw  # bottom right x
-    y[..., 3] = h * (x[..., 1] + x[..., 3] / 2) + padh  # bottom right y
-    return y
-
-
-def xyxy2xywhn(x, w=640, h=640, clip=False, eps=0.0):
-    """Converts bounding boxes from [x1, y1, x2, y2] format to normalized [x, y, w, h] format."""
-    if clip:
-        clip_boxes(x, (h - eps, w - eps))  # warning: inplace clip
-    y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
-    y[..., 0] = ((x[..., 0] + x[..., 2]) / 2) / w  # x center
-    y[..., 1] = ((x[..., 1] + x[..., 3]) / 2) / h  # y center
-    y[..., 2] = (x[..., 2] - x[..., 0]) / w  # width
-    y[..., 3] = (x[..., 3] - x[..., 1]) / h  # height
-    return y
-
-
+# Keep local (do not dedup): no ultralytics equivalent
 def xyn2xy(x, w=640, h=640, padw=0, padh=0):
     """Converts normalized segments to pixel segments, shape (n,2), adjusting for width `w`, height `h`, and padding."""
     y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
@@ -874,6 +830,7 @@ def resample_segments(segments, n=1000):
     return segments
 
 
+# Keep local (do not dedup): ultralytics scale_boxes sub-pixel rounding differs and shifts mAP
 def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
     """Rescales bounding boxes from one image shape to another, optionally with ratio and padding adjustments."""
     if ratio_pad is None:  # calculate from img0_shape
@@ -911,18 +868,6 @@ def scale_segments(img1_shape, segments, img0_shape, ratio_pad=None, normalize=F
     return segments
 
 
-def clip_boxes(boxes, shape):
-    """Clips bounding boxes to within the specified image shape; supports both torch.Tensor and np.array."""
-    if isinstance(boxes, torch.Tensor):  # faster individually
-        boxes[..., 0].clamp_(0, shape[1])  # x1
-        boxes[..., 1].clamp_(0, shape[0])  # y1
-        boxes[..., 2].clamp_(0, shape[1])  # x2
-        boxes[..., 3].clamp_(0, shape[0])  # y2
-    else:  # np.array (faster grouped)
-        boxes[..., [0, 2]] = boxes[..., [0, 2]].clip(0, shape[1])  # x1, x2
-        boxes[..., [1, 3]] = boxes[..., [1, 3]].clip(0, shape[0])  # y1, y2
-
-
 def clip_segments(segments, shape):
     """Clips segments to within image shape (height, width), supporting torch.Tensor and np.array inputs."""
     if isinstance(segments, torch.Tensor):  # faster individually
@@ -933,6 +878,7 @@ def clip_segments(segments, shape):
         segments[:, 1] = segments[:, 1].clip(0, shape[0])  # y
 
 
+# Keep local (do not dedup): anchor-based YOLOv3 head has an objectness channel; ultralytics NMS is anchor-free
 def non_max_suppression(
     prediction,
     conf_thres=0.25,
@@ -1056,6 +1002,7 @@ def non_max_suppression(
     return output
 
 
+# Keep local (do not dedup): tied to YOLOv3 checkpoint format
 def strip_optimizer(f="best.pt", s=""):  # from utils.general import *; strip_optimizer()
     """Strips optimizer from a checkpoint file 'f', optionally saving as 's', to finalize training."""
     x = torch_load(f, map_location=torch.device("cpu"))
@@ -1163,42 +1110,8 @@ def apply_classifier(x, model, img, im0):
 
 
 def increment_path(path, exist_ok=False, sep="", mkdir=False):
-    """Increment a file or directory path, e.g. runs/exp -> runs/exp2, optionally creating the directory.
-
-    Args:
-        path (str | Path): Base path to increment.
-        exist_ok (bool): If True, return the path unchanged without incrementing.
-        sep (str): Separator inserted between the path and the increment number.
-        mkdir (bool): If True, create the resulting directory.
-
-    Returns:
-        (Path): The (possibly incremented) path.
-
-    Notes:
-        Not thread-safe.
-    """
-    path = Path(path)  # os-agnostic
-    if path.exists() and not exist_ok:
-        path, suffix = (path.with_suffix(""), path.suffix) if path.is_file() else (path, "")
-
-        # Method 1
-        for n in range(2, 9999):
-            p = f"{path}{sep}{n}{suffix}"  # increment path
-            if not os.path.exists(p):  #
-                break
-        path = Path(p)
-
-        # Method 2 (deprecated)
-        # dirs = glob.glob(f"{path}{sep}*")  # similar paths
-        # matches = [re.search(rf"{path.stem}{sep}(\d+)", d) for d in dirs]
-        # i = [int(m.groups()[0]) for m in matches if m]  # indices
-        # n = max(i) + 1 if i else 2  # increment number
-        # path = Path(f"{path}{sep}{n}{suffix}")  # increment path
-
-    if mkdir:
-        path.mkdir(parents=True, exist_ok=True)  # make directory
-
-    return path
+    """Increment a path with the installed Ultralytics helper, keeping the YOLOv3 default `sep=''` (runs/exp2)."""
+    return increment_path_ultralytics(path, exist_ok=exist_ok, sep=sep, mkdir=mkdir)
 
 
 # OpenCV Multilanguage-friendly functions
@@ -1229,7 +1142,7 @@ def imwrite(filename, img):
 
 
 def imshow(path, im):
-    """Displays an image; accepts a path (str) and image data (ndarray) as arguments."""
+    """Display image `im` (ndarray) in an OpenCV window named `path`, encoding the name for non-ASCII support."""
     imshow_(path.encode("unicode_escape").decode(), im)
 
 
