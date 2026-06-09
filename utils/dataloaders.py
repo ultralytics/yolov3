@@ -20,7 +20,6 @@ import numpy as np
 import psutil
 import torch
 import torch.nn.functional as F
-import torchvision
 import yaml
 from PIL import ExifTags, Image, ImageOps
 from torch.utils.data import DataLoader, Dataset, dataloader, distributed
@@ -29,8 +28,6 @@ from tqdm import tqdm
 from utils.augmentations import (
     Albumentations,
     augment_hsv,
-    classify_albumentations,
-    classify_transforms,
     copy_paste,
     letterbox,
     mixup,
@@ -58,7 +55,7 @@ from utils.general import (
 from utils.torch_utils import torch_distributed_zero_first
 
 # Parameters
-HELP_URL = "See https://docs.ultralytics.com/yolov5/tutorials/train_custom_data"
+HELP_URL = "See https://docs.ultralytics.com/datasets/ for dataset formatting guidance"
 IMG_FORMATS = "bmp", "dng", "jpeg", "jpg", "mpo", "png", "tif", "tiff", "webp", "pfm"  # include image suffixes
 VID_FORMATS = "asf", "avi", "gif", "m4v", "mkv", "mov", "mp4", "mpeg", "mpg", "ts", "wmv"  # include video suffixes
 LOCAL_RANK = int(os.getenv("LOCAL_RANK", -1))  # https://pytorch.org/docs/stable/elastic/run.html
@@ -409,12 +406,10 @@ class LoadStreams:
             # Start thread to read frames from video stream
             st = f"{i + 1}/{n}: {s}... "
             if urlparse(s).hostname in ("www.youtube.com", "youtube.com", "youtu.be"):  # if source is YouTube video
-                # YouTube format i.e. 'https://www.youtube.com/watch?v=LNwODJXcvt4' or 'https://youtu.be/LNwODJXcvt4'
-                check_requirements(("pafy", "youtube_dl==2020.12.2"))
-                import pafy
-
-                s = pafy.new(s).getbest(preftype="mp4").url  # YouTube URL
-            s = eval(s) if s.isnumeric() else s  # i.e. s = '0' local webcam
+                raise NotImplementedError(
+                    f"{st}YouTube sources are not supported. Download the video locally and pass the file path instead."
+                )
+            s = int(s) if s.isnumeric() else s  # i.e. s = '0' local webcam
             if s == 0:
                 assert not is_colab(), "--source 0 webcam unsupported on Colab. Rerun command in a local environment."
                 assert not is_kaggle(), "--source 0 webcam unsupported on Kaggle. Rerun command in a local environment."
@@ -728,7 +723,7 @@ class LoadImagesAndLabels(Dataset):
         index = self.indices[index]  # linear, shuffled, or image_weights
 
         hyp = self.hyp
-        if mosaic := self.mosaic and random.random() < hyp["mosaic"]:
+        if self.mosaic and random.random() < hyp["mosaic"]:
             # Load mosaic
             img, labels = self.load_mosaic(index)
             shapes = None
@@ -1256,68 +1251,3 @@ class HUBDatasetStats:
                 pass
         print(f"Done. All images saved to {self.im_dir}")
         return self.im_dir
-
-
-# Classification dataloaders -------------------------------------------------------------------------------------------
-class ClassificationDataset(torchvision.datasets.ImageFolder):
-    """YOLOv3 classification dataset that applies torchvision transforms, or Albumentations transforms if installed.
-
-    Args:
-        root (str): Dataset path passed to `torchvision.datasets.ImageFolder`.
-        augment (bool): Apply training augmentations.
-        imgsz (int): Target image size.
-        cache (bool | str): Cache images in RAM (`True` or `"ram"`) or on disk (`"disk"`).
-    """
-
-    def __init__(self, root, augment, imgsz, cache=False):
-        """Initialize the classification dataset with optional augmentation, resizing, and RAM/disk caching."""
-        super().__init__(root=root)
-        self.torch_transforms = classify_transforms(imgsz)
-        self.album_transforms = classify_albumentations(augment, imgsz) if augment else None
-        self.cache_ram = cache is True or cache == "ram"
-        self.cache_disk = cache == "disk"
-        self.samples = [[*list(x), Path(x[0]).with_suffix(".npy"), None] for x in self.samples]  # file, index, npy, im
-
-    def __getitem__(self, i):
-        """Fetches the item at index `i`, applies caching and transformations, and returns image-sample and index."""
-        f, j, fn, im = self.samples[i]  # filename, index, filename.with_suffix('.npy'), image
-        if self.cache_ram and im is None:
-            im = self.samples[i][3] = cv2.imread(f)
-        elif self.cache_disk:
-            if not fn.exists():  # load npy
-                np.save(fn.as_posix(), cv2.imread(f))
-            im = np.load(fn)
-        else:  # read image
-            im = cv2.imread(f)  # BGR
-        if self.album_transforms:
-            sample = self.album_transforms(image=cv2.cvtColor(im, cv2.COLOR_BGR2RGB))["image"]
-        else:
-            sample = self.torch_transforms(im)
-        return sample, j
-
-
-def create_classification_dataloader(
-    path, imgsz=224, batch_size=16, augment=True, cache=False, rank=-1, workers=8, shuffle=True
-):
-    # Returns Dataloader object to be used with YOLOv3 Classifier
-    """Creates a DataLoader for image classification tasks with options for augmentation, caching, and distributed
-    training.
-    """
-    with torch_distributed_zero_first(rank):  # init dataset *.cache only once if DDP
-        dataset = ClassificationDataset(root=path, imgsz=imgsz, augment=augment, cache=cache)
-    batch_size = min(batch_size, len(dataset))
-    nd = torch.cuda.device_count()
-    nw = min([os.cpu_count() // max(nd, 1), batch_size if batch_size > 1 else 0, workers])
-    sampler = None if rank == -1 else distributed.DistributedSampler(dataset, shuffle=shuffle)
-    generator = torch.Generator()
-    generator.manual_seed(6148914691236517205 + RANK)
-    return InfiniteDataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=shuffle and sampler is None,
-        num_workers=nw,
-        sampler=sampler,
-        pin_memory=PIN_MEMORY,
-        worker_init_fn=seed_worker,
-        generator=generator,
-    )  # or DataLoader(persistent_workers=True)

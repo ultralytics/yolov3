@@ -40,7 +40,7 @@ class WandbLogger:
     By providing additional command line arguments to train.py, datasets, models and predictions can also be logged.
 
     For more on how this logger is used, see the Weights & Biases documentation:
-    https://docs.wandb.com/guides/integrations/yolov5
+    https://docs.wandb.ai/guides/integrations/yolov5
     """
 
     def __init__(self, opt, run_id=None, job_type="Training"):

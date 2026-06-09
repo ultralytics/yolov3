@@ -20,14 +20,13 @@ import requests
 import torch
 import torch.nn as nn
 from PIL import Image
-from torch.cuda import amp
 from ultralytics.utils.plotting import Annotator, colors, save_one_box
+from ultralytics.utils.torch_utils import autocast
 
 from utils import TryExcept
 from utils.dataloaders import exif_transpose, letterbox
 from utils.general import (
     LOGGER,
-    ROOT,
     Profile,
     check_requirements,
     check_suffix,
@@ -431,6 +430,7 @@ class Concat(nn.Module):
         return torch.cat(x, self.d)
 
 
+# Keep local (do not dedup): ultralytics AutoBackend is bound to the anchor-free head and output layout
 class DetectMultiBackend(nn.Module):
     """YOLOv3 multi-backend class for inference on frameworks like PyTorch, ONNX, TensorRT, and more."""
 
@@ -638,8 +638,6 @@ class DetectMultiBackend(nn.Module):
         # class names
         if "names" not in locals():
             names = yaml_load(data)["names"] if data else {i: f"class{i}" for i in range(999)}
-        if names[0] == "n01440764" and len(names) == 1000:  # ImageNet
-            names = yaml_load(ROOT / "data/ImageNet.yaml")["names"]  # human-readable names
 
         self.__dict__.update(locals())  # assign all variables to self
 
@@ -825,9 +823,9 @@ class AutoShape(nn.Module):
             if isinstance(size, int):  # expand
                 size = (size, size)
             p = next(self.model.parameters()) if self.pt else torch.empty(1, device=self.model.device)  # param
-            autocast = self.amp and (p.device.type != "cpu")  # Automatic Mixed Precision (AMP) inference
+            use_amp = self.amp and (p.device.type != "cpu")  # Automatic Mixed Precision (AMP) inference
             if isinstance(ims, torch.Tensor):  # torch
-                with amp.autocast(autocast):
+                with autocast(use_amp):
                     return self.model(ims.to(p.device).type_as(p), augment=augment)  # inference
 
             # Pre-process
@@ -836,7 +834,8 @@ class AutoShape(nn.Module):
             for i, im in enumerate(ims):
                 f = f"image{i}"  # filename
                 if isinstance(im, (str, Path)):  # filename or uri
-                    im, f = Image.open(requests.get(im, stream=True).raw if str(im).startswith("http") else im), im
+                    data = requests.get(im, stream=True, timeout=10).raw if str(im).startswith("http") else im
+                    im, f = Image.open(data), im
                     im = np.asarray(exif_transpose(im))
                 elif isinstance(im, Image.Image):  # PIL Image
                     im, f = np.asarray(exif_transpose(im)), getattr(im, "filename", f) or f
@@ -854,7 +853,7 @@ class AutoShape(nn.Module):
             x = np.ascontiguousarray(np.array(x).transpose((0, 3, 1, 2)))  # stack and BHWC to BCHW
             x = torch.from_numpy(x).to(p.device).type_as(p) / 255  # uint8 to fp16/32
 
-        with amp.autocast(autocast):
+        with autocast(use_amp):
             # Inference
             with dt[1]:
                 y = self.model(x, augment=augment)  # forward
@@ -892,7 +891,7 @@ class Detections:
         self.files = files  # image filenames
         self.times = times  # profiling times
         self.xyxy = pred  # xyxy pixels
-        self.xywh = [xyxy2xywh(x) for x in pred]  # xywh pixels
+        self.xywh = [torch.cat((xyxy2xywh(x[:, :4]), x[:, 4:]), 1) for x in pred]  # xywh pixels
         self.xyxyn = [x / g for x, g in zip(self.xyxy, gn)]  # xyxy normalized
         self.xywhn = [x / g for x, g in zip(self.xywh, gn)]  # xywh normalized
         self.n = len(self.pred)  # number of images (batch size)
@@ -1025,44 +1024,3 @@ class Detections:
     def __repr__(self):
         """Returns a string representation for debugging, including class info and current object state."""
         return f"YOLOv3 {self.__class__} instance\n" + self.__str__()
-
-
-class Proto(nn.Module):
-    """Implements the YOLOv3 mask Proto module for segmentation, including convolutional layers and upsampling."""
-
-    def __init__(self, c1, c_=256, c2=32):  # ch_in, number of protos, number of masks
-        """Initializes the Proto module for YOLOv3 segmentation, setting up convolutional layers and upsampling."""
-        super().__init__()
-        self.cv1 = Conv(c1, c_, k=3)
-        self.upsample = nn.Upsample(scale_factor=2, mode="nearest")
-        self.cv2 = Conv(c_, c_, k=3)
-        self.cv3 = Conv(c_, c2)
-
-    def forward(self, x):
-        """Performs forward pass, upsampling and applying convolutions for YOLOv3 segmentation."""
-        return self.cv3(self.cv2(self.upsample(self.cv1(x))))
-
-
-class Classify(nn.Module):
-    """Performs image classification using YOLOv3-based architecture with convolutional, pooling, and dropout layers."""
-
-    def __init__(
-        self, c1, c2, k=1, s=1, p=None, g=1, dropout_p=0.0
-    ):  # ch_in, ch_out, kernel, stride, padding, groups, dropout probability
-        """Initializes YOLOv3 classification head with convolution, pooling and dropout layers for feature extraction
-        and classification.
-        """
-        super().__init__()
-        c_ = 1280  # efficientnet_b0 size
-        self.conv = Conv(c1, c_, k, s, autopad(k, p), g)
-        self.pool = nn.AdaptiveAvgPool2d(1)  # to x(b,c_,1,1)
-        self.drop = nn.Dropout(p=dropout_p, inplace=True)
-        self.linear = nn.Linear(c_, c2)  # to x(b,c2)
-
-    def forward(self, x):
-        """Processes input tensor `x` through convolutions and pooling, optionally concatenating lists of tensors, and
-        returns linear output.
-        """
-        if isinstance(x, list):
-            x = torch.cat(x, 1)
-        return self.linear(self.drop(self.pool(self.conv(x)).flatten(1)))

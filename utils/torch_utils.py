@@ -1,7 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 """PyTorch utils."""
 
-import math
 import os
 import platform
 import warnings
@@ -13,9 +12,12 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 from torch.nn.parallel import DistributedDataParallel as DDP
-from ultralytics.utils.torch_utils import copy_attr, time_sync
+from ultralytics.utils.torch_utils import ModelEMA as ModelEMA
+from ultralytics.utils.torch_utils import copy_attr as copy_attr
+from ultralytics.utils.torch_utils import fuse_conv_and_bn as fuse_conv_and_bn
 from ultralytics.utils.torch_utils import initialize_weights as initialize_weights
 from ultralytics.utils.torch_utils import scale_img as scale_img
+from ultralytics.utils.torch_utils import time_sync as time_sync
 
 from utils.general import LOGGER, check_version, colorstr, file_date, git_describe
 
@@ -69,31 +71,6 @@ def smart_DDP(model):
         return DDP(model, device_ids=[LOCAL_RANK], output_device=LOCAL_RANK)
 
 
-def reshape_classifier_output(model, n=1000):
-    """Reshapes the last layer of a model to have 'n' outputs; supports YOLOv3, ResNet, EfficientNet, adjusting Linear
-    and Conv2d layers.
-    """
-    from models.common import Classify
-
-    name, m = list((model.model if hasattr(model, "model") else model).named_children())[-1]  # last module
-    if isinstance(m, Classify):  # YOLOv3 Classify() head
-        if m.linear.out_features != n:
-            m.linear = nn.Linear(m.linear.in_features, n)
-    elif isinstance(m, nn.Linear):  # ResNet, EfficientNet
-        if m.out_features != n:
-            setattr(model, name, nn.Linear(m.in_features, n))
-    elif isinstance(m, nn.Sequential):
-        types = [type(x) for x in m]
-        if nn.Linear in types:
-            i = types.index(nn.Linear)  # nn.Linear index
-            if m[i].out_features != n:
-                m[i] = nn.Linear(m[i].in_features, n)
-        elif nn.Conv2d in types:
-            i = types.index(nn.Conv2d)  # nn.Conv2d index
-            if m[i].out_channels != n:
-                m[i] = nn.Conv2d(m[i].in_channels, n, m[i].kernel_size, m[i].stride, bias=m[i].bias is not None)
-
-
 @contextmanager
 def torch_distributed_zero_first(local_rank: int):
     """Context manager ensuring ordered execution in distributed training by synchronizing local masters first."""
@@ -104,6 +81,7 @@ def torch_distributed_zero_first(local_rank: int):
         dist.barrier(device_ids=[0])
 
 
+# Keep local (do not dedup): YOLOv3 banner plus batch_size divisibility check absent from ultralytics select_device
 def select_device(device="", batch_size=0, newline=True):
     """Selects the device for running models, handling CPU, GPU, and MPS with optional batch size divisibility check."""
     s = f"YOLOv3 🚀 {git_describe() or file_date()} Python-{platform.python_version()} torch-{torch.__version__} "
@@ -226,36 +204,6 @@ def prune(model, amount=0.3):
     LOGGER.info(f"Model pruned to {sparsity(model):.3g} global sparsity")
 
 
-def fuse_conv_and_bn(conv, bn):
-    """Fuses Conv2d and BatchNorm2d layers for efficiency; see https://tehnokv.com/posts/fusing-batchnorm-and-conv/."""
-    fusedconv = (
-        nn.Conv2d(
-            conv.in_channels,
-            conv.out_channels,
-            kernel_size=conv.kernel_size,
-            stride=conv.stride,
-            padding=conv.padding,
-            dilation=conv.dilation,
-            groups=conv.groups,
-            bias=True,
-        )
-        .requires_grad_(False)
-        .to(conv.weight.device)
-    )
-
-    # Prepare filters
-    w_conv = conv.weight.clone().view(conv.out_channels, -1)
-    w_bn = torch.diag(bn.weight.div(torch.sqrt(bn.eps + bn.running_var)))
-    fusedconv.weight.copy_(torch.mm(w_bn, w_conv).view(fusedconv.weight.shape))
-
-    # Prepare spatial bias
-    b_conv = torch.zeros(conv.weight.size(0), device=conv.weight.device) if conv.bias is None else conv.bias
-    b_bn = bn.bias - bn.weight.mul(bn.running_mean).div(torch.sqrt(bn.running_var + bn.eps))
-    fusedconv.bias.copy_(torch.mm(w_bn, b_conv.reshape(-1, 1)).reshape(-1) + b_bn)
-
-    return fusedconv
-
-
 def model_info(model, verbose=False, imgsz=640):
     """Prints model layers, parameters, gradients, and GFLOPs if verbose; handles various `imgsz`.
 
@@ -371,38 +319,3 @@ class EarlyStopping:
                 f"i.e. `python train.py --patience 300` or use `--patience 0` to disable EarlyStopping."
             )
         return stop
-
-
-class ModelEMA:
-    """Exponential Moving Average of a model's state_dict (parameters and buffers).
-
-    Maintains a smoothed copy of all values in the model state_dict to stabilize training. Adapted from
-    https://github.com/rwightman/pytorch-image-models; see
-    https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage for EMA details.
-    """
-
-    def __init__(self, model, decay=0.9999, tau=2000, updates=0):
-        """Initializes EMA with model, optional decay (default 0.9999), tau (2000), and updates count, setting model to
-        eval mode.
-        """
-        self.ema = deepcopy(de_parallel(model)).eval()  # FP32 EMA
-        self.updates = updates  # number of EMA updates
-        self.decay = lambda x: decay * (1 - math.exp(-x / tau))  # decay exponential ramp (to help early epochs)
-        for p in self.ema.parameters():
-            p.requires_grad_(False)
-
-    def update(self, model):
-        """Updates EMA parameters based on model weights, decay factor, and increment update count."""
-        self.updates += 1
-        d = self.decay(self.updates)
-
-        msd = de_parallel(model).state_dict()  # model state_dict
-        for k, v in self.ema.state_dict().items():
-            if v.dtype.is_floating_point:  # true for FP16 and FP32
-                v *= d
-                v += (1 - d) * msd[k].detach()
-        # assert v.dtype == msd[k].dtype == torch.float32, f'{k}: EMA {v.dtype} and model {msd[k].dtype} must be FP32'
-
-    def update_attr(self, model, include=(), exclude=("process_group", "reducer")):
-        """Updates EMA attributes by copying from model, excluding 'process_group' and 'reducer' by default."""
-        copy_attr(self.ema, model, include, exclude)

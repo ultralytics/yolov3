@@ -100,7 +100,6 @@ python detect.py --weights yolov3.pt --source vid.mp4                        # v
 python detect.py --weights yolov3.pt --source screen                         # screenshot
 python detect.py --weights yolov3.pt --source path/                          # directory
 python detect.py --weights yolov3.pt --source 'path/*.jpg'                   # glob
-python detect.py --weights yolov3.pt --source 'https://youtu.be/LNwODJXcvt4' # YouTube
 python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4' # RTSP, RTMP, HTTP stream
 ```
 
@@ -122,7 +121,7 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3.yaml --b
 python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml --batch-size 16
 ```
 
-Validate accuracy with `python val.py --weights yolov3.pt --data coco.yaml`, and export to other formats (TorchScript, ONNX, OpenVINO, TensorRT, CoreML, TFLite, and more) with `python export.py --weights yolov3.pt --include onnx`.
+Validate accuracy with `python val.py --weights yolov3.pt --data coco.yaml`, and export to other formats (TorchScript, ONNX, OpenVINO, TensorRT, CoreML, and PaddlePaddle) with `python export.py --weights yolov3.pt --include onnx`.
 
 </details>
 
@@ -131,14 +130,14 @@ Validate accuracy with `python val.py --weights yolov3.pt --data coco.yaml`, and
 
 These guides cover the shared Ultralytics training framework and apply to YOLOv3:
 
-- [Train Custom Data](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data/) — train on your own dataset.
+- [Train Custom Data](https://docs.ultralytics.com/modes/train/) — train on your own dataset.
 - [Tips for Best Training Results](https://docs.ultralytics.com/guides/model-training-tips/) — get the most out of training.
 - [Multi-GPU Training](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training/) — scale training across GPUs.
 - [PyTorch Hub Loading](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading/) — load models programmatically.
-- [Model Export](https://docs.ultralytics.com/yolov5/tutorials/model_export/) — deploy to ONNX, TensorRT, CoreML, TFLite, and more.
+- [Model Export](https://docs.ultralytics.com/modes/export/) — deploy to ONNX, TensorRT, CoreML, and more.
 - [Test-Time Augmentation (TTA)](https://docs.ultralytics.com/yolov5/tutorials/test_time_augmentation/) — improve accuracy at inference.
 - [Model Ensembling](https://docs.ultralytics.com/yolov5/tutorials/model_ensembling/) — combine models for better results.
-- [Hyperparameter Evolution](https://docs.ultralytics.com/yolov5/tutorials/hyperparameter_evolution/) — tune hyperparameters automatically.
+- [Hyperparameter Tuning](https://docs.ultralytics.com/guides/hyperparameter-tuning/) — tune hyperparameters automatically.
 - [Transfer Learning with Frozen Layers](https://docs.ultralytics.com/yolov5/tutorials/transfer_learning_with_frozen_layers/) — adapt pretrained models efficiently.
 
 </details>

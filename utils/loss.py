@@ -100,6 +100,7 @@ class QFocalLoss(nn.Module):
             return loss
 
 
+# Keep local (do not dedup): anchor-based YOLOv3 loss has no ultralytics equivalent
 class ComputeLoss:
     """Computes the total loss for YOLO models by aggregating classification, box regression, and objectness losses."""
 

@@ -27,6 +27,7 @@ def smooth(y, f=0.05):
     return np.convolve(yp, np.ones(nf) / nf, mode="valid")  # y-smoothed
 
 
+# Keep local (do not dedup): return arity and call contract differ from ultralytics and are consumed positionally
 def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir=".", names=(), eps=1e-16, prefix=""):
     """Compute the average precision per class from the recall and precision curves.
 
@@ -128,6 +129,7 @@ def compute_ap(recall, precision):
     return ap, mpre, mrec
 
 
+# Keep local (do not dedup): different constructor/return contract than ultralytics ConfusionMatrix
 class ConfusionMatrix:
     """Computes and visualizes a confusion matrix for object detection tasks with configurable thresholds."""
 

@@ -11,7 +11,7 @@ Usage - Multi-GPU DDP training:
 
 Models:     https://github.com/ultralytics/yolov3/tree/master/models
 Datasets:   https://github.com/ultralytics/yolov3/tree/master/data
-Tutorial:   https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
+Tutorial:   https://docs.ultralytics.com/modes/train
 """
 
 import argparse
@@ -45,6 +45,7 @@ if str(ROOT) not in sys.path:
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 from ultralytics.utils.patches import torch_load
+from ultralytics.utils.torch_utils import TORCH_2_4, autocast
 
 import val as validate  # for end-of-epoch mAP
 from models.experimental import attempt_load
@@ -342,7 +343,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
     maps = np.zeros(nc)  # mAP per class
     results = (0, 0, 0, 0, 0, 0, 0)  # P, R, mAP@.5, mAP@.5-.95, val_loss(box, obj, cls)
     scheduler.last_epoch = start_epoch - 1  # do not move
-    scaler = torch.cuda.amp.GradScaler(enabled=amp)
+    scaler = torch.amp.GradScaler("cuda", enabled=amp) if TORCH_2_4 else torch.cuda.amp.GradScaler(enabled=amp)
     stopper, stop = EarlyStopping(patience=opt.patience), False
     compute_loss = ComputeLoss(model)  # init loss class
     callbacks.run("on_train_start")
@@ -399,7 +400,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                     imgs = nn.functional.interpolate(imgs, size=ns, mode="bilinear", align_corners=False)
 
             # Forward
-            with torch.cuda.amp.autocast(amp):
+            with autocast(amp):
                 pred = model(imgs)  # forward
                 loss, loss_items = compute_loss(pred, targets.to(device))  # loss scaled by batch_size
                 if RANK != -1:
@@ -553,7 +554,7 @@ def parse_opt(known=False):
     References:
         * Models: https://github.com/ultralytics/yolov3/tree/master/models
         * Datasets: https://github.com/ultralytics/yolov3/tree/master/data
-        * Training Tutorial: https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
+        * Training Tutorial: https://docs.ultralytics.com/modes/train
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", type=str, default=ROOT / "yolov3-tiny.pt", help="initial weights path")
@@ -628,7 +629,7 @@ def main(opt, callbacks=Callbacks()):
 
         Models: https://github.com/ultralytics/yolov3/tree/master/models
         Datasets: https://github.com/ultralytics/yolov3/tree/master/data
-        Tutorial: https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
+        Tutorial: https://docs.ultralytics.com/modes/train
 
     Notes:
        - For a tutorial on using Multi-GPU with DDP: https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training
@@ -848,7 +849,7 @@ def run(**kwargs):
     Notes:
         - Ensure the dataset YAML file and initial weights are accessible.
         - Refer to the [Ultralytics YOLOv3 repository](https://github.com/ultralytics/yolov3) for model and data configurations.
-        - Use the [Training Tutorial](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data/) for custom dataset training.
+        - Use the [Training Tutorial](https://docs.ultralytics.com/modes/train/) for custom dataset training.
     """
     opt = parse_opt(True)
     for k, v in kwargs.items():
