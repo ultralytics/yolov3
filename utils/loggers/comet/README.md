@@ -102,7 +102,7 @@ export COMET_LOG_CONFUSION_MATRIX=false                     # Disable confusion 
 export COMET_MAX_IMAGE_UPLOADS=NUMBER                       # Max prediction images to log. Defaults to 100.
 export COMET_LOG_PER_CLASS_METRICS=true                     # Log per-class metrics. Defaults to false.
 export COMET_DEFAULT_CHECKPOINT_FILENAME=your_checkpoint.pt # Checkpoint for resuming. Defaults to 'last.pt'.
-export COMET_LOG_BATCH_LEVEL_METRICS=true                   # Log batch-level metrics. Defaults to false.
+export COMET_LOG_BATCH_METRICS=true                   # Log batch-level metrics. Defaults to false.
 export COMET_LOG_PREDICTIONS=true                           # Set to false to disable prediction logging. Defaults to true.
 ```
 
@@ -220,7 +220,7 @@ If your training run is interrupted, resume it with the `--resume` flag and the 
 
 ```shell
 python train.py \
-  --resume "comet://YOUR_WORKSPACE/YOUR_WORKSPACE/EXPERIMENT_ID"
+  --resume "comet://YOUR_WORKSPACE/YOUR_PROJECT/EXPERIMENT_ID"
 ```
 
 ## 🔍 Hyperparameter Search with the Comet Optimizer

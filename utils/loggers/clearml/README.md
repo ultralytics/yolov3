@@ -144,7 +144,7 @@ Once your dataset is versioned in ClearML, you can reference it directly in your
 
 ```bash
 # Replace <your_dataset_id> with the actual ID from ClearML
-python train.py --img 640 --batch 16 --epochs 3 --data clearml:// yolov3-tiny.pt --cache < your_dataset_id > --weights
+python train.py --img 640 --batch 16 --epochs 3 --data clearml://<your_dataset_id> --weights yolov3-tiny.pt --cache
 ```
 
 The dataset ID used will be logged as a parameter in your ClearML experiment, ensuring full traceability.
