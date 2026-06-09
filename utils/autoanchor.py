@@ -26,15 +26,14 @@ def check_anchor_order(m):
 
 @TryExcept(f"{PREFIX}ERROR")
 def check_anchors(dataset, model, thr=4.0, imgsz=640):
-    """Evaluates anchor fit to dataset and recomputes if below a threshold, enhancing model performance."""
+    """Evaluate anchor fit to a dataset and recompute anchors with k-means if best possible recall is too low."""
     m = model.module.model[-1] if hasattr(model, "module") else model.model[-1]  # Detect()
     shapes = imgsz * dataset.shapes / dataset.shapes.max(1, keepdims=True)
     scale = np.random.uniform(0.9, 1.1, size=(shapes.shape[0], 1))  # augment scale
     wh = torch.tensor(np.concatenate([l[:, 3:5] * s for s, l in zip(shapes * scale, dataset.labels)])).float()  # wh
 
     def metric(k):  # compute metric
-        """Computes and returns best possible recall (bpr) and anchors above threshold (aat) metrics for given anchors.
-        """
+        """Return best possible recall (bpr) and anchors-above-threshold (aat) for the given anchors `k`."""
         r = wh[:, None] / k[None]
         x = torch.min(r, 1 / r).min(2)[0]  # ratio metric
         best = x.max(1)[0]  # best_x
@@ -65,21 +64,22 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
 
 
 def kmean_anchors(dataset="./data/coco128.yaml", n=9, img_size=640, thr=4.0, gen=1000, verbose=True):
-    """Creates kmeans-evolved anchors from training dataset.
+    """Create k-means evolved anchors from a training dataset.
 
     Args:
-        dataset: path to data.yaml, or a loaded dataset
-        n: number of anchors
-        img_size: image size used for training
-        thr: anchor-label wh ratio threshold hyperparameter hyp['anchor_t'] used for training, default=4.0
-        gen: generations to evolve anchors using genetic algorithm
-        verbose: print all results
+        dataset (str | LoadImagesAndLabels): Path to a data.yaml, or a loaded dataset.
+        n (int): Number of anchors to generate.
+        img_size (int): Image size used for training.
+        thr (float): Anchor-to-label wh ratio threshold (hyperparameter hyp['anchor_t']) used for training.
+        gen (int): Generations to evolve anchors with the genetic algorithm.
+        verbose (bool): Print all results.
 
     Returns:
-        k: kmeans evolved anchors
+        (np.ndarray): K-means evolved anchors of shape (n, 2).
 
     Examples:
-        from utils.autoanchor import *; _ = kmean_anchors()
+        >>> from utils.autoanchor import *
+        >>> _ = kmean_anchors()
     """
     from scipy.cluster.vq import kmeans
 

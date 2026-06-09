@@ -3,7 +3,7 @@
 # Argoverse-HD dataset (ring-front-center camera) http://www.cs.cmu.edu/~mengtial/proj/streaming/ by Argo AI
 # Example usage: python train.py --data Argoverse.yaml
 # parent
-# ├── yolov5
+# ├── yolov3
 # └── datasets
 #     └── Argoverse  ← downloads here (31.3 GB)
 
@@ -35,7 +35,7 @@ download: |
   def argoverse2yolo(set):
       labels = {}
       a = json.load(open(set, "rb"))
-      for annot in tqdm(a['annotations'], desc=f"Converting {set} to YOLOv5 format..."):
+      for annot in tqdm(a['annotations'], desc=f"Converting {set} to YOLO format..."):
           img_id = annot['image_id']
           img_name = a['images'][img_id]['name']
           img_label_name = f'{img_name[:-3]}txt'
@@ -63,8 +63,10 @@ download: |
 
   # Download
   dir = Path(yaml['path'])  # dataset root dir
-  urls = ['https://argoverse-hd.s3.us-east-2.amazonaws.com/Argoverse-HD-Full.zip']
-  download(urls, dir=dir, delete=False)
+  urls = ['https://drive.google.com/file/d/1st9qW3BeIwQsnR0t8mRpvbsSWIo16ACi/view?usp=drive_link']
+  print('\n\nWARNING: Argoverse dataset MUST be downloaded manually, autodownload will NOT work.')
+  print(f"WARNING: Manually download Argoverse dataset '{urls[0]}' to '{dir}' and re-run your command.\n\n")
+  # download(urls, dir=dir, delete=False)
 
   # Convert
   annotations_dir = 'Argoverse-HD/annotations/'

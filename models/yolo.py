@@ -3,7 +3,7 @@
 YOLO-specific modules.
 
 Usage:
-    $ python models/yolo.py --cfg yolov5s.yaml
+    $ python models/yolo.py --cfg yolov3-tiny.yaml
 """
 
 import argparse
@@ -91,13 +91,14 @@ class Detect(nn.Module):
         return x if self.training else (torch.cat(z, 1),) if self.export else (torch.cat(z, 1), x)
 
     def _make_grid(self, nx=20, ny=20, i=0, torch_1_10=check_version(torch.__version__, "1.10.0")):
-        """Generates a grid and corresponding anchor grid with shape `(1, num_anchors, ny, nx, 2)` for indexing anchors.
-        """
+        """Generates a coordinate grid and anchor grid of shape `(1, na, ny, nx, 2)` for decoding Detect outputs."""
         d = self.anchors[i].device
         t = self.anchors[i].dtype
         shape = 1, self.na, ny, nx, 2  # grid shape
         y, x = torch.arange(ny, device=d, dtype=t), torch.arange(nx, device=d, dtype=t)
-        yv, xv = torch.meshgrid(y, x, indexing="ij") if torch_1_10 else torch.meshgrid(y, x)  # torch>=0.7 compatibility
+        yv, xv = (
+            torch.meshgrid(y, x, indexing="ij") if torch_1_10 else torch.meshgrid(y, x)
+        )  # torch>=1.10 compatibility
         grid = torch.stack((xv, yv), 2).expand(shape) - 0.5  # add grid offset, i.e. y = 2.0 * x - 0.5
         anchor_grid = (self.anchors[i] * self.stride[i]).view((1, self.na, 1, 1, 2)).expand(shape)
         return grid, anchor_grid
@@ -194,7 +195,7 @@ class BaseModel(nn.Module):
 class DetectionModel(BaseModel):
     """YOLOv3 detection model class for initializing and processing detection models with configurable parameters."""
 
-    def __init__(self, cfg="yolov5s.yaml", ch=3, nc=None, anchors=None):  # model, input channels, number of classes
+    def __init__(self, cfg="yolov3-tiny.yaml", ch=3, nc=None, anchors=None):  # model, input channels, number of classes
         """Initializes YOLOv3 detection model with configurable YAML, input channels, classes, and anchors."""
         super().__init__()
         if isinstance(cfg, dict):
@@ -307,7 +308,7 @@ Model = DetectionModel  # retain YOLOv3 'Model' class for backwards compatibilit
 class SegmentationModel(DetectionModel):
     """Implements a YOLOv3-based segmentation model with customizable configuration, channels, classes, and anchors."""
 
-    def __init__(self, cfg="yolov5s-seg.yaml", ch=3, nc=None, anchors=None):
+    def __init__(self, cfg="yolov3-tiny.yaml", ch=3, nc=None, anchors=None):
         """Initializes a SegmentationModel with optional configuration, channel, class count, and anchors parameters."""
         super().__init__(cfg, ch, nc, anchors)
 
@@ -341,7 +342,17 @@ class ClassificationModel(BaseModel):
 
 
 def parse_model(d, ch):  # model_dict, input_channels(3)
-    """Parses a YOLOv3 model configuration from a dictionary and constructs the model."""
+    """Parse a YOLOv3 model dict into an `nn.Sequential` module, scaling depth and width per the config.
+
+    Args:
+        d (dict): Model configuration with `backbone`/`head` layer lists plus `anchors`, `nc`, `depth_multiple`, and
+            `width_multiple` keys.
+        ch (list[int]): Input channels, typically `[3]` for RGB images.
+
+    Returns:
+        model (torch.nn.Sequential): Assembled model layers.
+        save (list[int]): Sorted indices of layers whose outputs are retained for later use (skip connections).
+    """
     LOGGER.info(f"\n{'':>3}{'from':>18}{'n':>3}{'params':>10}  {'module':<40}{'arguments':<30}")
     anchors, nc, gd, gw, act = d["anchors"], d["nc"], d["depth_multiple"], d["width_multiple"], d.get("activation")
     if act:
@@ -419,7 +430,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cfg", type=str, default="yolov5s.yaml", help="model.yaml")
+    parser.add_argument("--cfg", type=str, default="yolov3-tiny.yaml", help="model.yaml")
     parser.add_argument("--batch-size", type=int, default=1, help="total batch size for all GPUs")
     parser.add_argument("--device", default="", help="cuda device, i.e. 0 or 0,1,2,3 or cpu")
     parser.add_argument("--profile", action="store_true", help="profile model speed")

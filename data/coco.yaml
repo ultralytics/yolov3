@@ -3,7 +3,7 @@
 # COCO 2017 dataset http://cocodataset.org by Microsoft
 # Example usage: python train.py --data coco.yaml
 # parent
-# ├── yolov5
+# ├── yolov3
 # └── datasets
 #     └── coco  ← downloads here (20.1 GB)
 
@@ -102,10 +102,9 @@ download: |
 
 
   # Download labels
-  segments = False  # segment or box labels
   dir = Path(yaml['path'])  # dataset root dir
   url = 'https://github.com/ultralytics/assets/releases/download/v0.0.0/'
-  urls = [url + ('coco2017labels-segments.zip' if segments else 'coco2017labels.zip')]  # labels
+  urls = [url + 'coco2017labels.zip']  # labels
   download(urls, dir=dir.parent)
 
   # Download data

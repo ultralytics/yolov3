@@ -3,9 +3,8 @@
 name: Close stale issues
 
 permissions:
-  contents: read
-  issues: write
   pull-requests: write
+  issues: write
 
 on:
   schedule:
@@ -14,10 +13,6 @@ on:
 jobs:
   stale:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
     steps:
       - uses: actions/stale@v10
         with:
@@ -54,4 +49,8 @@ jobs:
           days-before-pr-stale: 90
           days-before-pr-close: 30
           exempt-issue-labels: "documentation,tutorial,TODO"
+          exempt-pr-labels: "TODO"
+          ignore-pr-updates: true
+          remove-pr-stale-when-updated: false
+          exempt-all-assignees: true
           operations-per-run: 300 # The maximum number of operations per run, used to control rate limiting.

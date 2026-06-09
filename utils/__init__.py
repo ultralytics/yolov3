@@ -2,34 +2,24 @@
 """utils/initialization."""
 
 import contextlib
-import platform
 import threading
 
-
-def emojis(str=""):
-    """Returns platform-dependent emoji-safe version of str; ignores emojis on Windows, else returns original str."""
-    return str.encode().decode("ascii", "ignore") if platform.system() == "Windows" else str
+from ultralytics.utils import emojis
 
 
 class TryExcept(contextlib.ContextDecorator):
     """A context manager and decorator for handling exceptions with optional custom messages."""
 
     def __init__(self, msg=""):
-        """Initializes TryExcept with optional custom message, used as decorator or context manager for exception
-        handling.
-        """
+        """Initialize with an optional message prefixed to any caught exception when printed."""
         self.msg = msg
 
     def __enter__(self):
-        """Begin exception-handling block, optionally customizing exception message when used with TryExcept context
-        manager.
-        """
+        """Enter the exception-handling block (no setup required)."""
         pass
 
     def __exit__(self, exc_type, value, traceback):
-        """Ends exception-handling block, optionally prints custom message with exception, suppressing exceptions within
-        context.
-        """
+        """Print the message and exception on exit, suppressing the exception so execution continues."""
         if value:
             print(emojis(f"{self.msg}{': ' if self.msg else ''}{value}"))
         return True
@@ -42,25 +32,12 @@ def threaded(func):
     """
 
     def wrapper(*args, **kwargs):
-        """Runs the decorated function in a separate thread and returns the thread object.
-
-        Usage: @threaded.
-        """
+        """Start the wrapped function in a daemon thread and return the started thread."""
         thread = threading.Thread(target=func, args=args, kwargs=kwargs, daemon=True)
         thread.start()
         return thread
 
     return wrapper
-
-
-def join_threads(verbose=False):
-    """Joins all daemon threads, excluding the main thread, with an optional verbose flag for logging."""
-    main_thread = threading.current_thread()
-    for t in threading.enumerate():
-        if t is not main_thread:
-            if verbose:
-                print(f"Joining thread {t.name}")
-            t.join()
 
 
 def notebook_init(verbose=True):
@@ -70,8 +47,6 @@ def notebook_init(verbose=True):
     import os
     import shutil
 
-    from ultralytics.utils.checks import check_requirements
-
     from utils.general import check_font, is_colab
     from utils.torch_utils import select_device  # imports
 
@@ -79,8 +54,6 @@ def notebook_init(verbose=True):
 
     import psutil
 
-    if check_requirements("wandb", install=False):
-        os.system("pip uninstall -y wandb")  # eliminate unexpected account creation prompt with infinite hang
     if is_colab():
         shutil.rmtree("/content/sample_data", ignore_errors=True)  # remove colab /sample_data directory
 

@@ -3,20 +3,20 @@
 Validate a trained YOLOv3 detection model on a detection dataset.
 
 Usage:
-    $ python val.py --weights yolov5s.pt --data coco128.yaml --img 640
+    $ python val.py --weights yolov3-tiny.pt --data coco128.yaml --img 640
 
 Usage - formats:
-    $ python val.py --weights yolov5s.pt                 # PyTorch
-                              yolov5s.torchscript        # TorchScript
-                              yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
-                              yolov5s_openvino_model     # OpenVINO
-                              yolov5s.engine             # TensorRT
-                              yolov5s.mlmodel            # CoreML (macOS-only)
-                              yolov5s_saved_model        # TensorFlow SavedModel
-                              yolov5s.pb                 # TensorFlow GraphDef
-                              yolov5s.tflite             # TensorFlow Lite
-                              yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
-                              yolov5s_paddle_model       # PaddlePaddle
+    $ python val.py --weights yolov3-tiny.pt                 # PyTorch
+                              yolov3-tiny.torchscript        # TorchScript
+                              yolov3-tiny.onnx               # ONNX Runtime or OpenCV DNN with --dnn
+                              yolov3-tiny_openvino_model     # OpenVINO
+                              yolov3-tiny.engine             # TensorRT
+                              yolov3-tiny.mlmodel            # CoreML (macOS-only)
+                              yolov3-tiny_saved_model        # TensorFlow SavedModel
+                              yolov3-tiny.pb                 # TensorFlow GraphDef
+                              yolov3-tiny.tflite             # TensorFlow Lite
+                              yolov3-tiny_edgetpu.tflite     # TensorFlow Edge TPU
+                              yolov3-tiny_paddle_model       # PaddlePaddle
 """
 
 import argparse
@@ -219,7 +219,7 @@ def run(
     callbacks=Callbacks(),
     compute_loss=None,
 ):
-    """Validates a trained YOLO model on a dataset and saves detection results in specified formats.
+    """Validate a trained YOLOv3 detection model on a dataset and optionally save results in the requested formats.
 
     Args:
         data (str | dict): Path to the dataset configuration file (.yaml) or a dictionary containing the dataset paths.
@@ -254,15 +254,16 @@ def run(
 
     Returns:
         (tuple): A tuple containing:
-            - metrics (torch.Tensor): Dictionary containing metrics such as precision, recall, mAP, F1 score, etc.
-            - times (dict): Dictionary containing times for different parts of the pipeline (e.g., preprocessing, inference, NMS).
-            - samples (torch.Tensor): Torch tensor containing validation samples.
+            - results (tuple): (mean_precision, mean_recall, mAP@0.5, mAP@0.5:0.95, val_box_loss, val_obj_loss,
+              val_cls_loss).
+            - maps (np.ndarray): Per-class mAP@0.5:0.95 of shape (nc,).
+            - t (tuple): Per-image timing in milliseconds for (preprocess, inference, NMS).
 
     Examples:
         ```python
-        metrics, times, samples = run(
+        results, maps, t = run(
             data='data/coco.yaml',
-            weights='yolov5s.pt',
+            weights='yolov3-tiny.pt',
             batch_size=32,
             imgsz=640,
             conf_thres=0.001,
@@ -520,7 +521,7 @@ def parse_opt():
     Examples:
         Use the following command to run validation with custom settings:
         ```python
-        $ python val.py --weights yolov5s.pt --data coco128.yaml --img 640
+        $ python val.py --weights yolov3-tiny.pt --data coco128.yaml --img 640
         ```
 
     Notes:
@@ -603,13 +604,13 @@ def main(opt):
         weights = opt.weights if isinstance(opt.weights, list) else [opt.weights]
         opt.half = torch.cuda.is_available() and opt.device != "cpu"  # FP16 for fastest results
         if opt.task == "speed":  # speed benchmarks
-            # python val.py --task speed --data coco.yaml --batch 1 --weights yolov5n.pt yolov5s.pt...
+            # python val.py --task speed --data coco.yaml --batch 1 --weights yolov3-tiny.pt yolov3.pt...
             opt.conf_thres, opt.iou_thres, opt.save_json = 0.25, 0.45, False
             for opt.weights in weights:
                 run(**vars(opt), plots=False)
 
         elif opt.task == "study":  # speed vs mAP benchmarks
-            # python val.py --task study --data coco.yaml --iou 0.7 --weights yolov5n.pt yolov5s.pt...
+            # python val.py --task study --data coco.yaml --iou 0.7 --weights yolov3-tiny.pt yolov3.pt...
             for opt.weights in weights:
                 f = f"study_{Path(opt.data).stem}_{Path(opt.weights).stem}.txt"  # filename to save to
                 x, y = list(range(256, 1536 + 128, 128)), []  # x axis (image sizes), y axis

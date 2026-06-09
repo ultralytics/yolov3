@@ -1,4 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+"""Comet ML helpers for downloading checkpoints and restoring run state when resuming YOLOv3 training."""
 
 import logging
 import os
@@ -14,7 +15,7 @@ import yaml
 logger = logging.getLogger(__name__)
 
 COMET_PREFIX = "comet://"
-COMET_MODEL_NAME = os.getenv("COMET_MODEL_NAME", "yolov5")
+COMET_MODEL_NAME = os.getenv("COMET_MODEL_NAME", "yolov3")
 COMET_DEFAULT_CHECKPOINT_FILENAME = os.getenv("COMET_DEFAULT_CHECKPOINT_FILENAME", "last.pt")
 
 

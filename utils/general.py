@@ -19,7 +19,6 @@ import sys
 import time
 import urllib
 from copy import deepcopy
-from datetime import datetime
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
@@ -34,8 +33,13 @@ import torch
 import torchvision
 import yaml
 from packaging.version import parse
+from ultralytics.utils import colorstr
 from ultralytics.utils.checks import check_requirements as check_requirements_ultralytics
+from ultralytics.utils.files import file_date as file_date
+from ultralytics.utils.files import file_size as file_size
+from ultralytics.utils.ops import make_divisible
 from ultralytics.utils.patches import torch_load
+from ultralytics.utils.torch_utils import intersect_dicts as intersect_dicts
 
 from utils import TryExcept, emojis
 from utils.downloads import curl_download, gsutil_getsize
@@ -47,9 +51,9 @@ RANK = int(os.getenv("RANK", -1))
 
 # Settings
 NUM_THREADS = min(8, max(1, os.cpu_count() - 1))  # number of YOLOv3 multiprocessing threads
-DATASETS_DIR = Path(os.getenv("YOLOv5_DATASETS_DIR", ROOT.parent / "datasets"))  # global datasets directory
-AUTOINSTALL = str(os.getenv("YOLOv5_AUTOINSTALL", True)).lower() == "true"  # global auto-install mode
-VERBOSE = str(os.getenv("YOLOv5_VERBOSE", True)).lower() == "true"  # global verbose mode
+DATASETS_DIR = Path(os.getenv("YOLOv3_DATASETS_DIR", ROOT.parent / "datasets"))  # global datasets directory
+AUTOINSTALL = str(os.getenv("YOLOv3_AUTOINSTALL", True)).lower() == "true"  # global auto-install mode
+VERBOSE = str(os.getenv("YOLOv3_VERBOSE", True)).lower() == "true"  # global verbose mode
 TQDM_BAR_FORMAT = "{l_bar}{bar:10}{r_bar}"  # tqdm bar format
 FONT = "Arial.ttf"  # https://github.com/ultralytics/assets/releases/download/v0.0.0/Arial.ttf
 
@@ -129,7 +133,7 @@ def is_writeable(dir, test=False):
         return False
 
 
-LOGGING_NAME = "yolov5"
+LOGGING_NAME = "yolov3"
 
 
 def set_logging(name=LOGGING_NAME, verbose=True):
@@ -166,7 +170,7 @@ if platform.system() == "Windows":
         setattr(LOGGER, fn.__name__, lambda x: fn(emojis(x)))  # emoji safe logging
 
 
-def user_config_dir(dir="Ultralytics", env_var="YOLOV5_CONFIG_DIR"):
+def user_config_dir(dir="Ultralytics", env_var="YOLOV3_CONFIG_DIR"):
     """Returns user configuration directory path, prefers `env_var` if set, else uses OS-specific path, creates
     directory if needed.
     """
@@ -293,13 +297,6 @@ def init_seeds(seed=0, deterministic=False):
         os.environ["PYTHONHASHSEED"] = str(seed)
 
 
-def intersect_dicts(da, db, exclude=()):
-    """Intersects two dicts by matching keys and shapes, excluding specified keys, and retains values from the first
-    dict.
-    """
-    return {k: v for k, v in da.items() if k in db and all(x not in k for x in exclude) and v.shape == db[k].shape}
-
-
 def get_default_args(func):
     """Returns a dict of `func`'s default arguments using inspection."""
     signature = inspect.signature(func)
@@ -311,30 +308,6 @@ def get_latest_run(search_dir="."):
     """
     last_list = glob.glob(f"{search_dir}/**/last*.pt", recursive=True)
     return max(last_list, key=os.path.getctime) if last_list else ""
-
-
-def file_age(path=__file__):
-    """Returns the number of days since the last update of the file specified by 'path'."""
-    dt = datetime.now() - datetime.fromtimestamp(Path(path).stat().st_mtime)  # delta
-    return dt.days  # + dt.seconds / 86400  # fractional days
-
-
-def file_date(path=__file__):
-    """Returns file modification date in 'YYYY-M-D' format for the file at 'path'."""
-    t = datetime.fromtimestamp(Path(path).stat().st_mtime)
-    return f"{t.year}-{t.month}-{t.day}"
-
-
-def file_size(path):
-    """Returns the size of a file or total size of files in a directory at 'path' in MB."""
-    mb = 1 << 20  # bytes to MiB (1024 ** 2)
-    path = Path(path)
-    if path.is_file():
-        return path.stat().st_size / mb
-    elif path.is_dir():
-        return sum(f.stat().st_size for f in path.glob("**/*") if f.is_file()) / mb
-    else:
-        return 0.0
 
 
 def check_online():
@@ -364,7 +337,7 @@ def git_describe(path=ROOT):  # path must be a directory
 
 @TryExcept()
 @WorkingDirectory(ROOT)
-def check_git_status(repo="ultralytics/yolov5", branch="master"):
+def check_git_status(repo="ultralytics/yolov3", branch="master"):
     """Checks YOLOv3 code update status against remote, suggests 'git pull' if outdated; requires internet and git
     repository.
     """
@@ -403,7 +376,7 @@ def check_git_info(path="."):
 
     try:
         repo = git.Repo(path)
-        remote = repo.remotes.origin.url.replace(".git", "")  # i.e. 'https://github.com/ultralytics/yolov5'
+        remote = repo.remotes.origin.url.replace(".git", "")  # i.e. 'https://github.com/ultralytics/yolov3'
         commit = repo.head.commit.hexsha  # i.e. '3134699c73af83aac2a481435550b968d5792c0d'
         try:
             branch = repo.active_branch.name  # i.e. 'main'
@@ -414,7 +387,7 @@ def check_git_info(path="."):
         return {"remote": None, "branch": None, "commit": None}
 
 
-def check_python(minimum="3.7.0"):
+def check_python(minimum="3.8.0"):
     """Checks if current Python version meets the specified minimum requirement, raising error if not."""
     check_version(platform.python_version(), minimum, name="Python ", hard=True)
 
@@ -461,7 +434,7 @@ def check_imshow(warn=False):
         return False
 
 
-def check_suffix(file="yolov5s.pt", suffix=(".pt",), msg=""):
+def check_suffix(file="yolov3-tiny.pt", suffix=(".pt",), msg=""):
     """Checks for acceptable file suffixes, supports batch checking for lists or tuples of filenames."""
     if file and suffix:
         if isinstance(suffix, str):
@@ -598,7 +571,7 @@ def check_amp(model):
     f = ROOT / "data" / "images" / "bus.jpg"  # image to check
     im = f if f.exists() else "https://ultralytics.com/images/bus.jpg" if check_online() else np.ones((640, 640, 3))
     try:
-        assert amp_allclose(deepcopy(model), im) or amp_allclose(DetectMultiBackend("yolov5n.pt", device), im)
+        assert amp_allclose(deepcopy(model), im) or amp_allclose(DetectMultiBackend("yolov3-tiny.pt", device), im)
         LOGGER.info(f"{prefix}checks passed ✅")
         return True
     except Exception:
@@ -688,53 +661,14 @@ def download(url, dir=".", unzip=True, delete=True, curl=False, threads=1, retry
             download_one(u, dir)
 
 
-def make_divisible(x, divisor):
-    """Adjusts `x` to be nearest and greater than or equal to value divisible by `divisor`."""
-    if isinstance(divisor, torch.Tensor):
-        divisor = int(divisor.max())  # to int
-    return math.ceil(x / divisor) * divisor
-
-
 def clean_str(s):
     """Cleans a string by replacing special characters with underscores, e.g., 'test@string!' to 'test_string_'."""
     return re.sub(pattern="[|@#!¡·$€%&()=?¿^*;:,¨´><+]", repl="_", string=s)
 
 
 def one_cycle(y1=0.0, y2=1.0, steps=100):
-    """Generates a lambda for a sinusoidal ramp from y1 to y2 over 'steps'; usage: `lambda x: ((1 - math.cos(x * math.pi
-    / steps)) / 2) * (y2 - y1) + y1`.
-    """
+    """Return a function mapping step x to a sinusoidal (1 - cos) ramp from y1 to y2 over `steps`."""
     return lambda x: ((1 - math.cos(x * math.pi / steps)) / 2) * (y2 - y1) + y1
-
-
-def colorstr(*input):
-    """Colors strings using ANSI escape codes; see usage example `colorstr('blue', 'hello world')`.
-
-    [https://en.wikipedia.org/wiki/ANSI_escape_code]
-    """
-    *args, string = input if len(input) > 1 else ("blue", "bold", input[0])  # color arguments, string
-    colors = {
-        "black": "\033[30m",  # basic colors
-        "red": "\033[31m",
-        "green": "\033[32m",
-        "yellow": "\033[33m",
-        "blue": "\033[34m",
-        "magenta": "\033[35m",
-        "cyan": "\033[36m",
-        "white": "\033[37m",
-        "bright_black": "\033[90m",  # bright colors
-        "bright_red": "\033[91m",
-        "bright_green": "\033[92m",
-        "bright_yellow": "\033[93m",
-        "bright_blue": "\033[94m",
-        "bright_magenta": "\033[95m",
-        "bright_cyan": "\033[96m",
-        "bright_white": "\033[97m",
-        "end": "\033[0m",  # misc
-        "bold": "\033[1m",
-        "underline": "\033[4m",
-    }
-    return "".join(colors[x] for x in args) + f"{string}" + colors["end"]
 
 
 def labels_to_class_weights(labels, nc=80):
@@ -1010,10 +944,21 @@ def non_max_suppression(
     max_det=300,
     nm=0,  # number of masks
 ):
-    """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections.
+    """Run Non-Maximum Suppression (NMS) on inference results to reject overlapping detections.
+
+    Args:
+        prediction (torch.Tensor | list | tuple): Model output; the inference tensor is used if a tuple/list is passed.
+        conf_thres (float): Confidence threshold in [0, 1]; boxes below it are discarded.
+        iou_thres (float): IoU threshold in [0, 1] for the NMS overlap test.
+        classes (list | None): If set, keep only detections whose class is in this list.
+        agnostic (bool): If True, perform class-agnostic NMS (boxes not offset by class).
+        multi_label (bool): If True, allow multiple labels per box.
+        labels (tuple): Optional apriori labels per image for autolabelling.
+        max_det (int): Maximum number of detections to keep per image.
+        nm (int): Number of mask coefficients (segmentation); 0 for detection.
 
     Returns:
-        list of detections, on (n,6) tensor per image [xyxy, conf, cls]
+        (list[torch.Tensor]): One (n, 6 + nm) tensor per image, each row [xyxy, conf, cls, mask...].
     """
     # Checks
     assert 0 <= conf_thres <= 1, f"Invalid Confidence threshold {conf_thres}, valid values are between 0.0 and 1.0"
@@ -1206,7 +1151,7 @@ def apply_classifier(x, model, img, im0):
                 cutout = im0[i][int(a[1]) : int(a[3]), int(a[0]) : int(a[2])]
                 im = cv2.resize(cutout, (224, 224))  # BGR
 
-                im = im[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+                im = im[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, HWC to CHW
                 im = np.ascontiguousarray(im, dtype=np.float32)  # uint8 to float32
                 im /= 255  # 0 - 255 to 0.0 - 1.0
                 ims.append(im)
@@ -1218,9 +1163,19 @@ def apply_classifier(x, model, img, im0):
 
 
 def increment_path(path, exist_ok=False, sep="", mkdir=False):
-    """Increments file or directory path, optionally creating the directory, not thread-safe.
+    """Increment a file or directory path, e.g. runs/exp -> runs/exp2, optionally creating the directory.
 
-    Args: path (str/Path), exist_ok (bool), sep (str), mkdir (bool).
+    Args:
+        path (str | Path): Base path to increment.
+        exist_ok (bool): If True, return the path unchanged without incrementing.
+        sep (str): Separator inserted between the path and the increment number.
+        mkdir (bool): If True, create the resulting directory.
+
+    Returns:
+        (Path): The (possibly incremented) path.
+
+    Notes:
+        Not thread-safe.
     """
     path = Path(path)  # os-agnostic
     if path.exists() and not exist_ok:
@@ -1257,9 +1212,14 @@ def imread(filename, flags=cv2.IMREAD_COLOR):
 
 
 def imwrite(filename, img):
-    """Writes an image to a file; returns True on success, False on failure.
+    """Write an image to a file, supporting multilanguage paths; returns True on success, False on failure.
 
-    Args: filename (str), img (ndarray).
+    Args:
+        filename (str): Destination file path.
+        img (np.ndarray): Image array to write.
+
+    Returns:
+        (bool): True if the image was written successfully, False otherwise.
     """
     try:
         cv2.imencode(Path(filename).suffix, img)[1].tofile(filename)

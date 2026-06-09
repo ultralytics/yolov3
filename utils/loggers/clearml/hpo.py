@@ -1,4 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+"""Run ClearML hyperparameter optimization over a YOLOv3 template training task."""
 
 from clearml import Task
 

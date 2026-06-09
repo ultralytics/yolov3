@@ -71,11 +71,11 @@ class ClearmlLogger:
     """
 
     def __init__(self, opt, hyp):
-        """- Initialize ClearML Task, this object will capture the experiment - Upload dataset version to ClearML Data
-        if opt.upload_dataset is True.
+        """Initialize a ClearML Task to capture the experiment and optionally upload a ClearML dataset version.
 
         Args:
-            opt (namespace) -- Commandline arguments for this run: hyp (dict) -- Hyperparameters for this run
+            opt (argparse.Namespace): Command-line arguments for this run.
+            hyp (dict): Hyperparameters for this run.
         """
         self.current_epoch = 0
         # Keep tracked of amount of logged images to enforce a limit
@@ -105,7 +105,7 @@ class ClearmlLogger:
 
             # Make sure the code is easily remotely runnable by setting the docker image to use by the remote agent
             self.task.set_base_docker(
-                "ultralytics/yolov5:latest",
+                "ultralytics/yolov3:latest",
                 docker_arguments='--ipc=host -e="CLEARML_AGENT_SKIP_PYTHON_ENV_INSTALL=1"',
                 docker_setup_bash_script="pip install clearml",
             )
@@ -123,8 +123,8 @@ class ClearmlLogger:
         """Log files (images) as debug samples in the ClearML task.
 
         Args:
-            files (List(PosixPath)) a list of file paths in PosixPath format: title (str) A title that groups together
-                images with the same values
+            files (list[PosixPath]): List of image file paths to log.
+            title (str): Title that groups together images with the same values.
         """
         for f in files:
             if f.exists():
@@ -138,10 +138,11 @@ class ClearmlLogger:
         """Draw the bounding boxes on a single image and report the result as a ClearML debug sample.
 
         Args:
-            image_path (PosixPath) the path the original image file
-            boxes (list): list of scaled predictions in the format - [xmin, ymin, xmax, ymax, confidence, class]
-            class_names (dict): dict containing mapping of class int to class name
-            image (Tensor): A torch tensor containing the actual image data
+            image_path (PosixPath): Path to the original image file.
+            boxes (list): Scaled predictions in the format [xmin, ymin, xmax, ymax, confidence, class].
+            class_names (dict): Mapping of class int to class name.
+            image (torch.Tensor): Tensor containing the image data.
+            conf_threshold (float): Minimum confidence required to draw a box.
         """
         if (
             len(self.current_epoch_logged_images) < self.max_imgs_to_log_per_epoch

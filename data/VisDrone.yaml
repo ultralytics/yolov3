@@ -3,7 +3,7 @@
 # VisDrone2019-DET dataset https://github.com/VisDrone/VisDrone-Dataset by Tianjin University
 # Example usage: python train.py --data VisDrone.yaml
 # parent
-# ├── yolov5
+# ├── yolov3
 # └── datasets
 #     └── VisDrone  ← downloads here (2.3 GB)
 
@@ -52,16 +52,16 @@ download: |
                   cls = int(row[5]) - 1
                   box = convert_box(img_size, tuple(map(int, row[:4])))
                   lines.append(f"{cls} {' '.join(f'{x:.6f}' for x in box)}\n")
-                  with open(str(f).replace(os.sep + 'annotations' + os.sep, os.sep + 'labels' + os.sep), 'w') as fl:
-                      fl.writelines(lines)  # write label.txt
+          with open(str(f).replace(os.sep + 'annotations' + os.sep, os.sep + 'labels' + os.sep), 'w') as fl:
+              fl.writelines(lines)  # write label.txt
 
 
   # Download
   dir = Path(yaml['path'])  # dataset root dir
   urls = ['https://github.com/ultralytics/assets/releases/download/v0.0.0/VisDrone2019-DET-train.zip',
           'https://github.com/ultralytics/assets/releases/download/v0.0.0/VisDrone2019-DET-val.zip',
-          'https://github.com/ultralytics/assets/releases/download/v0.0.0/VisDrone2019-DET-test-dev.zip',
-          'https://github.com/ultralytics/assets/releases/download/v0.0.0/VisDrone2019-DET-test-challenge.zip']
+          'https://github.com/ultralytics/assets/releases/download/v0.0.0/VisDrone2019-DET-test-dev.zip']
+          # 'https://github.com/ultralytics/assets/releases/download/v0.0.0/VisDrone2019-DET-test-challenge.zip'  # ignores test-challenge split
   download(urls, dir=dir, curl=True, threads=4)
 
   # Convert

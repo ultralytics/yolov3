@@ -3,7 +3,7 @@
 # Global Wheat 2020 dataset http://www.global-wheat.com/ by University of Saskatchewan
 # Example usage: python train.py --data GlobalWheat2020.yaml
 # parent
-# ├── yolov5
+# ├── yolov3
 # └── datasets
 #     └── GlobalWheat2020  ← downloads here (7.0 GB)
 

@@ -11,9 +11,7 @@ class SiLU(nn.Module):
 
     @staticmethod
     def forward(x):
-        """Applies the SiLU activation function, as detailed in https://arxiv.org/pdf/1606.08415.pdf, on input tensor
-        `x`.
-        """
+        """Apply the SiLU activation `x * sigmoid(x)` to the input tensor."""
         return x * torch.sigmoid(x)
 
 
@@ -22,9 +20,7 @@ class Hardswish(nn.Module):
 
     @staticmethod
     def forward(x):
-        """Applies Hardswish activation, suitable for TorchScript, CoreML, ONNX, modifying input `x` as per Hard-SiLU
-        definition.
-        """
+        """Apply the Hardswish activation, using an export-friendly formulation for TorchScript, CoreML, and ONNX."""
         return x * F.hardtanh(x + 3, 0.0, 6.0) / 6.0  # for TorchScript, CoreML and ONNX
 
 
@@ -33,10 +29,7 @@ class Mish(nn.Module):
 
     @staticmethod
     def forward(x):
-        """Applies the Mish activation function, enhancing model performance and convergence.
-
-        Reference: https://github.com/digantamisra98/Mish
-        """
+        """Apply the Mish activation `x * tanh(softplus(x))` to the input tensor."""
         return x * F.softplus(x).tanh()
 
 
@@ -48,24 +41,20 @@ class MemoryEfficientMish(nn.Module):
 
         @staticmethod
         def forward(ctx, x):
-            """Applies the Mish activation function in a memory-efficient manner, useful for enhancing model
-            performance.
-            """
+            """Compute the Mish activation forward pass and save the input for the backward pass."""
             ctx.save_for_backward(x)
             return x.mul(torch.tanh(F.softplus(x)))  # x * tanh(ln(1 + exp(x)))
 
         @staticmethod
         def backward(ctx, grad_output):
-            """Computes gradient of the Mish activation function for backpropagation, returning the derivative with
-            respect to the input.
-            """
+            """Compute the gradient of the Mish activation with respect to the saved input."""
             x = ctx.saved_tensors[0]
             sx = torch.sigmoid(x)
             fx = F.softplus(x).tanh()
             return grad_output * (fx + x * sx * (1 - fx * fx))
 
     def forward(self, x):
-        """Applies Mish activation function, useful in neural networks for nonlinear transformation of inputs."""
+        """Apply the memory-efficient Mish activation to the input tensor."""
         return self.F.apply(x)
 
 
@@ -73,15 +62,13 @@ class FReLU(nn.Module):
     """Implements the FReLU activation, combining ReLU and convolution from https://arxiv.org/abs/2007.11824."""
 
     def __init__(self, c1, k=3):  # ch_in, kernel
-        """Initializes FReLU with specified channel size and kernel, implementing activation from
-        https://arxiv.org/abs/2007.11824.
-        """
+        """Initialize FReLU with a depthwise conv and batch norm parameterized by channel count `c1` and kernel `k`."""
         super().__init__()
         self.conv = nn.Conv2d(c1, c1, k, 1, 1, groups=c1, bias=False)
         self.bn = nn.BatchNorm2d(c1)
 
     def forward(self, x):
-        """Performs FReLU activation on input, returning the max of input and its 2D convolution."""
+        """Apply FReLU, returning the elementwise max of the input and its batch-normed depthwise convolution."""
         return torch.max(x, self.bn(self.conv(x)))
 
 
@@ -91,17 +78,14 @@ class AconC(nn.Module):
     """
 
     def __init__(self, c1):
-        """Initializes ACON activation with learnable parameters p1, p2, and beta as per
-        https://arxiv.org/pdf/2009.04759.pdf.
-        """
+        """Initialize AconC with learnable per-channel parameters p1, p2, and beta for `c1` input channels."""
         super().__init__()
         self.p1 = nn.Parameter(torch.randn(1, c1, 1, 1))
         self.p2 = nn.Parameter(torch.randn(1, c1, 1, 1))
         self.beta = nn.Parameter(torch.ones(1, c1, 1, 1))
 
     def forward(self, x):
-        """Applies a parametric activation function to tensor x; see https://arxiv.org/pdf/2009.04759.pdf for details.
-        """
+        """Apply the AconC activation with a fixed learnable beta to the input tensor."""
         dpx = (self.p1 - self.p2) * x
         return dpx * torch.sigmoid(self.beta * dpx) + self.p2 * x
 
@@ -113,8 +97,8 @@ class MetaAconC(nn.Module):
     """
 
     def __init__(self, c1, k=1, s=1, r=16):  # ch_in, kernel, stride, r
-        """Initializes MetaAconC activation with params c1, optional k (kernel=1), s (stride=1), r (16), defining
-        activation dynamics.
+        """Initialize MetaAconC with a small bottleneck network (kernel `k`, stride `s`, reduction `r`) that generates
+        beta.
         """
         super().__init__()
         c2 = max(r, c1 // r)
@@ -126,7 +110,8 @@ class MetaAconC(nn.Module):
         # self.bn2 = nn.BatchNorm2d(c1)
 
     def forward(self, x):
-        """Applies a forward pass transforming input `x` using parametric operations and returns the modified tensor."""
+        """Apply the MetaAconC activation, generating beta from the input's spatial average via the bottleneck network.
+        """
         y = x.mean(dim=2, keepdims=True).mean(dim=3, keepdims=True)
         # batch-size 1 bug/instabilities https://github.com/ultralytics/yolov5/issues/2891
         # beta = torch.sigmoid(self.bn2(self.fc2(self.bn1(self.fc1(y)))))  # bug/unstable

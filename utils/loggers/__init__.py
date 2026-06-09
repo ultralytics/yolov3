@@ -22,9 +22,7 @@ try:
 except ImportError:
 
     def SummaryWriter(*args):
-        """Imports TensorBoard's SummaryWriter for logging, with a fallback returning None if TensorBoard is not
-        installed.
-        """
+        """Return None as a fallback for TensorBoard's SummaryWriter when TensorBoard is not installed."""
         return None  # None = SummaryWriter(str)
 
 
@@ -66,8 +64,7 @@ class Loggers:
     """Manages logging for training and validation using TensorBoard, Weights & Biases, ClearML, and Comet ML."""
 
     def __init__(self, save_dir=None, weights=None, opt=None, hyp=None, logger=None, include=LOGGERS):
-        """Initializes YOLOv3 logging with directory, weights, options, hyperparameters, and includes specified loggers.
-        """
+        """Initialize YOLOv3 logging with save directory, weights, options, hyperparameters, and included loggers."""
         self.save_dir = save_dir
         self.weights = weights
         self.opt = opt
@@ -165,9 +162,11 @@ class Loggers:
             self.comet_logger.on_pretrain_routine_start()
 
     def on_pretrain_routine_end(self, labels, names):
-        """Logs pretrain routine end, plots labels if enabled, updates WandB/Comet with images.
+        """Plot training labels at pretrain routine end and log the label images to W&B and Comet.
 
-        Takes `labels` (List of int), `names` (List of str).
+        Args:
+            labels (np.ndarray): Array of class labels for the training set.
+            names (list[str]): List of class names indexed by label.
         """
         if self.plots:
             plot_labels(labels, names, self.save_dir)
@@ -223,10 +222,7 @@ class Loggers:
             self.clearml.log_image_with_boxes(path, pred, names, im)
 
     def on_val_batch_end(self, batch_i, im, targets, paths, shapes, out):
-        """Logs a single validation batch for Comet ML analytics (batch_i: int, im: tensor, targets: tensor, paths:.
-
-        list, shapes: list, out: tensor).
-        """
+        """Forward a single validation batch (images, targets, paths, shapes, and predictions) to the Comet logger."""
         if self.comet_logger:
             self.comet_logger.on_val_batch_end(batch_i, im, targets, paths, shapes, out)
 
@@ -276,7 +272,8 @@ class Loggers:
             self.comet_logger.on_fit_epoch_end(x, epoch=epoch)
 
     def on_model_save(self, last, epoch, final_epoch, best_fitness, fi):
-        """Logs model to WandB/ClearML, considering save_period and if not final_epoch, also notes if best model so far.
+        """Log the checkpoint to W&B/ClearML on save_period epochs (excluding the final epoch), flagging the best so
+        far.
         """
         if (epoch + 1) % self.opt.save_period == 0 and not final_epoch and self.opt.save_period != -1:
             if self.wandb:
@@ -290,9 +287,7 @@ class Loggers:
             self.comet_logger.on_model_save(last, epoch, final_epoch, best_fitness, fi)
 
     def on_train_end(self, last, best, epoch, results):
-        """Callback to execute at training end, saving plots of results and relevant metrics to the specified save
-        directory.
-        """
+        """Save result plots at training end and log final metrics, images, and model artifacts to enabled loggers."""
         if self.plots:
             plot_results(file=self.save_dir / "results.csv")  # save results.png
         files = ["results.png", "confusion_matrix.png", *(f"{x}_curve.png" for x in ("F1", "PR", "P", "R"))]
@@ -334,13 +329,16 @@ class Loggers:
 
 
 class GenericLogger:
-    """YOLOv3 General purpose logger for non-task specific logging Usage: from utils.loggers import GenericLogger;
-    logger = GenericLogger(...).
+    """General-purpose logger for non-task-specific logging to CSV, TensorBoard, and Weights & Biases.
 
     Args:
-        opt: Run arguments
-        console_logger: Console logger
-        include: loggers to include
+        opt: Run arguments.
+        console_logger: Console logger.
+        include: Loggers to include.
+
+    Examples:
+        from utils.loggers import GenericLogger
+        logger = GenericLogger(...)
     """
 
     def __init__(self, opt, console_logger, include=("tb", "wandb")):
@@ -425,9 +423,7 @@ def log_tensorboard_graph(tb, model, imgsz=(640, 640)):
 
 
 def web_project_name(project):
-    """Converts local project name to a web-friendly format by adding a suffix based on its type (classify or segment).
-    """
+    """Converts a local detection project name to its web-friendly form, returning 'YOLOv3' for default runs."""
     if not project.startswith("runs/train"):
         return project
-    suffix = "-Classify" if project.endswith("-cls") else "-Segment" if project.endswith("-seg") else ""
-    return f"YOLOv3{suffix}"
+    return "YOLOv3"

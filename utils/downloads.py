@@ -77,10 +77,8 @@ def safe_download(file, url, url2=None, min_bytes=1e0, error_msg=""):
         LOGGER.info("")
 
 
-def attempt_download(file, repo="ultralytics/yolov5", release="v7.0"):
-    """Attempts to download a file from a specified URL or GitHub release, ensuring file integrity with a minimum size
-    check.
-    """
+def attempt_download(file, repo="ultralytics/yolov3", release="v9.6.0"):
+    """Download a file from a URL or a GitHub release asset if it is not already present locally."""
     from utils.general import LOGGER
 
     def github_assets(repository, version="latest"):
@@ -104,7 +102,7 @@ def attempt_download(file, repo="ultralytics/yolov5", release="v7.0"):
             return file
 
         # GitHub assets
-        assets = [f"yolov5{size}{suffix}.pt" for size in "nsmlx" for suffix in ("", "6", "-cls", "-seg")]  # default
+        assets = ["yolov3.pt", "yolov3-spp.pt", "yolov3-tiny.pt"]  # default
         try:
             tag, assets = github_assets(repo, release)
         except Exception:

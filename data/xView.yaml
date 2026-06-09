@@ -4,7 +4,7 @@
 # --------  DOWNLOAD DATA MANUALLY and jar xf val_images.zip to 'datasets/xView' before running train command!  --------
 # Example usage: python train.py --data xView.yaml
 # parent
-# ├── yolov5
+# ├── yolov3
 # └── datasets
 #     └── xView  ← downloads here (20.7 GB)
 
@@ -125,7 +125,7 @@ download: |
                       # Write YOLO label
                       if id not in shapes:
                           shapes[id] = Image.open(file).size
-                      box = xyxy2xywhn(box[None].astype(np.float), w=shapes[id][0], h=shapes[id][1], clip=True)
+                      box = xyxy2xywhn(box[None].astype(float), w=shapes[id][0], h=shapes[id][1], clip=True)
                       with open((labels / id).with_suffix('.txt'), 'a') as f:
                           f.write(f"{cls} {' '.join(f'{x:.6f}' for x in box[0])}\n")  # write label.txt
                   except Exception as e:

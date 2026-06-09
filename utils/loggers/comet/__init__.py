@@ -19,7 +19,7 @@ try:
 
     # Project Configuration
     config = comet_ml.config.get_config()
-    COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.project_name", default="yolov5")
+    COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.project_name", default="yolov3")
 except ImportError:
     comet_ml = None
     COMET_PROJECT_NAME = None
@@ -38,7 +38,7 @@ COMET_PREFIX = "comet://"
 COMET_MODE = os.getenv("COMET_MODE", "online")
 
 # Model Saving Settings
-COMET_MODEL_NAME = os.getenv("COMET_MODEL_NAME", "yolov5")
+COMET_MODEL_NAME = os.getenv("COMET_MODEL_NAME", "yolov3")
 
 # Dataset Artifact Settings
 COMET_UPLOAD_DATASET = os.getenv("COMET_UPLOAD_DATASET", "false").lower() == "true"
@@ -166,9 +166,7 @@ class CometLogger:
             self.experiment.log_other("optimizer_parameters", json.dumps(self.hyp))
 
     def _get_experiment(self, mode, experiment_id=None):
-        """Returns a comet_ml Experiment object, either online or offline, existing or new, based on mode and
-        experiment_id.
-        """
+        """Return a comet_ml Experiment, online or offline and existing or new, based on `mode` and `experiment_id`."""
         if mode == "offline":
             return (
                 comet_ml.ExistingOfflineExperiment(
@@ -221,9 +219,7 @@ class CometLogger:
         self.experiment.log_image(img, **kwargs)
 
     def log_model(self, path, opt, epoch, fitness_score, best_model=False):
-        """Logs a model's state at a given epoch, fitness, and optionality as best, requiring path, options, epoch, and
-        fitness score.
-        """
+        """Log the model checkpoints in `path` to Comet with epoch, fitness, and total-epochs metadata."""
         if not self.save_model:
             return
 
@@ -301,9 +297,7 @@ class CometLogger:
         return
 
     def preprocess_prediction(self, image, labels, shape, pred):
-        """Preprocesses predictions by adjusting label and prediction shapes; `image`: input image, `labels`: true
-        labels, `shape`: image shape, `pred`: model predictions.
-        """
+        """Scale predictions and labels to native image space, returning native-space predictions and labels."""
         nl, _ = labels.shape[0], pred.shape[0]
 
         # Predictions
@@ -349,8 +343,8 @@ class CometLogger:
         return artifact
 
     def upload_dataset_artifact(self):
-        """Uploads dataset to Comet as an artifact with optional custom dataset name, defaulting to 'yolov5-dataset'."""
-        dataset_name = self.data_dict.get("dataset_name", "yolov5-dataset")
+        """Uploads dataset to Comet as an artifact with optional custom dataset name, defaulting to 'yolov3-dataset'."""
+        dataset_name = self.data_dict.get("dataset_name", "yolov3-dataset")
         path = str((ROOT / Path(self.data_dict["path"])).resolve())
 
         metadata = self.data_dict.copy()
@@ -501,9 +495,7 @@ class CometLogger:
         return
 
     def on_val_end(self, nt, tp, fp, p, r, f1, ap, ap50, ap_class, confusion_matrix):
-        """Logs per-class metric stats to Comet.ml at validation end; requires class-wise tp, fp, nt, p, r, f1, ap,
-        ap50, ap_class, confusion_matrix.
-        """
+        """Log per-class metrics and the confusion matrix to Comet at the end of validation."""
         if self.comet_log_per_class_metrics and self.num_classes > 1:
             for i, c in enumerate(ap_class):
                 class_name = self.class_names[c]

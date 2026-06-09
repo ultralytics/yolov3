@@ -1,4 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+"""Run a Comet Optimizer hyperparameter sweep over YOLOv3 training."""
 
 import argparse
 import json
@@ -23,7 +24,7 @@ from utils.torch_utils import select_device
 
 # Project Configuration
 config = comet_ml.config.get_config()
-COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.project_name", default="yolov5")
+COMET_PROJECT_NAME = config.get_string(os.getenv("COMET_PROJECT_NAME"), "comet.project_name", default="yolov3")
 
 
 def get_args(known=False):

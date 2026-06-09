@@ -4,8 +4,6 @@
 import math
 import os
 import platform
-import subprocess
-import time
 import warnings
 from contextlib import contextmanager
 from copy import deepcopy
@@ -14,8 +12,10 @@ from pathlib import Path
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
+from ultralytics.utils.torch_utils import copy_attr, time_sync
+from ultralytics.utils.torch_utils import initialize_weights as initialize_weights
+from ultralytics.utils.torch_utils import scale_img as scale_img
 
 from utils.general import LOGGER, check_version, colorstr, file_date, git_describe
 
@@ -37,7 +37,7 @@ def smart_inference_mode(torch_1_9=check_version(torch.__version__, "1.9.0")):
     """Applies torch.inference_mode() if torch>=1.9.0 or torch.no_grad() otherwise as a decorator to functions."""
 
     def decorate(fn):
-        """Applies torch.inference_mode() if torch>=1.9.0, otherwise torch.no_grad(), as a decorator to functions."""
+        """Wrap a function in torch.inference_mode() if torch>=1.9.0 else torch.no_grad()."""
         return (torch.inference_mode if torch_1_9 else torch.no_grad)()(fn)
 
     return decorate
@@ -104,16 +104,6 @@ def torch_distributed_zero_first(local_rank: int):
         dist.barrier(device_ids=[0])
 
 
-def device_count():
-    """Returns the count of available CUDA devices; supports Linux and Windows, using nvidia-smi."""
-    assert platform.system() in ("Linux", "Windows"), "device_count() only supported on Linux or Windows"
-    try:
-        cmd = "nvidia-smi -L | wc -l" if platform.system() == "Linux" else 'nvidia-smi -L | find /c /v ""'  # Windows
-        return int(subprocess.run(cmd, shell=True, capture_output=True, check=True).stdout.decode().split()[-1])
-    except Exception:
-        return 0
-
-
 def select_device(device="", batch_size=0, newline=True):
     """Selects the device for running models, handling CPU, GPU, and MPS with optional batch size divisibility check."""
     s = f"YOLOv3 🚀 {git_describe() or file_date()} Python-{platform.python_version()} torch-{torch.__version__} "
@@ -138,7 +128,7 @@ def select_device(device="", batch_size=0, newline=True):
             p = torch.cuda.get_device_properties(i)
             s += f"{'' if i == 0 else space}CUDA:{d} ({p.name}, {p.total_memory / (1 << 20):.0f}MiB)\n"  # bytes to MB
         arg = "cuda:0"
-    elif mps and getattr(torch, "has_mps", False) and torch.backends.mps.is_available():  # prefer MPS if available
+    elif mps and check_version(torch.__version__, "1.12.0") and torch.backends.mps.is_available():  # prefer MPS
         s += "MPS\n"
         arg = "mps"
     else:  # revert to CPU
@@ -149,13 +139,6 @@ def select_device(device="", batch_size=0, newline=True):
         s = s.rstrip()
     LOGGER.info(s)
     return torch.device(arg)
-
-
-def time_sync():
-    """Synchronizes PyTorch across available CUDA devices and returns current time in seconds."""
-    if torch.cuda.is_available():
-        torch.cuda.synchronize()
-    return time.time()
 
 
 def profile(input, ops, n=10, device=None):
@@ -220,26 +203,6 @@ def is_parallel(model):
 def de_parallel(model):
     """Returns a single-GPU model if input model is using DataParallel (DP) or DistributedDataParallel (DDP)."""
     return model.module if is_parallel(model) else model
-
-
-def initialize_weights(model):
-    """Initializes weights for Conv2D, BatchNorm2d, and activation layers (Hardswish, LeakyReLU, ReLU, ReLU6, SiLU) in a
-    model.
-    """
-    for m in model.modules():
-        t = type(m)
-        if t is nn.Conv2d:
-            pass  # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-        elif t is nn.BatchNorm2d:
-            m.eps = 1e-3
-            m.momentum = 0.03
-        elif t in [nn.Hardswish, nn.LeakyReLU, nn.ReLU, nn.ReLU6, nn.SiLU]:
-            m.inplace = True
-
-
-def find_modules(model, mclass=nn.Conv2d):
-    """Finds indices of layers in 'model' matching 'mclass'; default searches for 'nn.Conv2d'."""
-    return [i for i, m in enumerate(model.module_list) if isinstance(m, mclass)]
 
 
 def sparsity(model):
@@ -319,31 +282,8 @@ def model_info(model, verbose=False, imgsz=640):
     except Exception:
         fs = ""
 
-    name = Path(model.yaml_file).stem.replace("yolov5", "YOLOv3") if hasattr(model, "yaml_file") else "Model"
+    name = Path(model.yaml_file).stem.replace("yolov3", "YOLOv3") if hasattr(model, "yaml_file") else "Model"
     LOGGER.info(f"{name} summary: {len(list(model.modules()))} layers, {n_p} parameters, {n_g} gradients{fs}")
-
-
-def scale_img(img, ratio=1.0, same_shape=False, gs=32):  # img(16,3,256,416)
-    """Scales and optionally pads an image tensor to a specified ratio, maintaining its aspect ratio constrained by
-    `gs`.
-    """
-    if ratio == 1.0:
-        return img
-    h, w = img.shape[2:]
-    s = (int(h * ratio), int(w * ratio))  # new size
-    img = F.interpolate(img, size=s, mode="bilinear", align_corners=False)  # resize
-    if not same_shape:  # pad/crop img
-        h, w = (math.ceil(x * ratio / gs) * gs for x in (h, w))
-    return F.pad(img, [0, w - s[1], 0, h - s[0]], value=0.447)  # value = imagenet mean
-
-
-def copy_attr(a, b, include=(), exclude=()):
-    """Copies attributes from object b to a, with options to include or exclude specific attributes."""
-    for k, v in b.__dict__.items():
-        if (len(include) and k not in include) or k.startswith("_") or k in exclude:
-            continue
-        else:
-            setattr(a, k, v)
 
 
 def smart_optimizer(model, name="Adam", lr=0.001, momentum=0.9, decay=1e-5):
@@ -379,22 +319,7 @@ def smart_optimizer(model, name="Adam", lr=0.001, momentum=0.9, decay=1e-5):
     return optimizer
 
 
-def smart_hub_load(repo="ultralytics/yolov5", model="yolov5s", **kwargs):
-    """Loads YOLO model from Ultralytics repo with smart error handling, supports `force_reload` on failure.
-
-    See https://github.com/ultralytics/yolov5
-    """
-    if check_version(torch.__version__, "1.9.1"):
-        kwargs["skip_validation"] = True  # validation causes GitHub API rate limit errors
-    if check_version(torch.__version__, "1.12.0"):
-        kwargs["trust_repo"] = True  # argument required starting in torch 0.12
-    try:
-        return torch.hub.load(repo, model, **kwargs)
-    except Exception:
-        return torch.hub.load(repo, model, force_reload=True, **kwargs)
-
-
-def smart_resume(ckpt, optimizer, ema=None, weights="yolov5s.pt", epochs=300, resume=True):
+def smart_resume(ckpt, optimizer, ema=None, weights="yolov3-tiny.pt", epochs=300, resume=True):
     """Resumes or fine-tunes training from a checkpoint with optimizer and EMA support; updates epochs based on
     progress.
     """
@@ -449,9 +374,11 @@ class EarlyStopping:
 
 
 class ModelEMA:
-    """Updated Exponential Moving Average (EMA) from https://github.com/rwightman/pytorch-image-models Keeps a moving
-    average of everything in the model state_dict (parameters and buffers) For EMA details
-    see https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage.
+    """Exponential Moving Average of a model's state_dict (parameters and buffers).
+
+    Maintains a smoothed copy of all values in the model state_dict to stabilize training. Adapted from
+    https://github.com/rwightman/pytorch-image-models; see
+    https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage for EMA details.
     """
 
     def __init__(self, model, decay=0.9999, tau=2000, updates=0):

@@ -34,10 +34,10 @@ The API server will start listening on the specified port (default is 5000).
 
 You can send prediction requests to the running API using tools like [`curl`](https://curl.se/) or scripting languages.
 
-Send a POST request with an image file (`zidane.jpg` in this example) to the `/v1/object-detection/yolov3` endpoint:
+Send a POST request with an image file (`zidane.jpg` in this example) to the `/v1/object-detection/yolov3-tiny` endpoint:
 
 ```shell
-curl -X POST -F image=@zidane.jpg 'http://localhost:5000/v1/object-detection/yolov3'
+curl -X POST -F image=@zidane.jpg 'http://localhost:5000/v1/object-detection/yolov3-tiny'
 ```
 
 _Ensure `zidane.jpg` (or your test image) is present in the directory where you run the `curl` command._

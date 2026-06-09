@@ -16,7 +16,12 @@ class TritonRemoteModel:
     """
 
     def __init__(self, url: str):
-        """Keyword Arguments: url: Fully qualified address of the Triton server - for e.g. grpc://localhost:8000."""
+        """Initialize the Triton client from a server URL, selecting the GRPC or HTTP backend by scheme.
+
+        Args:
+            url (str): Fully qualified address of the Triton server, e.g. grpc://localhost:8000 or
+                http://localhost:8000.
+        """
         parsed_url = urlparse(url)
         if parsed_url.scheme == "grpc":
             from tritonclient.grpc import InferenceServerClient, InferInput
@@ -52,10 +57,10 @@ class TritonRemoteModel:
         return self.metadata.get("backend", self.metadata.get("platform"))
 
     def __call__(self, *args, **kwargs) -> torch.Tensor | tuple[torch.Tensor, ...]:
-        """Invokes the model.
+        """Run inference, returning a single output tensor or a tuple of them.
 
-        Parameters can be provided via args or kwargs. args, if provided, are assumed to match the order of inputs of
-        the model. kwargs are matched with the model input names.
+        Inputs may be passed positionally (matched to the model's input order) or by keyword (matched to the model's
+        input names), but not both at once.
         """
         inputs = self._create_inputs(*args, **kwargs)
         response = self.client.infer(model_name=self.model_name, inputs=inputs)

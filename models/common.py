@@ -95,8 +95,8 @@ class DWConvTranspose2d(nn.ConvTranspose2d):
     """Implements a depth-wise transpose convolution layer with specified channels, kernel size, stride, and padding."""
 
     def __init__(self, c1, c2, k=1, s=1, p1=0, p2=0):  # ch_in, ch_out, kernel, stride, padding, padding_out
-        """Initializes a depth-wise or transpose convolution layer with specified in/out channels, kernel size, stride,
-        and padding.
+        """Initializes a depth-wise transpose convolution layer with specified in/out channels, kernel size, stride, and
+        input/output padding.
         """
         super().__init__(c1, c2, k, s, p1, p2, groups=math.gcd(c1, c2))
 
@@ -434,7 +434,9 @@ class Concat(nn.Module):
 class DetectMultiBackend(nn.Module):
     """YOLOv3 multi-backend class for inference on frameworks like PyTorch, ONNX, TensorRT, and more."""
 
-    def __init__(self, weights="yolov5s.pt", device=torch.device("cpu"), dnn=False, data=None, fp16=False, fuse=True):
+    def __init__(
+        self, weights="yolov3-tiny.pt", device=torch.device("cpu"), dnn=False, data=None, fp16=False, fuse=True
+    ):
         """Initializes multi-backend detection with options for various frameworks and devices, also handles model
         download.
         """
@@ -493,7 +495,7 @@ class DetectMultiBackend(nn.Module):
             output_names = [x.name for x in session.get_outputs()]
             meta = session.get_modelmeta().custom_metadata_map  # metadata
             if "stride" in meta:
-                stride, names = int(meta["stride"]), eval(meta["names"])
+                stride, names = int(meta["stride"]), ast.literal_eval(meta["names"])
         elif xml:  # OpenVINO
             LOGGER.info(f"Loading {w} for OpenVINO inference...")
             check_requirements("openvino>=2023.0")  # requires openvino-dev: https://pypi.org/project/openvino-dev/
@@ -683,10 +685,10 @@ class DetectMultiBackend(nn.Module):
             y = self.model.predict({"image": im})  # coordinates are xywh normalized
             if "confidence" in y:
                 box = xywh2xyxy(y["coordinates"] * [[w, h, w, h]])  # xyxy pixels
-                conf, cls = y["confidence"].max(1), y["confidence"].argmax(1).astype(np.float)
+                conf, cls = y["confidence"].max(1), y["confidence"].argmax(1).astype(float)
                 y = np.concatenate((box, conf.reshape(-1, 1), cls.reshape(-1, 1)), 1)
             else:
-                y = list(reversed(y.values()))  # reversed for segmentation models (pred, proto)
+                y = list(reversed(y.values()))  # reversed for models with multiple outputs
         elif self.paddle:  # PaddlePaddle
             im = im.cpu().numpy().astype(np.float32)
             self.input_handle.copy_from_cpu(im)
@@ -807,8 +809,8 @@ class AutoShape(nn.Module):
 
     @smart_inference_mode()
     def forward(self, ims, size=640, augment=False, profile=False):
-        """Performs inference on various input sources with optional augmentation and profiling; see
-        `https://ultralytics.com`.
+        """Runs inference on file paths, URIs, PIL/OpenCV/numpy images, torch tensors, or lists thereof, with optional
+        augmentation and profiling.
         """
         #   file:        ims = 'data/images/zidane.jpg'  # str or PosixPath
         #   URI:             = 'https://ultralytics.com/images/zidane.jpg'

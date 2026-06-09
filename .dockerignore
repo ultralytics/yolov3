@@ -7,7 +7,6 @@ output
 coco
 storage.googleapis.com
 
-data/samples/*
 **/results*.csv
 *.jpg
 
@@ -26,7 +25,6 @@ data/samples/*
 *_web_model/
 *_openvino_model/
 
-# Below Copied From .gitignore -----------------------------------------------------------------------------------------
 # Below Copied From .gitignore -----------------------------------------------------------------------------------------
 
 

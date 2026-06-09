@@ -1,5 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
-"""Run a Flask REST API exposing one or more YOLOv5s models."""
+"""Run a Flask REST API exposing one or more YOLOv3 models."""
 
 import argparse
 import io
@@ -16,9 +16,7 @@ DETECTION_URL = "/v1/object-detection/<model>"
 
 @app.route(DETECTION_URL, methods=["POST"])
 def predict(model):
-    """Predicts objects in an image using YOLOv5s models exposed via Flask REST API; expects 'image' file in POST
-    request.
-    """
+    """Run inference on a POSTed image with the named YOLOv3 model and return detections as JSON."""
     if request.method != "POST":
         return
 
@@ -40,10 +38,12 @@ def predict(model):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flask API exposing YOLOv3 model")
     parser.add_argument("--port", default=5000, type=int, help="port number")
-    parser.add_argument("--model", nargs="+", default=["yolov5s"], help="model(s) to run, i.e. --model yolov5n yolov5s")
+    parser.add_argument(
+        "--model", nargs="+", default=["yolov3-tiny"], help="model(s) to run, i.e. --model yolov3-tiny yolov3"
+    )
     opt = parser.parse_args()
 
     for m in opt.model:
-        models[m] = torch.hub.load("ultralytics/yolov5", m, force_reload=True, skip_validation=True)
+        models[m] = torch.hub.load("ultralytics/yolov3", m, force_reload=True, skip_validation=True)
 
     app.run(host="0.0.0.0", port=opt.port)  # debug=True causes Restarting with stat

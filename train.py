@@ -1,16 +1,16 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 """
-Train a YOLOv3 model on a custom dataset. Models and datasets download automatically from the latest YOLOv3 release.
+Train a YOLOv3 model on a custom dataset. Models and datasets download automatically from the Ultralytics release.
 
 Usage - Single-GPU training:
-    $ python train.py --data coco128.yaml --weights yolov5s.pt --img 640  # from pretrained (recommended)
-    $ python train.py --data coco128.yaml --weights '' --cfg yolov5s.yaml --img 640  # from scratch
+    $ python train.py --data coco128.yaml --weights yolov3-tiny.pt --img 640  # from pretrained (recommended)
+    $ python train.py --data coco128.yaml --weights '' --cfg yolov3-tiny.yaml --img 640  # from scratch
 
 Usage - Multi-GPU DDP training:
-    $ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 train.py --data coco128.yaml --weights yolov5s.pt --img 640 --device 0,1,2,3
+    $ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 train.py --data coco128.yaml --weights yolov3-tiny.pt --img 640 --device 0,1,2,3
 
-Models:     https://github.com/ultralytics/yolov5/tree/master/models
-Datasets:   https://github.com/ultralytics/yolov5/tree/master/data
+Models:     https://github.com/ultralytics/yolov3/tree/master/models
+Datasets:   https://github.com/ultralytics/yolov3/tree/master/data
 Tutorial:   https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
 """
 
@@ -112,20 +112,10 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         callbacks (Callbacks): Callbacks to handle various stages of the training lifecycle.
 
     Returns:
-        None
-        Usage - Single-GPU training:
-        $ python train.py --data coco128.yaml --weights yolov5s.pt --img 640  # from pretrained (recommended)
-        $ python train.py --data coco128.yaml --weights '' --cfg yolov5s.yaml --img 640  # from scratch
-        Usage - Multi-GPU DDP training:
-        $ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 train.py --data coco128.yaml --weights
-            yolov5s.pt --img 640 --device 0,1,2,3
-        Models: https://github.com/ultralytics/yolov5/tree/master/models
-        Datasets: https://github.com/ultralytics/yolov5/tree/master/data
-        Tutorial: https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
+        (tuple): Final validation results (P, R, mAP@0.5, mAP@0.5:0.95, val_box_loss, val_obj_loss, val_cls_loss).
 
     Examples:
         ```python
-        from ultralytics import train
         import argparse
         import torch
         from utils.callbacks import Callbacks
@@ -133,8 +123,8 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         # Example usage
         args = argparse.Namespace(
             data='coco128.yaml',
-            weights='yolov5s.pt',
-            cfg='yolov5s.yaml',
+            weights='yolov3-tiny.pt',
+            cfg='yolov3-tiny.yaml',
             img_size=640,
             epochs=50,
             batch_size=16,
@@ -542,7 +532,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
 
 
 def parse_opt(known=False):
-    """Parse command line arguments for configuring the training of a YOLO model.
+    """Parse command line arguments for configuring the training of a YOLOv3 model.
 
     Args:
         known (bool): Flag to parse known arguments only, defaults to False.
@@ -561,8 +551,8 @@ def parse_opt(known=False):
         * Set `known` to True for parsing only the known arguments, useful for partial arguments.
 
     References:
-        * Models: https://github.com/ultralytics/yolov5/tree/master/models
-        * Datasets: https://github.com/ultralytics/yolov5/tree/master/data
+        * Models: https://github.com/ultralytics/yolov3/tree/master/models
+        * Datasets: https://github.com/ultralytics/yolov3/tree/master/data
         * Training Tutorial: https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
     """
     parser = argparse.ArgumentParser()
@@ -627,17 +617,17 @@ def main(opt, callbacks=Callbacks()):
     Examples:
         Single-GPU training:
         ```python
-        $ python train.py --data coco128.yaml --weights yolov5s.pt --img 640  # from pretrained (recommended)
-        $ python train.py --data coco128.yaml --weights '' --cfg yolov5s.yaml --img 640  # from scratch
+        $ python train.py --data coco128.yaml --weights yolov3-tiny.pt --img 640  # from pretrained (recommended)
+        $ python train.py --data coco128.yaml --weights '' --cfg yolov3-tiny.yaml --img 640  # from scratch
         ```
 
         Multi-GPU DDP training:
         ```python
-        $ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 train.py --data coco128.yaml         --weights yolov5s.pt --img 640 --device 0,1,2,3
+        $ python -m torch.distributed.run --nproc_per_node 4 --master_port 1 train.py --data coco128.yaml         --weights yolov3-tiny.pt --img 640 --device 0,1,2,3
         ```
 
-        Models: https://github.com/ultralytics/yolov5/tree/master/models
-        Datasets: https://github.com/ultralytics/yolov5/tree/master/data
+        Models: https://github.com/ultralytics/yolov3/tree/master/models
+        Datasets: https://github.com/ultralytics/yolov3/tree/master/data
         Tutorial: https://docs.ultralytics.com/yolov5/tutorials/train_custom_data
 
     Notes:
@@ -726,7 +716,7 @@ def main(opt, callbacks=Callbacks()):
             "perspective": (0, 0.0, 0.001),  # image perspective (+/- fraction), range 0-0.001
             "flipud": (1, 0.0, 1.0),  # image flip up-down (probability)
             "fliplr": (0, 0.0, 1.0),  # image flip left-right (probability)
-            "mosaic": (1, 0.0, 1.0),  # image mixup (probability)
+            "mosaic": (1, 0.0, 1.0),  # image mosaic (probability)
             "mixup": (1, 0.0, 1.0),  # image mixup (probability)
             "copy_paste": (1, 0.0, 1.0),
         }  # segment copy-paste (probability)
@@ -848,17 +838,16 @@ def run(**kwargs):
         local_rank (int): For automatic DDP Multi-GPU argument parsing, do not modify.
 
     Returns:
-        None
+        (argparse.Namespace): The parsed options namespace with all keyword overrides applied.
 
     Examples:
         ```python
-        from ultralytics import run
-        run(data='coco128.yaml', weights='yolov5m.pt', imgsz=320, epochs=100, batch_size=16)
+        run(data='coco128.yaml', weights='yolov3.pt', imgsz=320, epochs=100, batch_size=16)
         ```
 
     Notes:
         - Ensure the dataset YAML file and initial weights are accessible.
-        - Refer to the [Ultralytics YOLOv5 repository](https://github.com/ultralytics/yolov5) for model and data configurations.
+        - Refer to the [Ultralytics YOLOv3 repository](https://github.com/ultralytics/yolov3) for model and data configurations.
         - Use the [Training Tutorial](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data/) for custom dataset training.
     """
     opt = parse_opt(True)

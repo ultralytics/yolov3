@@ -1,7 +1,8 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
 # WARNING ⚠️ wandb is deprecated and will be removed in future release.
-# See supported integrations at https://github.com/ultralytics/yolov5#integrations
+# See supported integrations at https://github.com/ultralytics/yolov3#integrations
+"""Weights & Biases logging utilities for YOLOv3 (deprecated)."""
 
 import logging
 import os
@@ -18,7 +19,7 @@ if str(ROOT) not in sys.path:
 RANK = int(os.getenv("RANK", -1))
 DEPRECATION_WARNING = (
     f"{colorstr('wandb')}: WARNING ⚠️ wandb is deprecated and will be removed in a future release. "
-    f"See supported integrations at https://github.com/ultralytics/yolov5#integrations."
+    f"See supported integrations at https://github.com/ultralytics/yolov3#integrations."
 )
 
 try:
@@ -43,12 +44,12 @@ class WandbLogger:
     """
 
     def __init__(self, opt, run_id=None, job_type="Training"):
-        """- Initialize WandbLogger instance - Upload dataset if opt.upload_dataset is True - Setup training processes
-        if job_type is 'Training'.
+        """Initialize a WandbLogger and set up the training run when `job_type` is 'Training'.
 
         Args:
-            opt (namespace) -- Commandline arguments for this run: run_id (str) -- Run ID of W&B run to be resumed
-                job_type (str) -- To set the job_type for this run
+            opt (argparse.Namespace): Command-line arguments for this run.
+            run_id (str, optional): Run ID of a W&B run to resume.
+            job_type (str): Job type for this run.
         """
         # Pre-training routine --
         self.job_type = job_type
@@ -79,13 +80,10 @@ class WandbLogger:
             self.setup_training(opt)
 
     def setup_training(self, opt):
-        """Setup the necessary processes for training YOLO models: - Attempt to download model checkpoint and dataset
-        artifacts if opt.resume stats with WANDB_ARTIFACT_PREFIX - Update data_dict, to contain info of previous
-        run if resumed and the paths of dataset artifact if downloaded - Setup log_dict,
-        initialize bbox_interval.
+        """Set up training: restore checkpoint and config when resuming a W&B run, then initialize bbox_interval.
 
         Args:
-            opt (namespace) -- commandline arguments for this run
+            opt (argparse.Namespace): Command-line arguments for this run.
         """
         self.log_dict, self.current_epoch = {}, 0
         self.bbox_interval = opt.bbox_interval
@@ -110,12 +108,14 @@ class WandbLogger:
                 self.bbox_interval = opt.bbox_interval = opt.epochs + 1  # disable bbox_interval
 
     def log_model(self, path, opt, epoch, fitness_score, best_model=False):
-        """Log the model checkpoint as W&B artifact.
+        """Log the model checkpoint as a W&B artifact.
 
         Args:
-            path (Path)   -- Path of directory containing the checkpoints: opt (namespace) -- Command line arguments for
-                this run epoch (int) -- Current epoch number fitness_score (float) -- fitness score for current epoch
-                best_model (boolean) -- Boolean representing if the current checkpoint is the best yet.
+            path (Path): Path of the directory containing the checkpoints.
+            opt (argparse.Namespace): Command-line arguments for this run.
+            epoch (int): Current epoch number.
+            fitness_score (float): Fitness score for the current epoch.
+            best_model (bool): Whether the current checkpoint is the best yet.
         """
         model_artifact = wandb.Artifact(
             f"run_{wandb.run.id}_model",
@@ -142,7 +142,7 @@ class WandbLogger:
         LOGGER.info(f"Saving model artifact on epoch {epoch + 1}")
 
     def val_one_image(self, pred, predn, path, names, im):
-        """Evaluates model's prediction for a single image, updating metrics based on comparison with ground truth."""
+        """Handle a single validation image and its predictions (currently a no-op placeholder)."""
         pass
 
     def log(self, log_dict):
@@ -156,11 +156,7 @@ class WandbLogger:
                 self.log_dict[key] = value
 
     def end_epoch(self):
-        """Commit the log_dict, model artifacts and Tables to W&B and flush the log_dict.
-
-        Args:
-            best_result (boolean): Boolean representing if the result of this evaluation is best or not
-        """
+        """Commit the accumulated log_dict to W&B and reset it for the next epoch."""
         if self.wandb_run:
             with all_logging_disabled():
                 try:
