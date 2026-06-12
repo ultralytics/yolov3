@@ -229,7 +229,7 @@ def plot_val_txt():  # from utils.plots import *; plot_val()
     box = xyxy2xywh(x[:, :4])
     cx, cy = box[:, 0], box[:, 1]
 
-    fig, ax = plt.subplots(1, 1, figsize=(6, 6), tight_layout=True)
+    _fig, ax = plt.subplots(1, 1, figsize=(6, 6), tight_layout=True)
     ax.hist2d(cx, cy, bins=600, cmax=10, cmin=0)
     ax.set_aspect("equal")
     plt.savefig("hist2d.png", dpi=300)

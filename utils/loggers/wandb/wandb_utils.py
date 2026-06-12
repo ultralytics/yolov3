@@ -149,7 +149,7 @@ class WandbLogger:
         """Save the metrics to the logging dictionary.
 
         Args:
-            log_dict (Dict) -- metrics/media to be logged in current step
+            log_dict (dict): Metrics/media to be logged in current step.
         """
         if self.wandb_run:
             for key, value in log_dict.items():

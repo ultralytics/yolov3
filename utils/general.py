@@ -662,7 +662,7 @@ def download(url, dir=".", unzip=True, delete=True, curl=False, threads=1, retry
             download_one(u, dir)
 
 
-# Keep local (do not dedup): regex differs from ultralytics clean_str (strips ´, keeps backtick)
+# Keep local (do not dedup): regex differs from ultralytics clean_str (strips acute accent, keeps backtick)
 def clean_str(s):
     """Cleans a string by replacing special characters with underscores, e.g., 'test@string!' to 'test_string_'."""
     return re.sub(pattern="[|@#!¡·$€%&()=?¿^*;:,¨´><+]", repl="_", string=s)

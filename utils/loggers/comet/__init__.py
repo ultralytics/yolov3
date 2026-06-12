@@ -1,5 +1,7 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
+# ruff: noqa: E402
+
 import glob
 import json
 import logging

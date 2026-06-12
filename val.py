@@ -1,4 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+# ruff: noqa: E402
 """
 Validate a trained YOLOv3 detection model on a detection dataset.
 

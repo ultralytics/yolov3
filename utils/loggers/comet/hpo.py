@@ -1,4 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+# ruff: noqa: E402
 """Run a Comet Optimizer hyperparameter sweep over YOLOv3 training."""
 
 import argparse

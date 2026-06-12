@@ -1,4 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+# ruff: noqa: E402
 """
 Train a YOLOv3 model on a custom dataset. Models and datasets download automatically from the Ultralytics release.
 
@@ -837,6 +839,7 @@ def run(**kwargs):
         save_period (int): Save checkpoint every 'save_period' epochs (disabled if less than 1).
         seed (int): Global training seed for reproducibility.
         local_rank (int): For automatic DDP Multi-GPU argument parsing, do not modify.
+        **kwargs: Additional training options overriding parser defaults.
 
     Returns:
         (argparse.Namespace): The parsed options namespace with all keyword overrides applied.
