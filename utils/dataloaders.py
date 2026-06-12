@@ -481,8 +481,7 @@ class LoadStreams:
 
 
 def img2label_paths(img_paths):
-    """Converts image paths to corresponding label paths by replacing `/images/` with `/labels/` and `.jpg` with `.txt`.
-    """
+    """Converts image paths to corresponding label paths by replacing `/images/` with `/labels/` and `.jpg` with `.txt`."""
     sa, sb = f"{os.sep}images{os.sep}", f"{os.sep}labels{os.sep}"  # /images/, /labels/ substrings
     return [sb.join(x.rsplit(sa, 1)).rsplit(".", 1)[0] + ".txt" for x in img_paths]
 
@@ -826,7 +825,7 @@ class LoadImagesAndLabels(Dataset):
         labels4, segments4 = [], []
         s = self.img_size
         yc, xc = (int(random.uniform(-x, 2 * s + x)) for x in self.mosaic_border)  # mosaic center x, y
-        indices = [index] + random.choices(self.indices, k=3)  # 3 additional image indices
+        indices = [index, *random.choices(self.indices, k=3)]  # 3 additional image indices
         random.shuffle(indices)
         for i, index in enumerate(indices):
             # Load image
@@ -885,7 +884,7 @@ class LoadImagesAndLabels(Dataset):
         """Loads 1 image + 8 random images into a 9-image mosaic for YOLOv3, returning combined image and labels."""
         labels9, segments9 = [], []
         s = self.img_size
-        indices = [index] + random.choices(self.indices, k=8)  # 8 additional image indices
+        indices = [index, *random.choices(self.indices, k=8)]  # 8 additional image indices
         random.shuffle(indices)
         hp, wp = -1, -1  # height, width previous
         for i, index in enumerate(indices):

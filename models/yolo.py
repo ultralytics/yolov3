@@ -1,4 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+# ruff: noqa: E402
 """
 YOLO-specific modules.
 
@@ -7,11 +9,16 @@ Usage:
 """
 
 import argparse
+import contextlib
+import math
 import os
 import platform
 import sys
 from copy import deepcopy
 from pathlib import Path
+
+import torch
+import torch.nn as nn
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]  # YOLOv3 root directory
@@ -20,10 +27,30 @@ if str(ROOT) not in sys.path:
 if platform.system() != "Windows":
     ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-from models.common import *  # noqa
-from models.experimental import *  # noqa
+from models.common import (
+    C3,
+    C3SPP,
+    C3TR,
+    SPP,
+    SPPF,
+    Bottleneck,
+    BottleneckCSP,
+    C3Ghost,
+    C3x,
+    Concat,
+    Contract,
+    Conv,
+    CrossConv,
+    DWConv,
+    DWConvTranspose2d,
+    Expand,
+    Focus,
+    GhostBottleneck,
+    GhostConv,
+)
+from models.experimental import MixConv2d
 from utils.autoanchor import check_anchor_order
-from utils.general import LOGGER, check_version, check_yaml, make_divisible, print_args
+from utils.general import LOGGER, check_version, check_yaml, colorstr, make_divisible, print_args
 from utils.plots import feature_visualization
 from utils.torch_utils import (
     fuse_conv_and_bn,

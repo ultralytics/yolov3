@@ -1,4 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+# ruff: noqa: E402
 """
 Run YOLOv3 detection inference on images, videos, directories, globs, webcam, streams, etc.
 

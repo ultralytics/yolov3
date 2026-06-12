@@ -184,8 +184,7 @@ def de_parallel(model):
 
 
 def sparsity(model):
-    """Calculates and returns the global sparsity of a model as the ratio of zero-valued parameters to total parameters.
-    """
+    """Calculates and returns the global sparsity of a model as the ratio of zero-valued parameters to total parameters."""
     a, b = 0, 0
     for p in model.parameters():
         a += p.numel()
@@ -216,8 +215,8 @@ def model_info(model, verbose=False, imgsz=640):
         for i, (name, p) in enumerate(model.named_parameters()):
             name = name.replace("module_list.", "")
             print(
-                "%5g %40s %9s %12g %20s %10.3g %10.3g"
-                % (i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std())
+                f"{i:5g} {name:>40s} {p.requires_grad!s:>9s} {p.numel():12g} {list(p.shape)!s:>20s} "
+                f"{p.mean():10.3g} {p.std():10.3g}"
             )
 
     try:  # FLOPs

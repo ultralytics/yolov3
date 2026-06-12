@@ -1,4 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+# ruff: noqa: E402
 """
 Export a YOLOv3 PyTorch model to other formats.
 
@@ -275,6 +277,7 @@ def export_openvino(file, metadata, half, int8, data, prefix=colorstr("OpenVINO:
         half (bool): Indicates if FP16 precision should be used.
         int8 (bool): Indicates if INT8 quantization should be applied.
         data (str): Path to the dataset file (.yaml) for post-training quantization.
+        prefix (str): Logging prefix for OpenVINO export messages.
 
     Returns:
         (str): Directory path of the exported OpenVINO model.
