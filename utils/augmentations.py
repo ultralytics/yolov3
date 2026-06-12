@@ -263,7 +263,8 @@ def cutout(im, labels, p=0.5):
 
 
 def mixup(im, labels, im2, labels2):
-    """Applies MixUp augmentation by blending images and labels; see https://arxiv.org/pdf/1710.09412.pdf for details."""
+    """Applies MixUp augmentation by blending images and labels; see https://arxiv.org/pdf/1710.09412.pdf for details.
+    """
     r = np.random.beta(32.0, 32.0)  # mixup ratio, alpha=beta=32.0
     im = (im * r + im2 * (1 - r)).astype(np.uint8)
     labels = np.concatenate((labels, labels2), 0)

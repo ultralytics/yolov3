@@ -83,7 +83,8 @@ class QFocalLoss(nn.Module):
         self.loss_fcn.reduction = "none"  # required to apply FL to each element
 
     def forward(self, pred, true):
-        """Computes focal loss between predictions and true labels using configured loss function, `gamma`, and `alpha`."""
+        """Computes focal loss between predictions and true labels using configured loss function, `gamma`, and `alpha`.
+        """
         loss = self.loss_fcn(pred, true)
 
         pred_prob = torch.sigmoid(pred)  # prob from logits
@@ -186,7 +187,8 @@ class ComputeLoss:
         return (lbox + lobj + lcls) * bs, torch.cat((lbox, lobj, lcls)).detach()
 
     def build_targets(self, p, targets):
-        """Match `targets` (image, class, x, y, w, h) to anchors per layer, returning tcls, tbox, indices, and anchors."""
+        """Match `targets` (image, class, x, y, w, h) to anchors per layer, returning tcls, tbox, indices, and anchors.
+        """
         na, nt = self.na, targets.shape[0]  # number of anchors, targets
         tcls, tbox, indices, anch = [], [], [], []
         gain = torch.ones(7, device=self.device)  # normalized to gridspace gain
