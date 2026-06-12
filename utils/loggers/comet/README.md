@@ -50,14 +50,14 @@ You can set up Comet credentials for YOLOv3 in two ways:
 
 ### Run the Training Script
 
-Run the [Ultralytics training script](https://docs.ultralytics.com/modes/train/) as usual. Comet will automatically integrate with YOLOv3.
+Run the [Ultralytics training script](https://docs.ultralytics.com/modes/train) as usual. Comet will automatically integrate with YOLOv3.
 
 ```shell
 # Train YOLOv3 on COCO128 for 5 epochs
 python train.py --img 640 --batch 16 --epochs 5 --data coco128.yaml --weights yolov3.pt
 ```
 
-Comet will automatically log your hyperparameters, command-line arguments, training metrics, and validation metrics. You can analyze your runs in the Comet UI. For more on metrics like mAP and Recall, see the [YOLO Performance Metrics guide](https://docs.ultralytics.com/guides/yolo-performance-metrics/).
+Comet will automatically log your hyperparameters, command-line arguments, training metrics, and validation metrics. You can analyze your runs in the Comet UI. For more on metrics like mAP and Recall, see the [YOLO Performance Metrics guide](https://docs.ultralytics.com/guides/yolo-performance-metrics).
 
 <img width="1920" alt="Comet UI showing YOLO training run" src="https://user-images.githubusercontent.com/26833433/202851203-164e94e1-2238-46dd-91f8-de020e9d6b41.png">
 
@@ -100,7 +100,7 @@ export COMET_LOG_PREDICTIONS=true                           # Set to false to di
 
 ### Logging Checkpoints with Comet
 
-By default, [model checkpoints](https://docs.ultralytics.com/guides/model-training-tips/#checkpoints) are not uploaded to Comet. Enable checkpoint logging by using the `--save-period` argument:
+By default, [model checkpoints](https://docs.ultralytics.com/guides/model-training-tips#checkpoints) are not uploaded to Comet. Enable checkpoint logging by using the `--save-period` argument:
 
 ```shell
 python train.py \
@@ -157,7 +157,7 @@ env COMET_LOG_PER_CLASS_METRICS=true python train.py \
 
 ## 💾 Uploading a Dataset to Comet Artifacts
 
-Store your [datasets](https://docs.ultralytics.com/datasets/) using [Comet Artifacts](https://www.comet.com/docs/v2/guides/data-management/using-artifacts/) by adding the `--upload_dataset` flag. Ensure your dataset follows the structure in the [Ultralytics dataset guide](https://docs.ultralytics.com/datasets/). The dataset config YAML file must match the format of `coco128.yaml`.
+Store your [datasets](https://docs.ultralytics.com/datasets) using [Comet Artifacts](https://www.comet.com/docs/v2/guides/data-management/using-artifacts/) by adding the `--upload_dataset` flag. Ensure your dataset follows the structure in the [Ultralytics dataset guide](https://docs.ultralytics.com/datasets). The dataset config YAML file must match the format of `coco128.yaml`.
 
 ```shell
 python train.py \
@@ -215,7 +215,7 @@ python train.py \
 
 ## 🔍 Hyperparameter Search with the Comet Optimizer
 
-YOLOv3 integrates with Comet's Optimizer for [hyperparameter tuning](https://docs.ultralytics.com/guides/hyperparameter-tuning/) and visualization.
+YOLOv3 integrates with Comet's Optimizer for [hyperparameter tuning](https://docs.ultralytics.com/guides/hyperparameter-tuning) and visualization.
 
 ### Configuring an Optimizer Sweep
 
@@ -271,4 +271,4 @@ Comet provides rich visualizations for sweep results in the project view.
 
 ## 🤝 Contributing
 
-Contributions to this integration are welcome! See the [Ultralytics Contributing Guide](https://docs.ultralytics.com/help/contributing/) for details on how to get involved. Thank you for helping improve the Ultralytics ecosystem!
+Contributions to this integration are welcome! See the [Ultralytics Contributing Guide](https://docs.ultralytics.com/help/contributing) for details on how to get involved. Thank you for helping improve the Ultralytics ecosystem!

@@ -80,6 +80,6 @@ body:
       label: Are you willing to submit a PR?
       description: >
         (Optional) We encourage you to submit a [Pull Request](https://github.com/ultralytics/yolov3/pulls) to help improve Ultralytics YOLOv3, especially if you know how to fix the issue.
-        See the Ultralytics [Contributing Guide](https://docs.ultralytics.com/help/contributing/) to get started.
+        See the Ultralytics [Contributing Guide](https://docs.ultralytics.com/help/contributing) to get started.
       options:
         - label: Yes I'd like to help by submitting a PR!

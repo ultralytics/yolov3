@@ -10,10 +10,10 @@ This guide details how to integrate [ClearML](https://docs.clear.ml/docs/latest/
 
 [ClearML](https://docs.clear.ml/docs/latest/) is an [open-source MLOps suite](https://github.com/clearml/clearml) that enables you to manage, automate, and orchestrate machine learning workflows efficiently. Integrating ClearML with Ultralytics YOLO unlocks several advantages:
 
-- **Experiment Management**: Automatically track every YOLO training run, including code versions, configurations, metrics, and outputs in a centralized dashboard. Explore more about [Ultralytics experiment tracking integrations](https://docs.ultralytics.com/integrations/).
-- **Data Versioning**: Manage and access your custom training datasets with ClearML Data Versioning. See how [Ultralytics datasets](https://docs.ultralytics.com/datasets/) are structured.
-- **Remote Execution**: Train and monitor your YOLO models remotely using ClearML Agent on any machine or cloud instance. Learn about [model deployment options](https://docs.ultralytics.com/guides/model-deployment-options/).
-- **Hyperparameter Optimization**: Use ClearML's HPO tools to optimize your model configurations and improve [mean average precision (mAP)](https://www.ultralytics.com/glossary/mean-average-precision-map). Review the [Ultralytics Hyperparameter Tuning guide](https://docs.ultralytics.com/guides/hyperparameter-tuning/).
+- **Experiment Management**: Automatically track every YOLO training run, including code versions, configurations, metrics, and outputs in a centralized dashboard. Explore more about [Ultralytics experiment tracking integrations](https://docs.ultralytics.com/integrations).
+- **Data Versioning**: Manage and access your custom training datasets with ClearML Data Versioning. See how [Ultralytics datasets](https://docs.ultralytics.com/datasets) are structured.
+- **Remote Execution**: Train and monitor your YOLO models remotely using ClearML Agent on any machine or cloud instance. Learn about [model deployment options](https://docs.ultralytics.com/guides/model-deployment-options).
+- **Hyperparameter Optimization**: Use ClearML's HPO tools to optimize your model configurations and improve [mean average precision (mAP)](https://www.ultralytics.com/glossary/mean-average-precision-map). Review the [Ultralytics Hyperparameter Tuning guide](https://docs.ultralytics.com/guides/hyperparameter-tuning).
 - **Model Deployment**: Deploy trained YOLO models as scalable APIs with ClearML Serving in just a few steps.
 
 You can leverage any combination of these tools to fit your project requirements.
@@ -53,7 +53,7 @@ Enabling ClearML experiment tracking for YOLO is simple. Ensure the `clearml` pa
 pip install "clearml>=1.2.0"
 ```
 
-With ClearML installed, every YOLO [training run](https://docs.ultralytics.com/modes/train/) is automatically logged.
+With ClearML installed, every YOLO [training run](https://docs.ultralytics.com/modes/train) is automatically logged.
 
 By default, experiments are organized under the `YOLOv3` project with the task name `Training`. You can customize these using the `--project` and `--name` arguments in your training command. ClearML uses `/` as a delimiter for subprojects.
 
@@ -78,7 +78,7 @@ ClearML will automatically capture:
 - [Hyperparameters](https://www.ultralytics.com/glossary/hyperparameter-tuning) and script arguments
 - [Model checkpoints](https://www.ultralytics.com/glossary/model-weights) (use `--save-period n` to save every `n` epochs)
 - Console output (stdout and stderr)
-- Performance [metrics and scalars](https://docs.ultralytics.com/guides/yolo-performance-metrics/) such as mAP<sub>0.5</sub>, mAP<sub>0.5:0.95</sub>, precision, recall, losses, and learning rates
+- Performance [metrics and scalars](https://docs.ultralytics.com/guides/yolo-performance-metrics) such as mAP<sub>0.5</sub>, mAP<sub>0.5:0.95</sub>, precision, recall, losses, and learning rates
 - Machine details, runtime, and creation date
 - Generated plots like label correlograms and [confusion matrices](https://www.ultralytics.com/glossary/confusion-matrix)
 - Debug samples: images with bounding boxes, mosaic visualizations, and validation images per epoch
@@ -93,7 +93,7 @@ Versioning datasets is essential for reproducibility and collaboration in [machi
 
 ### Prepare Your Dataset
 
-YOLO uses YAML files to define dataset configurations. Datasets are typically stored in a `../datasets` directory relative to your repository root. For example, the [COCO128 dataset](https://docs.ultralytics.com/datasets/detect/coco128/) structure:
+YOLO uses YAML files to define dataset configurations. Datasets are typically stored in a `../datasets` directory relative to your repository root. For example, the [COCO128 dataset](https://docs.ultralytics.com/datasets/detect/coco128) structure:
 
 ```
 ../
@@ -151,7 +151,7 @@ The dataset ID used will be logged as a parameter in your ClearML experiment, en
 
 ## 👀 Hyperparameter Optimization
 
-ClearML's experiment tracking captures all the information needed to reproduce a run, forming the foundation for effective [hyperparameter optimization (HPO)](https://docs.ultralytics.com/guides/hyperparameter-tuning/). ClearML allows you to clone experiments, modify hyperparameters, and rerun them automatically.
+ClearML's experiment tracking captures all the information needed to reproduce a run, forming the foundation for effective [hyperparameter optimization (HPO)](https://docs.ultralytics.com/guides/hyperparameter-tuning). ClearML allows you to clone experiments, modify hyperparameters, and rerun them automatically.
 
 To run HPO locally, Ultralytics provides a sample script. You'll need the ID of a previously executed training task (the "template task") to use as a base.
 
@@ -224,6 +224,6 @@ Learn how to set up autoscalers:
 
 ## 👋 Contribute
 
-Contributions are welcome! If you'd like to improve this integration or suggest features, please see the Ultralytics [Contributing Guide](https://docs.ultralytics.com/help/contributing/) and submit a Pull Request. Thank you to all our contributors!
+Contributions are welcome! If you'd like to improve this integration or suggest features, please see the Ultralytics [Contributing Guide](https://docs.ultralytics.com/help/contributing) and submit a Pull Request. Thank you to all our contributors!
 
 [![Ultralytics open-source contributors](https://raw.githubusercontent.com/ultralytics/assets/main/im/image-contributors.png)](https://github.com/ultralytics/ultralytics/graphs/contributors)

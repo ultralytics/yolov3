@@ -849,7 +849,7 @@ def run(**kwargs):
     Notes:
         - Ensure the dataset YAML file and initial weights are accessible.
         - Refer to the [Ultralytics YOLOv3 repository](https://github.com/ultralytics/yolov3) for model and data configurations.
-        - Use the [Training Tutorial](https://docs.ultralytics.com/modes/train/) for custom dataset training.
+        - Use the [Training Tutorial](https://docs.ultralytics.com/modes/train) for custom dataset training.
     """
     opt = parse_opt(True)
     for k, v in kwargs.items():

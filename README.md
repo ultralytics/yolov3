@@ -4,7 +4,7 @@
       <img width="100%" src="https://raw.githubusercontent.com/ultralytics/assets/main/yolov3/banner-yolov3.png" alt="Ultralytics YOLOv3 banner"></a>
   </p>
 
-[中文](https://docs.ultralytics.com/zh/) | [한국어](https://docs.ultralytics.com/ko/) | [日本語](https://docs.ultralytics.com/ja/) | [Русский](https://docs.ultralytics.com/ru/) | [Deutsch](https://docs.ultralytics.com/de/) | [Français](https://docs.ultralytics.com/fr/) | [Español](https://docs.ultralytics.com/es) | [Português](https://docs.ultralytics.com/pt/) | [Türkçe](https://docs.ultralytics.com/tr/) | [Tiếng Việt](https://docs.ultralytics.com/vi/) | [العربية](https://docs.ultralytics.com/ar/)
+[中文](https://docs.ultralytics.com/zh) | [한국어](https://docs.ultralytics.com/ko) | [日本語](https://docs.ultralytics.com/ja) | [Русский](https://docs.ultralytics.com/ru) | [Deutsch](https://docs.ultralytics.com/de) | [Français](https://docs.ultralytics.com/fr) | [Español](https://docs.ultralytics.com/es) | [Português](https://docs.ultralytics.com/pt) | [Türkçe](https://docs.ultralytics.com/tr) | [Tiếng Việt](https://docs.ultralytics.com/vi) | [العربية](https://docs.ultralytics.com/ar)
 
 <div>
     <a href="https://github.com/ultralytics/yolov3/actions/workflows/ci-testing.yml"><img src="https://github.com/ultralytics/yolov3/actions/workflows/ci-testing.yml/badge.svg" alt="YOLOv3 CI"></a>
@@ -18,11 +18,11 @@
   </div>
   <br>
 
-[Ultralytics](https://www.ultralytics.com/) YOLOv3 is a PyTorch implementation of the YOLOv3 (You Only Look Once, version 3) real-time [object detection](https://docs.ultralytics.com/tasks/detect/) model. YOLOv3 frames detection as a single regression problem, predicting bounding boxes and class probabilities directly from full images in one forward pass — making it fast, accurate, and straightforward to train and deploy.
+[Ultralytics](https://www.ultralytics.com/) YOLOv3 is a PyTorch implementation of the YOLOv3 (You Only Look Once, version 3) real-time [object detection](https://docs.ultralytics.com/tasks/detect) model. YOLOv3 frames detection as a single regression problem, predicting bounding boxes and class probabilities directly from full images in one forward pass — making it fast, accurate, and straightforward to train and deploy.
 
 This repository packages the three classic YOLOv3 detection models — **YOLOv3**, **YOLOv3-SPP**, and **YOLOv3-tiny** — with training, validation, inference, and export tooling, and reuses shared utilities from the [`ultralytics`](https://github.com/ultralytics/ultralytics) package.
 
-Find detailed guidance in the [Ultralytics YOLOv3 Docs](https://docs.ultralytics.com/models/yolov3/). Get support via [GitHub Issues](https://github.com/ultralytics/yolov3/issues/new/choose), and join the conversation on [Discord](https://discord.com/invite/ultralytics), [Reddit](https://www.reddit.com/r/ultralytics/), and the [Ultralytics Forums](https://community.ultralytics.com/).
+Find detailed guidance in the [Ultralytics YOLOv3 Docs](https://docs.ultralytics.com/models/yolov3). Get support via [GitHub Issues](https://github.com/ultralytics/yolov3/issues/new/choose), and join the conversation on [Discord](https://discord.com/invite/ultralytics), [Reddit](https://www.reddit.com/r/ultralytics/), and the [Ultralytics Forums](https://community.ultralytics.com/).
 
 For commercial use, request an Enterprise License at [Ultralytics Licensing](https://www.ultralytics.com/license).
 
@@ -46,7 +46,7 @@ For commercial use, request an Enterprise License at [Ultralytics Licensing](htt
 
 ## 📚 Documentation
 
-See the [Ultralytics YOLOv3 Docs](https://docs.ultralytics.com/models/yolov3/) for full documentation. The quickstart examples below cover installation, inference, and training with this repository.
+See the [Ultralytics YOLOv3 Docs](https://docs.ultralytics.com/models/yolov3) for full documentation. The quickstart examples below cover installation, inference, and training with this repository.
 
 <details open>
 <summary>Install</summary>
@@ -69,7 +69,7 @@ pip install -r requirements.txt
 <details open>
 <summary>Inference with PyTorch Hub</summary>
 
-Load YOLOv3 directly through [PyTorch Hub](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading/). Weights download automatically on first use.
+Load YOLOv3 directly through [PyTorch Hub](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading). Weights download automatically on first use.
 
 ```python
 import torch
@@ -108,7 +108,7 @@ python detect.py --weights yolov3.pt --source 'rtsp://example.com/media.mp4' # R
 <details>
 <summary>Training</summary>
 
-Train YOLOv3 on the [COCO](https://docs.ultralytics.com/datasets/detect/coco/) dataset. Models and datasets download automatically. Use the largest `--batch-size` your hardware allows.
+Train YOLOv3 on the [COCO](https://docs.ultralytics.com/datasets/detect/coco) dataset. Models and datasets download automatically. Use the largest `--batch-size` your hardware allows.
 
 ```bash
 # Train YOLOv3-tiny
@@ -130,15 +130,15 @@ Validate accuracy with `python val.py --weights yolov3.pt --data coco.yaml`, and
 
 These guides cover the shared Ultralytics training framework and apply to YOLOv3:
 
-- [Train Custom Data](https://docs.ultralytics.com/modes/train/) — train on your own dataset.
-- [Tips for Best Training Results](https://docs.ultralytics.com/guides/model-training-tips/) — get the most out of training.
-- [Multi-GPU Training](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training/) — scale training across GPUs.
-- [PyTorch Hub Loading](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading/) — load models programmatically.
-- [Model Export](https://docs.ultralytics.com/modes/export/) — deploy to ONNX, TensorRT, CoreML, and more.
-- [Test-Time Augmentation (TTA)](https://docs.ultralytics.com/yolov5/tutorials/test_time_augmentation/) — improve accuracy at inference.
-- [Model Ensembling](https://docs.ultralytics.com/yolov5/tutorials/model_ensembling/) — combine models for better results.
-- [Hyperparameter Tuning](https://docs.ultralytics.com/guides/hyperparameter-tuning/) — tune hyperparameters automatically.
-- [Transfer Learning with Frozen Layers](https://docs.ultralytics.com/yolov5/tutorials/transfer_learning_with_frozen_layers/) — adapt pretrained models efficiently.
+- [Train Custom Data](https://docs.ultralytics.com/modes/train) — train on your own dataset.
+- [Tips for Best Training Results](https://docs.ultralytics.com/guides/model-training-tips) — get the most out of training.
+- [Multi-GPU Training](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training) — scale training across GPUs.
+- [PyTorch Hub Loading](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading) — load models programmatically.
+- [Model Export](https://docs.ultralytics.com/modes/export) — deploy to ONNX, TensorRT, CoreML, and more.
+- [Test-Time Augmentation (TTA)](https://docs.ultralytics.com/yolov5/tutorials/test_time_augmentation) — improve accuracy at inference.
+- [Model Ensembling](https://docs.ultralytics.com/yolov5/tutorials/model_ensembling) — combine models for better results.
+- [Hyperparameter Tuning](https://docs.ultralytics.com/guides/hyperparameter-tuning) — tune hyperparameters automatically.
+- [Transfer Learning with Frozen Layers](https://docs.ultralytics.com/yolov5/tutorials/transfer_learning_with_frozen_layers) — adapt pretrained models efficiently.
 
 </details>
 
@@ -161,7 +161,7 @@ Models are defined declaratively in [`models/*.yaml`](https://github.com/ultraly
 
 ## 🏋️ Pretrained Checkpoints
 
-All three models are trained on [COCO](https://docs.ultralytics.com/datasets/detect/coco/) (80 classes) and download automatically from the [YOLOv3 release assets](https://github.com/ultralytics/yolov3/releases) on first use.
+All three models are trained on [COCO](https://docs.ultralytics.com/datasets/detect/coco) (80 classes) and download automatically from the [YOLOv3 release assets](https://github.com/ultralytics/yolov3/releases) on first use.
 
 | Model                                                                                           | Description                                                                       |
 | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -171,9 +171,9 @@ All three models are trained on [COCO](https://docs.ultralytics.com/datasets/det
 
 ## 🧩 Integrations
 
-Ultralytics integrates with leading AI platforms to extend dataset labeling, training, visualization, and model management. Explore how partners such as [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases/), [Comet ML](https://docs.ultralytics.com/integrations/comet/), [Roboflow](https://docs.ultralytics.com/integrations/roboflow/), and [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino/) can streamline your workflow at [Ultralytics Integrations](https://docs.ultralytics.com/integrations/).
+Ultralytics integrates with leading AI platforms to extend dataset labeling, training, visualization, and model management. Explore how partners such as [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases), [Comet ML](https://docs.ultralytics.com/integrations/comet), [Roboflow](https://docs.ultralytics.com/integrations/roboflow), and [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino) can streamline your workflow at [Ultralytics Integrations](https://docs.ultralytics.com/integrations).
 
-<a href="https://docs.ultralytics.com/integrations/" target="_blank">
+<a href="https://docs.ultralytics.com/integrations" target="_blank">
     <img width="100%" src="https://github.com/ultralytics/assets/raw/main/yolov8/banner-integrations.png" alt="Ultralytics active learning integrations">
 </a>
 
@@ -193,28 +193,28 @@ For the broader family of Ultralytics YOLO models, see the [Ultralytics reposito
 Get started quickly with pre-configured environments. Click an icon below for setup details.
 
 <div align="center">
-  <a href="https://docs.ultralytics.com/integrations/paperspace/">
+  <a href="https://docs.ultralytics.com/integrations/paperspace">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-gradient.png" width="10%" alt="Run on Gradient"/></a>
   <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="5%" alt="" />
-  <a href="https://docs.ultralytics.com/integrations/google-colab/">
+  <a href="https://docs.ultralytics.com/integrations/google-colab">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-colab-small.png" width="10%" alt="Open In Colab"/></a>
   <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="5%" alt="" />
-  <a href="https://docs.ultralytics.com/integrations/kaggle/">
+  <a href="https://docs.ultralytics.com/integrations/kaggle">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-kaggle-small.png" width="10%" alt="Open In Kaggle"/></a>
   <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="5%" alt="" />
-  <a href="https://docs.ultralytics.com/guides/docker-quickstart/">
+  <a href="https://docs.ultralytics.com/guides/docker-quickstart">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-docker-small.png" width="10%" alt="Docker Image"/></a>
   <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="5%" alt="" />
-  <a href="https://docs.ultralytics.com/integrations/amazon-sagemaker/">
+  <a href="https://docs.ultralytics.com/integrations/amazon-sagemaker">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-aws-small.png" width="10%" alt="AWS Marketplace"/></a>
   <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="5%" alt="" />
-  <a href="https://docs.ultralytics.com/integrations/google-colab/">
+  <a href="https://docs.ultralytics.com/integrations/google-colab">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-gcp-small.png" width="10%" alt="GCP Quickstart"/></a>
 </div>
 
 ## 🤝 Contribute
 
-Contributions are welcome! Please see the [Contributing Guide](https://docs.ultralytics.com/help/contributing/) to get started, and share your feedback through the [Ultralytics Survey](https://www.ultralytics.com/survey?utm_source=github&utm_medium=social&utm_campaign=Survey). Thank you to all our contributors!
+Contributions are welcome! Please see the [Contributing Guide](https://docs.ultralytics.com/help/contributing) to get started, and share your feedback through the [Ultralytics Survey](https://www.ultralytics.com/survey?utm_source=github&utm_medium=social&utm_campaign=Survey). Thank you to all our contributors!
 
 [![Ultralytics open-source contributors](https://raw.githubusercontent.com/ultralytics/assets/main/im/image-contributors.png)](https://github.com/ultralytics/yolov3/graphs/contributors)
 
