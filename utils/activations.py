@@ -110,8 +110,7 @@ class MetaAconC(nn.Module):
         # self.bn2 = nn.BatchNorm2d(c1)
 
     def forward(self, x):
-        """Apply the MetaAconC activation, generating beta from the input's spatial average via the bottleneck network.
-        """
+        """Apply the MetaAconC activation, generating beta from the input's spatial average via the bottleneck network."""
         y = x.mean(dim=2, keepdims=True).mean(dim=3, keepdims=True)
         # batch-size 1 bug/instabilities https://github.com/ultralytics/yolov5/issues/2891
         # beta = torch.sigmoid(self.bn2(self.fc2(self.bn1(self.fc1(y)))))  # bug/unstable
