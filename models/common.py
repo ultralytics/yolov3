@@ -160,8 +160,7 @@ class Bottleneck(nn.Module):
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
-        """Executes forward pass, performing convolutional ops and optional shortcut addition; expects input tensor x.
-        """
+        """Executes forward pass, performing convolutional ops and optional shortcut addition; expects input tensor x."""
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
 
 
@@ -183,8 +182,7 @@ class BottleneckCSP(nn.Module):
         self.m = nn.Sequential(*(Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
 
     def forward(self, x):
-        """Processes input through layers, combining outputs with activation and normalization for feature extraction.
-        """
+        """Processes input through layers, combining outputs with activation and normalization for feature extraction."""
         y1 = self.cv3(self.m(self.cv1(x)))
         y2 = self.cv2(x)
         return self.cv4(self.act(self.bn(torch.cat((y1, y2), 1))))
@@ -212,8 +210,7 @@ class C3(nn.Module):
     """Implements a CSP Bottleneck with 3 convolutions, optional shortcuts, group convolutions, and expansion factor."""
 
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
-        """Initializes CSP Bottleneck with 3 convolutions, optional shortcuts, group convolutions, and expansion factor.
-        """
+        """Initializes CSP Bottleneck with 3 convolutions, optional shortcuts, group convolutions, and expansion factor."""
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
