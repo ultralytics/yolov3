@@ -33,7 +33,7 @@ After opening a PR:
 ## Commands
 
 ```bash
-uv pip install -r requirements.txt          # install (never bare pip install)
+uv pip install -r requirements.txt # install (never bare pip install)
 
 # There is no pytest suite. CI smoke-tests the real scripts (source of truth:
 # .github/workflows/ci-testing.yml); the fast local equivalent is:
@@ -41,10 +41,10 @@ python train.py --imgsz 64 --batch 32 --weights yolov3-tiny.pt --cfg yolov3-tiny
 python val.py --imgsz 64 --batch 32 --weights runs/train/exp/weights/best.pt --device cpu
 python detect.py --imgsz 64 --weights yolov3-tiny.pt --device cpu
 python export.py --weights yolov3-tiny.pt --img 64 --include torchscript
-python models/yolo.py --cfg yolov3-tiny.yaml          # build model from YAML
-python hubconf.py --model yolov3-tiny                 # PyTorch Hub load test
+python models/yolo.py --cfg yolov3-tiny.yaml # build model from YAML
+python hubconf.py --model yolov3-tiny        # PyTorch Hub load test
 
-ruff format . && ruff check --fix .         # format/lint (line-length 120, source of truth: pyproject.toml [tool.ruff])
+ruff format . && ruff check --fix . # format/lint (line-length 120, source of truth: pyproject.toml [tool.ruff])
 ```
 
 CI (`ci-testing.yml`) runs the smoke tests on ubuntu-latest and windows-latest with latest-stable Python, plus ubuntu jobs on Python 3.11 and on the Python 3.8 + torch 1.8.0 floor — keep code compatible with Python>=3.8 and PyTorch>=1.8, and never assume newer APIs without a version gate.
@@ -53,7 +53,7 @@ CI (`ci-testing.yml`) runs the smoke tests on ubuntu-latest and windows-latest w
 
 This is a YOLOv5-lineage training/inference codebase packaging the three classic YOLOv3 **detection-only** models (yolov3, yolov3-spp, yolov3-tiny) — no segmentation, classification, or YOLOv5 weights exist here. Entry points are flat scripts at the repo root: `train.py`, `val.py`, `detect.py`, `export.py`, `benchmarks.py`, plus `hubconf.py` exposing `yolov3`/`yolov3_spp`/`yolov3_tiny`/`custom` for `torch.hub.load`. Models are defined declaratively in `models/*.yaml` and built by `parse_model()` in `models/yolo.py`; `models/common.py` holds the layer zoo and the `DetectMultiBackend` multi-format inference wrapper; `utils/` holds dataloaders, loss, metrics, plotting, and loggers.
 
-The repo depends on the `ultralytics` pip package and re-exports many helpers from it (see `utils/general.py`, `utils/torch_utils.py`); functions annotated `Keep local (do not dedup)` differ deliberately from their upstream namesakes (return arity, rounding, objectness channel) — do not "deduplicate" them. TensorFlow *export* was removed, but the TF rows in `export.py:export_formats()` are load-bearing: they are positionally coupled to `DetectMultiBackend` suffix detection and `benchmarks.py`.
+The repo depends on the `ultralytics` pip package and re-exports many helpers from it (see `utils/general.py`, `utils/torch_utils.py`); functions annotated `Keep local (do not dedup)` differ deliberately from their upstream namesakes (return arity, rounding, objectness channel) — do not "deduplicate" them. TensorFlow _export_ was removed, but the TF rows in `export.py:export_formats()` are load-bearing: they are positionally coupled to `DetectMultiBackend` suffix detection and `benchmarks.py`.
 
 Pretrained weights download from the GitHub release `v9.6.0` assets via `utils/downloads.py:attempt_download`. There is no PyPI publish workflow; releases are GitHub tags carrying `.pt` assets. `docker.yml` builds and pushes `ultralytics/yolov3:{latest,latest-cpu,latest-arm64}` to Docker Hub on every push to `master` (gated to the `ultralytics/yolov3` repo).
 
