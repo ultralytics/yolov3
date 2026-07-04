@@ -62,7 +62,7 @@ Pretrained weights download from the GitHub release `v9.6.0` assets via `utils/d
 
 - The default branch is `master`, not `main` — read `main` as `master` in the PR Workflow above, and target PRs at `master`.
 - Ultralytics Actions (`format.yml`) auto-formats PRs (Ruff, docformatter, codespell, prettier) and adds the `# Ultralytics 🚀 AGPL-3.0 License` header — never add or revert headers or formatting manually.
-- Google-style docstrings, 120-char lines (Ruff/isort/docformatter all configured in `pyproject.toml`).
+- Google-style docstrings, 120-char lines (Ruff/isort/docformatter all configured in `pyproject.toml`); every larger class and function needs a Google-style docstring (Args/Returns sections), while a one-line summary suffices for small helpers.
 - The CI smoke tests hit the live network: they download `yolov3-tiny.pt` from the v9.6.0 release and the coco128 dataset from `github.com/ultralytics/assets`.
 - Keep `requirements.txt` and `pyproject.toml` dependency floors aligned — Dependabot bumps both (monthly pip, weekly github-actions).
 - Links to `github.com/ultralytics/yolov5/(issues|pull|discussions)/<N>` are intentional upstream provenance — do not rewrite them to `yolov3` (those numbers 404 there). Bare yolov5 repo/tree/releases links were already rebranded.
