@@ -37,9 +37,9 @@ uv pip install -r requirements.txt # install (never bare pip install)
 
 # There is no pytest suite. CI smoke-tests the real scripts; the full loop (val/detect on both
 # official and trained weights, plus torch.hub custom-load traces) is in .github/workflows/ci-testing.yml.
-# Fast local subset — train auto-increments runs/train/exp<N>, so point val at the run just created:
-python train.py --imgsz 64 --batch 32 --weights yolov3-tiny.pt --cfg yolov3-tiny.yaml --epochs 1 --device cpu
-python val.py --imgsz 64 --batch 32 --weights runs/train/exp/weights/best.pt --device cpu
+# Fast local subset (--name smoke --exist-ok pins the save dir; without it train auto-increments runs/train/exp<N>):
+python train.py --imgsz 64 --batch 32 --weights yolov3-tiny.pt --cfg yolov3-tiny.yaml --epochs 1 --device cpu --name smoke --exist-ok
+python val.py --imgsz 64 --batch 32 --weights runs/train/smoke/weights/best.pt --device cpu
 python detect.py --imgsz 64 --weights yolov3-tiny.pt --device cpu
 python export.py --weights yolov3-tiny.pt --img 64 --include torchscript
 python models/yolo.py --cfg yolov3-tiny.yaml # build model from YAML
