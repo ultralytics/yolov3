@@ -35,8 +35,9 @@ After opening a PR:
 ```bash
 uv pip install -r requirements.txt # install (never bare pip install)
 
-# There is no pytest suite. CI smoke-tests the real scripts (source of truth:
-# .github/workflows/ci-testing.yml); the fast local equivalent is:
+# There is no pytest suite. CI smoke-tests the real scripts; the full loop (val/detect on both
+# official and trained weights, plus torch.hub custom-load traces) is in .github/workflows/ci-testing.yml.
+# Fast local subset — train auto-increments runs/train/exp<N>, so point val at the run just created:
 python train.py --imgsz 64 --batch 32 --weights yolov3-tiny.pt --cfg yolov3-tiny.yaml --epochs 1 --device cpu
 python val.py --imgsz 64 --batch 32 --weights runs/train/exp/weights/best.pt --device cpu
 python detect.py --imgsz 64 --weights yolov3-tiny.pt --device cpu
@@ -65,4 +66,4 @@ Pretrained weights download from the GitHub release `v9.6.0` assets via `utils/d
 - The CI smoke tests hit the live network: they download `yolov3-tiny.pt` from the v9.6.0 release and the coco128 dataset from `github.com/ultralytics/assets`.
 - Keep `requirements.txt` and `pyproject.toml` dependency floors aligned — Dependabot bumps both (monthly pip, weekly github-actions).
 - Links to `github.com/ultralytics/yolov5/(issues|pull|discussions)/<N>` are intentional upstream provenance — do not rewrite them to `yolov3` (those numbers 404 there). Bare yolov5 repo/tree/releases links were already rebranded.
-- README, docstrings, and tutorial content must stay evergreen and YOLOv3-focused: historical facts are fine, but no "latest/NEW/SOTA" promo for other models and at most one version-less pointer to `github.com/ultralytics/ultralytics`.
+- README, docstrings, and tutorial content must stay evergreen and YOLOv3-focused: historical facts are fine, but no "latest/NEW/SOTA" promo for other models — reference the broader family only via version-less `github.com/ultralytics/ultralytics` pointers.
