@@ -85,7 +85,7 @@ jobs:
     steps:
       - name: Check for failure and notify
         if: (needs.Tests.result == 'failure' || needs.Tests.result == 'cancelled') && github.repository == 'ultralytics/yolov3' && (github.event_name == 'schedule' || github.event_name == 'push')
-        uses: slackapi/slack-github-action@v3.0.5
+        uses: slackapi/slack-github-action@v4.0.0
         with:
           webhook-type: incoming-webhook
           webhook: ${{ secrets.SLACK_WEBHOOK_URL_YOLO }}
