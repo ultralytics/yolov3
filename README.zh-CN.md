@@ -74,10 +74,10 @@ pip install -r requirements.txt
 ```python
 import torch
 
-# 加载 YOLOv3 模型（可选：'yolov3'、'yolov3_spp'、'yolov3_tiny'）
+# 加载 YOLOv3 模型 (可选: 'yolov3'、'yolov3_spp'、'yolov3_tiny')
 model = torch.hub.load("ultralytics/yolov3", "yolov3", pretrained=True)
 
-# 对图像进行推理（本地文件、URL、PIL 图像、OpenCV 帧或 numpy 数组）
+# 对图像进行推理 (本地文件、URL、PIL 图像、OpenCV 帧或 numpy 数组)
 results = model("https://ultralytics.com/images/zidane.jpg")
 
 # 查看结果
