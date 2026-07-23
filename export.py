@@ -1,6 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
-# ruff: noqa: E402
 """
 Export a YOLOv3 PyTorch model to other formats.
 
@@ -164,7 +163,7 @@ def try_export(inner_func):
 
 
 @try_export
-def export_torchscript(model, im, file, optimize, prefix=colorstr("TorchScript:")):
+def export_torchscript(model, im, file, optimize, prefix=colorstr("TorchScript:")):  # noqa: B008
     """Export a YOLOv3 model to TorchScript format, with optional optimization for mobile deployment.
 
     Args:
@@ -196,7 +195,7 @@ def export_torchscript(model, im, file, optimize, prefix=colorstr("TorchScript:"
 
 
 @try_export
-def export_onnx(model, im, file, opset, dynamic, simplify, prefix=colorstr("ONNX:")):
+def export_onnx(model, im, file, opset, dynamic, simplify, prefix=colorstr("ONNX:")):  # noqa: B008
     """Export a YOLOv3 model to ONNX format with dynamic shape and simplification options.
 
     Args:
@@ -268,7 +267,7 @@ def export_onnx(model, im, file, opset, dynamic, simplify, prefix=colorstr("ONNX
 
 
 @try_export
-def export_openvino(file, metadata, half, int8, data, prefix=colorstr("OpenVINO:")):
+def export_openvino(file, metadata, half, int8, data, prefix=colorstr("OpenVINO:")):  # noqa: B008
     """Export a YOLOv3 model to OpenVINO format with optional INT8 quantization and inference metadata.
 
     Args:
@@ -349,7 +348,7 @@ def export_openvino(file, metadata, half, int8, data, prefix=colorstr("OpenVINO:
 
 
 @try_export
-def export_paddle(model, im, file, metadata, prefix=colorstr("PaddlePaddle:")):
+def export_paddle(model, im, file, metadata, prefix=colorstr("PaddlePaddle:")):  # noqa: B008
     """Export a YOLOv3 model to PaddlePaddle format using X2Paddle, writing model files and a metadata YAML.
 
     Args:
@@ -380,7 +379,7 @@ def export_paddle(model, im, file, metadata, prefix=colorstr("PaddlePaddle:")):
 
 
 @try_export
-def export_coreml(model, im, file, int8, half, nms, prefix=colorstr("CoreML:")):
+def export_coreml(model, im, file, int8, half, nms, prefix=colorstr("CoreML:")):  # noqa: B008
     """Export a YOLOv3 model to CoreML format with optional quantization and Non-Maximum Suppression (NMS).
 
     Args:
@@ -425,7 +424,7 @@ def export_coreml(model, im, file, int8, half, nms, prefix=colorstr("CoreML:")):
 
 
 @try_export
-def export_engine(model, im, file, half, dynamic, simplify, workspace=4, verbose=False, prefix=colorstr("TensorRT:")):
+def export_engine(model, im, file, half, dynamic, simplify, workspace=4, verbose=False, prefix=colorstr("TensorRT:")):  # noqa: B008
     """Export a YOLOv3 model to TensorRT engine format, optimizing it for GPU inference.
 
     Args:
@@ -509,7 +508,7 @@ def export_engine(model, im, file, half, dynamic, simplify, workspace=4, verbose
     return f, None
 
 
-def pipeline_coreml(model, im, file, names, y, prefix=colorstr("CoreML Pipeline:")):
+def pipeline_coreml(model, im, file, names, y, prefix=colorstr("CoreML Pipeline:")):  # noqa: B008
     """Processes and exports a YOLOv3 model into the CoreML model format, applying metadata and non-maximum suppression
     (NMS).
 
@@ -818,7 +817,9 @@ def parse_opt(known=False):
 
 def main(opt):
     """Run the export pipeline for each weights path in the parsed options."""
-    for opt.weights in opt.weights if isinstance(opt.weights, list) else [opt.weights]:
+    weights = opt.weights if isinstance(opt.weights, list) else [opt.weights]
+    for weight in weights:
+        opt.weights = weight
         run(**vars(opt))
 
 

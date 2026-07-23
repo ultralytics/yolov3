@@ -1,6 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
-# ruff: noqa: E402
 """
 Validate a trained YOLOv3 detection model on a detection dataset.
 
@@ -218,7 +217,7 @@ def run(
     dataloader=None,
     save_dir=Path(""),
     plots=True,
-    callbacks=Callbacks(),
+    callbacks=None,
     compute_loss=None,
 ):
     """Validate a trained YOLOv3 detection model on a dataset and optionally save results in the requested formats.
@@ -276,6 +275,8 @@ def run(
         )
         ```
     """
+    if callbacks is None:
+        callbacks = Callbacks()
     # Initialize/load model and set device
     training = model is not None
     if training:  # called by train.py
@@ -618,7 +619,7 @@ def main(opt):
                     r, _, t = run(**vars(opt), plots=False)
                     y.append(r + t)  # results and times
                 np.savetxt(f, y, fmt="%10.4g")  # save
-            subprocess.run(["zip", "-r", "study.zip", "study_*.txt"])
+            subprocess.run(["zip", "-r", "study.zip", "study_*.txt"], check=False)
             plot_val_study(x=x)  # plot
         else:
             raise NotImplementedError(f'--task {opt.task} not in ("train", "val", "test", "speed", "study")')

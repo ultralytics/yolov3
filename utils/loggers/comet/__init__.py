@@ -1,6 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
-# ruff: noqa: E402
 
 import glob
 import json
@@ -48,19 +47,19 @@ COMET_UPLOAD_DATASET = os.getenv("COMET_UPLOAD_DATASET", "false").lower() == "tr
 # Evaluation Settings
 COMET_LOG_CONFUSION_MATRIX = os.getenv("COMET_LOG_CONFUSION_MATRIX", "true").lower() == "true"
 COMET_LOG_PREDICTIONS = os.getenv("COMET_LOG_PREDICTIONS", "true").lower() == "true"
-COMET_MAX_IMAGE_UPLOADS = int(os.getenv("COMET_MAX_IMAGE_UPLOADS", 100))
+COMET_MAX_IMAGE_UPLOADS = int(os.getenv("COMET_MAX_IMAGE_UPLOADS", "100"))
 
 # Confusion Matrix Settings
-CONF_THRES = float(os.getenv("CONF_THRES", 0.001))
-IOU_THRES = float(os.getenv("IOU_THRES", 0.6))
+CONF_THRES = float(os.getenv("CONF_THRES", "0.001"))
+IOU_THRES = float(os.getenv("IOU_THRES", "0.6"))
 
 # Batch Logging Settings
 COMET_LOG_BATCH_METRICS = os.getenv("COMET_LOG_BATCH_METRICS", "false").lower() == "true"
-COMET_BATCH_LOGGING_INTERVAL = os.getenv("COMET_BATCH_LOGGING_INTERVAL", 1)
-COMET_PREDICTION_LOGGING_INTERVAL = os.getenv("COMET_PREDICTION_LOGGING_INTERVAL", 1)
+COMET_BATCH_LOGGING_INTERVAL = os.getenv("COMET_BATCH_LOGGING_INTERVAL", "1")
+COMET_PREDICTION_LOGGING_INTERVAL = os.getenv("COMET_PREDICTION_LOGGING_INTERVAL", "1")
 COMET_LOG_PER_CLASS_METRICS = os.getenv("COMET_LOG_PER_CLASS_METRICS", "false").lower() == "true"
 
-RANK = int(os.getenv("RANK", -1))
+RANK = int(os.getenv("RANK", "-1"))
 
 to_pil = T.ToPILImage()
 
@@ -324,7 +323,7 @@ class CometLogger:
         label_paths = img2label_paths(img_paths)
 
         for image_file, label_file in zip(img_paths, label_paths):
-            image_logical_path, label_logical_path = map(lambda x: os.path.relpath(x, path), [image_file, label_file])
+            image_logical_path, label_logical_path = (os.path.relpath(x, path) for x in [image_file, label_file])
 
             try:
                 artifact.add(
@@ -356,7 +355,7 @@ class CometLogger:
                 metadata[key] = split_path.replace(path, "")
 
         artifact = comet_ml.Artifact(name=dataset_name, artifact_type="dataset", metadata=metadata)
-        for key in metadata.keys():
+        for key in metadata:
             if key in ["train", "val", "test"]:
                 if isinstance(self.upload_dataset, str) and (key != self.upload_dataset):
                     continue
@@ -366,8 +365,6 @@ class CometLogger:
                     artifact = self.add_assets_to_artifact(artifact, path, asset_path, key)
 
         self.experiment.log_artifact(artifact)
-
-        return
 
     def download_dataset_artifact(self, artifact_path):
         """Downloads a dataset artifact to a specified directory, given its path."""
@@ -385,7 +382,7 @@ class CometLogger:
         elif isinstance(metadata_names, list):
             data_dict["names"] = {int(k): v for k, v in zip(range(len(metadata_names)), metadata_names)}
         else:
-            raise "Invalid 'names' field in dataset yaml file. Please use a list or dictionary"
+            raise TypeError("Invalid 'names' field in dataset yaml file. Please use a list or dictionary")
 
         return self.update_data_paths(data_dict)
 
@@ -427,8 +424,6 @@ class CometLogger:
         """Callback function executed at the end of each training epoch, updates current epoch in experiment."""
         self.experiment.curr_epoch = epoch
 
-        return
-
     def on_train_batch_start(self):
         """Callback executed at the start of each training batch without inputs or modifications."""
         return
@@ -438,8 +433,6 @@ class CometLogger:
         self.experiment.curr_step = step
         if self.log_batch_metrics and (step % self.comet_log_batch_interval == 0):
             self.log_metrics(log_dict, step=step)
-
-        return
 
     def on_train_end(self, files, save_dir, last, best, epoch, results):
         """Callback at training end; logs image metadata to Comet if comet_log_predictions is True."""

@@ -23,8 +23,8 @@ from utils.general import LOGGER, clip_boxes, increment_path, xywh2xyxy, xyxy2xy
 from utils.metrics import fitness
 
 # Settings
-RANK = int(os.getenv("RANK", -1))
-matplotlib.rc("font", **{"size": 11})
+RANK = int(os.getenv("RANK", "-1"))
+matplotlib.rc("font", size=11)
 matplotlib.use("Agg")  # for writing to files only
 
 
@@ -176,13 +176,15 @@ def plot_images(images, targets, paths=None, fname="images.jpg", names=None):
     # Annotate
     fs = int((h + w) * ns * 0.01)  # font size
     annotator = Annotator(mosaic, line_width=round(fs / 10), font_size=fs, pil=True, example=names)
-    for i in range(i + 1):
-        x, y = int(w * (i // ns)), int(h * (i % ns))  # block origin
+    for block_index in range(i + 1):
+        x, y = int(w * (block_index // ns)), int(h * (block_index % ns))  # block origin
         annotator.rectangle([x, y, x + w, y + h], None, (255, 255, 255), width=2)  # borders
         if paths:
-            annotator.text([x + 5, y + 5], text=Path(paths[i]).name[:40], txt_color=(220, 220, 220))  # filenames
+            annotator.text(
+                [x + 5, y + 5], text=Path(paths[block_index]).name[:40], txt_color=(220, 220, 220)
+            )  # filenames
         if len(targets) > 0:
-            ti = targets[targets[:, 0] == i]  # image targets
+            ti = targets[targets[:, 0] == block_index]  # image targets
             boxes = xywh2xyxy(ti[:, 2:6]).T
             classes = ti[:, 1].astype("int")
             labels = ti.shape[1] == 6  # labels if no conf column
@@ -311,7 +313,7 @@ def plot_labels(labels, names=(), save_dir=Path("")):
     x = pd.DataFrame(b.transpose(), columns=["x", "y", "width", "height"])
 
     # seaborn correlogram
-    sn.pairplot(x, corner=True, diag_kind="auto", kind="hist", diag_kws=dict(bins=50), plot_kws=dict(pmax=0.9))
+    sn.pairplot(x, corner=True, diag_kind="auto", kind="hist", diag_kws={"bins": 50}, plot_kws={"pmax": 0.9})
     plt.savefig(save_dir / "labels_correlogram.jpg", dpi=200)
     plt.close()
 
@@ -357,7 +359,7 @@ def plot_evolve(evolve_csv="path/to/evolve.csv"):  # from utils.plots import *; 
     f = fitness(x)
     j = np.argmax(f)  # max fitness index
     plt.figure(figsize=(10, 12), tight_layout=True)
-    matplotlib.rc("font", **{"size": 8})
+    matplotlib.rc("font", size=8)
     print(f"Best results from row {j} of {evolve_csv}:")
     for i, k in enumerate(keys[7:]):
         v = x[:, 7 + i]

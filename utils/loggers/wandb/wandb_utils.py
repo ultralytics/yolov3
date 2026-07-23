@@ -16,7 +16,7 @@ FILE = Path(__file__).resolve()
 ROOT = FILE.parents[3]  # YOLOv3 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
-RANK = int(os.getenv("RANK", -1))
+RANK = int(os.getenv("RANK", "-1"))
 DEPRECATION_WARNING = (
     f"{colorstr('wandb')}: WARNING ⚠️ wandb is deprecated and will be removed in a future release. "
     f"See supported integrations at https://github.com/ultralytics/yolov3#integrations."
@@ -143,7 +143,6 @@ class WandbLogger:
 
     def val_one_image(self, pred, predn, path, names, im):
         """Handle a single validation image and its predictions (currently a no-op placeholder)."""
-        pass
 
     def log(self, log_dict):
         """Save the metrics to the logging dictionary.

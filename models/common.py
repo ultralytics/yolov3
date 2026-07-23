@@ -18,8 +18,8 @@ import numpy as np
 import pandas as pd
 import requests
 import torch
-import torch.nn as nn
 from PIL import Image
+from torch import nn
 from ultralytics.utils.plotting import Annotator, colors, save_one_box
 from ultralytics.utils.torch_utils import autocast
 
@@ -432,7 +432,13 @@ class DetectMultiBackend(nn.Module):
     """YOLOv3 multi-backend class for inference on frameworks like PyTorch, ONNX, TensorRT, and more."""
 
     def __init__(
-        self, weights="yolov3-tiny.pt", device=torch.device("cpu"), dnn=False, data=None, fp16=False, fuse=True
+        self,
+        weights="yolov3-tiny.pt",
+        device=torch.device("cpu"),  # noqa: B008
+        dnn=False,
+        data=None,
+        fp16=False,
+        fuse=True,
     ):
         """Initializes multi-backend detection with options for various frameworks and devices, also handles model
         download.
@@ -601,11 +607,10 @@ class DetectMultiBackend(nn.Module):
             input_details = interpreter.get_input_details()  # inputs
             output_details = interpreter.get_output_details()  # outputs
             # load metadata
-            with contextlib.suppress(zipfile.BadZipFile):
-                with zipfile.ZipFile(w, "r") as model:
-                    meta_file = model.namelist()[0]
-                    meta = ast.literal_eval(model.read(meta_file).decode("utf-8"))
-                    stride, names = int(meta["stride"]), meta["names"]
+            with contextlib.suppress(zipfile.BadZipFile), zipfile.ZipFile(w, "r") as model:
+                meta_file = model.namelist()[0]
+                meta = ast.literal_eval(model.read(meta_file).decode("utf-8"))
+                stride, names = int(meta["stride"]), meta["names"]
         elif tfjs:  # TF.js
             raise NotImplementedError("ERROR: YOLOv3 TF.js inference is not supported")
         elif paddle:  # PaddlePaddle
@@ -731,7 +736,7 @@ class DetectMultiBackend(nn.Module):
         warmup_types = self.pt, self.jit, self.onnx, self.engine, self.saved_model, self.pb, self.triton
         if any(warmup_types) and (self.device.type != "cpu" or self.triton):
             im = torch.empty(*imgsz, dtype=torch.half if self.fp16 else torch.float, device=self.device)  # input
-            for _ in range(2 if self.jit else 1):  #
+            for _ in range(2 if self.jit else 1):
                 self.forward(im)  # warmup
 
     @staticmethod
@@ -793,7 +798,7 @@ class AutoShape(nn.Module):
         """Applies given function `fn` to model tensors excluding parameters or registered buffers, adjusting strides
         and grids.
         """
-        self = super()._apply(fn)
+        super()._apply(fn)
         if self.pt:
             m = self.model.model.model[-1] if self.dmb else self.model.model[-1]  # Detect()
             m.stride = fn(m.stride)

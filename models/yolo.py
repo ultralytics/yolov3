@@ -1,6 +1,5 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
-# ruff: noqa: E402
 """
 YOLO-specific modules.
 
@@ -18,7 +17,7 @@ from copy import deepcopy
 from pathlib import Path
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]  # YOLOv3 root directory
@@ -111,7 +110,7 @@ class Detect(nn.Module):
 
         return x if self.training else (torch.cat(z, 1),) if self.export else (torch.cat(z, 1), x)
 
-    def _make_grid(self, nx=20, ny=20, i=0, torch_1_10=check_version(torch.__version__, "1.10.0")):
+    def _make_grid(self, nx=20, ny=20, i=0, torch_1_10=check_version(torch.__version__, "1.10.0")):  # noqa: B008
         """Generates a coordinate grid and anchor grid of shape `(1, na, ny, nx, 2)` for decoding Detect outputs."""
         d = self.anchors[i].device
         t = self.anchors[i].dtype
@@ -179,7 +178,7 @@ class BaseModel(nn.Module):
 
     def _apply(self, fn):
         """Applies `to()`, `cpu()`, `cuda()`, `half()` to model tensors, excluding parameters or registered buffers."""
-        self = super()._apply(fn)
+        super()._apply(fn)
         m = self.model[-1]  # Detect()
         if isinstance(m, Detect):
             m.stride = fn(m.stride)

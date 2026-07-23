@@ -16,7 +16,6 @@ class TryExcept(contextlib.ContextDecorator):
 
     def __enter__(self):
         """Enter the exception-handling block (no setup required)."""
-        pass
 
     def __exit__(self, exc_type, value, traceback):
         """Print the message and exception on exit, suppressing the exception so execution continues."""

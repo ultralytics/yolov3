@@ -34,18 +34,18 @@ import yaml
 from ultralytics.utils import colorstr
 from ultralytics.utils.checks import check_requirements as check_requirements_ultralytics
 from ultralytics.utils.checks import check_version as check_version_ultralytics
-from ultralytics.utils.files import file_date as file_date
-from ultralytics.utils.files import file_size as file_size
+from ultralytics.utils.files import file_date, file_size  # noqa: F401
 from ultralytics.utils.files import increment_path as increment_path_ultralytics
-from ultralytics.utils.ops import clip_boxes as clip_boxes
-from ultralytics.utils.ops import make_divisible
-from ultralytics.utils.ops import xywh2xyxy as xywh2xyxy
-from ultralytics.utils.ops import xywhn2xyxy as xywhn2xyxy
-from ultralytics.utils.ops import xyxy2xywh as xyxy2xywh
-from ultralytics.utils.ops import xyxy2xywhn as xyxy2xywhn
+from ultralytics.utils.ops import (  # noqa: F401
+    clip_boxes,
+    make_divisible,
+    xywh2xyxy,
+    xywhn2xyxy,
+    xyxy2xywh,
+    xyxy2xywhn,
+)
 from ultralytics.utils.patches import torch_load
-from ultralytics.utils.torch_utils import intersect_dicts as intersect_dicts
-from ultralytics.utils.torch_utils import one_cycle as one_cycle
+from ultralytics.utils.torch_utils import intersect_dicts, one_cycle  # noqa: F401
 
 from utils import TryExcept, emojis
 from utils.downloads import curl_download, gsutil_getsize
@@ -53,13 +53,13 @@ from utils.metrics import box_iou, fitness
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]  # YOLOv3 root directory
-RANK = int(os.getenv("RANK", -1))
+RANK = int(os.getenv("RANK", "-1"))
 
 # Settings
 NUM_THREADS = min(8, max(1, os.cpu_count() - 1))  # number of YOLOv3 multiprocessing threads
 DATASETS_DIR = Path(os.getenv("YOLOv3_DATASETS_DIR", ROOT.parent / "datasets"))  # global datasets directory
-AUTOINSTALL = str(os.getenv("YOLOv3_AUTOINSTALL", True)).lower() == "true"  # global auto-install mode
-VERBOSE = str(os.getenv("YOLOv3_VERBOSE", True)).lower() == "true"  # global verbose mode
+AUTOINSTALL = str(os.getenv("YOLOv3_AUTOINSTALL", "true")).lower() == "true"  # global auto-install mode
+VERBOSE = str(os.getenv("YOLOv3_VERBOSE", "true")).lower() == "true"  # global verbose mode
 TQDM_BAR_FORMAT = "{l_bar}{bar:10}{r_bar}"  # tqdm bar format
 FONT = "Arial.ttf"  # https://github.com/ultralytics/assets/releases/download/v0.0.0/Arial.ttf
 
@@ -144,7 +144,7 @@ LOGGING_NAME = "yolov3"
 
 def set_logging(name=LOGGING_NAME, verbose=True):
     """Configures logging with specified verbosity; 'name' sets logger identity, 'verbose' toggles logging level."""
-    rank = int(os.getenv("RANK", -1))  # rank in world for Multi-GPU trainings
+    rank = int(os.getenv("RANK", "-1"))  # rank in world for Multi-GPU trainings
     level = logging.INFO if verbose and rank in {-1, 0} else logging.ERROR
     logging.config.dictConfig(
         {
@@ -173,7 +173,7 @@ set_logging(LOGGING_NAME)  # run before defining LOGGER
 LOGGER = logging.getLogger(LOGGING_NAME)  # define globally (used in train.py, val.py, detect.py, etc.)
 if platform.system() == "Windows":
     for fn in LOGGER.info, LOGGER.warning:
-        setattr(LOGGER, fn.__name__, lambda x: fn(emojis(x)))  # emoji safe logging
+        setattr(LOGGER, fn.__name__, lambda x, fn=fn: fn(emojis(x)))  # emoji safe logging
 
 
 def user_config_dir(dir="Ultralytics", env_var="YOLOV3_CONFIG_DIR"):
@@ -506,7 +506,7 @@ def check_dataset(data, autodownload=True):
         assert k in data, emojis(f"data.yaml '{k}:' field missing ❌")
     if isinstance(data["names"], (list, tuple)):  # old array format
         data["names"] = dict(enumerate(data["names"]))  # convert to dict
-    assert all(isinstance(k, int) for k in data["names"].keys()), "data.yaml names keys must be integers, i.e. 2: car"
+    assert all(isinstance(k, int) for k in data["names"]), "data.yaml names keys must be integers, i.e. 2: car"
     data["nc"] = len(data["names"])
 
     # Resolve paths
@@ -531,16 +531,16 @@ def check_dataset(data, autodownload=True):
         if not all(x.exists() for x in val):
             LOGGER.info("\nDataset not found ⚠️, missing paths %s" % [str(x) for x in val if not x.exists()])
             if not s or not autodownload:
-                raise Exception("Dataset not found ❌")
+                raise RuntimeError("Dataset not found ❌")
             t = time.time()
             if s.startswith("http") and s.endswith(".zip"):  # URL
                 download(s, dir=DATASETS_DIR, curl=True)
                 r = 0  # success
             elif s.startswith("bash "):  # bash script
                 LOGGER.info(f"Running {s} ...")
-                r = subprocess.run(s, shell=True).returncode
+                r = subprocess.run(s, shell=True, check=False).returncode
             else:  # python script
-                exec(s, {"yaml": data})
+                exec(s, {"yaml": data})  # noqa: S102
                 r = 0  # exec returns None, treat completion without exception as success
             dt = f"({round(time.time() - t, 1)}s)"
             s = f"success ✅ {dt}, saved to {colorstr('bold', DATASETS_DIR)}" if r == 0 else f"failure {dt} ❌"
@@ -683,7 +683,7 @@ def labels_to_class_weights(labels, nc=80):
     return torch.from_numpy(weights).float()
 
 
-def labels_to_image_weights(labels, nc=80, class_weights=np.ones(80)):
+def labels_to_image_weights(labels, nc=80, class_weights=np.ones(80)):  # noqa: B008
     """Calculates image weights from labels using class weights, for balanced sampling."""
     # Usage: index = random.choices(range(n), weights=image_weights, k=1)  # weighted image sample
     class_counts = np.array([np.bincount(x[:, 0].astype(int), minlength=nc) for x in labels])
@@ -1013,7 +1013,7 @@ def strip_optimizer(f="best.pt", s=""):  # from utils.general import *; strip_op
     LOGGER.info(f"Optimizer stripped from {f},{f' saved as {s},' if s else ''} {mb:.1f}MB")
 
 
-def print_mutation(keys, results, hyp, save_dir, bucket, prefix=colorstr("evolve: ")):
+def print_mutation(keys, results, hyp, save_dir, bucket, prefix=colorstr("evolve: ")):  # noqa: B008
     """Logs mutation results, updates evolve CSV/YAML, optionally syncs with cloud storage."""
     evolve_csv = save_dir / "evolve.csv"
     evolve_yaml = save_dir / "hyp_evolve.yaml"
@@ -1026,7 +1026,9 @@ def print_mutation(keys, results, hyp, save_dir, bucket, prefix=colorstr("evolve
     if bucket:
         url = f"gs://{bucket}/evolve.csv"
         if gsutil_getsize(url) > (evolve_csv.stat().st_size if evolve_csv.exists() else 0):
-            subprocess.run(["gsutil", "cp", f"{url}", f"{save_dir}"])  # download evolve.csv if larger than local
+            subprocess.run(
+                ["gsutil", "cp", f"{url}", f"{save_dir}"], check=False
+            )  # download evolve.csv if larger than local
 
     # Log to evolve.csv
     s = "" if evolve_csv.exists() else (("%20s," * n % keys).rstrip(",") + "\n")  # add header
@@ -1037,7 +1039,7 @@ def print_mutation(keys, results, hyp, save_dir, bucket, prefix=colorstr("evolve
     with open(evolve_yaml, "w") as f:
         data = pd.read_csv(evolve_csv, skipinitialspace=True)
         data = data.rename(columns=lambda x: x.strip())  # strip keys
-        i = np.argmax(fitness(data.values[:, :4]))  #
+        i = np.argmax(fitness(data.values[:, :4]))
         generations = len(data)
         f.write(
             "# YOLOv3 Hyperparameter Evolution Results\n"
@@ -1065,7 +1067,7 @@ def print_mutation(keys, results, hyp, save_dir, bucket, prefix=colorstr("evolve
     )
 
     if bucket:
-        subprocess.run(["gsutil", "cp", f"{evolve_csv}", f"{evolve_yaml}", f"gs://{bucket}"])  # upload
+        subprocess.run(["gsutil", "cp", f"{evolve_csv}", f"{evolve_yaml}", f"gs://{bucket}"], check=False)  # upload
 
 
 def apply_classifier(x, model, img, im0):

@@ -10,20 +10,22 @@ from pathlib import Path
 
 import torch
 import torch.distributed as dist
-import torch.nn as nn
+from torch import nn
 from torch.nn.parallel import DistributedDataParallel as DDP
-from ultralytics.utils.torch_utils import ModelEMA as ModelEMA
-from ultralytics.utils.torch_utils import copy_attr as copy_attr
-from ultralytics.utils.torch_utils import fuse_conv_and_bn as fuse_conv_and_bn
-from ultralytics.utils.torch_utils import initialize_weights as initialize_weights
-from ultralytics.utils.torch_utils import scale_img as scale_img
-from ultralytics.utils.torch_utils import time_sync as time_sync
+from ultralytics.utils.torch_utils import (  # noqa: F401
+    ModelEMA,
+    copy_attr,
+    fuse_conv_and_bn,
+    initialize_weights,
+    scale_img,
+    time_sync,
+)
 
 from utils.general import LOGGER, check_version, colorstr, file_date, git_describe
 
-LOCAL_RANK = int(os.getenv("LOCAL_RANK", -1))  # https://pytorch.org/docs/stable/elastic/run.html
-RANK = int(os.getenv("RANK", -1))
-WORLD_SIZE = int(os.getenv("WORLD_SIZE", 1))
+LOCAL_RANK = int(os.getenv("LOCAL_RANK", "-1"))  # https://pytorch.org/docs/stable/elastic/run.html
+RANK = int(os.getenv("RANK", "-1"))
+WORLD_SIZE = int(os.getenv("WORLD_SIZE", "1"))
 
 try:
     import thop  # for FLOPs computation
@@ -35,7 +37,7 @@ warnings.filterwarnings("ignore", message="User provided device_type of 'cuda', 
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-def smart_inference_mode(torch_1_9=check_version(torch.__version__, "1.9.0")):
+def smart_inference_mode(torch_1_9=check_version(torch.__version__, "1.9.0")):  # noqa: B008
     """Applies torch.inference_mode() if torch>=1.9.0 or torch.no_grad() otherwise as a decorator to functions."""
 
     def decorate(fn):
@@ -194,7 +196,7 @@ def sparsity(model):
 
 def prune(model, amount=0.3):
     """Prunes Conv2d layers in a model to a specified global sparsity using l1 unstructured pruning."""
-    import torch.nn.utils.prune as prune
+    from torch.nn.utils import prune
 
     for name, m in model.named_modules():
         if isinstance(m, nn.Conv2d):
