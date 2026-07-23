@@ -1,5 +1,4 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
-
 """
 Export a YOLOv3 PyTorch model to other formats.
 
