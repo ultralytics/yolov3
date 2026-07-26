@@ -284,7 +284,7 @@ class LoadImages:
         customizable image sizing.
         """
         if isinstance(path, str) and Path(path).suffix == ".txt":  # *.txt file with img/vid/dir on each line
-            path = Path(path).read_text().strip().splitlines()
+            path = [x for x in Path(path).read_text().splitlines() if x.strip()]
         files = []
         for p in sorted(path) if isinstance(path, (list, tuple)) else [path]:
             p = str(Path(p).resolve())
