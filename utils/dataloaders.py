@@ -398,7 +398,9 @@ class LoadStreams:
         self.img_size = img_size
         self.stride = stride
         self.vid_stride = vid_stride  # video frame-rate stride
-        sources = [x for x in Path(sources).read_text().splitlines() if x.strip()] if os.path.isfile(sources) else [sources]
+        sources = (
+            [x for x in Path(sources).read_text().splitlines() if x.strip()] if os.path.isfile(sources) else [sources]
+        )
         n = len(sources)
         self.sources = [clean_str(x) for x in sources]  # clean source names for later
         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
