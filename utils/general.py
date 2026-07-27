@@ -18,6 +18,7 @@ import sys
 import time
 import urllib
 from copy import deepcopy
+from functools import partial
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
@@ -31,11 +32,13 @@ import pandas as pd
 import torch
 import torchvision
 import yaml
+from ultralytics.utils import TQDM as _TQDM
 from ultralytics.utils import colorstr
 from ultralytics.utils.checks import check_requirements as check_requirements_ultralytics
 from ultralytics.utils.checks import check_version as check_version_ultralytics
 from ultralytics.utils.files import file_date, file_size  # noqa: F401
 from ultralytics.utils.files import increment_path as increment_path_ultralytics
+from ultralytics.utils.git import GitRepo
 from ultralytics.utils.ops import (  # noqa: F401
     clip_boxes,
     make_divisible,
@@ -60,7 +63,7 @@ NUM_THREADS = min(8, max(1, os.cpu_count() - 1))  # number of YOLOv3 multiproces
 DATASETS_DIR = Path(os.getenv("YOLOv3_DATASETS_DIR", ROOT.parent / "datasets"))  # global datasets directory
 AUTOINSTALL = str(os.getenv("YOLOv3_AUTOINSTALL", "true")).lower() == "true"  # global auto-install mode
 VERBOSE = str(os.getenv("YOLOv3_VERBOSE", "true")).lower() == "true"  # global verbose mode
-TQDM_BAR_FORMAT = "{l_bar}{bar:10}{r_bar}"  # tqdm bar format
+TQDM = partial(_TQDM, file=sys.stderr)  # progress bars on stderr like LOGGER, keeping stdout free for piped output
 FONT = "Arial.ttf"  # https://github.com/ultralytics/assets/releases/download/v0.0.0/Arial.ttf
 
 torch.set_printoptions(linewidth=320, precision=5, profile="long")
@@ -332,7 +335,7 @@ def check_online():
 def git_describe(path=ROOT):  # path must be a directory
     """Returns human-readable git description of a directory if it's a git repository, otherwise an empty string."""
     try:
-        assert (Path(path) / ".git").is_dir()
+        assert (Path(path) / ".git").exists()  # dir in a clone, file in a worktree or submodule
         return check_output(f"git -C {path} describe --tags --long --always", shell=True).decode()[:-1]
     except Exception:
         return ""
@@ -368,26 +371,13 @@ def check_git_status(repo="ultralytics/yolov3", branch="master"):
     LOGGER.info(s)
 
 
-@WorkingDirectory(ROOT)
-def check_git_info(path="."):
-    """Checks YOLOv3 git info (remote, branch, commit) in path, requires 'gitpython'.
-
-    Returns dict.
-    """
-    check_requirements("gitpython")
-    import git
-
-    try:
-        repo = git.Repo(path)
-        remote = repo.remotes.origin.url.replace(".git", "")  # i.e. 'https://github.com/ultralytics/yolov3'
-        commit = repo.head.commit.hexsha  # i.e. '3134699c73af83aac2a481435550b968d5792c0d'
-        try:
-            branch = repo.active_branch.name  # i.e. 'main'
-        except TypeError:  # not on any branch
-            branch = None  # i.e. 'detached HEAD' state
-        return {"remote": remote, "branch": branch, "commit": commit}
-    except git.exc.InvalidGitRepositoryError:  # path is not a git dir
+def check_git_info(path=ROOT):
+    """Checks YOLOv3 git info, returning a dict with remote URL, branch name, and commit hash."""
+    repo = GitRepo(path)
+    if repo.root != Path(path):  # GitRepo searches parents, ignore a repo that merely contains YOLOv3
         return {"remote": None, "branch": None, "commit": None}
+    remote = repo.origin.replace(".git", "") if repo.origin else None  # i.e. 'https://github.com/ultralytics/yolov3'
+    return {"remote": remote, "branch": repo.branch, "commit": repo.commit}  # branch is None on detached HEAD
 
 
 def check_python(minimum="3.8.0"):
@@ -806,12 +796,12 @@ def segment2box(segment, width=640, height=640):
 
 
 def segments2boxes(segments):
-    """Converts segmentation labels to bounding box labels in format (cls, xywh) from (cls, xy1, xy2, ...)."""
+    """Converts segmentation labels to bounding box labels in format (xywh) from (xy1, xy2, ...)."""
     boxes = []
     for s in segments:
         x, y = s.T  # segment xy
-        boxes.append([x.min(), y.min(), x.max(), y.max()])  # cls, xyxy
-    return xyxy2xywh(np.array(boxes))  # cls, xywh
+        boxes.append([x.min(), y.min(), x.max(), y.max()])  # xyxy
+    return xyxy2xywh(np.array(boxes))  # xywh
 
 
 def resample_segments(segments, n=1000):

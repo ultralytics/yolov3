@@ -36,7 +36,6 @@ if str(ROOT) not in sys.path:
 # ROOT = ROOT.relative_to(Path.cwd())  # relative
 
 import export
-from utils import notebook_init
 from utils.general import LOGGER, check_yaml, file_size, print_args
 from utils.torch_utils import select_device
 from val import run as val_det
@@ -108,7 +107,6 @@ def run(
 
     # Print results
     LOGGER.info("\n")
-    notebook_init()  # print system info
     c = ["Format", "Size (MB)", "mAP50-95", "Inference time (ms)"]
     py = pd.DataFrame(y, columns=c)
     LOGGER.info(f"\nBenchmarks complete ({time.time() - t:.2f}s)")
@@ -164,7 +162,6 @@ def test(
 
     # Print results
     LOGGER.info("\n")
-    notebook_init()  # print system info
     py = pd.DataFrame(y, columns=["Format", "Export"])
     LOGGER.info(f"\nExports complete ({time.time() - t:.2f}s)")
     LOGGER.info(str(py))

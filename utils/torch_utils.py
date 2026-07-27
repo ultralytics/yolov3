@@ -86,7 +86,7 @@ def torch_distributed_zero_first(local_rank: int):
 # Keep local (do not dedup): YOLOv3 banner plus batch_size divisibility check absent from ultralytics select_device
 def select_device(device="", batch_size=0, newline=True):
     """Selects the device for running models, handling CPU, GPU, and MPS with optional batch size divisibility check."""
-    s = f"YOLOv3 🚀 {git_describe() or file_date()} Python-{platform.python_version()} torch-{torch.__version__} "
+    s = f"YOLOv3 🚀 {git_describe() or file_date(__file__)} Python-{platform.python_version()} torch-{torch.__version__} "
     device = str(device).strip().lower().replace("cuda:", "").replace("none", "")  # to string, 'cuda:0' to '0'
     cpu = device == "cpu"
     mps = device == "mps"  # Apple Metal Performance Shaders (MPS)
