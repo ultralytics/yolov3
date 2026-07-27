@@ -283,7 +283,7 @@ class LoadImages:
         customizable image sizing.
         """
         if isinstance(path, str) and Path(path).suffix == ".txt":  # *.txt file with img/vid/dir on each line
-            path = Path(path).read_text().rsplit()
+            path = [x for x in Path(path).read_text().splitlines() if x.strip()]
         files = []
         for p in sorted(path) if isinstance(path, (list, tuple)) else [path]:
             p = str(Path(p).resolve())
@@ -397,7 +397,9 @@ class LoadStreams:
         self.img_size = img_size
         self.stride = stride
         self.vid_stride = vid_stride  # video frame-rate stride
-        sources = Path(sources).read_text().rsplit() if os.path.isfile(sources) else [sources]
+        sources = (
+            [x for x in Path(sources).read_text().splitlines() if x.strip()] if os.path.isfile(sources) else [sources]
+        )
         n = len(sources)
         self.sources = [clean_str(x) for x in sources]  # clean source names for later
         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
@@ -659,8 +661,7 @@ class LoadImagesAndLabels(Dataset):
         if not cache:
             LOGGER.info(
                 f"{prefix}{mem_required / gb:.1f}GB RAM required, "
-                f"{mem.available / gb:.1f}/{mem.total / gb:.1f}GB available, "
-                f"{'caching images ✅' if cache else 'not caching images ⚠️'}"
+                f"{mem.available / gb:.1f}/{mem.total / gb:.1f}GB available, not caching images ⚠️"
             )
         return cache
 

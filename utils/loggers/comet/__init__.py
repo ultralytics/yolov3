@@ -261,12 +261,12 @@ class CometLogger:
             return
         detections = predn[predn[:, 4] > self.conf_thres]
         iou = box_iou(labelsn[:, 1:], detections[:, :4])
-        mask, _ = torch.where(iou > self.iou_thres)
-        if len(mask) == 0:
+        label_indices, detection_indices = torch.where(iou > self.iou_thres)
+        if len(label_indices) == 0:
             return
 
-        filtered_detections = detections[mask]
-        filtered_labels = labelsn[mask]
+        filtered_detections = detections[detection_indices.unique()]
+        filtered_labels = labelsn[label_indices.unique()]
 
         image_id = path.split("/")[-1].split(".")[0]
         image_name = f"{image_id}_curr_epoch_{self.experiment.curr_epoch}"
@@ -312,7 +312,6 @@ class CometLogger:
             tbox = xywh2xyxy(labels[:, 1:5])  # target boxes
             scale_boxes(image.shape[1:], tbox, shape[0], shape[1])  # native-space labels
             labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
-            scale_boxes(image.shape[1:], predn[:, :4], shape[0], shape[1])  # native-space pred
 
         return predn, labelsn
 
@@ -393,7 +392,7 @@ class CometLogger:
             if data_dict.get(split):
                 split_path = data_dict.get(split)
                 data_dict[split] = (
-                    f"{path}/{split_path}" if isinstance(split, str) else [f"{path}/{x}" for x in split_path]
+                    f"{path}/{split_path}" if isinstance(split_path, str) else [f"{path}/{x}" for x in split_path]
                 )
 
         return data_dict

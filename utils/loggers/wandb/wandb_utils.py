@@ -80,28 +80,13 @@ class WandbLogger:
             self.setup_training(opt)
 
     def setup_training(self, opt):
-        """Set up training: restore checkpoint and config when resuming a W&B run, then initialize bbox_interval.
+        """Initialize log_dict, current_epoch, and bbox_interval for a training run.
 
         Args:
             opt (argparse.Namespace): Command-line arguments for this run.
         """
         self.log_dict, self.current_epoch = {}, 0
         self.bbox_interval = opt.bbox_interval
-        if isinstance(opt.resume, str):
-            model_dir, _ = self.download_model_artifact(opt)
-            if model_dir:
-                self.weights = Path(model_dir) / "last.pt"
-                config = self.wandb_run.config
-                opt.weights, opt.save_period, opt.batch_size, opt.bbox_interval, opt.epochs, opt.hyp, opt.imgsz = (
-                    str(self.weights),
-                    config.save_period,
-                    config.batch_size,
-                    config.bbox_interval,
-                    config.epochs,
-                    config.hyp,
-                    config.imgsz,
-                )
-
         if opt.bbox_interval == -1:
             self.bbox_interval = opt.bbox_interval = (opt.epochs // 10) if opt.epochs > 10 else 1
             if opt.evolve or opt.noplots:

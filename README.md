@@ -8,7 +8,7 @@
 
 <div>
     <a href="https://github.com/ultralytics/yolov3/actions/workflows/ci-testing.yml"><img src="https://github.com/ultralytics/yolov3/actions/workflows/ci-testing.yml/badge.svg" alt="YOLOv3 CI"></a>
-    <a href="https://zenodo.org/badge/latestdoi/264818686"><img src="https://zenodo.org/badge/264818686.svg" alt="YOLOv3 Citation"></a>
+    <a href="https://zenodo.org/badge/latestdoi/146165888"><img src="https://zenodo.org/badge/146165888.svg" alt="YOLOv3 Citation"></a>
     <a href="https://hub.docker.com/r/ultralytics/yolov3"><img src="https://img.shields.io/docker/pulls/ultralytics/yolov3?logo=docker" alt="Docker Pulls"></a>
     <a href="https://discord.com/invite/ultralytics"><img alt="Discord" src="https://img.shields.io/discord/1089800235347353640?logo=discord&logoColor=white&label=Discord&color=blue"></a>
     <a href="https://community.ultralytics.com/"><img alt="Ultralytics Forums" src="https://img.shields.io/discourse/users?server=https%3A%2F%2Fcommunity.ultralytics.com&logo=discourse&label=Forums&color=blue"></a>
@@ -208,7 +208,7 @@ Get started quickly with pre-configured environments. Click an icon below for se
   <a href="https://docs.ultralytics.com/integrations/amazon-sagemaker">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-aws-small.png" width="10%" alt="AWS Marketplace"/></a>
   <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="5%" alt="" />
-  <a href="https://docs.ultralytics.com/integrations/google-colab">
+  <a href="https://docs.ultralytics.com/yolov5/environments/google-cloud-quickstart-tutorial">
     <img src="https://github.com/ultralytics/assets/releases/download/v0.0.0/logo-gcp-small.png" width="10%" alt="GCP Quickstart"/></a>
 </div>
 
