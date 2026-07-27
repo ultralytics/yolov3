@@ -89,7 +89,7 @@ def feature_visualization(x, module_type, stage, n=32, save_dir=Path("runs/detec
 
             blocks = torch.chunk(x[0].cpu(), channels, dim=0)  # select batch index 0, block by channels
             n = min(n, channels)  # number of plots
-            _fig, ax = plt.subplots(math.ceil(n / 8), 8, tight_layout=True)  # 8 rows x n/8 cols
+            _fig, ax = plt.subplots(math.ceil(n / 8), 8, tight_layout=True)
             ax = ax.ravel()
             plt.subplots_adjust(wspace=0.05, hspace=0.05)
             for i in range(n):
@@ -367,7 +367,7 @@ def plot_evolve(evolve_csv="path/to/evolve.csv"):  # from utils.plots import *; 
         plt.subplot(6, 5, i + 1)
         plt.scatter(v, f, c=hist2d(v, f, 20), cmap="viridis", alpha=0.8, edgecolors="none")
         plt.plot(mu, f.max(), "k+", markersize=15)
-        plt.title(f"{k} = {mu:.3g}", fontdict={"size": 9})  # limit to 40 characters
+        plt.title(f"{k} = {mu:.3g}", fontdict={"size": 9})
         if i % 5 != 0:
             plt.yticks([])
         print(f"{k:>15}: {mu:.3g}")
