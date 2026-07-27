@@ -36,7 +36,6 @@ import torch.distributed as dist
 import yaml
 from torch import nn
 from torch.optim import lr_scheduler
-from tqdm import tqdm
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv3 root directory
@@ -57,7 +56,7 @@ from utils.dataloaders import create_dataloader
 from utils.downloads import attempt_download, is_url
 from utils.general import (
     LOGGER,
-    TQDM_BAR_FORMAT,
+    TQDM,
     check_amp,
     check_dataset,
     check_file,
@@ -373,7 +372,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         pbar = enumerate(train_loader)
         LOGGER.info(("\n" + "%11s" * 7) % ("Epoch", "GPU_mem", "box_loss", "obj_loss", "cls_loss", "Instances", "Size"))
         if RANK in {-1, 0}:
-            pbar = tqdm(pbar, total=nb, bar_format=TQDM_BAR_FORMAT)  # progress bar
+            pbar = TQDM(pbar, total=nb)  # progress bar
         optimizer.zero_grad()
         for i, (imgs, targets, paths, _) in pbar:  # batch -------------------------------------------------------------
             callbacks.run("on_train_batch_start")

@@ -3,11 +3,10 @@
 # Python >= 3.8 recommended
 
 # Base ------------------------------------------------------------------------
-gitpython>=3.1.30            # Git repo interaction for training/versioning
 matplotlib>=3.5.0            # Plotting results and graphs
 numpy>=1.23.5                # Fundamental for array/matrix operations
 opencv-python>=4.6.0         # Image/video processing
-packaging>=20.0             # Version parsing for utils/general.py and loggers
+packaging>=20.0              # Version parsing for loggers
 Pillow>=10.3.0               # Image reading/writing support
 psutil>=5.9.0                # System monitoring (RAM, CPU, etc.)
 PyYAML>=5.3.1                # Reading configs (yaml files)
@@ -16,7 +15,6 @@ scipy>=1.4.1                 # Scientific computing (e.g. IoU, metrics)
 thop>=0.1.1                  # Model profiling - FLOPs and parameter count
 torch>=1.8.0                 # Core PyTorch for training/inference
 torchvision>=0.9.0           # Torch utilities for vision (transforms, datasets)
-tqdm>=4.66.3                 # Progress bar in CLI
 ultralytics>=8.4.83          # YOLO framework library (models, training, utils)
 
 # Logging ---------------------------------------------------------------------

@@ -23,7 +23,6 @@ import torch.nn.functional as F
 import yaml
 from PIL import ExifTags, Image, ImageOps
 from torch.utils.data import DataLoader, Dataset, dataloader, distributed
-from tqdm import tqdm
 
 from utils.augmentations import (
     Albumentations,
@@ -37,7 +36,7 @@ from utils.general import (
     DATASETS_DIR,
     LOGGER,
     NUM_THREADS,
-    TQDM_BAR_FORMAT,
+    TQDM,
     check_dataset,
     check_requirements,
     check_yaml,
@@ -555,7 +554,7 @@ class LoadImagesAndLabels(Dataset):
         nf, nm, ne, nc, n = cache.pop("results")  # found, missing, empty, corrupt, total
         if exists and LOCAL_RANK in {-1, 0}:
             d = f"Scanning {cache_path}... {nf} images, {nm + ne} backgrounds, {nc} corrupt"
-            tqdm(None, desc=prefix + d, total=n, initial=n, bar_format=TQDM_BAR_FORMAT)  # display cache results
+            TQDM(None, desc=prefix + d, total=n, initial=n)  # display cache results
             if cache["msgs"]:
                 LOGGER.info("\n".join(cache["msgs"]))  # display warnings
         assert nf > 0 or not augment, f"{prefix}No labels found in {cache_path}, can not start training. {HELP_URL}"
@@ -636,7 +635,7 @@ class LoadImagesAndLabels(Dataset):
             self.im_hw0, self.im_hw = [None] * n, [None] * n
             fcn = self.cache_images_to_disk if cache_images == "disk" else self.load_image
             results = ThreadPool(NUM_THREADS).imap(fcn, range(n))
-            pbar = tqdm(enumerate(results), total=n, bar_format=TQDM_BAR_FORMAT, disable=LOCAL_RANK > 0)
+            pbar = TQDM(enumerate(results), total=n, disable=LOCAL_RANK > 0)
             for i, x in pbar:
                 if cache_images == "disk":
                     b += self.npy_files[i].stat().st_size
@@ -671,11 +670,10 @@ class LoadImagesAndLabels(Dataset):
         nm, nf, ne, nc, msgs = 0, 0, 0, 0, []  # number missing, found, empty, corrupt, messages
         desc = f"{prefix}Scanning {path.parent / path.stem}..."
         with Pool(NUM_THREADS) as pool:
-            pbar = tqdm(
+            pbar = TQDM(
                 pool.imap(verify_image_label, zip(self.im_files, self.label_files, repeat(prefix))),
                 desc=desc,
                 total=len(self.im_files),
-                bar_format=TQDM_BAR_FORMAT,
             )
             for im_file, lb, shape, segments, nm_f, nf_f, ne_f, nc_f, msg in pbar:
                 nm += nm_f
@@ -880,85 +878,6 @@ class LoadImagesAndLabels(Dataset):
 
         return img4, labels4
 
-    def load_mosaic9(self, index):
-        """Loads 1 image + 8 random images into a 9-image mosaic for YOLOv3, returning combined image and labels."""
-        labels9, segments9 = [], []
-        s = self.img_size
-        indices = [index, *random.choices(self.indices, k=8)]  # 8 additional image indices
-        random.shuffle(indices)
-        hp, wp = -1, -1  # height, width previous
-        for i, mosaic_index in enumerate(indices):
-            # Load image
-            img, _, (h, w) = self.load_image(mosaic_index)
-
-            # place img in img9
-            if i == 0:  # center
-                img9 = np.full((s * 3, s * 3, img.shape[2]), 114, dtype=np.uint8)  # base image with 4 tiles
-                h0, w0 = h, w
-                c = s, s, s + w, s + h  # xmin, ymin, xmax, ymax (base) coordinates
-            elif i == 1:  # top
-                c = s, s - h, s + w, s
-            elif i == 2:  # top right
-                c = s + wp, s - h, s + wp + w, s
-            elif i == 3:  # right
-                c = s + w0, s, s + w0 + w, s + h
-            elif i == 4:  # bottom right
-                c = s + w0, s + hp, s + w0 + w, s + hp + h
-            elif i == 5:  # bottom
-                c = s + w0 - w, s + h0, s + w0, s + h0 + h
-            elif i == 6:  # bottom left
-                c = s + w0 - wp - w, s + h0, s + w0 - wp, s + h0 + h
-            elif i == 7:  # left
-                c = s - w, s + h0 - h, s, s + h0
-            elif i == 8:  # top left
-                c = s - w, s + h0 - hp - h, s, s + h0 - hp
-
-            padx, pady = c[:2]
-            x1, y1, x2, y2 = (max(x, 0) for x in c)  # allocate coords
-
-            # Labels
-            labels, segments = self.labels[mosaic_index].copy(), self.segments[mosaic_index].copy()
-            if labels.size:
-                labels[:, 1:] = xywhn2xyxy(labels[:, 1:], w, h, padx, pady)  # normalized xywh to pixel xyxy format
-                segments = [xyn2xy(x, w, h, padx, pady) for x in segments]
-            labels9.append(labels)
-            segments9.extend(segments)
-
-            # Image
-            img9[y1:y2, x1:x2] = img[y1 - pady :, x1 - padx :]  # img9[ymin:ymax, xmin:xmax]
-            hp, wp = h, w  # height, width previous
-
-        # Offset
-        yc, xc = (int(random.uniform(0, s)) for _ in self.mosaic_border)  # mosaic center x, y
-        img9 = img9[yc : yc + 2 * s, xc : xc + 2 * s]
-
-        # Concat/clip labels
-        labels9 = np.concatenate(labels9, 0)
-        labels9[:, [1, 3]] -= xc
-        labels9[:, [2, 4]] -= yc
-        c = np.array([xc, yc])  # centers
-        segments9 = [x - c for x in segments9]
-
-        for x in (labels9[:, 1:], *segments9):
-            np.clip(x, 0, 2 * s, out=x)  # clip when using random_perspective()
-        # img9, labels9 = replicate(img9, labels9)  # replicate
-
-        # Augment
-        img9, labels9, segments9 = copy_paste(img9, labels9, segments9, p=self.hyp["copy_paste"])
-        img9, labels9 = random_perspective(
-            img9,
-            labels9,
-            segments9,
-            degrees=self.hyp["degrees"],
-            translate=self.hyp["translate"],
-            scale=self.hyp["scale"],
-            shear=self.hyp["shear"],
-            perspective=self.hyp["perspective"],
-            border=self.mosaic_border,
-        )  # border to remove
-
-        return img9, labels9
-
     @staticmethod
     def collate_fn(batch):
         """Collates batch of images, labels, paths, and shapes, indexing labels for target image identification."""
@@ -1003,7 +922,7 @@ def flatten_recursive(path=DATASETS_DIR / "coco128"):
     if os.path.exists(new_path):
         shutil.rmtree(new_path)  # delete output folder
     os.makedirs(new_path)  # make new output folder
-    for file in tqdm(glob.glob(f"{Path(path)!s}/**/*.*", recursive=True)):
+    for file in TQDM(glob.glob(f"{Path(path)!s}/**/*.*", recursive=True)):
         shutil.copyfile(file, new_path / Path(file).name)
 
 
@@ -1015,7 +934,7 @@ def extract_boxes(path=DATASETS_DIR / "coco128"):  # from utils.dataloaders impo
     shutil.rmtree(path / "classification") if (path / "classification").is_dir() else None  # remove existing
     files = list(path.rglob("*.*"))
     n = len(files)  # number of files
-    for im_file in tqdm(files, total=n):
+    for im_file in TQDM(files, total=n):
         if im_file.suffix[1:] in IMG_FORMATS:
             # image
             im = cv2.imread(str(im_file))[..., ::-1]  # BGR to RGB
@@ -1064,7 +983,7 @@ def autosplit(path=DATASETS_DIR / "coco128/images", weights=(0.9, 0.1, 0.0), ann
             (path.parent / x).unlink()  # remove existing
 
     print(f"Autosplitting images from {path}" + ", using *.txt labeled images only" * annotated_only)
-    for i, img in tqdm(zip(indices, files), total=n):
+    for i, img in TQDM(zip(indices, files), total=n):
         if not annotated_only or Path(img2label_paths([str(img)])[0]).exists():  # check label
             with open(path.parent / txt[i], "a") as f:
                 f.write(f"./{img.relative_to(path.parent).as_posix()}" + "\n")  # add image to txt file
@@ -1148,7 +1067,7 @@ class HUBDatasetStats:
             raise RuntimeError("error/HUB/dataset_stats/yaml_load") from e
 
         check_dataset(data, autodownload)  # download dataset if missing
-        self.hub_dir = Path(data["path"] + "-hub")
+        self.hub_dir = Path(f"{data['path']}-hub")  # check_dataset() resolves 'path' to a Path
         self.im_dir = self.hub_dir / "images"
         self.im_dir.mkdir(parents=True, exist_ok=True)  # makes /images
         self.stats = {"nc": data["nc"], "names": list(data["names"].values())}  # statistics dictionary
@@ -1199,11 +1118,11 @@ class HUBDatasetStats:
 
     def get_json(self, save=False, verbose=False):
         """Generates dataset JSON for Ultralytics Platform, with optional saving and verbosity; rounds labels to int
-        class and 6 decimal floats.
+        class and 4 decimal floats.
         """
 
         def _round(labels):
-            """Update labels to integer class and 6 decimal place floats."""
+            """Update labels to integer class and 4 decimal place floats."""
             return [[int(c), *(round(x, 4) for x in points)] for c, *points in labels]
 
         for split in "train", "val", "test":
@@ -1214,7 +1133,7 @@ class HUBDatasetStats:
             x = np.array(
                 [
                     np.bincount(label[:, 0].astype(int), minlength=self.data["nc"])
-                    for label in tqdm(dataset.labels, total=dataset.n, desc="Statistics")
+                    for label in TQDM(dataset.labels, total=dataset.n, desc="Statistics")
                 ]
             )  # shape(128x80)
             self.stats[split] = {
@@ -1246,7 +1165,7 @@ class HUBDatasetStats:
                 continue
             dataset = LoadImagesAndLabels(self.data[split])  # load dataset
             desc = f"{split} images"
-            for _ in tqdm(ThreadPool(NUM_THREADS).imap(self._hub_ops, dataset.im_files), total=dataset.n, desc=desc):
+            for _ in TQDM(ThreadPool(NUM_THREADS).imap(self._hub_ops, dataset.im_files), total=dataset.n, desc=desc):
                 pass
         print(f"Done. All images saved to {self.im_dir}")
         return self.im_dir

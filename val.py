@@ -28,7 +28,6 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from tqdm import tqdm
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv3 root directory
@@ -41,7 +40,7 @@ from utils.callbacks import Callbacks
 from utils.dataloaders import create_dataloader
 from utils.general import (
     LOGGER,
-    TQDM_BAR_FORMAT,
+    TQDM,
     Profile,
     check_dataset,
     check_img_size,
@@ -148,22 +147,22 @@ def process_batch(detections, labels, iouv):
     """Computes correct prediction matrix for detections against ground truth labels at various IoU thresholds.
 
     Args:
-        detections (np.ndarray): Array of detections with shape (N, 6), where each detection contains [x1, y1, x2, y2,
-            confidence, class].
-        labels (np.ndarray): Array of ground truth labels with shape (M, 5), where each label contains [class, x1, y1,
-            x2, y2].
-        iouv (np.ndarray): Array of IoU thresholds to use for evaluation.
+        detections (torch.Tensor): Tensor of detections with shape (N, 6), where each detection contains [x1, y1, x2,
+            y2, confidence, class].
+        labels (torch.Tensor): Tensor of ground truth labels with shape (M, 5), where each label contains [class, x1,
+            y1, x2, y2].
+        iouv (torch.Tensor): Tensor of IoU thresholds to use for evaluation.
 
     Returns:
-        np.ndarray: Boolean array of shape (N, len(iouv)), indicating correct predictions at each IoU threshold.
+        torch.Tensor: Boolean tensor of shape (N, len(iouv)), indicating correct predictions at each IoU threshold.
 
     Examples:
         ```python
-        detections = np.array([[50, 50, 150, 150, 0.8, 0],
-                               [30, 30, 120, 120, 0.7, 1]])
-        labels = np.array([[0, 50, 50, 150, 150],
-                           [1, 30, 30, 120, 120]])
-        iouv = np.array([0.5, 0.6, 0.7])
+        detections = torch.tensor([[50, 50, 150, 150, 0.8, 0],
+                                   [30, 30, 120, 120, 0.7, 1]])
+        labels = torch.tensor([[0, 50, 50, 150, 150],
+                               [1, 30, 30, 120, 120]])
+        iouv = torch.tensor([0.5, 0.6, 0.7])
 
         correct = process_batch(detections, labels, iouv)
         ```
@@ -348,7 +347,7 @@ def run(
     loss = torch.zeros(3, device=device)
     jdict, stats, ap, ap_class = [], [], [], []
     callbacks.run("on_val_start")
-    pbar = tqdm(dataloader, desc=s, bar_format=TQDM_BAR_FORMAT)  # progress bar
+    pbar = TQDM(dataloader, desc=s)  # progress bar
     for batch_i, (im, targets, paths, shapes) in enumerate(pbar):
         callbacks.run("on_val_batch_start")
         with dt[0]:
