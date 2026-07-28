@@ -6,9 +6,9 @@ import random
 
 import cv2
 import numpy as np
+from ultralytics.utils.metrics import bbox_ioa
 
 from utils.general import LOGGER, check_version, colorstr, resample_segments, segment2box, xywhn2xyxy
-from utils.metrics import bbox_ioa
 
 
 class Albumentations:
@@ -227,7 +227,7 @@ def copy_paste(im, labels, segments, p=0.5):
         for j in random.sample(range(n), k=round(p * n)):
             label, segment = labels[j], segments[j]
             box = w - label[3], label[2], w - label[1], label[4]
-            ioa = bbox_ioa(box, labels[:, 1:5])  # intersection over area
+            ioa = bbox_ioa(np.array([box], dtype=np.float32), labels[:, 1:5])[0]  # intersection over area
             if (ioa < 0.30).all():  # allow 30% obscuration of existing labels
                 labels = np.concatenate((labels, [[label[0], *box]]), 0)
                 segments.append(np.concatenate((w - segment[:, 0:1], segment[:, 1:2]), 1))
@@ -260,8 +260,8 @@ def cutout(im, labels, p=0.5):
 
             # return unobscured labels
             if len(labels) and s > 0.03:
-                box = np.array([xmin, ymin, xmax, ymax], dtype=np.float32)
-                ioa = bbox_ioa(box, xywhn2xyxy(labels[:, 1:5], w, h))  # intersection over area
+                box = np.array([[xmin, ymin, xmax, ymax]], dtype=np.float32)
+                ioa = bbox_ioa(box, xywhn2xyxy(labels[:, 1:5], w, h))[0]  # intersection over area
                 labels = labels[ioa < 0.60]  # remove >60% obscured labels
 
     return labels

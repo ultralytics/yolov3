@@ -2,9 +2,8 @@
 """utils/initialization."""
 
 import contextlib
-import threading
 
-from ultralytics.utils import emojis
+from ultralytics.utils import emojis, threaded  # noqa: F401
 
 
 class TryExcept(contextlib.ContextDecorator):
@@ -22,21 +21,6 @@ class TryExcept(contextlib.ContextDecorator):
         if value:
             print(emojis(f"{self.msg}{': ' if self.msg else ''}{value}"))
         return True
-
-
-def threaded(func):
-    """Decorates a function to run in a separate thread, returning the thread object.
-
-    Usage: @threaded.
-    """
-
-    def wrapper(*args, **kwargs):
-        """Start the wrapped function in a daemon thread and return the started thread."""
-        thread = threading.Thread(target=func, args=args, kwargs=kwargs, daemon=True)
-        thread.start()
-        return thread
-
-    return wrapper
 
 
 def notebook_init(verbose=True):
