@@ -9,6 +9,7 @@ from torch import nn
 from ultralytics.utils.patches import torch_load
 
 from utils.downloads import attempt_download
+from utils.general import LOGGER
 
 
 class Sum(nn.Module):
@@ -73,10 +74,6 @@ class MixConv2d(nn.Module):
 class Ensemble(nn.ModuleList):
     """Combines outputs from multiple models to improve inference results."""
 
-    def __init__(self):
-        """Initializes an ensemble of models to combine their outputs."""
-        super().__init__()
-
     def forward(self, x, augment=False, profile=False, visualize=False):
         """Applies ensemble of models on input `x`, with options for augmentation, profiling, and visualization,
         returning inference outputs.
@@ -131,7 +128,7 @@ def attempt_load(weights, device=None, inplace=True, fuse=True):
         return model[-1]
 
     # Return detection ensemble
-    print(f"Ensemble created with {weights}\n")
+    LOGGER.info(f"Ensemble created with {weights}\n")
     for k in "names", "nc", "yaml":
         setattr(model, k, getattr(model[0], k))
     model.stride = model[torch.argmax(torch.tensor([m.stride.max() for m in model])).int()].stride  # max stride

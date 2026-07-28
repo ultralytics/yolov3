@@ -831,37 +831,6 @@ def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
     return boxes
 
 
-def scale_segments(img1_shape, segments, img0_shape, ratio_pad=None, normalize=False):
-    """Rescales segment coordinates from img1_shape to img0_shape, optionally normalizing, with support for padding
-    adjustments.
-    """
-    if ratio_pad is None:  # calculate from img0_shape
-        gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
-        pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
-    else:
-        gain = ratio_pad[0][0]
-        pad = ratio_pad[1]
-
-    segments[:, 0] -= pad[0]  # x padding
-    segments[:, 1] -= pad[1]  # y padding
-    segments /= gain
-    clip_segments(segments, img0_shape)
-    if normalize:
-        segments[:, 0] /= img0_shape[1]  # width
-        segments[:, 1] /= img0_shape[0]  # height
-    return segments
-
-
-def clip_segments(segments, shape):
-    """Clips segments to within image shape (height, width), supporting torch.Tensor and np.array inputs."""
-    if isinstance(segments, torch.Tensor):  # faster individually
-        segments[:, 0].clamp_(0, shape[1])  # x
-        segments[:, 1].clamp_(0, shape[0])  # y
-    else:  # np.array (faster grouped)
-        segments[:, 0] = segments[:, 0].clip(0, shape[1])  # x
-        segments[:, 1] = segments[:, 1].clip(0, shape[0])  # y
-
-
 # Keep local (do not dedup): anchor-based YOLOv3 head has an objectness channel; ultralytics NMS is anchor-free
 def non_max_suppression(
     prediction,

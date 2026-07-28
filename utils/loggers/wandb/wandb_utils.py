@@ -126,9 +126,6 @@ class WandbLogger:
         )
         LOGGER.info(f"Saving model artifact on epoch {epoch + 1}")
 
-    def val_one_image(self, pred, predn, path, names, im):
-        """Handle a single validation image and its predictions (currently a no-op placeholder)."""
-
     def log(self, log_dict):
         """Save the metrics to the logging dictionary.
 

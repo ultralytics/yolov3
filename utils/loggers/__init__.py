@@ -213,11 +213,7 @@ class Loggers:
             self.comet_logger.on_val_start()
 
     def on_val_image_end(self, pred, predn, path, names, im):
-        """Callback for logging a single validation image and its predictions to WandB or ClearML at the end of
-        validation.
-        """
-        if self.wandb:
-            self.wandb.val_one_image(pred, predn, path, names, im)
+        """Callback for logging a single validation image and its predictions to ClearML at the end of validation."""
         if self.clearml:
             self.clearml.log_image_with_boxes(path, pred, names, im)
 
