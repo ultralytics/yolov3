@@ -299,14 +299,14 @@ class EarlyStopping:
         """Initializes EarlyStopping to monitor training, halting if no improvement in 'patience' epochs, defaulting to
         30.
         """
-        self.best_fitness = 0.0  # i.e. mAP
+        self.best_fitness = -1.0  # below any valid fitness so the first epoch always sets the baseline
         self.best_epoch = 0
         self.patience = patience or float("inf")  # epochs to wait after fitness stops improving to stop
         self.possible_stop = False  # possible stop may occur next epoch
 
     def __call__(self, epoch, fitness):
         """Updates stopping criteria based on fitness; returns True to stop if no improvement in 'patience' epochs."""
-        if fitness > self.best_fitness or self.best_fitness == 0:  # allow for early zero-fitness stage of training
+        if fitness > self.best_fitness:  # only a strict improvement resets the patience counter
             self.best_epoch = epoch
             self.best_fitness = fitness
         delta = epoch - self.best_epoch  # epochs without improvement
