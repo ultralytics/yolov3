@@ -12,10 +12,10 @@ psutil>=5.9.0                # System monitoring (RAM, CPU, etc.)
 PyYAML>=5.3.1                # Reading configs (yaml files)
 requests>=2.32.2             # HTTP requests, used in model hub/downloads
 scipy>=1.4.1                 # Scientific computing (e.g. IoU, metrics)
-ultralytics-thop>=2.1.0      # Model profiling - FLOPs and parameter count
+ultralytics-thop>=2.1.2      # Model profiling - FLOPs and parameter count
 torch>=1.8.0                 # Core PyTorch for training/inference
 torchvision>=0.9.0           # Torch utilities for vision (transforms, datasets)
-ultralytics>=8.4.83          # YOLO framework library (models, training, utils)
+ultralytics>=8.4.109         # YOLO framework library (models, training, utils)
 
 # Logging ---------------------------------------------------------------------
 # tensorboard>=2.4.1         # Visual logging (scalars, images)
