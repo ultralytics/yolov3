@@ -23,7 +23,7 @@ def is_url(url, check=True):
 
 def gsutil_getsize(url=""):
     """Returns the size of a file at a 'gs://' URL using gsutil du command; 0 if file not found or command fails."""
-    output = subprocess.check_output(["gsutil", "du", url], shell=True, encoding="utf-8")
+    output = subprocess.check_output(["gsutil", "du", url], encoding="utf-8")
     return int(output.split()[0]) if output else 0
 
 
