@@ -40,15 +40,17 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
         model = _create('yolov3')
         ```
     """
+    import logging
     from pathlib import Path
 
     from models.common import AutoShape, DetectMultiBackend
     from models.experimental import attempt_load
     from models.yolo import DetectionModel
     from utils.downloads import attempt_download
-    from utils.general import LOGGER, ROOT, check_requirements, intersect_dicts, logging
+    from utils.general import LOGGER, ROOT, check_requirements, intersect_dicts
     from utils.torch_utils import select_device
 
+    prev_level = LOGGER.level
     if not verbose:
         LOGGER.setLevel(logging.WARNING)
     check_requirements(ROOT / "requirements.txt", exclude=("opencv-python", "tensorboard", "ultralytics-thop"))
@@ -74,7 +76,7 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
                 if len(ckpt["model"].names) == classes:
                     model.names = ckpt["model"].names  # set class names attribute
         if not verbose:
-            LOGGER.setLevel(logging.INFO)  # reset to default
+            LOGGER.setLevel(prev_level)  # restore, LOGGER is shared with ultralytics
         return model.to(device)
 
     except Exception as e:

@@ -91,7 +91,7 @@ def create_dataloader(
 ):
     """Creates a DataLoader for training, with options for augmentation, caching, and parallelization."""
     if rect and shuffle:
-        LOGGER.warning("WARNING ⚠️ --rect is incompatible with DataLoader shuffle, setting shuffle=False")
+        LOGGER.warning("--rect is incompatible with DataLoader shuffle, setting shuffle=False")
         shuffle = False
     with torch_distributed_zero_first(rank):  # init dataset *.cache only once if DDP
         dataset = LoadImagesAndLabels(
@@ -382,7 +382,7 @@ class LoadStreams:
         self.auto = auto and self.rect
         self.transforms = transforms  # optional
         if not self.rect:
-            LOGGER.warning("WARNING ⚠️ Stream shapes differ. For optimal performance supply similarly-shaped streams.")
+            LOGGER.warning("Stream shapes differ. For optimal performance supply similarly-shaped streams.")
 
     def update(self, i, cap, stream):
         """Reads frames from stream `i` into `self.imgs` at intervals defined by `self.vid_stride`, handling
@@ -397,7 +397,7 @@ class LoadStreams:
                 if success:
                     self.imgs[i] = im
                 else:
-                    LOGGER.warning("WARNING ⚠️ Video stream unresponsive, please check your IP camera connection.")
+                    LOGGER.warning("Video stream unresponsive, please check your IP camera connection.")
                     self.imgs[i] = np.zeros_like(self.imgs[i])
                     cap.open(stream)  # re-open stream if signal was lost
             time.sleep(0.0)  # wait time
@@ -633,7 +633,7 @@ class LoadImagesAndLabels(Dataset):
         if msgs:
             LOGGER.info("\n".join(msgs))
         if nf == 0:
-            LOGGER.warning(f"{prefix}WARNING ⚠️ No labels found in {path}. {HELP_URL}")
+            LOGGER.warning(f"{prefix}No labels found in {path}. {HELP_URL}")
         x["hash"] = get_hash(self.label_files + self.im_files)
         x["results"] = nf, nm, ne, nc, len(self.im_files)
         x["msgs"] = msgs  # warnings
@@ -643,7 +643,7 @@ class LoadImagesAndLabels(Dataset):
             path.with_suffix(".cache.npy").rename(path)  # remove .npy suffix
             LOGGER.info(f"{prefix}New cache created: {path}")
         except Exception as e:
-            LOGGER.warning(f"{prefix}WARNING ⚠️ Cache directory {path.parent} is not writeable: {e}")  # not writeable
+            LOGGER.warning(f"{prefix}Cache directory {path.parent} is not writeable: {e}")  # not writeable
         return x
 
     def __len__(self):
