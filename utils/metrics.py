@@ -7,10 +7,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from ultralytics.utils import LOGGER
 from ultralytics.utils.metrics import box_iou, plot_mc_curve, plot_pr_curve, smooth
 
-from utils import TryExcept
+from utils import LOGGER, TryExcept
 
 
 def fitness(x):
