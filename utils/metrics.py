@@ -9,7 +9,7 @@ import numpy as np
 import torch
 from ultralytics.utils.metrics import box_iou, plot_mc_curve, plot_pr_curve, smooth
 
-from utils import TryExcept
+from utils import LOGGER, TryExcept
 
 
 def fitness(x):
@@ -184,7 +184,7 @@ class ConfusionMatrix:
         # fn = self.matrix.sum(0) - tp  # false negatives (missed detections)
         return tp[:-1], fp[:-1]  # remove background class
 
-    @TryExcept("WARNING ⚠️ ConfusionMatrix plot failure")
+    @TryExcept("ConfusionMatrix plot failure")
     def plot(self, normalize=True, save_dir="", names=()):
         """Plots confusion matrix as a heatmap; args: normalize(bool), save_dir(str), names(iterable of str)."""
         import seaborn as sn
@@ -220,4 +220,4 @@ class ConfusionMatrix:
     def print(self):
         """Prints each row of the confusion matrix, where matrix elements are separated by spaces."""
         for i in range(self.nc + 1):
-            print(" ".join(map(str, self.matrix[i])))
+            LOGGER.info(" ".join(map(str, self.matrix[i])))

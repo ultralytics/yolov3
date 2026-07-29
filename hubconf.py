@@ -40,15 +40,17 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
         model = _create('yolov3')
         ```
     """
+    import logging
     from pathlib import Path
 
     from models.common import AutoShape, DetectMultiBackend
     from models.experimental import attempt_load
     from models.yolo import DetectionModel
     from utils.downloads import attempt_download
-    from utils.general import LOGGER, ROOT, check_requirements, intersect_dicts, logging
+    from utils.general import LOGGER, ROOT, check_requirements, intersect_dicts
     from utils.torch_utils import select_device
 
+    prev_level = LOGGER.level
     if not verbose:
         LOGGER.setLevel(logging.WARNING)
     check_requirements(ROOT / "requirements.txt", exclude=("opencv-python", "tensorboard", "ultralytics-thop"))
@@ -73,14 +75,15 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
                 model.load_state_dict(csd, strict=False)  # load
                 if len(ckpt["model"].names) == classes:
                     model.names = ckpt["model"].names  # set class names attribute
-        if not verbose:
-            LOGGER.setLevel(logging.INFO)  # reset to default
         return model.to(device)
 
     except Exception as e:
         help_url = "https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading"
         s = f"{e}. Cache may be out of date, try `force_reload=True` or see {help_url} for help."
         raise RuntimeError(s) from e
+
+    finally:
+        LOGGER.setLevel(prev_level)  # restore on both paths, LOGGER is shared with ultralytics
 
 
 def custom(path="path/to/model.pt", autoshape=True, _verbose=True, device=None):

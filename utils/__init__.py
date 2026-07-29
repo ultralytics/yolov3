@@ -3,29 +3,12 @@
 
 import contextlib
 
-from ultralytics.utils import emojis, threaded  # noqa: F401
-
-
-class TryExcept(contextlib.ContextDecorator):
-    """A context manager and decorator for handling exceptions with optional custom messages."""
-
-    def __init__(self, msg=""):
-        """Initialize with an optional message prefixed to any caught exception when printed."""
-        self.msg = msg
-
-    def __enter__(self):
-        """Enter the exception-handling block (no setup required)."""
-
-    def __exit__(self, exc_type, value, traceback):
-        """Print the message and exception on exit, suppressing the exception so execution continues."""
-        if value:
-            print(emojis(f"{self.msg}{': ' if self.msg else ''}{value}"))
-        return True
+from ultralytics.utils import LOGGER, TryExcept, emojis, threaded  # noqa: F401
 
 
 def notebook_init(verbose=True):
     """Initializes notebook environment by checking hardware, software requirements, and cleaning up if in Colab."""
-    print("Checking setup...")
+    LOGGER.info("Checking setup...")
 
     import os
     import shutil
@@ -55,5 +38,5 @@ def notebook_init(verbose=True):
         s = ""
 
     select_device(newline=False)
-    print(emojis(f"Setup complete ✅ {s}"))
+    LOGGER.info(f"Setup complete ✅ {s}")
     return display

@@ -87,5 +87,3 @@ optimizer.start_locally()
 optimizer.wait()
 # make sure background optimization stopped
 optimizer.stop()
-
-print("We are done, good bye")
