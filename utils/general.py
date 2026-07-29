@@ -32,14 +32,17 @@ import pandas as pd
 import torch
 import torchvision
 import yaml
+from ultralytics.data.converter import coco80_to_coco91_class  # noqa: F401
 from ultralytics.utils import TQDM as _TQDM
-from ultralytics.utils import colorstr
+from ultralytics.utils import colorstr, get_default_args  # noqa: F401
 from ultralytics.utils.checks import check_requirements as check_requirements_ultralytics
 from ultralytics.utils.checks import check_version as check_version_ultralytics
-from ultralytics.utils.files import file_date, file_size  # noqa: F401
+from ultralytics.utils.checks import is_ascii, print_args  # noqa: F401
+from ultralytics.utils.files import WorkingDirectory, file_date, file_size, get_latest_run  # noqa: F401
 from ultralytics.utils.files import increment_path as increment_path_ultralytics
 from ultralytics.utils.git import GitRepo
 from ultralytics.utils.ops import (  # noqa: F401
+    Profile,
     clip_boxes,
     make_divisible,
     xywh2xyxy,
@@ -80,12 +83,6 @@ def check_requirements(requirements=ROOT / "requirements.txt", exclude=(), insta
     if isinstance(requirements, Path) and sys.version_info < (3, 9):
         exclude = (*exclude, "urllib3")
     return check_requirements_ultralytics(requirements, exclude=exclude, install=install, cmds=cmds, **kwargs)
-
-
-def is_ascii(s=""):
-    """Checks if input string `s` is composed solely of ASCII characters; compatible with pre-Python 3.7 versions."""
-    s = str(s)  # convert list, tuple, None, etc. to str
-    return len(s.encode().decode("ascii", "ignore")) == len(s)
 
 
 def is_chinese(s="人工智能"):
@@ -196,33 +193,6 @@ def user_config_dir(dir="Ultralytics", env_var="YOLOV3_CONFIG_DIR"):
 CONFIG_DIR = user_config_dir()  # Ultralytics settings dir
 
 
-class Profile(contextlib.ContextDecorator):
-    """Profiles code execution time, usable as a context manager or decorator for performance monitoring."""
-
-    def __init__(self, t=0.0):
-        """Initializes a profiling context for YOLOv3 with optional timing threshold `t` and checks CUDA availability."""
-        self.t = t
-        self.cuda = torch.cuda.is_available()
-
-    def __enter__(self):
-        """Starts the profiling timer, returning the profile instance for use with @Profile() decorator or 'with
-        Profile():' context.
-        """
-        self.start = self.time()
-        return self
-
-    def __exit__(self, type, value, traceback):
-        """Ends profiling, calculating time delta and updating total time, for use within 'with Profile():' context."""
-        self.dt = self.time() - self.start  # delta-time
-        self.t += self.dt  # accumulate dt
-
-    def time(self):
-        """Returns current time, ensuring CUDA operations are synchronized if on GPU."""
-        if self.cuda:
-            torch.cuda.synchronize()
-        return time.time()
-
-
 class Timeout(contextlib.ContextDecorator):
     """Enforces a timeout on code execution, raising TimeoutError on expiry."""
 
@@ -250,41 +220,9 @@ class Timeout(contextlib.ContextDecorator):
                 return True
 
 
-class WorkingDirectory(contextlib.ContextDecorator):
-    """Context manager to temporarily change the working directory, reverting to the original on exit."""
-
-    def __init__(self, new_dir):
-        """Initializes context manager to temporarily change working directory, reverting on exit."""
-        self.dir = new_dir  # new dir
-        self.cwd = Path.cwd().resolve()  # current dir
-
-    def __enter__(self):
-        """Temporarily changes the current working directory to `new_dir`, reverting to the original on exit."""
-        os.chdir(self.dir)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Reverts to the original working directory upon exiting the context manager."""
-        os.chdir(self.cwd)
-
-
 def methods(instance):
     """Returns a list of callable class/instance methods, excluding magic methods."""
     return [f for f in dir(instance) if callable(getattr(instance, f)) and not f.startswith("__")]
-
-
-def print_args(args: dict | None = None, show_file=True, show_func=False):
-    """Prints function arguments; optionally specify args dict, show file and/or function name."""
-    x = inspect.currentframe().f_back  # previous frame
-    file, _, func, _, _ = inspect.getframeinfo(x)
-    if args is None:  # get args automatically
-        args, _, _, frm = inspect.getargvalues(x)
-        args = {k: v for k, v in frm.items() if k in args}
-    try:
-        file = Path(file).resolve().relative_to(ROOT).with_suffix("")
-    except ValueError:
-        file = Path(file).stem
-    s = (f"{file}: " if show_file else "") + (f"{func}: " if show_func else "")
-    LOGGER.info(colorstr(s) + ", ".join(f"{k}={v}" for k, v in args.items()))
 
 
 # Keep local (do not dedup): stricter deterministic semantics than ultralytics init_seeds (no warn_only fallback)
@@ -303,18 +241,6 @@ def init_seeds(seed=0, deterministic=False):
         torch.backends.cudnn.deterministic = True
         os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
         os.environ["PYTHONHASHSEED"] = str(seed)
-
-
-def get_default_args(func):
-    """Returns a dict of `func`'s default arguments using inspection."""
-    signature = inspect.signature(func)
-    return {k: v.default for k, v in signature.parameters.items() if v.default is not inspect.Parameter.empty}
-
-
-def get_latest_run(search_dir="."):
-    """Returns path to the most recent 'last.pt' file within 'search_dir' for resuming, or an empty string if not found."""
-    last_list = glob.glob(f"{search_dir}/**/last*.pt", recursive=True)
-    return max(last_list, key=os.path.getctime) if last_list else ""
 
 
 def check_online():
@@ -678,99 +604,6 @@ def labels_to_image_weights(labels, nc=80, class_weights=np.ones(80)):  # noqa: 
     # Usage: index = random.choices(range(n), weights=image_weights, k=1)  # weighted image sample
     class_counts = np.array([np.bincount(x[:, 0].astype(int), minlength=nc) for x in labels])
     return (class_weights.reshape(1, nc) * class_counts).sum(1)
-
-
-def coco80_to_coco91_class():  # converts 80-index (val2014) to 91-index (paper)
-    """Converts COCO 80-class index to COCO 91-class index.
-
-    Reference: https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
-    """
-    # a = np.loadtxt('data/coco.names', dtype='str', delimiter='\n')
-    # b = np.loadtxt('data/coco_paper.names', dtype='str', delimiter='\n')
-    # x1 = [list(a[i] == b).index(True) + 1 for i in range(80)]  # darknet to coco
-    # x2 = [list(b[i] == a).index(True) if any(b[i] == a) else None for i in range(91)]  # coco to darknet
-    return [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25,
-        27,
-        28,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        67,
-        70,
-        72,
-        73,
-        74,
-        75,
-        76,
-        77,
-        78,
-        79,
-        80,
-        81,
-        82,
-        84,
-        85,
-        86,
-        87,
-        88,
-        89,
-        90,
-    ]
 
 
 # Keep local (do not dedup): no ultralytics equivalent

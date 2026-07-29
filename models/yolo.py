@@ -173,7 +173,7 @@ class BaseModel(nn.Module):
 
     def info(self, verbose=False, img_size=640):  # print model information
         """Prints model information; `verbose` for detailed, `img_size` for input image size (default 640)."""
-        model_info(self, verbose, img_size)
+        model_info(self, detailed=verbose, imgsz=img_size)
 
     def _apply(self, fn):
         """Applies `to()`, `cpu()`, `cuda()`, `half()` to model tensors, excluding parameters or registered buffers."""
