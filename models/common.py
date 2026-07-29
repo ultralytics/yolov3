@@ -19,12 +19,13 @@ import pandas as pd
 import requests
 import torch
 from PIL import Image
+from PIL.ImageOps import exif_transpose
 from torch import nn
 from ultralytics.utils.plotting import Annotator, colors, save_one_box
 from ultralytics.utils.torch_utils import autocast
 
 from utils import TryExcept
-from utils.dataloaders import exif_transpose, letterbox
+from utils.dataloaders import letterbox
 from utils.general import (
     LOGGER,
     Profile,
