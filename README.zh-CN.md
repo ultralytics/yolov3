@@ -171,7 +171,7 @@ YOLOv3 的检测能力建立在几个核心思想之上，使其兼具准确与�
 
 ## 🧩 集成
 
-Ultralytics 与领先的 AI 平台集成，扩展数据集标注、训练、可视化和模型管理能力。在 [Ultralytics 集成](https://docs.ultralytics.com/integrations) 探索 [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases)、[Comet ML](https://docs.ultralytics.com/integrations/comet)、[Roboflow](https://docs.ultralytics.com/integrations/roboflow) 和 [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino) 等合作伙伴如何简化您的工作流。
+Ultralytics 集成了 [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases)、[Comet ML](https://docs.ultralytics.com/integrations/comet)、[Roboflow](https://docs.ultralytics.com/integrations/roboflow) 和 [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino)，用于数据集标注、实验跟踪、可视化和模型导出。完整列表请参阅 [Ultralytics 集成](https://docs.ultralytics.com/integrations)。
 
 <a href="https://docs.ultralytics.com/integrations" target="_blank">
     <img width="100%" src="https://github.com/ultralytics/assets/raw/main/yolov8/banner-integrations.png" alt="Ultralytics active learning integrations">

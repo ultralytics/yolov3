@@ -4,18 +4,16 @@
 
 # YOLOv3 Integration with Comet
 
-This guide explains how to seamlessly integrate YOLOv3 with [Comet experiment tracking](https://www.comet.com/site/) for enhanced experiment management, model optimization, and collaborative workflows.
+This guide explains how to integrate YOLOv3 with [Comet experiment tracking](https://www.comet.com/site/) for experiment management, model optimization, and collaboration.
 
 ## ℹ️ About Comet
 
-[Comet](https://www.comet.com/site/) is a leading platform for tracking, visualizing, and optimizing machine learning and deep learning experiments. It empowers data scientists, engineers, and teams to:
+[Comet](https://www.comet.com/site/) is a platform for tracking, visualizing, and optimizing machine learning and deep learning experiments. With this integration a YOLOv3 run can:
 
 - Monitor model metrics in real time
 - Save and version hyperparameters, datasets, and model checkpoints
 - Visualize predictions using [Comet Custom Panels](https://www.comet.com/docs/v2/guides/comet-dashboard/code-panels/about-panels/)
 - Collaborate and share results efficiently
-
-Comet ensures your work is always accessible and simplifies team collaboration.
 
 ## 🚀 Getting Started
 

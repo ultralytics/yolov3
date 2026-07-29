@@ -171,7 +171,7 @@ All three models are trained on [COCO](https://docs.ultralytics.com/datasets/det
 
 ## 🧩 Integrations
 
-Ultralytics integrates with leading AI platforms to extend dataset labeling, training, visualization, and model management. Explore how partners such as [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases), [Comet ML](https://docs.ultralytics.com/integrations/comet), [Roboflow](https://docs.ultralytics.com/integrations/roboflow), and [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino) can streamline your workflow at [Ultralytics Integrations](https://docs.ultralytics.com/integrations).
+Ultralytics integrates with [Weights & Biases](https://docs.ultralytics.com/integrations/weights-biases), [Comet ML](https://docs.ultralytics.com/integrations/comet), [Roboflow](https://docs.ultralytics.com/integrations/roboflow), and [Intel OpenVINO](https://docs.ultralytics.com/integrations/openvino) for dataset labeling, experiment tracking, visualization, and model export. See [Ultralytics Integrations](https://docs.ultralytics.com/integrations) for the full list.
 
 <a href="https://docs.ultralytics.com/integrations" target="_blank">
     <img width="100%" src="https://github.com/ultralytics/assets/raw/main/yolov8/banner-integrations.png" alt="Ultralytics active learning integrations">
