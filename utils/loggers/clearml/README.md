@@ -2,21 +2,18 @@
 
 # ClearML Integration for Ultralytics YOLO
 
-This guide details how to integrate [ClearML](https://docs.clear.ml/docs/latest/), a leading open-source MLOps platform, with your Ultralytics YOLO projects. ClearML streamlines the entire machine learning lifecycle—from experiment tracking to deployment—making it easier to manage and scale your computer vision workflows.
+This guide explains how to use the [ClearML](https://docs.clear.ml/docs/latest/) integration in Ultralytics YOLO for experiment tracking, dataset versioning, hyperparameter optimization, and remote execution.
 
 <img align="center" src="https://github.com/thepycoder/clearml_screenshots/raw/main/logos_dark.png#gh-light-mode-only" alt="Clear|ML"><img align="center" src="https://github.com/thepycoder/clearml_screenshots/raw/main/logos_light.png#gh-dark-mode-only" alt="Clear|ML">
 
 ## ✨ About ClearML
 
-[ClearML](https://docs.clear.ml/docs/latest/) is an [open-source MLOps suite](https://github.com/clearml/clearml) that enables you to manage, automate, and orchestrate machine learning workflows efficiently. Integrating ClearML with Ultralytics YOLO unlocks several advantages:
+[ClearML](https://docs.clear.ml/docs/latest/) is an [open-source MLOps suite](https://github.com/clearml/clearml). Integrating it with Ultralytics YOLO provides:
 
 - **Experiment Management**: Automatically track every YOLO training run, including code versions, configurations, metrics, and outputs in a centralized dashboard. Explore more about [Ultralytics experiment tracking integrations](https://docs.ultralytics.com/integrations).
 - **Data Versioning**: Manage and access your custom training datasets with ClearML Data Versioning. See how [Ultralytics datasets](https://docs.ultralytics.com/datasets) are structured.
 - **Remote Execution**: Train and monitor your YOLO models remotely using ClearML Agent on any machine or cloud instance. Learn about [model deployment options](https://docs.ultralytics.com/guides/model-deployment-options).
 - **Hyperparameter Optimization**: Use ClearML's HPO tools to optimize your model configurations and improve [mean average precision (mAP)](https://www.ultralytics.com/glossary/mean-average-precision-map). Review the [Ultralytics Hyperparameter Tuning guide](https://docs.ultralytics.com/guides/hyperparameter-tuning).
-- **Model Deployment**: Deploy trained YOLO models as scalable APIs with ClearML Serving in just a few steps.
-
-You can leverage any combination of these tools to fit your project requirements.
 
 ![ClearML scalars dashboard](https://raw.githubusercontent.com/thepycoder/clearml_screenshots/main/experiment_manager_with_compare.gif)
 
