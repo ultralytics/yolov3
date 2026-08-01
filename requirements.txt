@@ -5,7 +5,7 @@
 # Base ------------------------------------------------------------------------
 matplotlib>=3.5.0            # Plotting results and graphs
 numpy>=1.23.5                # Fundamental for array/matrix operations
-opencv-python>=4.6.0         # Image/video processing
+opencv-python>=5.0.0.93         # Image/video processing
 packaging>=20.0              # Version parsing for loggers
 Pillow>=10.3.0               # Image reading/writing support
 psutil>=5.9.0                # System monitoring (RAM, CPU, etc.)
