@@ -70,7 +70,7 @@ dependencies = [
     "psutil>=5.9.0", # system utilization
     "ultralytics-thop>=2.1.2", # FLOPs computation https://github.com/ultralytics/thop
     "pandas>=1.1.4",
-    "packaging>=20.0", # general utilities
+    "packaging>=26.2", # general utilities
     "seaborn>=0.11.0", # plotting
     "ultralytics>=8.4.109",
 ]
