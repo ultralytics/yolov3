@@ -82,15 +82,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ipython",
-    "check-manifest",
-    "pre-commit",
     "pytest",
     "pytest-cov",
     "coverage[toml]",
-    "mkdocs-material",
-    "mkdocstrings[python]",
-    "mkdocs-redirects", # for 301 redirects
-    "mkdocs-ultralytics-plugin>=0.2.5", # for meta descriptions and images, dates and authors
 ]
 export = [
     "onnx>=1.12.0", # ONNX export
@@ -117,14 +111,6 @@ extra = [
 "Source" = "https://github.com/ultralytics/yolov3/"
 
 # Tools settings -------------------------------------------------------------------------------------------------------
-[tool.pytest]
-norecursedirs = [".git", "dist", "build"]
-addopts = "--doctest-modules --durations=30 --color=yes"
-
-[tool.isort]
-line_length = 120
-multi_line_output = 0
-
 [tool.ruff]
 line-length = 120
 
@@ -146,5 +132,5 @@ pre-summary-newline = true
 close-quotes-on-newline = true
 
 [tool.codespell]
-ignore-words-list = "crate,nd,strack,dota,ane,segway,fo,gool,winn,commend"
-skip = '*.csv,*venv*,docs/??/,docs/mkdocs_??.yml'
+ignore-words-list = "nd,writeable"
+skip = '*venv*'
