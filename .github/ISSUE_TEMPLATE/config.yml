@@ -6,7 +6,7 @@ contact_links:
     url: https://github.com/ultralytics/yolov3#readme
     about: Usage guide and background for YOLOv3
   - name: 💬 Forum
-    url: https://community.ultralytics.com/
+    url: https://community.ultralytics.com
     about: Ask the Ultralytics community for workflow help
   - name: 🎧 Discord
     url: https://ultralytics.com/discord

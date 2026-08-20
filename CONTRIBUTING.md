@@ -12,9 +12,9 @@ Ultralytics YOLO models are successful thanks to the collective efforts of our c
 
 ## 🚀 Submitting a Pull Request (PR)
 
-We greatly appreciate contributions in the form of [pull requests](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests). To make the review process as smooth as possible, please follow these steps:
+We greatly appreciate contributions in the form of [pull requests](https://docs.github.com/en/pull-requests/reference/pull-requests). To make the review process as smooth as possible, please follow these steps:
 
-1. **[Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo):** Fork [ultralytics/yolov3](https://github.com/ultralytics/yolov3) to your GitHub account.
+1. **[Fork the repository](https://docs.github.com/en/pull-requests/how-tos/work-with-forks/fork-a-repo):** Fork [ultralytics/yolov3](https://github.com/ultralytics/yolov3) to your GitHub account.
 2. **[Create a branch](https://docs.github.com/en/desktop/making-changes-in-a-branch/managing-branches-in-github-desktop):** Create a branch in your fork with a clear, descriptive name (e.g., `fix-issue-123`, `add-feature-xyz`).
 3. **Make your changes:** Keep them minimal and focused on a single bug fix or feature. Ensure your code follows the project's style and doesn't introduce new errors or warnings.
 4. **Test your changes:** There is no pytest suite — the [CI workflow](https://github.com/ultralytics/yolov3/blob/master/.github/workflows/ci-testing.yml) smoke-tests the real scripts. Run a fast local equivalent before submitting:
@@ -23,7 +23,7 @@ We greatly appreciate contributions in the form of [pull requests](https://docs.
    python val.py --imgsz 64 --batch 32 --weights runs/train/exp/weights/best.pt --device cpu
    python detect.py --imgsz 64 --weights yolov3-tiny.pt --device cpu
    ```
-5. **[Create a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request):** Open a PR from your branch to the `master` branch of [ultralytics/yolov3](https://github.com/ultralytics/yolov3). Provide a clear title and a description explaining the purpose and scope of your changes.
+5. **[Create a pull request](https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/creating-a-pull-request):** Open a PR from your branch to the `master` branch of [ultralytics/yolov3](https://github.com/ultralytics/yolov3). Provide a clear title and a description explaining the purpose and scope of your changes.
 
 ### PR Best Practices
 
@@ -58,10 +58,10 @@ To help us investigate, please provide a [minimum reproducible example](https://
 - ✅ **Complete** – Include all parts needed for someone else to reproduce the problem.
 - ✅ **Reproducible** – Test your code to ensure it reliably triggers the issue.
 
-Additionally, for [Ultralytics](https://www.ultralytics.com/) to assist, your code should be:
+Additionally, for [Ultralytics](https://www.ultralytics.com) to assist, your code should be:
 
 - ✅ **Current** – Verify the problem persists on the latest [`master` branch](https://github.com/ultralytics/yolov3/tree/master). Use `git pull` or `git clone` to get the latest version.
-- ✅ **Unmodified** – The problem must be reproducible without custom modifications. [Ultralytics](https://www.ultralytics.com/) does not provide support for custom code.
+- ✅ **Unmodified** – The problem must be reproducible without custom modifications. [Ultralytics](https://www.ultralytics.com) does not provide support for custom code.
 
 If your issue meets these criteria, please open a new issue using the 🐛 **Bug Report** [template](https://github.com/ultralytics/yolov3/issues/new/choose), including your [minimum reproducible example](https://docs.ultralytics.com/help/minimum-reproducible-example) to help us diagnose and resolve the problem.
 

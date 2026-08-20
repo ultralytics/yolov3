@@ -1,6 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 """
-PyTorch Hub models https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading/.
+PyTorch Hub models https://docs.ultralytics.com/yolov5/tutorials/pytorch-hub-model-loading.
 
 Usage:
     import torch
@@ -32,7 +32,7 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
 
     Raises:
         Exception: If model loading fails, re-raised with a message pointing to the PyTorch Hub troubleshooting guide:
-            https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading
+            https://docs.ultralytics.com/yolov5/tutorials/pytorch-hub-model-loading
 
     Examples:
         ```python
@@ -78,7 +78,7 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
         return model.to(device)
 
     except Exception as e:
-        help_url = "https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading"
+        help_url = "https://docs.ultralytics.com/yolov5/tutorials/pytorch-hub-model-loading"
         s = f"{e}. Cache may be out of date, try `force_reload=True` or see {help_url} for help."
         raise RuntimeError(s) from e
 
@@ -103,7 +103,7 @@ def custom(path="path/to/model.pt", autoshape=True, _verbose=True, device=None):
     Raises:
         Exception: If the model loading fails due to invalid path or incompatible model state, with helpful suggestions
             including a reference to the troubleshooting page:
-            https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading
+            https://docs.ultralytics.com/yolov5/tutorials/pytorch-hub-model-loading
 
     Examples:
         ```python

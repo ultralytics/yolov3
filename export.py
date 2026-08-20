@@ -707,7 +707,7 @@ def run(
     if any((saved_model, pb, tflite, edgetpu, tfjs)):  # TensorFlow formats
         raise NotImplementedError(
             "TensorFlow exports are not supported by this repository. "
-            "Use the ultralytics package (https://docs.ultralytics.com/modes/export/) for TensorFlow formats."
+            "Use the ultralytics package (https://docs.ultralytics.com/modes/export) for TensorFlow formats."
         )
     file = Path(url2file(weights) if str(weights).startswith(("http:/", "https:/")) else weights)  # PyTorch weights
 

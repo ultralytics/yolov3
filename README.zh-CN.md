@@ -1,28 +1,28 @@
 <div align="center">
   <p>
-    <a href="https://www.ultralytics.com/" target="_blank">
+    <a href="https://www.ultralytics.com" target="_blank">
       <img width="100%" src="https://raw.githubusercontent.com/ultralytics/assets/main/yolov3/banner-yolov3.png" alt="Ultralytics YOLOv3 banner"></a>
   </p>
 
-[English](https://docs.ultralytics.com/) | [한국어](https://docs.ultralytics.com/ko) | [日本語](https://docs.ultralytics.com/ja) | [Русский](https://docs.ultralytics.com/ru) | [Deutsch](https://docs.ultralytics.com/de) | [Français](https://docs.ultralytics.com/fr) | [Español](https://docs.ultralytics.com/es) | [Português](https://docs.ultralytics.com/pt) | [Türkçe](https://docs.ultralytics.com/tr) | [Tiếng Việt](https://docs.ultralytics.com/vi) | [العربية](https://docs.ultralytics.com/ar)
+[English](https://docs.ultralytics.com) | [한국어](https://docs.ultralytics.com/ko) | [日本語](https://docs.ultralytics.com/ja) | [Русский](https://docs.ultralytics.com/ru) | [Deutsch](https://docs.ultralytics.com/de) | [Français](https://docs.ultralytics.com/fr) | [Español](https://docs.ultralytics.com/es) | [Português](https://docs.ultralytics.com/pt) | [Türkçe](https://docs.ultralytics.com/tr) | [Tiếng Việt](https://docs.ultralytics.com/vi) | [العربية](https://docs.ultralytics.com/ar)
 
 <div>
     <a href="https://github.com/ultralytics/yolov3/actions/workflows/ci-testing.yml"><img src="https://github.com/ultralytics/yolov3/actions/workflows/ci-testing.yml/badge.svg" alt="YOLOv3 CI"></a>
     <a href="https://zenodo.org/badge/latestdoi/146165888"><img src="https://zenodo.org/badge/146165888.svg" alt="YOLOv3 Citation"></a>
     <a href="https://hub.docker.com/r/ultralytics/yolov3"><img src="https://img.shields.io/docker/pulls/ultralytics/yolov3?logo=docker" alt="Docker Pulls"></a>
     <a href="https://discord.com/invite/ultralytics"><img alt="Discord" src="https://img.shields.io/discord/1089800235347353640?logo=discord&logoColor=white&label=Discord&color=blue"></a>
-    <a href="https://community.ultralytics.com/"><img alt="Ultralytics Forums" src="https://img.shields.io/discourse/users?server=https%3A%2F%2Fcommunity.ultralytics.com&logo=discourse&label=Forums&color=blue"></a>
+    <a href="https://community.ultralytics.com"><img alt="Ultralytics Forums" src="https://img.shields.io/discourse/users?server=https%3A%2F%2Fcommunity.ultralytics.com&logo=discourse&label=Forums&color=blue"></a>
     <a href="https://www.reddit.com/r/ultralytics/"><img alt="Ultralytics Reddit" src="https://img.shields.io/reddit/subreddit-subscribers/ultralytics?style=flat&logo=reddit&logoColor=white&label=Reddit&color=blue"></a>
     <br>
     <a href="https://colab.research.google.com/github/ultralytics/yolov3/blob/master/tutorial.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
   </div>
   <br>
 
-[Ultralytics](https://www.ultralytics.com/) YOLOv3 是 YOLOv3（You Only Look Once，第 3 版）实时[目标检测](https://docs.ultralytics.com/tasks/detect)模型的 PyTorch 实现。YOLOv3 将检测视为单一回归问题，在一次前向传播中直接从整幅图像预测边界框和类别概率，因而快速、准确，且易于训练和部署。
+[Ultralytics](https://www.ultralytics.com) YOLOv3 是 YOLOv3（You Only Look Once，第 3 版）实时[目标检测](https://docs.ultralytics.com/tasks/detect)模型的 PyTorch 实现。YOLOv3 将检测视为单一回归问题，在一次前向传播中直接从整幅图像预测边界框和类别概率，因而快速、准确，且易于训练和部署。
 
 本仓库提供三款经典的 YOLOv3 检测模型——**YOLOv3**、**YOLOv3-SPP** 和 **YOLOv3-tiny**——并配套训练、验证、推理和导出工具，同时复用 [`ultralytics`](https://github.com/ultralytics/ultralytics) 包中的共享工具。
 
-详细指南请参阅 [Ultralytics YOLOv3 文档](https://docs.ultralytics.com/models/yolov3)。如需支持，请提交 [GitHub Issue](https://github.com/ultralytics/yolov3/issues/new/choose)，并欢迎加入 [Discord](https://discord.com/invite/ultralytics)、[Reddit](https://www.reddit.com/r/ultralytics/) 和 [Ultralytics 论坛](https://community.ultralytics.com/) 参与讨论。
+详细指南请参阅 [Ultralytics YOLOv3 文档](https://docs.ultralytics.com/models/yolov3)。如需支持，请提交 [GitHub Issue](https://github.com/ultralytics/yolov3/issues/new/choose)，并欢迎加入 [Discord](https://discord.com/invite/ultralytics)、[Reddit](https://www.reddit.com/r/ultralytics/) 和 [Ultralytics 论坛](https://community.ultralytics.com) 参与讨论。
 
 如需商业使用，请通过 [Ultralytics 许可](https://www.ultralytics.com/license) 申请企业许可证。
 
@@ -69,7 +69,7 @@ pip install -r requirements.txt
 <details open>
 <summary>使用 PyTorch Hub 进行推理</summary>
 
-通过 [PyTorch Hub](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading) 可直接加载 YOLOv3，权重在首次使用时自动下载。
+通过 [PyTorch Hub](https://docs.ultralytics.com/yolov5/tutorials/pytorch-hub-model-loading) 可直接加载 YOLOv3，权重在首次使用时自动下载。
 
 ```python
 import torch
@@ -132,13 +132,13 @@ python train.py --data coco.yaml --epochs 300 --weights '' --cfg yolov3-spp.yaml
 
 - [训练自定义数据](https://docs.ultralytics.com/modes/train) — 在自有数据集上训练。
 - [最佳训练技巧](https://docs.ultralytics.com/guides/model-training-tips) — 充分发挥训练效果。
-- [多 GPU 训练](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training) — 跨 GPU 扩展训练。
-- [PyTorch Hub 加载](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading) — 以编程方式加载模型。
+- [多 GPU 训练](https://docs.ultralytics.com/yolov5/tutorials/multi-gpu-training) — 跨 GPU 扩展训练。
+- [PyTorch Hub 加载](https://docs.ultralytics.com/yolov5/tutorials/pytorch-hub-model-loading) — 以编程方式加载模型。
 - [模型导出](https://docs.ultralytics.com/modes/export) — 部署到 ONNX、TensorRT、CoreML 等。
-- [测试时增强 (TTA)](https://docs.ultralytics.com/yolov5/tutorials/test_time_augmentation) — 提升推理精度。
-- [模型集成](https://docs.ultralytics.com/yolov5/tutorials/model_ensembling) — 融合多个模型以获得更好结果。
+- [测试时增强 (TTA)](https://docs.ultralytics.com/yolov5/tutorials/test-time-augmentation) — 提升推理精度。
+- [模型集成](https://docs.ultralytics.com/yolov5/tutorials/model-ensembling) — 融合多个模型以获得更好结果。
 - [超参数调优](https://docs.ultralytics.com/guides/hyperparameter-tuning) — 自动调优超参数。
-- [冻结层迁移学习](https://docs.ultralytics.com/yolov5/tutorials/transfer_learning_with_frozen_layers) — 高效迁移预训练模型。
+- [冻结层迁移学习](https://docs.ultralytics.com/yolov5/tutorials/transfer-learning-with-frozen-layers) — 高效迁移预训练模型。
 
 </details>
 
@@ -227,7 +227,7 @@ Ultralytics 提供两种许可选项：
 
 ## 📧 联系
 
-如需报告 bug 或提出功能请求，请使用 [GitHub Issues](https://github.com/ultralytics/yolov3/issues)。如有问题或想讨论，欢迎加入我们的 [Discord](https://discord.com/invite/ultralytics)、[Reddit](https://www.reddit.com/r/ultralytics/) 和 [Ultralytics 论坛](https://community.ultralytics.com/)。
+如需报告 bug 或提出功能请求，请使用 [GitHub Issues](https://github.com/ultralytics/yolov3/issues)。如有问题或想讨论，欢迎加入我们的 [Discord](https://discord.com/invite/ultralytics)、[Reddit](https://www.reddit.com/r/ultralytics/) 和 [Ultralytics 论坛](https://community.ultralytics.com)。
 
 <br>
 <div align="center">

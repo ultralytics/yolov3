@@ -450,7 +450,7 @@ def check_amp(model):
         LOGGER.info(f"{prefix}checks passed ✅")
         return True
     except Exception:
-        help_url = "https://docs.ultralytics.com/guides/yolo-common-issues/"
+        help_url = "https://docs.ultralytics.com/guides/yolo-common-issues"
         LOGGER.warning(f"{prefix}checks failed, disabling Automatic Mixed Precision. See {help_url}")
         return False
 

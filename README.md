@@ -1,6 +1,6 @@
 <div align="center">
   <p>
-    <a href="https://www.ultralytics.com/" target="_blank">
+    <a href="https://www.ultralytics.com" target="_blank">
       <img width="100%" src="https://raw.githubusercontent.com/ultralytics/assets/main/yolov3/banner-yolov3.png" alt="Ultralytics YOLOv3 banner"></a>
   </p>
 
@@ -11,18 +11,18 @@
     <a href="https://zenodo.org/badge/latestdoi/146165888"><img src="https://zenodo.org/badge/146165888.svg" alt="YOLOv3 Citation"></a>
     <a href="https://hub.docker.com/r/ultralytics/yolov3"><img src="https://img.shields.io/docker/pulls/ultralytics/yolov3?logo=docker" alt="Docker Pulls"></a>
     <a href="https://discord.com/invite/ultralytics"><img alt="Discord" src="https://img.shields.io/discord/1089800235347353640?logo=discord&logoColor=white&label=Discord&color=blue"></a>
-    <a href="https://community.ultralytics.com/"><img alt="Ultralytics Forums" src="https://img.shields.io/discourse/users?server=https%3A%2F%2Fcommunity.ultralytics.com&logo=discourse&label=Forums&color=blue"></a>
+    <a href="https://community.ultralytics.com"><img alt="Ultralytics Forums" src="https://img.shields.io/discourse/users?server=https%3A%2F%2Fcommunity.ultralytics.com&logo=discourse&label=Forums&color=blue"></a>
     <a href="https://www.reddit.com/r/ultralytics/"><img alt="Ultralytics Reddit" src="https://img.shields.io/reddit/subreddit-subscribers/ultralytics?style=flat&logo=reddit&logoColor=white&label=Reddit&color=blue"></a>
     <br>
     <a href="https://colab.research.google.com/github/ultralytics/yolov3/blob/master/tutorial.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
   </div>
   <br>
 
-[Ultralytics](https://www.ultralytics.com/) YOLOv3 is a PyTorch implementation of the YOLOv3 (You Only Look Once, version 3) real-time [object detection](https://docs.ultralytics.com/tasks/detect) model. YOLOv3 frames detection as a single regression problem, predicting bounding boxes and class probabilities directly from full images in one forward pass — making it fast, accurate, and straightforward to train and deploy.
+[Ultralytics](https://www.ultralytics.com) YOLOv3 is a PyTorch implementation of the YOLOv3 (You Only Look Once, version 3) real-time [object detection](https://docs.ultralytics.com/tasks/detect) model. YOLOv3 frames detection as a single regression problem, predicting bounding boxes and class probabilities directly from full images in one forward pass — making it fast, accurate, and straightforward to train and deploy.
 
 This repository packages the three classic YOLOv3 detection models — **YOLOv3**, **YOLOv3-SPP**, and **YOLOv3-tiny** — with training, validation, inference, and export tooling, and reuses shared utilities from the [`ultralytics`](https://github.com/ultralytics/ultralytics) package.
 
-Find detailed guidance in the [Ultralytics YOLOv3 Docs](https://docs.ultralytics.com/models/yolov3). Get support via [GitHub Issues](https://github.com/ultralytics/yolov3/issues/new/choose), and join the conversation on [Discord](https://discord.com/invite/ultralytics), [Reddit](https://www.reddit.com/r/ultralytics/), and the [Ultralytics Forums](https://community.ultralytics.com/).
+Find detailed guidance in the [Ultralytics YOLOv3 Docs](https://docs.ultralytics.com/models/yolov3). Get support via [GitHub Issues](https://github.com/ultralytics/yolov3/issues/new/choose), and join the conversation on [Discord](https://discord.com/invite/ultralytics), [Reddit](https://www.reddit.com/r/ultralytics/), and the [Ultralytics Forums](https://community.ultralytics.com).
 
 For commercial use, request an Enterprise License at [Ultralytics Licensing](https://www.ultralytics.com/license).
 
@@ -69,7 +69,7 @@ pip install -r requirements.txt
 <details open>
 <summary>Inference with PyTorch Hub</summary>
 
-Load YOLOv3 directly through [PyTorch Hub](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading). Weights download automatically on first use.
+Load YOLOv3 directly through [PyTorch Hub](https://docs.ultralytics.com/yolov5/tutorials/pytorch-hub-model-loading). Weights download automatically on first use.
 
 ```python
 import torch
@@ -132,13 +132,13 @@ These guides cover the shared Ultralytics training framework and apply to YOLOv3
 
 - [Train Custom Data](https://docs.ultralytics.com/modes/train) — train on your own dataset.
 - [Tips for Best Training Results](https://docs.ultralytics.com/guides/model-training-tips) — get the most out of training.
-- [Multi-GPU Training](https://docs.ultralytics.com/yolov5/tutorials/multi_gpu_training) — scale training across GPUs.
-- [PyTorch Hub Loading](https://docs.ultralytics.com/yolov5/tutorials/pytorch_hub_model_loading) — load models programmatically.
+- [Multi-GPU Training](https://docs.ultralytics.com/yolov5/tutorials/multi-gpu-training) — scale training across GPUs.
+- [PyTorch Hub Loading](https://docs.ultralytics.com/yolov5/tutorials/pytorch-hub-model-loading) — load models programmatically.
 - [Model Export](https://docs.ultralytics.com/modes/export) — deploy to ONNX, TensorRT, CoreML, and more.
-- [Test-Time Augmentation (TTA)](https://docs.ultralytics.com/yolov5/tutorials/test_time_augmentation) — improve accuracy at inference.
-- [Model Ensembling](https://docs.ultralytics.com/yolov5/tutorials/model_ensembling) — combine models for better results.
+- [Test-Time Augmentation (TTA)](https://docs.ultralytics.com/yolov5/tutorials/test-time-augmentation) — improve accuracy at inference.
+- [Model Ensembling](https://docs.ultralytics.com/yolov5/tutorials/model-ensembling) — combine models for better results.
 - [Hyperparameter Tuning](https://docs.ultralytics.com/guides/hyperparameter-tuning) — tune hyperparameters automatically.
-- [Transfer Learning with Frozen Layers](https://docs.ultralytics.com/yolov5/tutorials/transfer_learning_with_frozen_layers) — adapt pretrained models efficiently.
+- [Transfer Learning with Frozen Layers](https://docs.ultralytics.com/yolov5/tutorials/transfer-learning-with-frozen-layers) — adapt pretrained models efficiently.
 
 </details>
 
@@ -227,7 +227,7 @@ Ultralytics offers two licensing options:
 
 ## 📧 Contact
 
-For bug reports and feature requests, please use [GitHub Issues](https://github.com/ultralytics/yolov3/issues). For questions and discussion, join our [Discord](https://discord.com/invite/ultralytics), [Reddit](https://www.reddit.com/r/ultralytics/), and the [Ultralytics Forums](https://community.ultralytics.com/).
+For bug reports and feature requests, please use [GitHub Issues](https://github.com/ultralytics/yolov3/issues). For questions and discussion, join our [Discord](https://discord.com/invite/ultralytics), [Reddit](https://www.reddit.com/r/ultralytics/), and the [Ultralytics Forums](https://community.ultralytics.com).
 
 <br>
 <div align="center">
