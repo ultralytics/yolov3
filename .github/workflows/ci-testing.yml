@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest] # macos-latest bug https://github.com/ultralytics/yolov5/pull/9049
-        python-version: ["3.x"] # latest stable Python release
+        python-version: ["3"] # newest preinstalled Python
         model: [yolov3-tiny]
         include:
           - os: ubuntu-latest
@@ -36,17 +36,16 @@ jobs:
             torch: "1.8.0" # minimum supported torch (PyTorch>=1.8)
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: ultralytics/actions/setup-uv@main
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: ultralytics/actions/setup-uv@main
       - name: Install requirements
         run: |
           torch=""
           if [ "${{ matrix.torch }}" == "1.8.0" ]; then
             torch="torch==1.8.0 torchvision==0.9.0"
           fi
-          uv pip install --system -r requirements.txt $torch --extra-index-url https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match
+          uv pip install -r requirements.txt $torch --extra-index-url https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match
         shell: bash # for Windows compatibility
       - name: Check environment
         run: |
