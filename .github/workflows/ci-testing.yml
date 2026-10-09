@@ -80,7 +80,7 @@ jobs:
   Summary:
     runs-on: ubuntu-latest
     needs: [Tests]
-    if: always()
+    if: always() && github.run_attempt == '1'
     steps:
       - name: Check for failure and notify
         if: (needs.Tests.result == 'failure' || needs.Tests.result == 'cancelled') && github.repository == 'ultralytics/yolov3' && (github.event_name == 'schedule' || github.event_name == 'push')
