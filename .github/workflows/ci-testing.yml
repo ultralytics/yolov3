@@ -23,13 +23,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest] # macos-latest bug https://github.com/ultralytics/yolov5/pull/9049
+        os: [ubuntu-latest, windows-latest, macos-26]
         python-version: ["3"] # newest preinstalled Python
         model: [yolov3-tiny]
         include:
-          - os: ubuntu-latest
-            python-version: "3.11" # mid-version coverage
-            model: yolov3-tiny
           - os: ubuntu-latest
             python-version: "3.8" # minimum supported Python (torch 1.8.0 supports python <=3.9)
             model: yolov3-tiny
@@ -47,6 +44,11 @@ jobs:
           fi
           uv pip install -r requirements.txt $torch --extra-index-url https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match
         shell: bash # for Windows compatibility
+      - name: Update macOS security policy
+        if: runner.os == 'macOS'
+        run: | # fix occasional torch multiprocessing failure
+          xattr -dr com.apple.quarantine "$(python -c "import torch; import os; print(os.path.dirname(torch.__file__))")"
+          chmod +x "$(python -c "import torch; print(torch.__file__.replace('__init__.py', 'bin/torch_shm_manager'))")"
       - name: Check environment
         run: |
           yolo checks
