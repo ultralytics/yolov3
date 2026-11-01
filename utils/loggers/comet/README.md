@@ -66,7 +66,7 @@ By default, Comet logs the following during YOLOv3 training:
 ### Metrics
 
 - Box Loss, Object Loss, Classification Loss (training and validation)
-- mAP<sub>0.5</sub>, mAP<sub>0.5:0.95</sub> (validation)
+- mAP<sub>50</sub>, mAP<sub>50-95</sub> (validation)
 - Precision and Recall (validation)
 
 ### Parameters
@@ -224,7 +224,7 @@ Create a JSON config file for the sweep (e.g., `utils/loggers/comet/optimizer_co
   "spec": {
     "maxCombo": 10,
     "objective": "minimize",
-    "metric": "metrics/mAP_0.5",
+    "metric": "metrics/mAP50",
     "algorithm": "bayes",
     "parameters": {
       "lr0": { "type": "float", "min": 0.001, "max": 0.01 },

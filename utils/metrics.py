@@ -13,8 +13,8 @@ from utils import LOGGER, TryExcept
 
 
 def fitness(x):
-    """Calculates model fitness as a weighted sum of metrics [P, R, mAP@0.5, mAP@0.5:0.95] with respective weights."""
-    w = [0.0, 0.0, 0.1, 0.9]  # weights for [P, R, mAP@0.5, mAP@0.5:0.95]
+    """Calculates model fitness as a weighted sum of metrics [P, R, mAP50, mAP50-95] with respective weights."""
+    w = [0.0, 0.0, 0.1, 0.9]  # weights for [P, R, mAP50, mAP50-95]
     return (x[:, :4] * w).sum(1)
 
 
@@ -29,7 +29,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir=".", names
         conf (np.ndarray): Objectness values from 0-1.
         pred_cls (np.ndarray): Predicted object classes.
         target_cls (np.ndarray): True object classes.
-        plot (bool): Plot precision-recall curve at mAP@0.5.
+        plot (bool): Plot precision-recall curve at mAP50.
         save_dir (str): Directory in which to save plots.
         names (dict): Class index to name mapping for plot legends.
         eps (float): Small value to avoid division by zero.
@@ -72,7 +72,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir=".", names
         for j in range(tp.shape[1]):
             ap[ci, j], mpre, mrec = compute_ap(recall[:, j], precision[:, j])
             if plot and j == 0:
-                py.append(np.interp(px, mrec, mpre))  # precision at mAP@0.5
+                py.append(np.interp(px, mrec, mpre))  # precision at mAP50
 
     # Compute F1 (harmonic mean of precision and recall)
     f1 = 2 * p * r / (p + r + eps)

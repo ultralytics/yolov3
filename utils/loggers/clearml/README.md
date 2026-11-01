@@ -78,7 +78,7 @@ ClearML will automatically capture:
 - [Hyperparameters](https://www.ultralytics.com/glossary/hyperparameter-tuning) and script arguments
 - [Model checkpoints](https://www.ultralytics.com/glossary/model-weights) (use `--save-period n` to save every `n` epochs)
 - Console output (stdout and stderr)
-- Performance [metrics and scalars](https://docs.ultralytics.com/guides/yolo-performance-metrics) such as mAP<sub>0.5</sub>, mAP<sub>0.5:0.95</sub>, precision, recall, losses, and learning rates
+- Performance [metrics and scalars](https://docs.ultralytics.com/guides/yolo-performance-metrics) such as mAP<sub>50</sub>, mAP<sub>50-95</sub>, precision, recall, losses, and learning rates
 - Machine details, runtime, and creation date
 - Generated plots like label correlograms and [confusion matrices](https://www.ultralytics.com/glossary/confusion-matrix)
 - Debug samples: images with bounding boxes, mosaic visualizations, and validation images per epoch
