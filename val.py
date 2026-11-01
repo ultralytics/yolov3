@@ -254,9 +254,9 @@ def run(
 
     Returns:
         (tuple): A tuple containing:
-            - results (tuple): (mean_precision, mean_recall, mAP@0.5, mAP@0.5:0.95, val_box_loss, val_obj_loss,
+            - results (tuple): (mean_precision, mean_recall, mAP50, mAP50-95, val_box_loss, val_obj_loss,
               val_cls_loss).
-            - maps (np.ndarray): Per-class mAP@0.5:0.95 of shape (nc,).
+            - maps (np.ndarray): Per-class mAP50-95 of shape (nc,).
             - t (tuple): Per-image timing in milliseconds for (preprocess, inference, NMS).
 
     Examples:
@@ -310,7 +310,7 @@ def run(
     cuda = device.type != "cpu"
     is_coco = isinstance(data.get("val"), str) and data["val"].endswith(f"coco{os.sep}val2017.txt")  # COCO dataset
     nc = 1 if single_cls else int(data["nc"])  # number of classes
-    iouv = torch.linspace(0.5, 0.95, 10, device=device)  # iou vector for mAP@0.5:0.95
+    iouv = torch.linspace(0.5, 0.95, 10, device=device)  # iou vector for mAP50-95
     niou = iouv.numel()
 
     # Dataloader
@@ -474,7 +474,7 @@ def run(
             eval.evaluate()
             eval.accumulate()
             eval.summarize()
-            map, map50 = eval.stats[:2]  # update results (mAP@0.5:0.95, mAP@0.5)
+            map, map50 = eval.stats[:2]  # update results (mAP50-95, mAP50)
         except Exception as e:
             LOGGER.info(f"pycocotools unable to run: {e}")
 
