@@ -66,7 +66,7 @@ By default, Comet logs the following during YOLOv3 training:
 ### Metrics
 
 - Box Loss, Object Loss, Classification Loss (training and validation)
-- mAP<sub>0.5</sub>, mAP<sub>0.5:0.95</sub> (validation)
+- mAP<sub>50</sub>, mAP<sub>50-95</sub> (validation)
 - Precision and Recall (validation)
 
 ### Parameters
